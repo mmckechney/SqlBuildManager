@@ -416,7 +416,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             string fromPath = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 
 
-            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
+            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
             string fromBatch = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             if (Directory.Exists(projectFileExtractionPath))
@@ -474,7 +474,7 @@ needs to be removed");
             string fromPath = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 
 
-            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
+            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
             string fromBatch = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             if (Directory.Exists(projectFileExtractionPath))
@@ -532,7 +532,7 @@ needs to be removed");
             string fromPath = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 
 
-            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
+            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
             string fromBatch = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             if (Directory.Exists(projectFileExtractionPath))
@@ -589,7 +589,7 @@ needs to be removed");
 
             string fromPath123 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 
-            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
+            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
             string fromBatch123 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             buildData.Script[0].BuildOrder = 2;
@@ -599,7 +599,7 @@ needs to be removed");
 
             string fromPath213 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 
-            batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
+            batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
             string fromBatch213 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
 

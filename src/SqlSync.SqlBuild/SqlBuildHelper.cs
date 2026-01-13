@@ -236,48 +236,23 @@ namespace SqlSync.SqlBuild
                 AllowObjectDelete: runData.AllowObjectDelete);
         }
 
-        private static SqlSyncBuildData ToDataSet(BuildModels.SqlSyncBuildDataModel model) => model.ToDataSet();
 
         private static BuildModels.Script MapLegacyScriptRowToModel(SqlSyncBuildData.ScriptRow row) => row.ToModel();
 
         private static BuildModels.Build MapLegacyBuildRowToModel(SqlSyncBuildData.BuildRow row) => row.ToModel();
         private void SyncBuildDataModel(SqlSyncBuildData ds) => buildDataModel = ds.ToModel();
-        private SqlSyncBuildData EnsureBuildDataSet()
-        {
-            buildDataModel ??= SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            return buildDataModel.ToDataSet();
-        }
 
-        // Compatibility helpers for tests (internal) to ease migration from DataSet APIs
-        internal SqlSyncBuildData BuildData => BuildDataModel.ToDataSet();
         internal void SetBuildData(SqlSyncBuildData ds)
         {
             buildDataCompat = ds;
             BuildDataModel = ds.ToModel();
         }
 
-        // Compatibility overload for legacy callers that pass DoWorkEventArgs without explicit BuildData
-        internal void PrepareBuildForRun(string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
-        {
-            var model = BuildDataModel;
-            var prep = PrepareBuildForRun(model, serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
-            var ds = model.ToDataSet();
-            var ids = new HashSet<string>(prep.FilteredScripts?.Select(s => s.ScriptId)!.Where(id => id != null)! ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
-            var dv = ds.Script.DefaultView;
-            if (ids.Count > 0)
-            {
-                var filter = string.Join("','", ids.Select(id => id.Replace("'", "''")));
-                dv.RowFilter = $"ScriptId IN ('{filter}')";
-            }
-            filteredScripts = dv;
-            myBuild = ds.Build.Count > 0 ? ds.Build[ds.Build.Count - 1] : ds.Build.NewBuildRow();
-        }
+
 
         internal string externalScriptLogFileName = string.Empty;
-        public SqlBuildHelper(ConnectionData data) : this(data, true, string.Empty, true)
-        {
-        }
-        public SqlBuildHelper(ConnectionData data, bool createScriptRunLogFile, string externalScriptLogFileName, bool isTransactional)
+
+        public SqlBuildHelper(ConnectionData data, bool createScriptRunLogFile = true, string externalScriptLogFileName = "", bool isTransactional = true)
         {
             connData = data;
             this.isTransactional = isTransactional;
@@ -346,45 +321,21 @@ namespace SqlSync.SqlBuild
         }
 
 
-        /// <summary>
-        /// Private method that kicks off a build. 
-        /// This overload does NOT clear out the committedScripts list collection and should be used for MultiDb runs
-        /// </summary>
-        /// <param name="runData">Run configuration data</param>
-        /// <param name="bgWorker">Worker object that will report status</param>
-        /// <param name="e">DoWorkEventArgs that will return state</param>
-        /// <param name="serverName">Server to execute against</param>
-        /// <param name="isMultiDbRun">Whether or not this is a UI based multi-database execution run</param>
-        /// <param name="scriptBatchColl">Pre-batched script collection. Provided by console based threaded execution</param>
-        /// <returns>BuildRow object with the result data.</returns>
-        [Obsolete("Use ProcessBuild(SqlSync.SqlBuild.Models.SqlBuildRunDataModel, ...)")]
-        internal SqlSyncBuildData.BuildRow ProcessBuild(SqlBuildRunData runData, BackgroundWorker bgWorker, DoWorkEventArgs e, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, int allowableTimeoutRetries)
-        {
-            this.bgWorker = bgWorker;
-            ErrorOccured = false;
-            var model = new BuildModels.SqlBuildRunDataModel(
-                BuildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
-                BuildType: runData.BuildType,
-                Server: serverName,
-                BuildDescription: runData.BuildDescription,
-                StartIndex: runData.StartIndex,
-                ProjectFileName: runData.ProjectFileName,
-                IsTrial: runData.IsTrial,
-                RunItemIndexes: runData.RunItemIndexes ?? Array.Empty<double>(),
-                RunScriptOnly: runData.RunScriptOnly,
-                BuildFileName: runData.BuildFileName,
-                LogToDatabaseName: runData.LogToDatabaseName,
-                IsTransactional: runData.IsTransactional,
-                PlatinumDacPacFileName: runData.PlatinumDacPacFileName,
-                TargetDatabaseOverrides: runData.TargetDatabaseOverrides,
-                ForceCustomDacpac: runData.ForceCustomDacpac,
-                BuildRevision: runData.BuildRevision,
-                DefaultScriptTimeout: runData.DefaultScriptTimeout,
-                AllowObjectDelete: runData.AllowObjectDelete);
+        //public BuildModels.Build ProcessBuild(BuildModels.SqlBuildRunDataModel runData, int allowableTimeoutRetries, BackgroundWorker bgWorker, DoWorkEventArgs e)
+        //{
+        //    connectDictionary.Clear();
+        //    committedScripts.Clear();
 
-            var result = ProcessBuild(model, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
-            var ds = buildDataModel?.ToDataSet() ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel().ToDataSet();
-            return ds.Build.Count > 0 ? ds.Build[ds.Build.Count - 1] : ds.Build.NewBuildRow();
+        //    return ProcessBuild(runData, bgWorker, e, connData.SQLServerName, false, null, allowableTimeoutRetries);
+        //}
+
+        public BuildModels.Build ProcessBuild(BuildModels.SqlBuildRunDataModel runData, BackgroundWorker bgWorker, DoWorkEventArgs e, int allowableTimeoutRetries = 3,  string buildRequestedBy = "", ScriptBatchCollection scriptBatchColl = null)
+        {
+            connectDictionary.Clear();
+            committedScripts.Clear();
+            this.buildRequestedBy = buildRequestedBy;
+
+            return ProcessBuild(runData: runData, bgWorker: bgWorker, e: e, serverName: connData.SQLServerName, isMultiDbRun: false, scriptBatchColl: scriptBatchColl, allowableTimeoutRetries: allowableTimeoutRetries);
         }
 
         internal BuildModels.Build ProcessBuild(BuildModels.SqlBuildRunDataModel runData, BackgroundWorker bgWorker, DoWorkEventArgs e, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, int allowableTimeoutRetries)
@@ -526,191 +477,6 @@ namespace SqlSync.SqlBuild
             SyncBuildDataModel(buildDataModel.ToDataSet());
             return buildResultsModel;
         }
-        /// <summary>
-        /// Entry method to kick off a build.
-        /// This overload should be used for single server runs as it clears out the committedScript List collection
-        /// </summary>
-        /// <param name="runData"></param>
-        /// <param name="bgWorker"></param>
-        /// <param name="e"></param>
-        [Obsolete("Use ProcessBuild(SqlSync.SqlBuild.Models.SqlBuildRunDataModel, ...)")]
-        public void ProcessBuild(SqlBuildRunData runData, int allowableTimeoutRetries, BackgroundWorker bgWorker, DoWorkEventArgs e)
-        {
-            connectDictionary.Clear();
-            committedScripts.Clear();
-
-            var model = new BuildModels.SqlBuildRunDataModel(
-                BuildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
-                BuildType: runData.BuildType,
-                Server: runData.Server ?? connData.SQLServerName,
-                BuildDescription: runData.BuildDescription,
-                StartIndex: runData.StartIndex,
-                ProjectFileName: runData.ProjectFileName,
-                IsTrial: runData.IsTrial,
-                RunItemIndexes: runData.RunItemIndexes ?? Array.Empty<double>(),
-                RunScriptOnly: runData.RunScriptOnly,
-                BuildFileName: runData.BuildFileName,
-                LogToDatabaseName: runData.LogToDatabaseName,
-                IsTransactional: runData.IsTransactional,
-                PlatinumDacPacFileName: runData.PlatinumDacPacFileName,
-                TargetDatabaseOverrides: runData.TargetDatabaseOverrides,
-                ForceCustomDacpac: runData.ForceCustomDacpac,
-                BuildRevision: runData.BuildRevision,
-                DefaultScriptTimeout: runData.DefaultScriptTimeout,
-                AllowObjectDelete: runData.AllowObjectDelete);
-            ProcessBuild(model, bgWorker, e, connData.SQLServerName, false, null, allowableTimeoutRetries);
-
-        }
-        /// <summary>
-        /// Entry method to kick off a build.
-        /// This overload should be used for the console based threaded execution of a build.
-        /// </summary>
-        /// <param name="runData"></param>
-        /// <param name="bgWorker"></param>
-        /// <param name="e"></param>
-        /// <param name="scriptBatchColl"></param>
-        [Obsolete("Use ProcessBuild(SqlSync.SqlBuild.Models.SqlBuildRunDataModel, ...)")]
-        public void ProcessBuild(SqlBuildRunData runData, BackgroundWorker bgWorker, DoWorkEventArgs e, ScriptBatchCollection scriptBatchColl, string buildRequestedBy, int allowableTimeoutRetries)
-        {
-            connectDictionary.Clear();
-            committedScripts.Clear();
-            this.buildRequestedBy = buildRequestedBy;
-
-            var model = new BuildModels.SqlBuildRunDataModel(
-                BuildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
-                BuildType: runData.BuildType,
-                Server: runData.Server ?? connData.SQLServerName,
-                BuildDescription: runData.BuildDescription,
-                StartIndex: runData.StartIndex,
-                ProjectFileName: runData.ProjectFileName,
-                IsTrial: runData.IsTrial,
-                RunItemIndexes: runData.RunItemIndexes ?? Array.Empty<double>(),
-                RunScriptOnly: runData.RunScriptOnly,
-                BuildFileName: runData.BuildFileName,
-                LogToDatabaseName: runData.LogToDatabaseName,
-                IsTransactional: runData.IsTransactional,
-                PlatinumDacPacFileName: runData.PlatinumDacPacFileName,
-                TargetDatabaseOverrides: runData.TargetDatabaseOverrides,
-                ForceCustomDacpac: runData.ForceCustomDacpac,
-                BuildRevision: runData.BuildRevision,
-                DefaultScriptTimeout: runData.DefaultScriptTimeout,
-                AllowObjectDelete: runData.AllowObjectDelete);
-            ProcessBuild(model, bgWorker, e, connData.SQLServerName, false, scriptBatchColl, allowableTimeoutRetries);
-        }
-
-        public BuildModels.Build ProcessBuild(BuildModels.SqlBuildRunDataModel runData, int allowableTimeoutRetries, BackgroundWorker bgWorker, DoWorkEventArgs e)
-        {
-            connectDictionary.Clear();
-            committedScripts.Clear();
-
-            return ProcessBuild(runData, bgWorker, e, connData.SQLServerName, false, null, allowableTimeoutRetries);
-        }
-
-        public BuildModels.Build ProcessBuild(BuildModels.SqlBuildRunDataModel runData, BackgroundWorker bgWorker, DoWorkEventArgs e, ScriptBatchCollection scriptBatchColl, string buildRequestedBy, int allowableTimeoutRetries)
-        {
-            connectDictionary.Clear();
-            committedScripts.Clear();
-            this.buildRequestedBy = buildRequestedBy;
-
-            return ProcessBuild(runData, bgWorker, e, connData.SQLServerName, false, scriptBatchColl, allowableTimeoutRetries);
-        }
-        /// <summary>
-        /// Sets the parameters for the build run 
-        /// </summary>
-        /// <param name="workEventArgs"></param>
-        [Obsolete("Use PrepareBuildForRun(BuildModels.SqlSyncBuildDataModel, ...) for POCO workflows")] 
-        internal void PrepareBuildForRun(string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, SqlSyncBuildData buildData, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
-        {
-            try
-            {
-                EnsureBgWorker();
- 
-            //Make sure the project file is not read-only
-            if (File.Exists(projectFileName))
-            {
-                File.SetAttributes(projectFileName, System.IO.FileAttributes.Normal);
-            }
-            else
-            {
-                log.LogError($"[PrepareBuildForRun] projectFileName does not exist: '{projectFileName}'");
-            }
-                if (string.IsNullOrWhiteSpace(projectFilePath))
-                {
-                    if (!string.IsNullOrWhiteSpace(projectFileName))
-                    {
-                        projectFilePath = Path.GetDirectoryName(projectFileName);
-                    }
-                    if (string.IsNullOrWhiteSpace(projectFilePath))
-                    {
-                        projectFilePath = Path.GetTempPath();
-                    }
-                }
-                buildHistoryXmlFile = Path.Combine(projectFilePath, SqlBuild.XmlFileNames.HistoryFile);
-                log.LogDebug($"[PrepareBuildForRun] projectFilePath='{projectFilePath}'");
-
-            //Set the file name for the script log
-            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Creating Script Log File"));
-            scriptLogFileName = Path.Combine(projectFilePath, "LogFile-" + DateTime.Now.Year.ToString() + "-" + DateTime.Now.Month.ToString().PadLeft(2, '0') + "-" + DateTime.Now.Day.ToString().PadLeft(2, '0') + " at " + DateTime.Now.Hour.ToString().PadLeft(2, '0') + "_" + DateTime.Now.Minute.ToString().PadLeft(2, '0') + "_" + DateTime.Now.Second.ToString().PadLeft(2, '0') + ".log");
-
-            //Get a new build row
-            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Generating Build Record"));
-
-            buildHistoryXmlFile = Path.Combine(projectFilePath, SqlBuild.XmlFileNames.HistoryFile);
-                myBuild = GetNewBuildRow(serverName);
-            log.LogDebug($"[PrepareBuildForRun] myBuild created? {myBuild != null}");
-            myBuild.UserId = System.Environment.UserName;
-
-            //Read scripting configuration
-            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Reading Scripting configuration"));
-                SqlSyncBuildData.ScriptDataTable scriptTable = GetScriptSourceTable(buildData);
-                    log.LogDebug($"[PrepareBuildForRun] scriptTable null? {scriptTable == null}");
-
-            if (scriptTable == null)
-            {
-                bgWorker.ReportProgress(0, new GeneralStatusEventArgs("ERROR Reading <script> element in config template"));
-                filteredScripts = null;
-                if (isMultiDbRun)
-                    myBuild.FinalStatus = BuildItemStatus.PendingRollBack;
-                else
-                    myBuild.FinalStatus = BuildItemStatus.RolledBack;
-
-                return;
-            }
-
-            //Get View
-                filteredScripts = scriptTable.DefaultView;
-                log.LogDebug($"[PrepareBuildForRun] filteredScripts null? {filteredScripts == null}");
-            //Sort by Build order column
-            filteredScripts.Sort = scriptTable.BuildOrderColumn.ColumnName + " ASC ";
-            //Filter by BuildOrder >= start index
-            if (runItemIndexes.Length > 0)
-            {
-                //get the values
-                string list = "";
-                for (int i = 0; i < runItemIndexes.Length; i++)
-                    list += runItemIndexes[i].ToString() + ",";
-                list = list.Substring(0, list.Length - 1);
-                filteredScripts.RowFilter = scriptTable.BuildOrderColumn.ColumnName + " IN (" + list + ")";
-            }
-            else
-            {
-                filteredScripts.RowFilter = scriptTable.BuildOrderColumn.ColumnName + " >=" + startIndex.ToString();
-            }
-
-            //Get the build hash value for use in logging to the databae
-            if (scriptBatchColl == null)
-                buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFilePath, buildData);
-            else
-                buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
-
-            log.LogInformation($"Prepared build for run. Build Package hash = {buildPackageHash}");
-            }
-            catch (Exception ex)
-            {
-                log.LogError($"[PrepareBuildForRun] Exception: {ex}");
-                throw;
-            }
-        }
 
         internal BuildPreparationResult PrepareBuildForRun(BuildModels.SqlSyncBuildDataModel buildDataModelParam, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
         {
@@ -833,18 +599,7 @@ namespace SqlSync.SqlBuild
             return runner.Run(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref workEventArgs);
         }
 
-        // Compatibility overload for callers/tests that do not track DoWorkEventArgs
-        internal BuildModels.Build RunBuildScripts(
-            IReadOnlyList<BuildModels.Script> scripts,
-            BuildModels.Build myBuild,
-            string serverName,
-            bool isMultiDbRun,
-            ScriptBatchCollection scriptBatchColl,
-            BuildModels.SqlSyncBuildDataModel buildDataModel)
-        {
-            var workEventArgs = new DoWorkEventArgs(null);
-            return RunBuildScripts(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref workEventArgs);
-        }
+    
 
         private void ResetConnectionsForRetry()
         {
@@ -860,54 +615,6 @@ namespace SqlSync.SqlBuild
             catch { }
             connectDictionary.Clear();
             committedScripts.Clear();
-        }
-
-        [Obsolete("Use RunBuildScripts(IReadOnlyList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs)")]
-        internal SqlSyncBuildData.BuildRow RunBuildScriptsLegacy(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
-        {
-            var ds = BuildDataModel.ToDataSet();
-            return RunBuildScriptsLegacy(view, myBuild, serverName, isMultiDbRun, scriptBatchColl, ds, ref workEventArgs);
-        }
-
-        // Backwards-compatible overload for legacy DataSet callers (used by Dependent tests)
-        [Obsolete("Use RunBuildScripts(IReadOnlyList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs)")]
-        internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
-        {
-            return RunBuildScriptsLegacy(view, myBuild, serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
-        }
-
-        /// <summary>
-        /// Method that performs the splitting of the scripts into their batch and then executes the scripts
-        /// </summary>
-        /// <param name="view">The filtered list of scripts to run</param>
-        /// <param name="myBuild">The build row that has been prepared and is used to contain the build history data</param>
-        /// <param name="serverName">The name of the server that will be used for the build</param>
-        /// <param name="workEventArgs"></param>
-        [Obsolete("Use RunBuildScripts(IReadOnlyList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs)")]
-        internal SqlSyncBuildData.BuildRow RunBuildScriptsLegacy(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, SqlSyncBuildData buildData, ref DoWorkEventArgs workEventArgs)
-        {
-            buildDataModel = buildData?.ToModel() ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-
-            var myBuildModel = MapLegacyBuildRowToModel(myBuild);
-            if (!(buildDataModel.Build?.Any(b => b.Build_Id == myBuildModel.Build_Id) ?? false))
-            {
-                var builds = buildDataModel.Build.ToList();
-                builds.Add(myBuildModel);
-                buildDataModel = buildDataModel with { Build = builds };
-            }
-
-            var scripts = new List<BuildModels.Script>();
-            foreach (DataRowView drv in view)
-            {
-                if (drv.Row is SqlSyncBuildData.ScriptRow row)
-                    scripts.Add(MapLegacyScriptRowToModel(row));
-            }
-
-            var result = RunBuildScripts(scripts, myBuildModel, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref workEventArgs);
-
-            var ds = buildDataModel.ToDataSet();
-            var updated = ds.Build.FirstOrDefault(b => b.Build_Id == result.Build_Id);
-            return updated ?? myBuild;
         }
 
         internal BuildModels.Build PerformRunScriptFinalization(bool buildFailure, BuildModels.Build myBuild, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs)
@@ -1146,49 +853,7 @@ namespace SqlSync.SqlBuild
 
             connectDictionary.Clear();
         }
-        /// <summary>
-        /// Adds the record of the scripts that have been executed into the CommittedScript list.
-        /// Also calls LogCommittedScriptsToDatabase to update the SqlBuild_Logging table
-        /// </summary>
-        /// <param name="committedScriptIds"></param>
-        /// <returns></returns>
-        [Obsolete("Use RecordCommittedScripts(List<SqlLogging.CommittedScript>, SqlSyncBuildDataModel, out SqlSyncBuildDataModel) for POCO entry")] 
-        internal bool RecordCommittedScripts(List<CommittedScript> committedScripts)
-        {
-            var model = buildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var ok = RecordCommittedScripts(committedScripts, model, out var updated);
-            buildDataModel = updated;
-            // Back-compat: update original DataSet if available
-            if (buildDataCompat != null && committedScripts != null)
-            {
-                try
-                {
-                    foreach (var cs in committedScripts)
-                    {
-                        var row = buildDataCompat.CommittedScript.NewCommittedScriptRow();
-                        row.ScriptId = cs.ScriptId.ToString();
-                        row.ServerName = cs.ServerName;
-                        row.AllowScriptBlock = true;
-                        if (cs.FileHash != null)
-                            row.ScriptHash = cs.FileHash;
-                        row.CommittedDate = DateTime.Now;
-                        // Set project id if exists
-                        if (buildDataCompat.SqlSyncBuildProject?.Rows.Count > 0 && buildDataCompat.CommittedScript.Columns.Contains("SqlSyncBuildProject_Id"))
-                        {
-                            row.SqlSyncBuildProject_Id = ((SqlSyncBuildData.SqlSyncBuildProjectRow)buildDataCompat.SqlSyncBuildProject.Rows[0]).SqlSyncBuildProject_Id;
-                        }
-                        buildDataCompat.CommittedScript.AddCommittedScriptRow(row);
-                    }
-                    buildDataCompat.CommittedScript.AcceptChanges();
-                }
-                catch (Exception ex)
-                {
-                    log.LogWarning(ex, "Unable to update compatibility DataSet in RecordCommittedScripts");
-                }
-            }
-            return ok;
-        }
-
+ 
         internal bool RecordCommittedScripts(List<CommittedScript> committedScripts, BuildModels.SqlSyncBuildDataModel buildDataModel, out BuildModels.SqlSyncBuildDataModel updatedModel)
         {
             var model = buildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -1730,6 +1395,11 @@ namespace SqlSync.SqlBuild
 
         #region ## Script File Batching & IO Helper Methods ##
         #region New File Batching with Regex - honors text in comments
+        public static List<string> ReadBatchFromScriptText(string[] scriptLines, bool stripTransaction, bool maintainBatchDelimiter)
+        {
+            var stringContents = string.Join(Environment.NewLine, scriptLines);
+            return ReadBatchFromScriptText(stringContents, stripTransaction, maintainBatchDelimiter);
+        }
         public static List<string> ReadBatchFromScriptText(string scriptContents, bool stripTransaction, bool maintainBatchDelimiter)
         {
             List<string> list = new List<string>();
@@ -1852,7 +1522,11 @@ namespace SqlSync.SqlBuild
             return list;
 
         }
-
+        public static string[] ReadBatchFromScript(string scriptContents, bool stripTransaction, bool maintainBatchDelimiter)
+        {
+            //string[] scriptLines = scriptContents.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+            return ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter).ToArray();
+        }
         private static List<KeyValuePair<Match, int>> FindActiveBatchDelimiters(string scriptContents)
         {
             //Regex for delimiter
@@ -1978,88 +1652,8 @@ namespace SqlSync.SqlBuild
             return batchNew;
 
         }
-        [Obsolete("This method is only meant for use in backward compatability testing", false)]
-        public static string[] ReadBatchFromScript(bool stripTransaction, bool maintainBatchDelimiter, string scriptContents)
-        {
-            string[] scriptLines = scriptContents.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-            return ReadBatchFromScriptText(stripTransaction, maintainBatchDelimiter, scriptLines);
-        }
-        [Obsolete("This method has been replaced with ReadBatchFromScriptText(string scriptContents, bool stripTransaction, bool maintainBatchDelimiter)", false)]
-        public static string[] ReadBatchFromScriptText(bool stripTransaction, bool maintainBatchDelimiter, string[] scriptLines)
-        {
-            StringBuilder sb = new StringBuilder();
-            string completeScript = string.Empty;
-            string currentLine = string.Empty;
-            List<string> list = new List<string>();
-            Regex usingStatement = new Regex("use \\S+", RegexOptions.IgnoreCase);
-            for (int i = 0; i < scriptLines.Length; i++)
-            {
-                currentLine = scriptLines[i];
-                if (currentLine.Trim().ToUpper() == BatchParsing.Delimiter && sb.Length != 0)
-                {
-                    if (maintainBatchDelimiter)
-                        sb.Append(currentLine + "\r\n");
-
-                    list.Add(sb.ToString());
-                    sb.Length = 0;
-                }
-                else
-                {
-
-                    if (stripTransaction)
-                    {
-
-                        currentLine = currentLine.Replace("BEGIN TRANSACTION", "");
-                        currentLine = currentLine.Replace("BEGIN TRAN", "");
-                        currentLine = currentLine.Replace("ROLLBACK TRANSACTION", "");
-                        currentLine = currentLine.Replace("ROLLBACK TRAN", "");
-                        currentLine = currentLine.Replace("COMMIT TRANSACTION", "");
-                        currentLine = currentLine.Replace("COMMIT TRAN", "");
-                        currentLine = currentLine.Replace("COMMIT", "");
-                        currentLine = currentLine.Replace("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE", "");
-                    }
-
-                    //remove any "using" directives that could change the target database for the script. The build definition should be used instead
-                    if (usingStatement.Match(currentLine).Success)
-                    {
-                        // if the match is the only thing on this line, then is is a true "using" statement, so remove it...
-                        if (currentLine.Trim().Length == usingStatement.Match(currentLine).Value.Length)
-                            currentLine = "";
-                    }
-                    sb.Append(currentLine + "\r\n");
-                }
-
-            }
-            if (sb.ToString().Trim().Length > 0)
-            {
-                list.Add(sb.ToString());
-            }
-            string[] batch = list.ToArray();
-            if (batch.Length > 0 && batch[batch.Length - 1].Length >= 2)
-            {
-                //Trim the last carriage return off the last item
-                batch[batch.Length - 1] = batch[batch.Length - 1].Substring(0, batch[batch.Length - 1].Length - 2);
-            }
-            return batch;
-        }
 
         #endregion
-        public static ScriptBatchCollection LoadAndBatchSqlScripts(SqlSyncBuildData buildData, string projectFilePath)
-        {
-            ScriptBatchCollection coll = new ScriptBatchCollection();
-            SqlSyncBuildData.ScriptDataTable scriptTable = SqlBuildHelper.GetScriptSourceTable(buildData);
-            DataView view = scriptTable.DefaultView;
-            view.Sort = scriptTable.BuildOrderColumn.ColumnName + " ASC ";
-            for (int i = 0; i < view.Count; i++)
-            {
-                SqlSyncBuildData.ScriptRow myRow = (SqlSyncBuildData.ScriptRow)view[i].Row;
-                string[] batchScripts = SqlBuildHelper.ReadBatchFromScriptFile(Path.Combine(projectFilePath, myRow.FileName), myRow.StripTransactionText, false);
-
-                ScriptBatch batch = new ScriptBatch(myRow.FileName, batchScripts, myRow.ScriptId);
-                coll.Add(batch);
-            }
-            return coll;
-        }
 
         public static ScriptBatchCollection LoadAndBatchSqlScripts(BuildModels.SqlSyncBuildDataModel model, string projectFilePath)
         {
@@ -2196,209 +1790,9 @@ namespace SqlSync.SqlBuild
 
             sqlInfoMessage += messages.ToString();
         }
-        //public bool TestDatabaseConnection(string databaseName)
-        //{
-        //    BuildConnectData cData = new BuildConnectData();
-        //    try
-        //    {
-        //        cData.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName,this.connData.SQLServerName,this.connData.UserId,this.connData.Password,connData.UseWindowAuthentication,this.connData.ScriptTimeout);
-        //        cData.Connection.Open();
-
-        //        return true;
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        string error = ex.Message;
-        //    }
-        //    finally
-        //    {
-        //        if( cData != null )
-        //            cData.Connection.Close();
-        //        cData = null;
-        //    }
-
-        //    return false;
-        //}
         #endregion
 
-        #region ## DataSet Handling Helper Methods ##
-        private SqlSyncBuildData.BuildRow GetNewBuildRow(string serverName)
-        {
-            if (File.Exists(buildHistoryXmlFile) == false)
-                buildHistoryData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel().ToDataSet();
-            else
-            {
-                buildHistoryData = new SqlSyncBuildData();
-                buildHistoryData.ReadXml(buildHistoryXmlFile);
-            }
-
-            // keep POCO history in sync when loading persisted build history
-            try
-            {
-                buildHistoryModel = buildHistoryData.ToModel();
-            }
-            catch (Exception ex)
-            {
-                log.LogWarning(ex, "Unable to convert buildHistoryData to model; using empty model");
-                buildHistoryModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            }
-
-
-            //Create a root Project row if needed
-            if (buildHistoryData.SqlSyncBuildProject.Rows.Count == 0)
-                buildHistoryData.SqlSyncBuildProject.AddSqlSyncBuildProjectRow("", false);
-
-            SqlSyncBuildData.SqlSyncBuildProjectRow projRow = (SqlSyncBuildData.SqlSyncBuildProjectRow)buildHistoryData.SqlSyncBuildProject.Rows[0];
-
-            //Create a builds row if needed
-            if (buildHistoryData.Builds.Rows.Count == 0)
-                buildHistoryData.Builds.AddBuildsRow(projRow);
-
-            SqlSyncBuildData.BuildsRow buildsRow = (SqlSyncBuildData.BuildsRow)buildHistoryData.Builds.Rows[0];
-
-            //Set build id
-            currentBuildId = System.Guid.NewGuid();
-
-            //Create a build row for the new build
-            SqlSyncBuildData.BuildDataTable buildTable = buildHistoryData.Build;
-            SqlSyncBuildData.BuildRow myBuild = buildTable.NewBuildRow();
-            myBuild.BuildsRow = buildsRow;
-            myBuild.Name = buildDescription;
-            myBuild.BuildType = buildType;
-            myBuild.BuildStart = DateTime.Now;
-            myBuild.ServerName = serverName;
-            myBuild.BuildId = currentBuildId.ToString();
-
-            buildTable.AddBuildRow(myBuild);
-            return myBuild;
-        }
-
-        [Obsolete("Use AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild)")]
-        private void AddScriptRunToHistory(BuildModels.ScriptRun run, SqlSyncBuildData.BuildRow myBuild)
-        {
-            if (run == null) return;
-            // append to POCO history
-            buildHistoryModel = buildHistoryModel with { ScriptRun = buildHistoryModel.ScriptRun.Concat(new[] { run }).ToList() };
-
-            // maintain dataset for compatibility
-            if (buildHistoryData == null)
-            {
-                buildHistoryData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel().ToDataSet();
-            }
-            var row = buildHistoryData.ScriptRun.NewScriptRunRow();
-            row.BuildRow = myBuild;
-            row.Database = run.Database;
-            row.RunOrder = run.RunOrder ?? 0;
-            row.RunStart = run.RunStart ?? DateTime.MinValue;
-            row.FileName = run.FileName;
-            row.ScriptRunId = run.ScriptRunId;
-            if (run.FileHash != null) row.FileHash = run.FileHash;
-            if (run.RunEnd.HasValue) row.RunEnd = run.RunEnd.Value;
-            if (run.Success.HasValue) row.Success = run.Success.Value;
-            if (run.Results != null) row.Results = run.Results;
-            buildHistoryData.ScriptRun.AddScriptRunRow(row);
-            buildHistoryData.AcceptChanges();
-        }
-
-        private void AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild)
-        {
-            if (run == null) return;
-            buildHistoryModel = buildHistoryModel with { ScriptRun = buildHistoryModel.ScriptRun.Concat(new[] { run }).ToList() };
-            // optionally keep dataset for compatibility
-            if (buildHistoryData != null)
-            {
-                var row = buildHistoryData.ScriptRun.NewScriptRunRow();
-                row.Database = run.Database;
-                row.RunOrder = run.RunOrder ?? 0;
-                row.RunStart = run.RunStart ?? DateTime.MinValue;
-                row.FileName = run.FileName;
-                row.ScriptRunId = run.ScriptRunId;
-                if (run.FileHash != null) row.FileHash = run.FileHash;
-                if (run.RunEnd.HasValue) row.RunEnd = run.RunEnd.Value;
-                if (run.Success.HasValue) row.Success = run.Success.Value;
-                if (run.Results != null) row.Results = run.Results;
-                buildHistoryData.ScriptRun.AddScriptRunRow(row);
-                buildHistoryData.AcceptChanges();
-            }
-        }
-
-        /// <summary>
-        /// Retrieves the ScriptRows from the SqlSyncBuildData object and imports them into a new ScriptDataTable
-        /// This leaves the original object in tact.
-        /// </summary>
-        /// <returns>SqlSyncBuildData.ScriptDataTable populated with the ScriptRows from the SqlSyncBuildData object</returns>
-            public static SqlSyncBuildData.ScriptDataTable GetScriptSourceTable(SqlSyncBuildData buildData)
-        {
-            if (buildData == null)
-            {
-                log.LogWarning("The SqlSyncBuildData object passed into \"GetScriptSourceTable\" was null. Unable to process build");
-                return null;
-            }
-            if (buildData.Script == null)
-            {
-                log.LogWarning("The SqlSyncBuildData.ScriptTable object passed into \"GetScriptSourceTable\" was null. Unable to process build");
-                return null;
-            }
-
-            try
-            {
-                IEnumerable<SqlSyncBuildData.ScriptRow> scriptRows = from s in buildData.Script select s;
-                if (scriptRows.Count() > 0)
-                {
-                    SqlSyncBuildData.ScriptDataTable scriptTable = new SqlSync.SqlBuild.SqlSyncBuildData.ScriptDataTable();
-                    foreach (SqlSyncBuildData.ScriptRow r in scriptRows)
-                    {
-                        scriptTable.ImportRow(r);
-                    }
-                    return scriptTable;
-                }
-            }
-            catch (Exception exe)
-            {
-                log.LogError(exe, "Unable to get script rows from SqlSyncBuildData object");
-            }
-            return null;
-        }
-
-        public static SqlSyncBuildData.ScriptDataTable GetScriptSourceTable(BuildModels.SqlSyncBuildDataModel buildDataModel)
-        {
-            if (buildDataModel == null)
-            {
-                log.LogWarning("The SqlSyncBuildDataModel object passed into \"GetScriptSourceTable\" was null. Unable to process build");
-                return null;
-            }
-
-            var ds = buildDataModel.ToDataSet();
-            return GetScriptSourceTable(ds);
-        }
-        internal void SaveBuildDataSet(bool fireSavedEvent)
-        {
-            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Saving Build File Updates"));
-
-            if (projectFileName == null || projectFileName.Length == 0)
-            {
-                string message = "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.";
-                bgWorker.ReportProgress(0, new GeneralStatusEventArgs(message));
-                throw new ArgumentException(message);
-            }
-
-            SqlBuildFileHelper.SaveSqlBuildProjectFile(buildDataModel, projectFileName, buildFileName, includeHistoryAndLogs: true);
-
-
-            if (buildHistoryXmlFile == null || buildHistoryXmlFile.Length == 0)
-            {
-                string message = "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.";
-                bgWorker.ReportProgress(0, new GeneralStatusEventArgs(message));
-                throw new ArgumentException(message);
-            }
-
-            if (buildHistoryData != null)
-                buildHistoryData.WriteXml(buildHistoryXmlFile);
-
-            if (fireSavedEvent)
-                bgWorker.ReportProgress(0, new ScriptRunProjectFileSavedEventArgs(true));
-        }
-        #endregion
+        
 
         #region ## Events ##
         public event ScriptLogWriteEventHandler ScriptLogWriteEvent;
@@ -2533,6 +1927,68 @@ namespace SqlSync.SqlBuild
             return script;
         }
 
+        internal void SaveBuildDataSet(bool fireSavedEvent)
+        {
+            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Saving Build File Updates"));
+
+            if (projectFileName == null || projectFileName.Length == 0)
+            {
+                string message = "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.";
+                bgWorker.ReportProgress(0, new GeneralStatusEventArgs(message));
+                throw new ArgumentException(message);
+            }
+
+            SqlBuildFileHelper.SaveSqlBuildProjectFile(buildDataModel, projectFileName, buildFileName, includeHistoryAndLogs: true);
+
+
+            if (buildHistoryXmlFile == null || buildHistoryXmlFile.Length == 0)
+            {
+                string message = "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.";
+                bgWorker.ReportProgress(0, new GeneralStatusEventArgs(message));
+                throw new ArgumentException(message);
+            }
+
+            if (buildHistoryData != null)
+                buildHistoryData.WriteXml(buildHistoryXmlFile);
+
+            if (fireSavedEvent)
+                bgWorker.ReportProgress(0, new ScriptRunProjectFileSavedEventArgs(true));
+        }
+
+        private void AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild)
+        {
+            if (run == null) return;
+            buildHistoryModel = buildHistoryModel with { ScriptRun = buildHistoryModel.ScriptRun.Concat(new[] { run }).ToList() };
+            // optionally keep dataset for compatibility
+            if (buildHistoryData != null)
+            {
+                var row = buildHistoryData.ScriptRun.NewScriptRunRow();
+                row.Database = run.Database;
+                row.RunOrder = run.RunOrder ?? 0;
+                row.RunStart = run.RunStart ?? DateTime.MinValue;
+                row.FileName = run.FileName;
+                row.ScriptRunId = run.ScriptRunId;
+                if (run.FileHash != null) row.FileHash = run.FileHash;
+                if (run.RunEnd.HasValue) row.RunEnd = run.RunEnd.Value;
+                if (run.Success.HasValue) row.Success = run.Success.Value;
+                if (run.Results != null) row.Results = run.Results;
+                buildHistoryData.ScriptRun.AddScriptRunRow(row);
+                buildHistoryData.AcceptChanges();
+            }
+        }
+
+        public static SqlSyncBuildData.ScriptDataTable GetScriptSourceTable(BuildModels.SqlSyncBuildDataModel buildDataModel)
+        {
+            if (buildDataModel == null)
+            {
+                log.LogWarning("The SqlSyncBuildDataModel object passed into \"GetScriptSourceTable\" was null. Unable to process build");
+                return null;
+            }
+
+            var ds = buildDataModel.ToDataSet();
+            return GetScriptSourceTable(ds.ToModel());
+        }
+
         #region ISqlBuildRunnerContext
         ILogger ISqlBuildRunnerContext.Log => log;
         BackgroundWorker ISqlBuildRunnerContext.BgWorker => bgWorker;
@@ -2556,5 +2012,630 @@ namespace SqlSync.SqlBuild
         BuildModels.Build ISqlBuildRunnerContext.PerformRunScriptFinalization(bool buildFailure, BuildModels.Build myBuild, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs) => PerformRunScriptFinalization(buildFailure, myBuild, buildDataModel, ref workEventArgs);
         void ISqlBuildRunnerContext.PublishScriptLog(bool isError, ScriptLogEventArgs args) => ScriptLogWriteEvent?.Invoke(null, isError, args);
         #endregion
+
+        #region Obsolete methods -- to be deleted in the future
+        ///// <summary>
+        ///// Private method that kicks off a build. 
+        ///// This overload does NOT clear out the committedScripts list collection and should be used for MultiDb runs
+        ///// </summary>
+        ///// <param name="runData">Run configuration data</param>
+        ///// <param name="bgWorker">Worker object that will report status</param>
+        ///// <param name="e">DoWorkEventArgs that will return state</param>
+        ///// <param name="serverName">Server to execute against</param>
+        ///// <param name="isMultiDbRun">Whether or not this is a UI based multi-database execution run</param>
+        ///// <param name="scriptBatchColl">Pre-batched script collection. Provided by console based threaded execution</param>
+        ///// <returns>BuildRow object with the result data.</returns>
+        //[Obsolete("Use ProcessBuild(SqlSync.SqlBuild.Models.SqlBuildRunDataModel, ...)")]
+        //internal SqlSyncBuildData.BuildRow ProcessBuild(SqlBuildRunData runData, BackgroundWorker bgWorker, DoWorkEventArgs e, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, int allowableTimeoutRetries)
+        //{
+        //    this.bgWorker = bgWorker;
+        //    ErrorOccured = false;
+        //    var model = new BuildModels.SqlBuildRunDataModel(
+        //        BuildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
+        //        BuildType: runData.BuildType,
+        //        Server: serverName,
+        //        BuildDescription: runData.BuildDescription,
+        //        StartIndex: runData.StartIndex,
+        //        ProjectFileName: runData.ProjectFileName,
+        //        IsTrial: runData.IsTrial,
+        //        RunItemIndexes: runData.RunItemIndexes ?? Array.Empty<double>(),
+        //        RunScriptOnly: runData.RunScriptOnly,
+        //        BuildFileName: runData.BuildFileName,
+        //        LogToDatabaseName: runData.LogToDatabaseName,
+        //        IsTransactional: runData.IsTransactional,
+        //        PlatinumDacPacFileName: runData.PlatinumDacPacFileName,
+        //        TargetDatabaseOverrides: runData.TargetDatabaseOverrides,
+        //        ForceCustomDacpac: runData.ForceCustomDacpac,
+        //        BuildRevision: runData.BuildRevision,
+        //        DefaultScriptTimeout: runData.DefaultScriptTimeout,
+        //        AllowObjectDelete: runData.AllowObjectDelete);
+
+        //    var result = ProcessBuild(model, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+        //    var ds = buildDataModel?.ToDataSet() ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel().ToDataSet();
+        //    return ds.Build.Count > 0 ? ds.Build[ds.Build.Count - 1] : ds.Build.NewBuildRow();
+        //}
+
+
+        ///// <summary>
+        ///// Entry method to kick off a build.
+        ///// This overload should be used for single server runs as it clears out the committedScript List collection
+        ///// </summary>
+        ///// <param name="runData"></param>
+        ///// <param name="bgWorker"></param>
+        ///// <param name="e"></param>
+        //[Obsolete("Use ProcessBuild(SqlSync.SqlBuild.Models.SqlBuildRunDataModel, ...)")]
+        //public void ProcessBuild(SqlBuildRunData runData, int allowableTimeoutRetries, BackgroundWorker bgWorker, DoWorkEventArgs e)
+        //{
+        //    connectDictionary.Clear();
+        //    committedScripts.Clear();
+
+        //    var model = new BuildModels.SqlBuildRunDataModel(
+        //        BuildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
+        //        BuildType: runData.BuildType,
+        //        Server: runData.Server ?? connData.SQLServerName,
+        //        BuildDescription: runData.BuildDescription,
+        //        StartIndex: runData.StartIndex,
+        //        ProjectFileName: runData.ProjectFileName,
+        //        IsTrial: runData.IsTrial,
+        //        RunItemIndexes: runData.RunItemIndexes ?? Array.Empty<double>(),
+        //        RunScriptOnly: runData.RunScriptOnly,
+        //        BuildFileName: runData.BuildFileName,
+        //        LogToDatabaseName: runData.LogToDatabaseName,
+        //        IsTransactional: runData.IsTransactional,
+        //        PlatinumDacPacFileName: runData.PlatinumDacPacFileName,
+        //        TargetDatabaseOverrides: runData.TargetDatabaseOverrides,
+        //        ForceCustomDacpac: runData.ForceCustomDacpac,
+        //        BuildRevision: runData.BuildRevision,
+        //        DefaultScriptTimeout: runData.DefaultScriptTimeout,
+        //        AllowObjectDelete: runData.AllowObjectDelete);
+        //    ProcessBuild(model, bgWorker, e, connData.SQLServerName, false, null, allowableTimeoutRetries);
+
+        //}
+        ///// <summary>
+        ///// Entry method to kick off a build.
+        ///// This overload should be used for the console based threaded execution of a build.
+        ///// </summary>
+        ///// <param name="runData"></param>
+        ///// <param name="bgWorker"></param>
+        ///// <param name="e"></param>
+        ///// <param name="scriptBatchColl"></param>
+        //[Obsolete("Use ProcessBuild(SqlSync.SqlBuild.Models.SqlBuildRunDataModel, ...)")]
+        //public void ProcessBuild(SqlBuildRunData runData, BackgroundWorker bgWorker, DoWorkEventArgs e, ScriptBatchCollection scriptBatchColl, string buildRequestedBy, int allowableTimeoutRetries)
+        //{
+        //    connectDictionary.Clear();
+        //    committedScripts.Clear();
+        //    this.buildRequestedBy = buildRequestedBy;
+
+        //    var model = new BuildModels.SqlBuildRunDataModel(
+        //        BuildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
+        //        BuildType: runData.BuildType,
+        //        Server: runData.Server ?? connData.SQLServerName,
+        //        BuildDescription: runData.BuildDescription,
+        //        StartIndex: runData.StartIndex,
+        //        ProjectFileName: runData.ProjectFileName,
+        //        IsTrial: runData.IsTrial,
+        //        RunItemIndexes: runData.RunItemIndexes ?? Array.Empty<double>(),
+        //        RunScriptOnly: runData.RunScriptOnly,
+        //        BuildFileName: runData.BuildFileName,
+        //        LogToDatabaseName: runData.LogToDatabaseName,
+        //        IsTransactional: runData.IsTransactional,
+        //        PlatinumDacPacFileName: runData.PlatinumDacPacFileName,
+        //        TargetDatabaseOverrides: runData.TargetDatabaseOverrides,
+        //        ForceCustomDacpac: runData.ForceCustomDacpac,
+        //        BuildRevision: runData.BuildRevision,
+        //        DefaultScriptTimeout: runData.DefaultScriptTimeout,
+        //        AllowObjectDelete: runData.AllowObjectDelete);
+        //    ProcessBuild(model, bgWorker, e, connData.SQLServerName, false, scriptBatchColl, allowableTimeoutRetries);
+        //}
+
+
+
+        //[Obsolete("Use RunBuildScripts(IReadOnlyList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs)")]
+        //internal SqlSyncBuildData.BuildRow RunBuildScriptsLegacy(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
+        //{
+        //    var ds = BuildDataModel.ToDataSet();
+        //    return RunBuildScriptsLegacy(view, myBuild, serverName, isMultiDbRun, scriptBatchColl, ds, ref workEventArgs);
+        //}
+
+        //// Backwards-compatible overload for legacy DataSet callers (used by Dependent tests)
+        //[Obsolete("Use RunBuildScripts(IReadOnlyList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs)")]
+        //internal SqlSyncBuildData.BuildRow RunBuildScripts(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
+        //{
+        //    return RunBuildScriptsLegacy(view, myBuild, serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+        //}
+
+        ///// <summary>
+        ///// Method that performs the splitting of the scripts into their batch and then executes the scripts
+        ///// </summary>
+        ///// <param name="view">The filtered list of scripts to run</param>
+        ///// <param name="myBuild">The build row that has been prepared and is used to contain the build history data</param>
+        ///// <param name="serverName">The name of the server that will be used for the build</param>
+        ///// <param name="workEventArgs"></param>
+        //[Obsolete("Use RunBuildScripts(IReadOnlyList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs)")]
+        //internal SqlSyncBuildData.BuildRow RunBuildScriptsLegacy(DataView view, SqlSyncBuildData.BuildRow myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, SqlSyncBuildData buildData, ref DoWorkEventArgs workEventArgs)
+        //{
+        //    buildDataModel = buildData?.ToModel() ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+
+        //    var myBuildModel = MapLegacyBuildRowToModel(myBuild);
+        //    if (!(buildDataModel.Build?.Any(b => b.Build_Id == myBuildModel.Build_Id) ?? false))
+        //    {
+        //        var builds = buildDataModel.Build.ToList();
+        //        builds.Add(myBuildModel);
+        //        buildDataModel = buildDataModel with { Build = builds };
+        //    }
+
+        //    var scripts = new List<BuildModels.Script>();
+        //    foreach (DataRowView drv in view)
+        //    {
+        //        if (drv.Row is SqlSyncBuildData.ScriptRow row)
+        //            scripts.Add(MapLegacyScriptRowToModel(row));
+        //    }
+
+        //    var result = RunBuildScripts(scripts, myBuildModel, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref workEventArgs);
+
+        //    var ds = buildDataModel.ToDataSet();
+        //    var updated = ds.Build.FirstOrDefault(b => b.Build_Id == result.Build_Id);
+        //    return updated ?? myBuild;
+        //}
+
+        ///// <summary>
+        ///// Sets the parameters for the build run 
+        ///// </summary>
+        ///// <param name="workEventArgs"></param>
+        //[Obsolete("Use PrepareBuildForRun(BuildModels.SqlSyncBuildDataModel, ...) for POCO workflows")]
+        //internal void PrepareBuildForRun(string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, SqlSyncBuildData buildData, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
+        //{
+        //    try
+        //    {
+        //        EnsureBgWorker();
+
+        //        //Make sure the project file is not read-only
+        //        if (File.Exists(projectFileName))
+        //        {
+        //            File.SetAttributes(projectFileName, System.IO.FileAttributes.Normal);
+        //        }
+        //        else
+        //        {
+        //            log.LogError($"[PrepareBuildForRun] projectFileName does not exist: '{projectFileName}'");
+        //        }
+        //        if (string.IsNullOrWhiteSpace(projectFilePath))
+        //        {
+        //            if (!string.IsNullOrWhiteSpace(projectFileName))
+        //            {
+        //                projectFilePath = Path.GetDirectoryName(projectFileName);
+        //            }
+        //            if (string.IsNullOrWhiteSpace(projectFilePath))
+        //            {
+        //                projectFilePath = Path.GetTempPath();
+        //            }
+        //        }
+        //        buildHistoryXmlFile = Path.Combine(projectFilePath, SqlBuild.XmlFileNames.HistoryFile);
+        //        log.LogDebug($"[PrepareBuildForRun] projectFilePath='{projectFilePath}'");
+
+        //        //Set the file name for the script log
+        //        bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Creating Script Log File"));
+        //        scriptLogFileName = Path.Combine(projectFilePath, "LogFile-" + DateTime.Now.Year.ToString() + "-" + DateTime.Now.Month.ToString().PadLeft(2, '0') + "-" + DateTime.Now.Day.ToString().PadLeft(2, '0') + " at " + DateTime.Now.Hour.ToString().PadLeft(2, '0') + "_" + DateTime.Now.Minute.ToString().PadLeft(2, '0') + "_" + DateTime.Now.Second.ToString().PadLeft(2, '0') + ".log");
+
+        //        //Get a new build row
+        //        bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Generating Build Record"));
+
+        //        buildHistoryXmlFile = Path.Combine(projectFilePath, SqlBuild.XmlFileNames.HistoryFile);
+        //        myBuild = GetNewBuildRow(serverName);
+        //        log.LogDebug($"[PrepareBuildForRun] myBuild created? {myBuild != null}");
+        //        myBuild.UserId = System.Environment.UserName;
+
+        //        //Read scripting configuration
+        //        bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Reading Scripting configuration"));
+        //        SqlSyncBuildData.ScriptDataTable scriptTable = GetScriptSourceTable(buildData);
+        //        log.LogDebug($"[PrepareBuildForRun] scriptTable null? {scriptTable == null}");
+
+        //        if (scriptTable == null)
+        //        {
+        //            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("ERROR Reading <script> element in config template"));
+        //            filteredScripts = null;
+        //            if (isMultiDbRun)
+        //                myBuild.FinalStatus = BuildItemStatus.PendingRollBack;
+        //            else
+        //                myBuild.FinalStatus = BuildItemStatus.RolledBack;
+
+        //            return;
+        //        }
+
+        //        //Get View
+        //        filteredScripts = scriptTable.DefaultView;
+        //        log.LogDebug($"[PrepareBuildForRun] filteredScripts null? {filteredScripts == null}");
+        //        //Sort by Build order column
+        //        filteredScripts.Sort = scriptTable.BuildOrderColumn.ColumnName + " ASC ";
+        //        //Filter by BuildOrder >= start index
+        //        if (runItemIndexes.Length > 0)
+        //        {
+        //            //get the values
+        //            string list = "";
+        //            for (int i = 0; i < runItemIndexes.Length; i++)
+        //                list += runItemIndexes[i].ToString() + ",";
+        //            list = list.Substring(0, list.Length - 1);
+        //            filteredScripts.RowFilter = scriptTable.BuildOrderColumn.ColumnName + " IN (" + list + ")";
+        //        }
+        //        else
+        //        {
+        //            filteredScripts.RowFilter = scriptTable.BuildOrderColumn.ColumnName + " >=" + startIndex.ToString();
+        //        }
+
+        //        //Get the build hash value for use in logging to the databae
+        //        if (scriptBatchColl == null)
+        //            buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFilePath, buildData);
+        //        else
+        //            buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
+
+        //        log.LogInformation($"Prepared build for run. Build Package hash = {buildPackageHash}");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        log.LogError($"[PrepareBuildForRun] Exception: {ex}");
+        //        throw;
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Adds the record of the scripts that have been executed into the CommittedScript list.
+        ///// Also calls LogCommittedScriptsToDatabase to update the SqlBuild_Logging table
+        ///// </summary>
+        ///// <param name="committedScriptIds"></param>
+        ///// <returns></returns>
+        //[Obsolete("Use RecordCommittedScripts(List<SqlLogging.CommittedScript>, SqlSyncBuildDataModel, out SqlSyncBuildDataModel) for POCO entry")]
+        //internal bool RecordCommittedScripts(List<CommittedScript> committedScripts)
+        //{
+        //    var model = buildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+        //    var ok = RecordCommittedScripts(committedScripts, model, out var updated);
+        //    buildDataModel = updated;
+        //    // Back-compat: update original DataSet if available
+        //    if (buildDataCompat != null && committedScripts != null)
+        //    {
+        //        try
+        //        {
+        //            foreach (var cs in committedScripts)
+        //            {
+        //                var row = buildDataCompat.CommittedScript.NewCommittedScriptRow();
+        //                row.ScriptId = cs.ScriptId.ToString();
+        //                row.ServerName = cs.ServerName;
+        //                row.AllowScriptBlock = true;
+        //                if (cs.FileHash != null)
+        //                    row.ScriptHash = cs.FileHash;
+        //                row.CommittedDate = DateTime.Now;
+        //                // Set project id if exists
+        //                if (buildDataCompat.SqlSyncBuildProject?.Rows.Count > 0 && buildDataCompat.CommittedScript.Columns.Contains("SqlSyncBuildProject_Id"))
+        //                {
+        //                    row.SqlSyncBuildProject_Id = ((SqlSyncBuildData.SqlSyncBuildProjectRow)buildDataCompat.SqlSyncBuildProject.Rows[0]).SqlSyncBuildProject_Id;
+        //                }
+        //                buildDataCompat.CommittedScript.AddCommittedScriptRow(row);
+        //            }
+        //            buildDataCompat.CommittedScript.AcceptChanges();
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            log.LogWarning(ex, "Unable to update compatibility DataSet in RecordCommittedScripts");
+        //        }
+        //    }
+        //    return ok;
+        //}
+
+        //[Obsolete("This method is only meant for use in backward compatability testing", false)]
+        //public static string[] ReadBatchFromScript(bool stripTransaction, bool maintainBatchDelimiter, string scriptContents)
+        //{
+        //    string[] scriptLines = scriptContents.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+        //    return ReadBatchFromScriptText(stripTransaction, maintainBatchDelimiter, scriptLines);
+        //}
+        //[Obsolete("This method has been replaced with ReadBatchFromScriptText(string scriptContents, bool stripTransaction, bool maintainBatchDelimiter)", false)]
+        //public static string[] ReadBatchFromScriptText(bool stripTransaction, bool maintainBatchDelimiter, string[] scriptLines)
+        //{
+        //    StringBuilder sb = new StringBuilder();
+        //    string completeScript = string.Empty;
+        //    string currentLine = string.Empty;
+        //    List<string> list = new List<string>();
+        //    Regex usingStatement = new Regex("use \\S+", RegexOptions.IgnoreCase);
+        //    for (int i = 0; i < scriptLines.Length; i++)
+        //    {
+        //        currentLine = scriptLines[i];
+        //        if (currentLine.Trim().ToUpper() == BatchParsing.Delimiter && sb.Length != 0)
+        //        {
+        //            if (maintainBatchDelimiter)
+        //                sb.Append(currentLine + "\r\n");
+
+        //            list.Add(sb.ToString());
+        //            sb.Length = 0;
+        //        }
+        //        else
+        //        {
+
+        //            if (stripTransaction)
+        //            {
+
+        //                currentLine = currentLine.Replace("BEGIN TRANSACTION", "");
+        //                currentLine = currentLine.Replace("BEGIN TRAN", "");
+        //                currentLine = currentLine.Replace("ROLLBACK TRANSACTION", "");
+        //                currentLine = currentLine.Replace("ROLLBACK TRAN", "");
+        //                currentLine = currentLine.Replace("COMMIT TRANSACTION", "");
+        //                currentLine = currentLine.Replace("COMMIT TRAN", "");
+        //                currentLine = currentLine.Replace("COMMIT", "");
+        //                currentLine = currentLine.Replace("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE", "");
+        //            }
+
+        //            //remove any "using" directives that could change the target database for the script. The build definition should be used instead
+        //            if (usingStatement.Match(currentLine).Success)
+        //            {
+        //                // if the match is the only thing on this line, then is is a true "using" statement, so remove it...
+        //                if (currentLine.Trim().Length == usingStatement.Match(currentLine).Value.Length)
+        //                    currentLine = "";
+        //            }
+        //            sb.Append(currentLine + "\r\n");
+        //        }
+
+        //    }
+        //    if (sb.ToString().Trim().Length > 0)
+        //    {
+        //        list.Add(sb.ToString());
+        //    }
+        //    string[] batch = list.ToArray();
+        //    if (batch.Length > 0 && batch[batch.Length - 1].Length >= 2)
+        //    {
+        //        //Trim the last carriage return off the last item
+        //        batch[batch.Length - 1] = batch[batch.Length - 1].Substring(0, batch[batch.Length - 1].Length - 2);
+        //    }
+        //    return batch;
+        //}
+
+        //[Obsolete("Use AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild)")]
+        //private void AddScriptRunToHistory(BuildModels.ScriptRun run, SqlSyncBuildData.BuildRow myBuild)
+        //{
+        //    if (run == null) return;
+        //    // append to POCO history
+        //    buildHistoryModel = buildHistoryModel with { ScriptRun = buildHistoryModel.ScriptRun.Concat(new[] { run }).ToList() };
+
+        //    // maintain dataset for compatibility
+        //    if (buildHistoryData == null)
+        //    {
+        //        buildHistoryData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel().ToDataSet();
+        //    }
+        //    var row = buildHistoryData.ScriptRun.NewScriptRunRow();
+        //    row.BuildRow = myBuild;
+        //    row.Database = run.Database;
+        //    row.RunOrder = run.RunOrder ?? 0;
+        //    row.RunStart = run.RunStart ?? DateTime.MinValue;
+        //    row.FileName = run.FileName;
+        //    row.ScriptRunId = run.ScriptRunId;
+        //    if (run.FileHash != null) row.FileHash = run.FileHash;
+        //    if (run.RunEnd.HasValue) row.RunEnd = run.RunEnd.Value;
+        //    if (run.Success.HasValue) row.Success = run.Success.Value;
+        //    if (run.Results != null) row.Results = run.Results;
+        //    buildHistoryData.ScriptRun.AddScriptRunRow(row);
+        //    buildHistoryData.AcceptChanges();
+        //}
+
+        //[Obsolete]
+        //private SqlSyncBuildData EnsureBuildDataSet()
+        //{
+        //    buildDataModel ??= SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+        //    return buildDataModel.ToDataSet();
+        //}
+
+        //[Obsolete]
+        //private static SqlSyncBuildData ToDataSet(BuildModels.SqlSyncBuildDataModel model) => model.ToDataSet();
+
+        //// Compatibility overload for callers/tests that do not track DoWorkEventArgs
+        //[Obsolete]
+        //internal BuildModels.Build RunBuildScripts(
+        //    IReadOnlyList<BuildModels.Script> scripts,
+        //    BuildModels.Build myBuild,
+        //    string serverName,
+        //    bool isMultiDbRun,
+        //    ScriptBatchCollection scriptBatchColl,
+        //    BuildModels.SqlSyncBuildDataModel buildDataModel)
+        //{
+        //    var workEventArgs = new DoWorkEventArgs(null);
+        //    return RunBuildScripts(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref workEventArgs);
+        //}
+
+        //// Compatibility helpers for tests (internal) to ease migration from DataSet APIs
+        //[Obsolete]
+        //internal SqlSyncBuildData BuildData => BuildDataModel.ToDataSet();
+
+
+        //// Compatibility overload for legacy callers that pass DoWorkEventArgs without explicit BuildData
+        //[Obsolete]
+        //internal void PrepareBuildForRun(string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs, out DataView filteredScripts, out SqlSyncBuildData.BuildRow myBuild)
+        //{
+        //    var model = BuildDataModel;
+        //    var prep = PrepareBuildForRun(model, serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+        //    var ds = model.ToDataSet();
+        //    var ids = new HashSet<string>(prep.FilteredScripts?.Select(s => s.ScriptId)!.Where(id => id != null)! ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+        //    var dv = ds.Script.DefaultView;
+        //    if (ids.Count > 0)
+        //    {
+        //        var filter = string.Join("','", ids.Select(id => id.Replace("'", "''")));
+        //        dv.RowFilter = $"ScriptId IN ('{filter}')";
+        //    }
+        //    filteredScripts = dv;
+        //    myBuild = ds.Build.Count > 0 ? ds.Build[ds.Build.Count - 1] : ds.Build.NewBuildRow();
+        //}
+
+        //#region ## DataSet Handling Helper Methods ##
+
+        //[Obsolete]
+        //private SqlSyncBuildData.BuildRow GetNewBuildRow(string serverName)
+        //{
+        //    if (File.Exists(buildHistoryXmlFile) == false)
+        //        buildHistoryData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel().ToDataSet();
+        //    else
+        //    {
+        //        buildHistoryData = new SqlSyncBuildData();
+        //        buildHistoryData.ReadXml(buildHistoryXmlFile);
+        //    }
+
+        //    // keep POCO history in sync when loading persisted build history
+        //    try
+        //    {
+        //        buildHistoryModel = buildHistoryData.ToModel();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        log.LogWarning(ex, "Unable to convert buildHistoryData to model; using empty model");
+        //        buildHistoryModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+        //    }
+
+
+        //    //Create a root Project row if needed
+        //    if (buildHistoryData.SqlSyncBuildProject.Rows.Count == 0)
+        //        buildHistoryData.SqlSyncBuildProject.AddSqlSyncBuildProjectRow("", false);
+
+        //    SqlSyncBuildData.SqlSyncBuildProjectRow projRow = (SqlSyncBuildData.SqlSyncBuildProjectRow)buildHistoryData.SqlSyncBuildProject.Rows[0];
+
+        //    //Create a builds row if needed
+        //    if (buildHistoryData.Builds.Rows.Count == 0)
+        //        buildHistoryData.Builds.AddBuildsRow(projRow);
+
+        //    SqlSyncBuildData.BuildsRow buildsRow = (SqlSyncBuildData.BuildsRow)buildHistoryData.Builds.Rows[0];
+
+        //    //Set build id
+        //    currentBuildId = System.Guid.NewGuid();
+
+        //    //Create a build row for the new build
+        //    SqlSyncBuildData.BuildDataTable buildTable = buildHistoryData.Build;
+        //    SqlSyncBuildData.BuildRow myBuild = buildTable.NewBuildRow();
+        //    myBuild.BuildsRow = buildsRow;
+        //    myBuild.Name = buildDescription;
+        //    myBuild.BuildType = buildType;
+        //    myBuild.BuildStart = DateTime.Now;
+        //    myBuild.ServerName = serverName;
+        //    myBuild.BuildId = currentBuildId.ToString();
+
+        //    buildTable.AddBuildRow(myBuild);
+        //    return myBuild;
+        //}
+
+        //[Obsolete]
+        //private void AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild)
+        //{
+        //    if (run == null) return;
+        //    buildHistoryModel = buildHistoryModel with { ScriptRun = buildHistoryModel.ScriptRun.Concat(new[] { run }).ToList() };
+        //    // optionally keep dataset for compatibility
+        //    if (buildHistoryData != null)
+        //    {
+        //        var row = buildHistoryData.ScriptRun.NewScriptRunRow();
+        //        row.Database = run.Database;
+        //        row.RunOrder = run.RunOrder ?? 0;
+        //        row.RunStart = run.RunStart ?? DateTime.MinValue;
+        //        row.FileName = run.FileName;
+        //        row.ScriptRunId = run.ScriptRunId;
+        //        if (run.FileHash != null) row.FileHash = run.FileHash;
+        //        if (run.RunEnd.HasValue) row.RunEnd = run.RunEnd.Value;
+        //        if (run.Success.HasValue) row.Success = run.Success.Value;
+        //        if (run.Results != null) row.Results = run.Results;
+        //        buildHistoryData.ScriptRun.AddScriptRunRow(row);
+        //        buildHistoryData.AcceptChanges();
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Retrieves the ScriptRows from the SqlSyncBuildData object and imports them into a new ScriptDataTable
+        ///// This leaves the original object in tact.
+        ///// </summary>
+        ///// <returns>SqlSyncBuildData.ScriptDataTable populated with the ScriptRows from the SqlSyncBuildData object</returns>
+        //[Obsolete]
+        //public static SqlSyncBuildData.ScriptDataTable GetScriptSourceTable(SqlSyncBuildData buildData)
+        //{
+        //    if (buildData == null)
+        //    {
+        //        log.LogWarning("The SqlSyncBuildData object passed into \"GetScriptSourceTable\" was null. Unable to process build");
+        //        return null;
+        //    }
+        //    if (buildData.Script == null)
+        //    {
+        //        log.LogWarning("The SqlSyncBuildData.ScriptTable object passed into \"GetScriptSourceTable\" was null. Unable to process build");
+        //        return null;
+        //    }
+
+        //    try
+        //    {
+        //        IEnumerable<SqlSyncBuildData.ScriptRow> scriptRows = from s in buildData.Script select s;
+        //        if (scriptRows.Count() > 0)
+        //        {
+        //            SqlSyncBuildData.ScriptDataTable scriptTable = new SqlSync.SqlBuild.SqlSyncBuildData.ScriptDataTable();
+        //            foreach (SqlSyncBuildData.ScriptRow r in scriptRows)
+        //            {
+        //                scriptTable.ImportRow(r);
+        //            }
+        //            return scriptTable;
+        //        }
+        //    }
+        //    catch (Exception exe)
+        //    {
+        //        log.LogError(exe, "Unable to get script rows from SqlSyncBuildData object");
+        //    }
+        //    return null;
+        //}
+
+        //[Obsolete]
+        //public static SqlSyncBuildData.ScriptDataTable GetScriptSourceTable(BuildModels.SqlSyncBuildDataModel buildDataModel)
+        //{
+        //    if (buildDataModel == null)
+        //    {
+        //        log.LogWarning("The SqlSyncBuildDataModel object passed into \"GetScriptSourceTable\" was null. Unable to process build");
+        //        return null;
+        //    }
+
+        //    var ds = buildDataModel.ToDataSet();
+        //    return GetScriptSourceTable(ds);
+        //}
+
+        //[Obsolete]
+        //internal void SaveBuildDataSet(bool fireSavedEvent)
+        //{
+        //    bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Saving Build File Updates"));
+
+        //    if (projectFileName == null || projectFileName.Length == 0)
+        //    {
+        //        string message = "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.";
+        //        bgWorker.ReportProgress(0, new GeneralStatusEventArgs(message));
+        //        throw new ArgumentException(message);
+        //    }
+
+        //    SqlBuildFileHelper.SaveSqlBuildProjectFile(buildDataModel, projectFileName, buildFileName, includeHistoryAndLogs: true);
+
+
+        //    if (buildHistoryXmlFile == null || buildHistoryXmlFile.Length == 0)
+        //    {
+        //        string message = "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.";
+        //        bgWorker.ReportProgress(0, new GeneralStatusEventArgs(message));
+        //        throw new ArgumentException(message);
+        //    }
+
+        //    if (buildHistoryData != null)
+        //        buildHistoryData.WriteXml(buildHistoryXmlFile);
+
+        //    if (fireSavedEvent)
+        //        bgWorker.ReportProgress(0, new ScriptRunProjectFileSavedEventArgs(true));
+        //}
+        //#endregion
+
+        //[Obsolete]
+        //public static ScriptBatchCollection LoadAndBatchSqlScripts(SqlSyncBuildData buildData, string projectFilePath)
+        //{
+        //    ScriptBatchCollection coll = new ScriptBatchCollection();
+        //    SqlSyncBuildData.ScriptDataTable scriptTable = SqlBuildHelper.GetScriptSourceTable(buildData.ToModel());
+        //    DataView view = scriptTable.DefaultView;
+        //    view.Sort = scriptTable.BuildOrderColumn.ColumnName + " ASC ";
+        //    for (int i = 0; i < view.Count; i++)
+        //    {
+        //        SqlSyncBuildData.ScriptRow myRow = (SqlSyncBuildData.ScriptRow)view[i].Row;
+        //        string[] batchScripts = SqlBuildHelper.ReadBatchFromScriptFile(Path.Combine(projectFilePath, myRow.FileName), myRow.StripTransactionText, false);
+
+        //        ScriptBatch batch = new ScriptBatch(myRow.FileName, batchScripts, myRow.ScriptId);
+        //        coll.Add(batch);
+        //    }
+        //    return coll;
+        //}
+
+        #endregion
     }
 }
+

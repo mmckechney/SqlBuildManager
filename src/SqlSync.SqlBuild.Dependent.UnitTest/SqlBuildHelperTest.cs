@@ -473,7 +473,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             DataView view = buildData.Script.DefaultView;
 
             bool isMultiDbRun = false;
-            ScriptBatchCollection scriptBatchColl = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, string.Empty);
+            ScriptBatchCollection scriptBatchColl = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), string.Empty);
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
@@ -1642,7 +1642,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             init.AddInsertScript(ref buildData, true);
             SqlSyncBuildData.ScriptDataTable actual = null;
-            actual = SqlBuildHelper.GetScriptSourceTable(buildData);
+            actual = SqlBuildHelper.GetScriptSourceTable(buildData.ToModel());
 
             Assert.IsInstanceOfType(actual, typeof(SqlSyncBuildData.ScriptDataTable));
             Assert.IsTrue(1 == actual.Rows.Count);
@@ -1662,7 +1662,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             init.AddBatchInsertScripts(ref buildData, true);
 
             ScriptBatchCollection actual;
-            actual = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, string.Empty);
+            actual = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), string.Empty);
             Assert.IsTrue(2 == actual.Count, "Invalid Batch Count " + actual.Count.ToString() + " vs 2");
             Assert.IsTrue(2 == actual[0].ScriptBatchContents.Length, "Invalid Batch Length " + actual.Count.ToString() + " vs 2");
         }
@@ -1837,7 +1837,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             bool actual;
-            actual = target.RecordCommittedScripts(committedScripts);
+            SqlSyncBuildDataModel buildModelUpdated;
+            actual = target.RecordCommittedScripts(committedScripts, buildData.ToModel(), out buildModelUpdated);
             Assert.AreEqual(true, actual);
 
             Assert.AreEqual(scriptID.ToString(), buildData.CommittedScript[0].ScriptId);
@@ -1925,7 +1926,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 "This is line 5"};
 
             string[] actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(stripTransaction, maintainBatchDelimiter, scriptLines);
+            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptLines, stripTransaction, maintainBatchDelimiter).ToArray();
             Assert.AreEqual(2, actual.Length, "Expected 2 lines, got " + actual.Length.ToString());
             Assert.IsTrue(actual[0].IndexOf("GO") == -1, "Expected the \"GO\" delimiter to be absent");
             Assert.IsTrue(actual[0].IndexOf("2") > -1);
@@ -1947,7 +1948,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 "This is line 5"};
 
             string[] actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(stripTransaction, maintainBatchDelimiter, scriptLines);
+            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptLines, stripTransaction, maintainBatchDelimiter).ToArray(); ;
             Assert.IsTrue(actual[0].IndexOf("GO") > -1, "Expected the \"GO\" delimiter to be present");
         }
 
@@ -1973,7 +1974,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 };
 
             string[] actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(stripTransaction, maintainBatchDelimiter, scriptLines);
+            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptLines, stripTransaction, maintainBatchDelimiter).ToArray(); ;
             Assert.AreEqual(2, actual.Length);
             Assert.IsTrue(actual[0].Trim().Length == 0);
             Assert.IsTrue(actual[1].Trim().Length == 0);
@@ -2001,7 +2002,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 };
 
             string[] actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(stripTransaction, maintainBatchDelimiter, scriptLines);
+            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptLines, stripTransaction, maintainBatchDelimiter).ToArray();
             Assert.AreEqual(3, actual.Length);
             Assert.IsTrue(actual[0].IndexOf("ROLLBACK") > -1);
             Assert.IsTrue(actual[1].IndexOf("COMMIT") > -1);
@@ -2376,7 +2377,7 @@ SELECT * FROM MyTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(actual2[0], actual1[0]);
 
         }
@@ -2395,7 +2396,7 @@ SELECT * FROM MyTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(actual2[0], actual1[0]);
 
         }
@@ -2414,7 +2415,7 @@ SELECT * FROM MyTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(actual2[0], actual1[0]);
 
         }
@@ -2434,7 +2435,7 @@ SELECT * FROM MyTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(actual2[0], actual1[0]);
 
         }
@@ -2459,7 +2460,7 @@ SELECT * from WhoseTable
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(actual2[0], actual1[0]);
             Assert.AreEqual(actual2[1], actual1[1]);
             Assert.AreEqual(actual2[2], actual1[2]);
@@ -2486,7 +2487,7 @@ Go   ";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(actual2[0], actual1[0]);
             Assert.AreEqual(actual2[1], actual1[1]);
             Assert.AreEqual(actual2[2], actual1[2]);
@@ -2513,7 +2514,7 @@ Go   ";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(actual2[0], actual1[0]);
             Assert.AreEqual(actual2[1], actual1[1]);
             Assert.AreEqual(actual2[2], actual1[2]);
@@ -2542,7 +2543,7 @@ Go   ";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(actual2[0], actual1[0]);
             Assert.AreEqual(actual2[1], actual1[1]);
             Assert.AreEqual(actual2[2], actual1[2]);
@@ -2569,7 +2570,7 @@ SELECT * from WhoseTable
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(actual2[0], actual1[0]);
             Assert.AreEqual(actual2[1], actual1[1]);
             Assert.AreEqual(actual2[2], actual1[2]);
@@ -2596,7 +2597,7 @@ SELECT * from WhoseTable
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(actual2[0], actual1[0]);
             Assert.AreEqual(actual2[1], actual1[1]);
             Assert.AreEqual(actual2[2], actual1[2]);
@@ -2622,7 +2623,7 @@ SELECT * from WhoseTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(actual2[0], actual1[0]);
             Assert.AreEqual(actual2[1], actual1[1]);
             Assert.AreEqual(actual2[2], actual1[2]);
@@ -2650,7 +2651,7 @@ SELECT * FROM TheirTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
             //We expect a go on the same line as a "--" comment will match
             Assert.IsTrue(actual1.Count == 4);
             Assert.IsTrue(actual2.Length == 4);
@@ -2683,7 +2684,7 @@ SELECT * FROM TheirTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             //We expect a GO in it's own line of a bulk comment will result in differences
             Assert.IsTrue(actual1.Count == 3);
@@ -2716,7 +2717,7 @@ SELECT * FROM TheirTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             Assert.IsTrue(actual1.Count == 3);
             Assert.IsTrue(actual2.Length == 3);
@@ -2749,7 +2750,7 @@ SELECT * FROM TheirTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             Assert.IsTrue(actual1.Count == 3);
             Assert.IsTrue(actual2.Length == 3);
@@ -2790,7 +2791,7 @@ SELECT * FROM TheirTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             Assert.IsTrue(actual1.Count == 3);
             Assert.IsTrue(actual2.Length == 3);
@@ -2826,7 +2827,7 @@ SELECT * FROM TheirTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             Assert.IsTrue(actual1.Count == 3);
             Assert.IsTrue(actual2.Length == 3);
@@ -2857,7 +2858,7 @@ SELECT * FROM TheirTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             Assert.IsTrue(actual1.Count == 3);
             Assert.IsTrue(actual2.Length == 3);
@@ -2888,7 +2889,7 @@ SELECT * FROM TheirTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             Assert.IsTrue(actual1.Count == 3);
             Assert.IsTrue(actual2.Length == 3);
@@ -2923,7 +2924,7 @@ SELECT * FROM TheirTable";
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             Assert.IsTrue(actual1.Count == 3);
             Assert.IsTrue(actual2.Length == 3);
@@ -2964,7 +2965,7 @@ GO
             actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
+            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
 
             Assert.IsTrue(actual1.Count == 2);
             Assert.IsTrue(actual2.Length == 2);
@@ -3001,7 +3002,7 @@ GO
                 {
 
                     string[] scriptLines = File.ReadAllLines(file);
-                    string[] batch = SqlBuildHelper.ReadBatchFromScriptText(false, false, scriptLines);
+                    string[] batch = SqlBuildHelper.ReadBatchFromScriptText(scriptLines, false, false).ToArray();
 
                     string scriptContents = File.ReadAllText(file);
                     string[] batchNew = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, false, false).ToArray();

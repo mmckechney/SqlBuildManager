@@ -295,7 +295,7 @@ namespace SqlBuildManager.Console.Threaded
                         DefaultScriptTimeout: runData.DefaultScriptTimeout,
                         AllowObjectDelete: runData.AllowObjectDelete);
 
-                    helper.ProcessBuild(runDataModel, bg, e, ThreadedManager.BatchColl, buildRequestedBy, cmdArgs.TimeoutRetryCount);
+                    helper.ProcessBuild(runDataModel, bg, e, cmdArgs.TimeoutRetryCount, buildRequestedBy, ThreadedManager.BatchColl);
                 });
             }
             catch (Exception exe)
