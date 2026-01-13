@@ -363,7 +363,7 @@ namespace SqlSync.SqlBuild
             this.bgWorker = bgWorker;
             ErrorOccured = false;
             var model = new BuildModels.SqlBuildRunDataModel(
-                BuildDataModel: runData.BuildDataModel ?? runData.BuildData?.ToModel() ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
+                BuildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
                 BuildType: runData.BuildType,
                 Server: serverName,
                 BuildDescription: runData.BuildDescription,
@@ -540,7 +540,7 @@ namespace SqlSync.SqlBuild
             committedScripts.Clear();
 
             var model = new BuildModels.SqlBuildRunDataModel(
-                BuildDataModel: runData.BuildDataModel ?? runData.BuildData?.ToModel() ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
+                BuildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
                 BuildType: runData.BuildType,
                 Server: runData.Server ?? connData.SQLServerName,
                 BuildDescription: runData.BuildDescription,
@@ -577,7 +577,7 @@ namespace SqlSync.SqlBuild
             this.buildRequestedBy = buildRequestedBy;
 
             var model = new BuildModels.SqlBuildRunDataModel(
-                BuildDataModel: runData.BuildDataModel ?? runData.BuildData?.ToModel() ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
+                BuildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
                 BuildType: runData.BuildType,
                 Server: runData.Server ?? connData.SQLServerName,
                 BuildDescription: runData.BuildDescription,

@@ -7,7 +7,8 @@ namespace SqlSync.SqlBuild
     public class ClearScriptData
     {
         public readonly string[] SelectedScriptIds;
-        [Obsolete("Use BuildDataModel for POCO-based execution")] public readonly SqlSyncBuildData? BuildData;
+        [Obsolete("Use BuildDataModel for POCO-based execution")] 
+        public readonly SqlSyncBuildData? BuildData;
         public readonly SqlSyncBuildDataModel? BuildDataModel;
         public readonly string ProjectFileName;
         public readonly string BuildZipFileName;
@@ -16,7 +17,7 @@ namespace SqlSync.SqlBuild
         public ClearScriptData(string[] selectedScriptIds, SqlSyncBuildData buildData, string projectFileName, string buildZipFileName)
         {
             SelectedScriptIds = selectedScriptIds;
-            BuildData = buildData;
+            BuildDataModel = buildData.ToModel();
             ProjectFileName = projectFileName;
             BuildZipFileName = buildZipFileName;
         }

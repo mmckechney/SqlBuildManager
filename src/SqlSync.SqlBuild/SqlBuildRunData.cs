@@ -1,14 +1,15 @@
 using System;
 using SqlSync.Connection;
 using System.Collections.Generic;
+using SqlSync.SqlBuild.Models;
+using System.Linq;
 namespace SqlSync.SqlBuild
 {
     #nullable enable
     public class SqlBuildRunData
     {
-        [Obsolete("Use BuildDataModel for POCO-based execution")]
-        public SqlSyncBuildData BuildData { get => BuildDataModel?.ToDataSet(); set => BuildDataModel = value?.ToModel(); }
-        public Models.SqlSyncBuildDataModel BuildDataModel { get; set; } = Models.SqlBuildDataDefaults.Create();
+
+        public SqlSyncBuildDataModel BuildDataModel { get; set; } 
         public string BuildType { get; set; } = string.Empty;
         public string Server { get; set; } = string.Empty;
         public string BuildDescription { get; set; } = string.Empty;
@@ -62,7 +63,7 @@ namespace SqlSync.SqlBuild
             LogToDatabaseName = model.LogToDatabaseName ?? string.Empty,
             IsTransactional = model.IsTransactional ?? true,
             PlatinumDacPacFileName = model.PlatinumDacPacFileName ?? string.Empty,
-            TargetDatabaseOverrides = model.TargetDatabaseOverrides?.ToList() ?? new(),
+            TargetDatabaseOverrides = model.TargetDatabaseOverrides?.ToList() ?? new List<DatabaseOverride>(),
             ForceCustomDacpac = model.ForceCustomDacpac ?? false,
             BuildRevision = model.BuildRevision ?? string.Empty,
             DefaultScriptTimeout = model.DefaultScriptTimeout ?? 500,
