@@ -2019,7 +2019,9 @@ namespace SqlSync.SqlBuild
         BuildConnectData ISqlBuildRunnerContext.GetConnectionDataClass(string serverName, string databaseName) => GetConnectionDataClass(serverName, databaseName);
         string ISqlBuildRunnerContext.GetTargetDatabase(string defaultDatabase) => GetTargetDatabase(defaultDatabase);
         string[] ISqlBuildRunnerContext.ReadBatchFromScriptFile(string path, bool stripTransaction, bool useRegex) => ReadBatchFromScriptFile(path, stripTransaction, useRegex);
+        Task<string[]> ISqlBuildRunnerContext.ReadBatchFromScriptFileAsync(string path, bool stripTransaction, bool useRegex, CancellationToken cancellationToken) => ScriptBatcher.ReadBatchFromScriptFileAsync(path, stripTransaction, useRegex, cancellationToken);
         string ISqlBuildRunnerContext.PerformScriptTokenReplacement(string script) => PerformScriptTokenReplacement(script);
+        Task<string> ISqlBuildRunnerContext.PerformScriptTokenReplacementAsync(string script, CancellationToken cancellationToken) => TokenReplacementService.ReplaceTokensAsync(script, this, cancellationToken);
         void ISqlBuildRunnerContext.AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild) => AddScriptRunToHistory(run, myBuild);
         void ISqlBuildRunnerContext.RollbackBuild() => RollbackBuild();
         void ISqlBuildRunnerContext.SaveBuildDataSet(bool fireSavedEvent) => SaveBuildDataSet(fireSavedEvent);

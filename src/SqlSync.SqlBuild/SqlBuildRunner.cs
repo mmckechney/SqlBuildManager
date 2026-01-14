@@ -31,7 +31,9 @@ namespace SqlSync.SqlBuild
         BuildConnectData GetConnectionDataClass(string serverName, string databaseName);
         string GetTargetDatabase(string defaultDatabase);
         string[] ReadBatchFromScriptFile(string path, bool stripTransaction, bool useRegex);
+        Task<string[]> ReadBatchFromScriptFileAsync(string path, bool stripTransaction, bool useRegex, CancellationToken cancellationToken = default);
         string PerformScriptTokenReplacement(string script);
+        Task<string> PerformScriptTokenReplacementAsync(string script, CancellationToken cancellationToken = default);
         void AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild);
         void RollbackBuild();
         void SaveBuildDataSet(bool fireSavedEvent);
@@ -101,7 +103,7 @@ namespace SqlSync.SqlBuild
                     var targetDatabase = _ctx.GetTargetDatabase(script.Database ?? string.Empty);
                     dbTargets.Add(targetDatabase);
 
-                    var batchScripts = LoadBatchScripts(scriptId, fileName, stripTransaction, scriptBatchColl);
+                    var batchScripts = await LoadBatchScriptsAsync(scriptId, fileName, stripTransaction, scriptBatchColl, cancellationToken).ConfigureAwait(false);
 
                     if (!allowMultipleRuns && ShouldSkipDueToCommittedScripts(scriptId, buildDataModel))
                     {
@@ -159,7 +161,7 @@ namespace SqlSync.SqlBuild
                             break;
                         }
 
-                        batchScripts[x] = _ctx.PerformScriptTokenReplacement(batchScripts[x]);
+                        batchScripts[x] = await _ctx.PerformScriptTokenReplacementAsync(batchScripts[x], cancellationToken).ConfigureAwait(false);
                         overallIndex++;
 
                         try
@@ -465,6 +467,22 @@ namespace SqlSync.SqlBuild
             if (batchScripts == null || batchScripts.Length == 0)
             {
                 batchScripts = _ctx.ReadBatchFromScriptFile(System.IO.Path.Combine(_ctx.ProjectFilePath, fileName), stripTransaction, false);
+            }
+            return batchScripts;
+        }
+
+        internal async Task<string[]> LoadBatchScriptsAsync(string scriptId, string fileName, bool stripTransaction, ScriptBatchCollection scriptBatchColl, CancellationToken cancellationToken)
+        {
+            string[] batchScripts = null;
+            if (scriptBatchColl != null)
+            {
+                var b = scriptBatchColl.GetScriptBatch(scriptId);
+                if (b != null)
+                    batchScripts = b.ScriptBatchContents;
+            }
+            if (batchScripts == null || batchScripts.Length == 0)
+            {
+                batchScripts = await _ctx.ReadBatchFromScriptFileAsync(System.IO.Path.Combine(_ctx.ProjectFilePath, fileName), stripTransaction, false, cancellationToken).ConfigureAwait(false);
             }
             return batchScripts;
         }

@@ -13,6 +13,7 @@
 - [x] 2026-01-14: Phase 5a complete — fully async runner/orchestrator/executor; tests passing.
 - [x] 2026-01-14: Phase 5b start — async executor path tests & cancellation tests.
 - [ ] 2026-01-14: Phase 5b planned — async file/token IO abstractions.
+- [x] 2026-01-14: Phase 5c start — async file/token abstractions (ScriptBatcher, IFileSystem, token service).
 
 ## Current State
 - `SqlBuildHelper.cs`: ~2356 LOC, multiple responsibilities (prep, execution, batching, logging, persistence, legacy conversions, DacPac, token replacement, FS IO, retries).
@@ -96,6 +97,14 @@
 - ✅ Add cancellation test for `RunAsync` (`RunAsync_Cancellation_StopsExecution`).
 - 🔜 Async IO: adapt `ReadBatchFromScriptFile` and token replacement to async via abstractions (`IFileSystem`/`IScriptBatcher` async variants), propagate through runner/orchestrator.
 
+### Phase 5c: Async File/Token Operations
+- ✅ Added async methods to `IScriptBatcher` and `DefaultScriptBatcher` (`ReadBatchFromScriptFileAsync`, `ReadBatchFromScriptTextAsync`).
+- ✅ Added async methods to `IFileSystem` and `DotNetFileSystem` (`ReadAllTextAsync`, `WriteAllTextAsync`, `AppendAllTextAsync`).
+- ✅ Added async methods to `ITokenReplacementService` and `DefaultTokenReplacementService` (`ReplaceTokensAsync`).
+- ✅ Extended `ISqlBuildRunnerContext` with async `ReadBatchFromScriptFileAsync` and `PerformScriptTokenReplacementAsync` and wired `SqlBuildHelper` implementations.
+- ✅ Updated `SqlBuildRunner.RunAsync` to use `LoadBatchScriptsAsync` and async token replacement.
+- ✅ Updated test fakes to implement async methods.
+
 ### Phase 6: Deprecate & Clean
 - Mark legacy APIs `[Obsolete]`; keep thin adapters.
 - Remove static globals; wire via DI container.
@@ -123,6 +132,7 @@
 - [ ] Update docs and diagrams post-extraction.
 - [ ] Phase 5a: async-first runner/orchestrator with async executor.
 - [ ] Phase 5b: async IO abstractions for file/token operations.
+- [ ] Phase 5c: async IO abstractions usage complete (follow-up: async file IO in helper/services).
 
 ---
 *Generated: 2026-01-14*

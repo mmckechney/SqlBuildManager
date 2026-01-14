@@ -87,7 +87,9 @@ namespace SqlSync.SqlBuild.UnitTest
             public BuildConnectData GetConnectionDataClass(string serverName, string databaseName) => throw new NotImplementedException();
             public string GetTargetDatabase(string defaultDatabase) => defaultDatabase;
             public string[] ReadBatchFromScriptFile(string path, bool stripTransaction, bool useRegex) => Array.Empty<string>();
+            public Task<string[]> ReadBatchFromScriptFileAsync(string path, bool stripTransaction, bool useRegex, CancellationToken cancellationToken = default) => Task.FromResult(Array.Empty<string>());
             public string PerformScriptTokenReplacement(string script) => script;
+            public Task<string> PerformScriptTokenReplacementAsync(string script, CancellationToken cancellationToken = default) => Task.FromResult(script);
             public void AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild) { }
             public void RollbackBuild() { }
             public void SaveBuildDataSet(bool fireSavedEvent) { }
