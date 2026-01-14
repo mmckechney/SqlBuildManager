@@ -248,7 +248,7 @@ namespace SqlSync.SqlBuild
             return myBuild;
         }
 
-        public virtual Task<BuildModels.Build> RunAsync(
+        public virtual async Task<BuildModels.Build> RunAsync(
             IReadOnlyList<BuildModels.Script> scripts,
             BuildModels.Build myBuild,
             string serverName,
@@ -258,8 +258,193 @@ namespace SqlSync.SqlBuild
             DoWorkEventArgs workEventArgs,
             CancellationToken cancellationToken = default)
         {
-            // For now, wrap synchronous call to maintain behavior. Future: actual async SQL execution.
-            return Task.Run(() => Run(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref workEventArgs), cancellationToken);
+            var bgWorker = _ctx.BgWorker;
+            var progress = _ctx.ProgressReporter ?? new BackgroundWorkerProgressReporter(bgWorker);
+            var log = _ctx.Log;
+            var committedScripts = _ctx.CommittedScripts;
+
+            progress.ReportProgress(0, new GeneralStatusEventArgs("Proceeding with Build"));
+            log.LogDebug($"Processing with build for build Package hash = {_ctx.BuildPackageHash}");
+
+            int overallIndex = 0;
+            int runSequence = 0;
+            bool buildFailure = false;
+            bool failureDueToScriptTimeout = false;
+            var dbTargets = new List<string>();
+
+            try
+            {
+                ValidateScriptsInput(scripts);
+
+                for (int i = 0; i < scripts.Count; i++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var script = scripts[i];
+                    var scriptId = script.ScriptId ?? Guid.NewGuid().ToString();
+                    var fileName = script.FileName ?? string.Empty;
+                    var stripTransaction = script.StripTransactionText ?? false;
+                    var rollBackOnError = script.RollBackOnError ?? true;
+                    var causesBuildFailure = script.CausesBuildFailure ?? true;
+                    var allowMultipleRuns = script.AllowMultipleRuns ?? true;
+                    var scriptTimeout = script.ScriptTimeOut ?? _ctx.DefaultScriptTimeout;
+                    var targetDatabase = _ctx.GetTargetDatabase(script.Database ?? string.Empty);
+                    dbTargets.Add(targetDatabase);
+
+                    var batchScripts = LoadBatchScripts(scriptId, fileName, stripTransaction, scriptBatchColl);
+
+                    if (!allowMultipleRuns && ShouldSkipDueToCommittedScripts(scriptId, buildDataModel))
+                    {
+                        log.LogInformation($"Skipping pre-run script {fileName}");
+                        progress.ReportProgress(0, new ScriptRunStatusEventArgs("Skipped Pre-Run script", TimeSpan.Zero));
+                        continue;
+                    }
+
+                    BuildConnectData cData;
+                    var scriptRunRowId = Guid.NewGuid();
+                    BuildModels.ScriptRun currentRun = null;
+                    try
+                    {
+                        cData = _ctx.GetConnectionDataClass(serverName, targetDatabase);
+                        currentRun = new BuildModels.ScriptRun(
+                            FileHash: null,
+                            Results: string.Empty,
+                            RunStart: DateTime.Now,
+                            RunEnd: null,
+                            Success: false,
+                            FileName: fileName,
+                            RunOrder: i + 1,
+                            Database: targetDatabase,
+                            ScriptRunId: scriptRunRowId.ToString(),
+                            Build_Id: myBuild.Build_Id);
+                    }
+                    catch (Exception e)
+                    {
+                        log.LogError(e, "Error establishing connection data");
+                        _ctx.ErrorOccured = true;
+                        buildFailure = true;
+                        progress.ReportProgress(0, new ScriptRunStatusEventArgs($"ERROR connecting to {serverName}.{targetDatabase}", TimeSpan.Zero));
+                        if (currentRun != null)
+                            _ctx.AddScriptRunToHistory(currentRun with { Success = false, Results = "Connection failed" }, myBuild);
+                        if (buildFailure) break;
+                        continue;
+                    }
+
+                    // hash & commit staging
+                    SqlBuildFileHelper.GetSHA1Hash(batchScripts, out var textHash);
+                    currentRun = currentRun with { FileHash = textHash };
+                    var scriptText = SqlBuildFileHelper.JoinBatchedScripts(batchScripts);
+                    var tmpCommitted = new LoggingCommittedScript(new Guid(scriptId), currentRun.FileHash, runSequence++, scriptText, script.Tag, cData.ServerName, cData.DatabaseName);
+
+                    var savePointName = scriptId.Replace("-", "");
+                    TryCreateSavePoint(cData, savePointName, serverName, targetDatabase, fileName);
+
+                    var start = DateTime.Now;
+                    for (int x = 0; x < batchScripts.Length; x++)
+                    {
+                        if (cancellationToken.IsCancellationRequested || bgWorker?.CancellationPending == true)
+                        {
+                            log.LogInformation("Encountered cancellation pending directive. Breaking out of build");
+                            workEventArgs.Cancel = true;
+                            break;
+                        }
+
+                        batchScripts[x] = _ctx.PerformScriptTokenReplacement(batchScripts[x]);
+                        overallIndex++;
+
+                        try
+                        {
+                            if (_ctx.RunScriptOnly)
+                            {
+                                _ctx.PublishScriptLog(false, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, fileName, "Scripted"));
+                                continue;
+                            }
+
+                            var execResult = await _executor.ExecuteAsync(batchScripts[x], scriptTimeout, cData, _ctx.IsTransactional, cancellationToken).ConfigureAwait(false);
+                            failureDueToScriptTimeout = failureDueToScriptTimeout || execResult.TimeoutDetected;
+                            currentRun = currentRun with { Success = true, Results = (currentRun.Results ?? string.Empty) + execResult.Results };
+                            _ctx.PublishScriptLog(false, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, fileName, currentRun.Results + _ctx.SqlInfoMessage));
+                        }
+                        catch (SqlException e)
+                        {
+                            var (handledBuildFailure, timeoutDetected) = HandleSqlException(e, fileName, batchScripts[x], targetDatabase, savePointName, start, rollBackOnError, causesBuildFailure, cData, ref currentRun);
+                            failureDueToScriptTimeout = failureDueToScriptTimeout || timeoutDetected;
+                            buildFailure = buildFailure || handledBuildFailure;
+                        }
+
+                        if (buildFailure) { _ctx.ErrorOccured = true; break; }
+                        if (rollBackOnError && currentRun.Success == false) break;
+                    }
+
+                    if (workEventArgs.Cancel)
+                    {
+                        progress.ReportProgress(0, new ScriptRunStatusEventArgs("Build Cancelled", TimeSpan.Zero));
+                        buildFailure = true;
+                    }
+                    else if (currentRun.Success == true)
+                    {
+                        var span = DateTime.Now - currentRun.RunStart!.Value;
+                        tmpCommitted.RunStart = currentRun.RunStart ?? DateTime.MinValue;
+                        tmpCommitted.RunEnd = DateTime.Now;
+                        committedScripts.Add(tmpCommitted);
+                        progress.ReportProgress(0, new ScriptRunStatusEventArgs($"Script Successful against {currentRun.Database}", span));
+                    }
+
+                    currentRun = currentRun with { RunEnd = DateTime.Now };
+                    _ctx.AddScriptRunToHistory(currentRun, myBuild);
+                    if (buildFailure) { _ctx.ErrorOccured = true; break; }
+                    if (_ctx.RunScriptOnly)
+                        progress.ReportProgress(0, new ScriptRunStatusEventArgs("Scripted", TimeSpan.Zero));
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                workEventArgs.Cancel = true;
+                buildFailure = true;
+                progress.ReportProgress(0, new ScriptRunStatusEventArgs("Build Cancelled", TimeSpan.Zero));
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, "General build failure");
+                _ctx.ErrorOccured = true;
+                buildFailure = true;
+                progress.ReportProgress(100, e);
+            }
+            finally
+            {
+                _ctx.SaveBuildDataSet(false);
+                WriteFinalScriptLog(dbTargets, buildFailure, isTransactional: _ctx.IsTransactional, isTrialBuild: _ctx.IsTrialBuild);
+                if (buildFailure)
+                {
+                    progress.ReportProgress(100, new ScriptRunStatusEventArgs("Build Failed", TimeSpan.Zero));
+                    log.LogDebug("Build failed");
+                }
+            }
+
+            if (buildFailure)
+            {
+                if (isMultiDbRun)
+                {
+                    myBuild = myBuild with { FinalStatus = BuildItemStatus.FailedMultipleDatabases.ToString() };
+                }
+                else
+                {
+                    myBuild = myBuild with { FinalStatus = _ctx.IsTransactional ? BuildItemStatus.PendingRollBack.ToString() : BuildItemStatus.FailedNoTransaction.ToString() };
+                }
+                if (_ctx.IsTransactional && failureDueToScriptTimeout)
+                {
+                    myBuild = myBuild with { FinalStatus = BuildItemStatus.FailedDueToScriptTimeout.ToString() };
+                }
+            }
+            else
+            {
+                if (isMultiDbRun)
+                    myBuild = myBuild with { FinalStatus = BuildItemStatus.Pending.ToString() };
+                else
+                    myBuild = _ctx.PerformRunScriptFinalization(buildFailure, myBuild, buildDataModel, ref workEventArgs);
+                log.LogDebug("Build Successful!");
+            }
+            return myBuild;
         }
 
         internal bool ShouldSkipDueToCommittedScripts(string scriptId, BuildModels.SqlSyncBuildDataModel buildDataModel)
@@ -481,10 +666,41 @@ namespace SqlSync.SqlBuild
                 }
             }
 
-            public Task<SqlExecutionResult> ExecuteAsync(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional, CancellationToken cancellationToken = default)
+            public async Task<SqlExecutionResult> ExecuteAsync(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional, CancellationToken cancellationToken = default)
             {
-                // Wrap sync for now; swap to truly async ADO if needed.
-                return Task.Run(() => Execute(sql, timeoutSeconds, cData, isTransactional), cancellationToken);
+                var cmd = isTransactional ? new SqlCommand(sql, cData.Connection, cData.Transaction) : new SqlCommand(sql, cData.Connection);
+                cmd.CommandTimeout = timeoutSeconds;
+                var sb = new StringBuilder();
+                try
+                {
+                    using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        bool more = true;
+                        while (more)
+                        {
+                            sb.Append("Records Affected: " + reader.RecordsAffected + "\r\n");
+                            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                            {
+                                for (int j = 0; j < reader.FieldCount; j++)
+                                {
+                                    sb.Append(reader[j]);
+                                    if (j < reader.FieldCount - 1)
+                                        sb.Append("|");
+                                    else
+                                        sb.Append("\r\n");
+                                }
+                            }
+                            more = await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                    return new SqlExecutionResult(true, sb.ToString(), TimeoutDetected: false);
+                }
+                catch (SqlException e) when (e.Message.Trim().ToLower().Contains("timeout expired."))
+                {
+                    // propagate; caller handles
+                    _log.LogWarning($"Timeout expired executing sql: {sql}");
+                    throw;
+                }
             }
         }
     }

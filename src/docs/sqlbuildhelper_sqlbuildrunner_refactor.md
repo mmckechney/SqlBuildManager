@@ -9,6 +9,7 @@
  - [x] 2026-01-14: Phase 3 start — scaffold services (prep, batcher, token, logging).
 - [ ] 2026-01-14: Phase 4 start — orchestrator extraction & retry wiring.
 - [ ] 2026-01-14: Phase 5 start — async entry points & progress abstraction.
+- [ ] 2026-01-14: Phase 5a start — fully async pipeline (runner/orchestrator/executor).
 
 ## Current State
 - `SqlBuildHelper.cs`: ~2356 LOC, multiple responsibilities (prep, execution, batching, logging, persistence, legacy conversions, DacPac, token replacement, FS IO, retries).
@@ -77,9 +78,15 @@
 - Inject `ISqlCommandExecutor`, `IConnectionFactory` into `SqlBuildRunner`.
 - Centralize retry policy with `Polly` (configurable).
 
-### Phase 5: Progress & Async
+### Phase 5: Progress & Async Wrappers
 - Abstract progress reporting to `IProgressReporter`; adapt `BackgroundWorkerReporter` shim.
 - Add async (`Task`-based) runner entry points compatible with UI console/service.
+
+### Phase 5a: Fully Async Pipeline
+- Make `RunAsync` async-first (no `Task.Run`), calling `ISqlCommandExecutor.ExecuteAsync` inside the script loop.
+- Implement async SQL execution in `SqlCommandExecutor` using ADO.NET async APIs; propagate `CancellationToken`.
+- Ensure orchestrator `ExecuteAsync` awaits runner async path and passes cancellation tokens through.
+- Keep file/token operations sync for now; mark for future async IO extraction.
 
 ### Phase 6: Deprecate & Clean
 - Mark legacy APIs `[Obsolete]`; keep thin adapters.
@@ -106,6 +113,7 @@
 - [ ] Introduce interfaces and inject dependencies (no behavior change).
 - [ ] Extract services iteratively; wire orchestrator; maintain legacy adapter.
 - [ ] Update docs and diagrams post-extraction.
+- [ ] Phase 5a: async-first runner/orchestrator with async executor.
 
 ---
 *Generated: 2026-01-14*

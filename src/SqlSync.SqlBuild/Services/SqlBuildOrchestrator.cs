@@ -74,7 +74,58 @@ namespace SqlSync.SqlBuild.Services
             int allowableTimeoutRetries,
             CancellationToken cancellationToken = default)
         {
-            return Task.Run(() => Execute(runData, prep, bgWorker, workEventArgs, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries), cancellationToken);
+            _helper.bgWorker = bgWorker;
+            _helper.ErrorOccured = false;
+
+            if (prep.FilteredScripts == null || prep.FilteredScripts.Count == 0)
+            {
+                workEventArgs.Cancel = true;
+                return Task.FromResult(prep.Build);
+            }
+
+            return ExecuteAsyncCore(runData, prep, workEventArgs, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries, cancellationToken);
+        }
+
+        private async Task<Build> ExecuteAsyncCore(
+            SqlBuildRunDataModel runData,
+            SqlBuildHelper.BuildPreparationResult prep,
+            DoWorkEventArgs workEventArgs,
+            string serverName,
+            bool isMultiDbRun,
+            ScriptBatchCollection scriptBatchColl,
+            int allowableTimeoutRetries,
+            CancellationToken cancellationToken)
+        {
+            Build buildResultsModel = null;
+            int buildRetries = 0;
+            var runner = SqlBuildHelper.SqlBuildRunnerFactory(_helper, null);
+
+            while (buildRetries <= allowableTimeoutRetries &&
+                (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString()))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (buildRetries > 0)
+                {
+                    ((ISqlBuildRunnerContext)_helper).PublishScriptLog(false, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
+                    _helper.ResetConnectionsForRetry();
+                }
+
+                buildResultsModel = await runner.RunAsync(prep.FilteredScripts, prep.Build, serverName, isMultiDbRun, scriptBatchColl, runData.BuildDataModel!, workEventArgs, cancellationToken).ConfigureAwait(false);
+
+                if (workEventArgs.Cancel)
+                    break;
+
+                if (buildRetries > 0 && buildResultsModel.FinalStatus == BuildItemStatus.Committed.ToString())
+                    buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries.ToString() };
+
+                if (!_retryPolicy.ShouldRetry(buildResultsModel, buildRetries))
+                    break;
+
+                buildRetries++;
+            }
+
+            return buildResultsModel;
         }
     }
 }
