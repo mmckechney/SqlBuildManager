@@ -16,6 +16,7 @@
 - [x] 2026-01-14: Phase 5c start — async file/token abstractions (ScriptBatcher, IFileSystem, token service).
 - [x] 2026-01-14: Phase 5d start — async helper consumers & service tests (helper static async, batcher/token async tests).
 - [x] 2026-01-14: Phase 5e start — consider async variants in `SqlBuildFileHelper` consumers and add tests.
+- [x] 2026-01-14: Phase 5f start — async packaging API variants & tests.
 
 ## Current State
 - `SqlBuildHelper.cs`: ~2356 LOC, multiple responsibilities (prep, execution, batching, logging, persistence, legacy conversions, DacPac, token replacement, FS IO, retries).
@@ -120,6 +121,12 @@
 - ✅ Tests passing.
 - 🔜 Consider async variants for packaging APIs if/when consumers need it.
 
+### Phase 5f: Async Packaging APIs
+- ✅ Added `PackageSbxFilesIntoSbmFilesAsync`, `PackageSbxFileIntoSbmFileAsync` overloads.
+- ✅ Async packaging tests added (`PackageSbxFileIntoSbmFileAsyncTest_InvalidSbx`, `PackageSbxFilesIntoSbmFilesAsyncTest_EmptyDirectory`).
+- ✅ Tests passing.
+- 🔜 When actual consumers emerge, consider replacing `Task.Run` wrapping `SaveSqlBuildProjectFile` with truly async ZIP persistence if .NET provides APIs.
+
 ### Phase 6: Deprecate & Clean
 - Mark legacy APIs `[Obsolete]`; keep thin adapters.
 - Remove static globals; wire via DI container.
@@ -150,6 +157,7 @@
 - [ ] Phase 5c: async IO abstractions usage complete (follow-up: async file IO in helper/services).
 - [ ] Phase 5d: extend async pathways to `SqlBuildFileHelper` consumers if/when required.
 - [ ] Phase 5e: extend async variants to packaging APIs as needed.
+- [ ] Phase 5f: async ZIP persistence once consumers require.
 
 ---
 *Generated: 2026-01-14*

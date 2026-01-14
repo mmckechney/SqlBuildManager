@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 namespace SqlSync.SqlBuild.UnitTest
 {
     [TestClass]
@@ -353,6 +354,25 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             string directoryName = @"C:\" + Guid.NewGuid().ToString();
 
+
+        [TestMethod]
+        public async Task PackageSbxFileIntoSbmFileAsyncTest_InvalidSbx()
+        {
+            string sbxBuildControlFileName = Path.GetTempFileName();
+            string sbmProjectFileName = Path.GetTempFileName();
+            var actual = await SqlBuildFileHelper.PackageSbxFileIntoSbmFileAsync(sbxBuildControlFileName, sbmProjectFileName);
+            Assert.IsFalse(actual);
+            File.Delete(sbxBuildControlFileName);
+            File.Delete(sbmProjectFileName);
+        }
+
+        [TestMethod]
+        public async Task PackageSbxFilesIntoSbmFilesAsyncTest_EmptyDirectory()
+        {
+            string directoryName = String.Empty;
+            var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(directoryName);
+            Assert.AreEqual(0, result.Count);
+        }
             string message;
             string messageExpected = String.Format("Unable to package SBX files. The specified source directory '{0}' does not exist.", directoryName);
             List<string> actual;

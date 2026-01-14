@@ -665,6 +665,103 @@ namespace SqlSync.SqlBuild
 
         }
 
+        public static async Task<List<string>> PackageSbxFilesIntoSbmFilesAsync(string directoryName, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(directoryName) || !Directory.Exists(directoryName))
+                return new List<string>();
+
+            var sbmFiles = new List<string>();
+            var sbxFiles = Directory.GetFiles(directoryName, "*.sbx", SearchOption.AllDirectories);
+            foreach (var sbx in sbxFiles)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var tmp = await PackageSbxFileIntoSbmFileAsync(sbx, cancellationToken).ConfigureAwait(false);
+                if (!string.IsNullOrEmpty(tmp)) sbmFiles.Add(tmp); else return new List<string>();
+            }
+            return sbmFiles;
+        }
+
+        public static async Task<string> PackageSbxFileIntoSbmFileAsync(string sbxBuildControlFileName, CancellationToken cancellationToken = default)
+        {
+            string sbmProjectFileName = Path.Combine(Path.GetDirectoryName(sbxBuildControlFileName), Path.GetFileNameWithoutExtension(sbxBuildControlFileName) + ".sbm");
+            var ok = await PackageSbxFileIntoSbmFileAsync(sbxBuildControlFileName, sbmProjectFileName, cancellationToken).ConfigureAwait(false);
+            return ok ? sbmProjectFileName : string.Empty;
+        }
+
+        public static async Task<bool> PackageSbxFileIntoSbmFileAsync(string sbxBuildControlFileName, string sbmProjectFileName, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(sbxBuildControlFileName))
+                {
+                    log.LogWarning("Can't package SBX file into SBM package - SBX file name is empty");
+                    return false;
+                }
+
+                if (File.Exists(sbmProjectFileName))
+                {
+                    log.LogWarning($"Deleting a pre-existing SBM file: {sbmProjectFileName}");
+                    File.Delete(sbmProjectFileName);
+                }
+
+                SqlSyncBuildDataModel model = null;
+                bool successfulLoad = SqlBuildFileHelper.LoadSqlBuildProjectFile(out model, sbxBuildControlFileName, true);
+                if (!successfulLoad)
+                {
+                    log.LogError($"Problem loading SBX file: {sbxBuildControlFileName}. ");
+                    return false;
+                }
+
+                bool copied = false;
+                string path = Path.GetDirectoryName(sbxBuildControlFileName);
+                string mainProjectFileFullPath = Path.Combine(path, XmlFileNames.MainProjectFile);
+                string tmpMainProjectFileFullPath = Path.Combine(path, "~~" + XmlFileNames.MainProjectFile);
+
+                if (File.Exists(mainProjectFileFullPath))
+                {
+                    log.LogWarning($"Renaming pre-existing XML \"main project file\": {mainProjectFileFullPath}");
+                    File.Copy(mainProjectFileFullPath, tmpMainProjectFileFullPath, true);
+                    copied = true;
+                }
+
+                File.Copy(sbxBuildControlFileName, mainProjectFileFullPath, true);
+
+                var buildData = model.ToDataSet();
+                foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (!File.Exists(Path.Combine(path, row.FileName)))
+                    {
+                        log.LogError($"A script file configured in the SBX file was not found: '{Path.Combine(path + row.FileName)}'. Unable to create SBM package.");
+                        return false;
+                    }
+                }
+
+                // SaveSqlBuildProjectFile is sync; wrap in Task.Run to avoid blocking if needed
+                await Task.Run(() => SqlBuildFileHelper.SaveSqlBuildProjectFile(model, mainProjectFileFullPath, sbmProjectFileName), cancellationToken).ConfigureAwait(false);
+
+                if (copied)
+                {
+                    log.LogWarning($"Moving pre-existing XML \"main project file\" back to  {mainProjectFileFullPath}");
+                    File.Copy(tmpMainProjectFileFullPath, mainProjectFileFullPath, true);
+                    File.Delete(tmpMainProjectFileFullPath);
+                }
+                else
+                {
+                    log.LogDebug($"Deleting the temporary file {mainProjectFileFullPath}");
+                    File.Delete(mainProjectFileFullPath);
+                }
+
+                log.LogDebug($"Successfully packaged SBX file '{sbxBuildControlFileName}' into SBM file '{sbmProjectFileName}'");
+                return true;
+            }
+            catch (Exception exe)
+            {
+                log.LogError(exe, $"Error creating SBM package for {sbxBuildControlFileName}");
+                return false;
+            }
+        }
+
         #endregion
 
         #region .: Add / Remove scripts from build :.
