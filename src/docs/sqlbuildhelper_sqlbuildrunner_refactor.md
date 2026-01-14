@@ -182,6 +182,17 @@
 - `SqlBuildHelper` reduced by ~120 lines through delegation
 - Cleaner separation of concerns: SqlBuildHelper manages state, DefaultBuildFinalizer handles finalization workflow
 
+### Phase 9: Extract Methods to Services Classes
+- **Goal:** Move implementation logic from `SqlBuildHelper.cs` into `SqlSync.SqlBuild\Services\*` classes.
+- **Scope:** Extract methods from SqlBuildHelper into DefaultBuildPreparationService, DefaultScriptBatcher, DefaultSqlLoggingService, and DefaultTokenReplacementService.
+- **Status:** In Progress
+- 🔜 Extract batching logic to `DefaultScriptBatcher`
+- 🔜 Extract token replacement logic to `DefaultTokenReplacementService`
+- 🔜 Extract logging logic to `DefaultSqlLoggingService`
+- 🔜 Extract preparation logic to `DefaultBuildPreparationService`
+- 🔜 Remove extracted methods from `SqlBuildHelper.cs`
+- 🔜 Validate all tests pass
+
 ## Quick Wins
 - Add tests for `HandleSqlException` and `ReadBatchFromScriptText` (edge cases: `GO` in comments, transaction stripping).
 - Inject `IProgressReporter` into `SqlBuildRunner`; shim with `BackgroundWorker`.
