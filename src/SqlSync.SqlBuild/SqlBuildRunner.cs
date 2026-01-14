@@ -30,7 +30,7 @@ namespace SqlSync.SqlBuild
 
         BuildConnectData GetConnectionDataClass(string serverName, string databaseName);
         string GetTargetDatabase(string defaultDatabase);
-        string[] ReadBatchFromScriptFile(string path, bool stripTransaction, bool useRegex);
+
         Task<string[]> ReadBatchFromScriptFileAsync(string path, bool stripTransaction, bool useRegex, CancellationToken cancellationToken = default);
         string PerformScriptTokenReplacement(string script);
         Task<string> PerformScriptTokenReplacementAsync(string script, CancellationToken cancellationToken = default);
@@ -56,11 +56,13 @@ namespace SqlSync.SqlBuild
     {
         private readonly ISqlBuildRunnerContext _ctx;
         private readonly ISqlCommandExecutor _executor;
+        private readonly ISqlBuildFileHelper _fileHelper;
 
-        public SqlBuildRunner(ISqlBuildRunnerContext ctx, ISqlCommandExecutor executor = null)
+        public SqlBuildRunner(ISqlBuildRunnerContext ctx, ISqlCommandExecutor executor = null, ISqlBuildFileHelper fileHelper = null)
         {
             _ctx = ctx ?? throw new ArgumentNullException(nameof(ctx));
             _executor = executor ?? new SqlCommandExecutor(ctx.Log);
+            _fileHelper = fileHelper ?? new DefaultSqlBuildFileHelper();
         }
 
         public virtual BuildModels.Build Run(
@@ -143,7 +145,7 @@ namespace SqlSync.SqlBuild
                         Build_Id: myBuild.Build_Id);
 
                     // hash & commit staging
-                    SqlBuildFileHelper.GetSHA1Hash(batchScripts, out var textHash);
+                    string textHash = _fileHelper.GetSHA1Hash(batchScripts);
                     currentRun = currentRun with { FileHash = textHash };
                     var scriptText = SqlBuildFileHelper.JoinBatchedScripts(batchScripts);
                     var tmpCommitted = new LoggingCommittedScript(new Guid(scriptId), currentRun.FileHash, runSequence++, scriptText, script.Tag, cData.ServerName, cData.DatabaseName);
@@ -333,9 +335,9 @@ namespace SqlSync.SqlBuild
                     }
 
                     // hash & commit staging
-                    SqlBuildFileHelper.GetSHA1Hash(batchScripts, out var textHash);
+                    string textHash = _fileHelper.GetSHA1Hash(batchScripts);
                     currentRun = currentRun with { FileHash = textHash };
-                    var scriptText = SqlBuildFileHelper.JoinBatchedScripts(batchScripts);
+                    var scriptText = _fileHelper.JoinBatchedScripts(batchScripts);
                     var tmpCommitted = new LoggingCommittedScript(new Guid(scriptId), currentRun.FileHash, runSequence++, scriptText, script.Tag, cData.ServerName, cData.DatabaseName);
 
                     var savePointName = scriptId.Replace("-", "");

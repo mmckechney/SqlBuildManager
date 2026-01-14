@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using SqlSync.SqlBuild.Models;
 using System.Threading.Tasks;
 using System.Threading;
+using SqlSync.SqlBuild.Services;
 
 #nullable enable
 
@@ -24,7 +25,8 @@ namespace SqlSync.SqlBuild
         public const string FileMissing = "File Missing";
         public const string Sha1HashError = "SHA1 Hash Error";
         public static string DefaultScriptXmlFile = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "Default Scripts", "DefaultScriptRegistry.xml");
-        internal static readonly ISqlBuildFileHelper DefaultFileHelper = new DefaultSqlBuildFileHelper();
+        internal static readonly ISqlBuildFileHelper fileHelper = new DefaultSqlBuildFileHelper();
+        internal static readonly IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
 
         public SqlBuildFileHelper()
         {
@@ -1360,7 +1362,7 @@ namespace SqlSync.SqlBuild
             string textHash;
             foreach (ScriptBatch batch in scriptBatchColl)
             {
-                GetSHA1Hash(batch.ScriptBatchContents, out textHash);
+                textHash=  fileHelper.GetSHA1Hash(batch.ScriptBatchContents);
                 sb.AppendLine(textHash);
             }
 
@@ -1397,8 +1399,8 @@ namespace SqlSync.SqlBuild
                 }
 
                 //We need to process the file the same as when it was run.
-                string[] split = SqlBuildHelper.ReadBatchFromScriptFile(pathName, stripTransactions, false);
-                GetSHA1Hash(split, out textHash);
+                string[] split = scriptBatcher.ReadBatchFromScriptFile(pathName, stripTransactions, false);
+                textHash = fileHelper.GetSHA1Hash(split);
                 //string scriptText = String.Join("\r\n" + BatchParsing.Delimiter + "\r\n", split);
 
                 //arrbytHashValue = oSHA1Hasher.ComputeHash(new ASCIIEncoding().GetBytes(scriptText));
@@ -1430,8 +1432,8 @@ namespace SqlSync.SqlBuild
                 var arrbytHashValue = await oSHA1Hasher.ComputeHashAsync(fs, cancellationToken).ConfigureAwait(false);
                 fileHash = System.BitConverter.ToString(arrbytHashValue).Replace("-", "");
 
-                var split = await SqlBuildHelper.ReadBatchFromScriptFileAsync(pathName, stripTransactions, false, cancellationToken).ConfigureAwait(false);
-                GetSHA1Hash(split, out textHash);
+                var split = await scriptBatcher.ReadBatchFromScriptFileAsync(pathName, stripTransactions, false, cancellationToken).ConfigureAwait(false);
+                textHash = fileHelper.GetSHA1Hash(split);
             }
             catch (FileNotFoundException)
             {
@@ -1447,28 +1449,20 @@ namespace SqlSync.SqlBuild
             return (fileHash, textHash);
         }
 
-        public static string JoinBatchedScripts(string[] batchedScripts) => DefaultFileHelper.JoinBatchedScripts(batchedScripts);
+        public static string JoinBatchedScripts(string[] batchedScripts) => fileHelper.JoinBatchedScripts(batchedScripts);
         /// <summary>
         /// Gets the file hash of a file that has been split into batch scripts using the SqlBuildHelper.ReadBatchFromScriptFile or SqlBuildHelper.ReadBatchFromScriptText method
         /// </summary>
         /// <param name="batchedScriptLines">Batched Sql script</param>
         /// <param name="textHash">SHA1 hash of the batched script.</param>
-        public static void GetSHA1Hash(string[] batchedScriptLines, out string textHash) => DefaultFileHelper.GetSHA1Hash(batchedScriptLines, out textHash);
+        public static void GetSHA1Hash(string[] batchedScriptLines) => fileHelper.GetSHA1Hash(batchedScriptLines);
         /// <summary>
         /// Computes the SHA1 hash of a string. Should only be used on string recomposed from batching
         /// </summary>
         /// <param name="textContents"></param>
         /// <returns></returns>
-        internal static string GetSHA1Hash(string textContents)
-        {
-            var oSHA1Hasher = System.Security.Cryptography.SHA1.Create();
-
-            byte[] textBytes = new ASCIIEncoding().GetBytes(textContents);
-            byte[] arrbytHashValue = oSHA1Hasher.ComputeHash(textBytes);
-            string textHash = System.BitConverter.ToString(arrbytHashValue);
-            textHash = textHash.Replace("-", "");
-            return textHash;
-        }
+        internal static string GetSHA1Hash(string textContents) => fileHelper.GetSHA1Hash(textContents);
+       
         #endregion
 
         #region .: Renumbering/ Resorting :.
@@ -1663,7 +1657,7 @@ namespace SqlSync.SqlBuild
                     if (includeUSE)
                         sb.Append("USE " + row.Database + "\r\nGO\r\n");
 
-                    batch = SqlBuildHelper.ReadBatchFromScriptFile(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true);
+                    batch = scriptBatcher.ReadBatchFromScriptFile(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true);
                     for (int j = 0; j < batch.Length; j++)
                         sb.Append(batch[j] + "\r\n");
 
@@ -1711,7 +1705,7 @@ namespace SqlSync.SqlBuild
                     sb.Append("\r\n-- Source File: " + row.FileName + "\r\n");
                     if (includeUSE)
                         sb.Append("USE " + row.Database + "\r\nGO\r\n");
-                    batch = SqlBuildHelper.ReadBatchFromScriptFile(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true);
+                    batch = scriptBatcher.ReadBatchFromScriptFile(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true);
                     for (int j = 0; j < batch.Length; j++)
                         sb.Append(batch[j] + "\r\n");
                 }
@@ -1756,7 +1750,7 @@ namespace SqlSync.SqlBuild
                     if (includeUSE)
                         sb.Append("USE " + row.Database + "\r\nGO\r\n");
 
-                    batch = await SqlBuildHelper.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true, cancellationToken).ConfigureAwait(false);
+                    batch = await scriptBatcher.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true, cancellationToken).ConfigureAwait(false);
                     for (int j = 0; j < batch.Length; j++)
                         sb.Append(batch[j] + "\r\n");
 
@@ -1800,7 +1794,7 @@ namespace SqlSync.SqlBuild
                     sb.Append("\r\n-- Source File: " + row.FileName + "\r\n");
                     if (includeUSE)
                         sb.Append("USE " + row.Database + "\r\nGO\r\n");
-                    batch = await SqlBuildHelper.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true, cancellationToken).ConfigureAwait(false);
+                    batch = await scriptBatcher.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true, cancellationToken).ConfigureAwait(false);
                     for (int j = 0; j < batch.Length; j++)
                         sb.Append(batch[j] + "\r\n");
                 }

@@ -10,7 +10,7 @@ using SqlSync.Constants;
 
 namespace SqlSync.SqlBuild.Services
 {
-    internal sealed class DefaultScriptBatcher : IScriptBatcher
+    public sealed class DefaultScriptBatcher : IScriptBatcher
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

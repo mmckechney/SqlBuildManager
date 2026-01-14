@@ -3,7 +3,8 @@ using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
 using SqlSync.SqlBuild; // For ToModel extensions
-using BuildModels = SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.Services;
 using SqlSync.SqlBuild.SqlLogging;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
-using SqlSync.SqlBuild.Models;
+using BuildModels = SqlSync.SqlBuild.Models;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
@@ -473,7 +474,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             DataView view = buildData.Script.DefaultView;
 
             bool isMultiDbRun = false;
-            ScriptBatchCollection scriptBatchColl = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), string.Empty);
+            IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
+            ScriptBatchCollection scriptBatchColl = scriptBatcher.LoadAndBatchSqlScripts(buildData.ToModel(), string.Empty);
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
@@ -1662,7 +1664,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             init.AddBatchInsertScripts(ref buildData, true);
 
             ScriptBatchCollection actual;
-            actual = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), string.Empty);
+            IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
+            actual = scriptBatcher.LoadAndBatchSqlScripts(buildData.ToModel(), string.Empty);
             Assert.IsTrue(2 == actual.Count, "Invalid Batch Count " + actual.Count.ToString() + " vs 2");
             Assert.IsTrue(2 == actual[0].ScriptBatchContents.Length, "Invalid Batch Length " + actual.Count.ToString() + " vs 2");
         }
@@ -1926,7 +1929,9 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 "This is line 5"};
 
             string[] actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptLines, stripTransaction, maintainBatchDelimiter).ToArray();
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            string scriptContents = string.Join(Environment.NewLine, scriptLines);
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter).ToArray();
             Assert.AreEqual(2, actual.Length, "Expected 2 lines, got " + actual.Length.ToString());
             Assert.IsTrue(actual[0].IndexOf("GO") == -1, "Expected the \"GO\" delimiter to be absent");
             Assert.IsTrue(actual[0].IndexOf("2") > -1);
@@ -1948,7 +1953,9 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 "This is line 5"};
 
             string[] actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptLines, stripTransaction, maintainBatchDelimiter).ToArray(); ;
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            string scriptContents = string.Join(Environment.NewLine, scriptLines);
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter).ToArray();
             Assert.IsTrue(actual[0].IndexOf("GO") > -1, "Expected the \"GO\" delimiter to be present");
         }
 
@@ -1974,7 +1981,9 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 };
 
             string[] actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptLines, stripTransaction, maintainBatchDelimiter).ToArray(); ;
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            string scriptContents = string.Join(Environment.NewLine, scriptLines);
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter).ToArray();
             Assert.AreEqual(2, actual.Length);
             Assert.IsTrue(actual[0].Trim().Length == 0);
             Assert.IsTrue(actual[1].Trim().Length == 0);
@@ -2002,7 +2011,9 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 };
 
             string[] actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptLines, stripTransaction, maintainBatchDelimiter).ToArray();
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            string scriptContents = string.Join(Environment.NewLine, scriptLines);
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter).ToArray();
             Assert.AreEqual(3, actual.Length);
             Assert.IsTrue(actual[0].IndexOf("ROLLBACK") > -1);
             Assert.IsTrue(actual[1].IndexOf("COMMIT") > -1);
@@ -2029,7 +2040,8 @@ SELECT * FROM MyTable
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(1, actual.Count);
             //Expect that the last \r\n is trimmed from the script
             Assert.AreEqual(scriptContents.Substring(0, scriptContents.Length - 2), actual[0]);
@@ -2052,7 +2064,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
 
         }
@@ -2078,7 +2091,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[0].IndexOf("TRAN") == -1);
 
@@ -2106,7 +2120,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[0].IndexOf("BEGIN TRAN") > 0);
             Assert.IsTrue(actual[0].IndexOf("COMMIT TRAN") > 0);
@@ -2136,7 +2151,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[0].IndexOf("TRAN") == -1);
             Assert.IsTrue(actual[1].IndexOf("TRAN") > 0);
@@ -2167,7 +2183,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[0].IndexOf("TRAN") == -1);
             Assert.IsTrue(actual[1].IndexOf("TRAN") > 0);
@@ -2198,7 +2215,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[0].IndexOf("BEGIN TRAN") > 0);
             Assert.IsTrue(actual[0].IndexOf("COMMIT TRAN") > 0);
@@ -2224,7 +2242,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
 
         }
@@ -2247,7 +2266,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[1].IndexOf("This GO should still be here") > 0);
 
@@ -2274,7 +2294,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[1].IndexOf("This GO should still be here") > 0);
 
@@ -2299,7 +2320,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[0].IndexOf("USE") == -1);
             Assert.IsTrue(actual[2].IndexOf("USE") == -1);
@@ -2325,7 +2347,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[0].IndexOf("USE") == -1);
             Assert.IsTrue(actual[2].IndexOf("USE") > 0);
@@ -2355,678 +2378,13 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[0].IndexOf("USE") == -1);
             Assert.IsTrue(actual[2].IndexOf("USE") > 0);
 
         }
-        #endregion
-
-        #region Compare Old and New ReadBatchFromScriptText
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_NoDelimiterNoTrailingCR()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = true;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(actual2[0], actual1[0]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_NoDelimiterOneTrailingCR()
-        {
-            string scriptContents = @"
-        SELECT * FROM MyTable
-        ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = true;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(actual2[0], actual1[0]);
-
-        }
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_NoDelimiterTwoTrailingCR()
-        {
-            string scriptContents = @"
-        SELECT * FROM MyTable
-        
-        ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = true;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(actual2[0], actual1[0]);
-
-        }
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_NoDelimiterThreeTrailingCR()
-        {
-            string scriptContents = @"
-        SELECT * FROM MyTable
-        
-        
-        ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = true;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(actual2[0], actual1[0]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithMaintainDelimiter()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable
-GO
-SELECT * FROM YourTable
-  GO
-SELECT * FROM TheirTable
-  GO    
-SELECT * from WhoseTable
-  GO ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = true;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithDontMaintainDelimiter()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-SELECT * FROM YourTable 
-  GO
-SELECT * FROM TheirTable 
-  GO    
-SELECT * from WhoseTable
-Go   ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_VaryingEndGo1()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-SELECT * FROM YourTable 
-  GO
-SELECT * FROM TheirTable 
-  GO    
-SELECT * from WhoseTable
-Go   ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_VaryingEndGo2()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-SELECT * FROM YourTable 
-  GO
-SELECT * FROM TheirTable 
-  GO    
-SELECT * from WhoseTable
-
-
-Go   ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_VaryingEndGo3()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-SELECT * FROM YourTable 
-  GO
-SELECT * FROM TheirTable 
-  GO    
-SELECT * from WhoseTable
-    Go   ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_VaryingEndGo4()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-SELECT * FROM YourTable 
-  GO
-SELECT * FROM TheirTable 
-  GO    
-SELECT * from WhoseTable
-      ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_VaryingEndGo5()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-SELECT * FROM YourTable 
-  GO
-SELECT * FROM TheirTable 
-  GO    
-SELECT * from WhoseTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithDelimiterInLineComment()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-    SELECT * FROM MyTable   
-    GO      
-SELECT * FROM YourTable
---This GO should still be here
-  GO
-SELECT * FROM TheirTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-            //We expect a go on the same line as a "--" comment will match
-            Assert.IsTrue(actual1.Count == 4);
-            Assert.IsTrue(actual2.Length == 4);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithDelimiterInBulkComment()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable
-GO
-SELECT * FROM YourTable
-/* 
-This should still be here since it's in a bulk comment section
-GO
-*/
-  GO
-SELECT * FROM TheirTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            //We expect a GO in it's own line of a bulk comment will result in differences
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 4);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreNotEqual(actual2[1], actual1[1]);
-            Assert.IsTrue(actual1[2].StartsWith("SELECT * FROM TheirTable"));
-            Assert.AreEqual(actual2[3], actual1[2]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithRemoveTransactions()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
-SELECT * FROM YourTable
-  GO
-SELECT * FROM TheirTable";
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = true;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithRemoveTransactionsCommented()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
--- {0}
-SELECT * FROM YourTable
--- {1}
-  GO
-SELECT * FROM TheirTable";
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = true;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            //We expect that the "old" method did a non-qualified replace, while the new honors comments
-            Assert.AreNotEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-
-            Assert.IsTrue(actual1[1].IndexOf("TRAN") > 0);
-            Assert.IsTrue(actual2[1].IndexOf("TRAN") == -1);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithRemoveTransactionsCommentedInBulk()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
-/* {0}  */
-SELECT * FROM YourTable
-/*
-
-{1}
-
-*/
-  GO
-SELECT * FROM TheirTable";
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = true;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            //We expect that the "old" method did a non-qualified replace, while the new honors comments
-            Assert.AreNotEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-
-            Assert.IsTrue(actual1[1].IndexOf("TRAN") > 0);
-            Assert.IsTrue(actual2[1].IndexOf("TRAN") == -1);
-
-        }
-
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithLeaveTransactions()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
-SELECT * FROM YourTable
-  GO
-SELECT * FROM TheirTable";
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithRemoveUseStatements()
-        {
-            string scriptContents = @"
-        USE myNewDatabase
-SELECT * FROM MyTable
-GO
-SELECT * FROM YourTable
-  GO
-USE theirNewDatabase            
-
-SELECT * FROM TheirTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithRemoveUseStatementsLineComment()
-        {
-            string scriptContents = @"
-        USE myNewDatabase
-SELECT * FROM MyTable
-GO
-SELECT * FROM YourTable
-  GO
---    USE theirNewDatabase            
-
-SELECT * FROM TheirTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithRemoveUseStatementsBulkComment()
-        {
-            string scriptContents = @"
-        USE myNewDatabase
-SELECT * FROM MyTable
-GO
-SELECT * FROM YourTable
-  GO
-/*
-
-USE theirNewDatabase            
-
-*/
-
-SELECT * FROM TheirTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-
-            //Expect a difference between new and old
-            Assert.AreNotEqual(actual2[2], actual1[2]);
-
-            Assert.IsTrue(actual1[2].IndexOf("USE") > -1);
-            Assert.IsTrue(actual2[2].IndexOf("USE") == -1);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithLeadingGo()
-        {
-            string scriptContents = @"
-GO
-
-
-UPDATE SView 
-SET FromClause = ' vw_MyCoolView vcbdd ON vco.CompanyNumber= vcbdd.CompanyNumber AND vco.PR_CompanyNumber= vcbdd.P_Company_Id'
-WHERE View_Id = 12434
-
-UPDATE SView
-SET FromClause = ' vw_rpt_Direct_Deposits_Company vdd ON vco.CompanyNumber= vdd.CompanyNumber and vco.companycode = vdd.p_company_id'
-WHERE View_Id = 405634
-GO
-
-";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            Assert.IsTrue(actual1.Count == 2);
-            Assert.IsTrue(actual2.Length == 2);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-
-        }
-
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_ComparePackageFilesRemoveDelimiter()
-        {
-            string[] paths = new string[] {
-                @"C:\SqlBuildManager_Tests\",
-                @"C:\SqlBuildManager_Tests1\",
-                @"C:\SqlBuildManager_Tests2\",
-                @"C:\SqlBuildManager_Tests3\",
-                @"C:\SqlBuildManager_Tests4\",
-                @"C:\SqlBuildManager_Tests5\"};
-
-            bool assertFail = false;
-            string hashFromOld;
-            string hashFromNew;
-            foreach (string path in paths)
-            {
-                if (!Directory.Exists(path))
-                    Assert.Inconclusive("Test path not available");
-
-                string[] files = Directory.GetFiles(path);
-                Console.WriteLine(String.Format("Comparing {0} files", files.Length));
-
-                foreach (string file in files)
-                {
-
-                    string[] scriptLines = File.ReadAllLines(file);
-                    string[] batch = SqlBuildHelper.ReadBatchFromScriptText(scriptLines, false, false).ToArray();
-
-                    string scriptContents = File.ReadAllText(file);
-                    string[] batchNew = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, false, false).ToArray();
-
-                    Assert.AreEqual(batch.Length, batchNew.Length, String.Format("Batch lengths are different for {0}. Old={1}; New={2}", file, batch.Length.ToString(), batchNew.Length.ToString()));
-                    for (int i = 0; i < batch.Length; i++)
-                    {
-                        if (batch[i] != batchNew[i])
-                        {
-                            Console.WriteLine(String.Format("Batch difference found in file {0}, batch index {1}", file, i.ToString()));
-                            assertFail = true;
-                        }
-
-                    }
-                    SqlBuildFileHelper.GetSHA1Hash(batch, out hashFromOld);
-                    SqlBuildFileHelper.GetSHA1Hash(batchNew, out hashFromNew);
-                    Assert.AreEqual(hashFromOld, hashFromNew);
-
-                }
-            }
-            Assert.IsFalse(assertFail, "One or more failures. See Console output");
-
-        }
-
         #endregion
 
         #region RemoveTransactionReferencesTest

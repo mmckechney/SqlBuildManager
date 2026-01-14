@@ -2,7 +2,8 @@ namespace SqlSync.SqlBuild
 {
     public interface ISqlBuildFileHelper
     {
-        void GetSHA1Hash(string[] batchScripts, out string textHash);
+        string GetSHA1Hash(string[] batchScripts);
+        string GetSHA1Hash(string batchScript);
         string JoinBatchedScripts(string[] batchScripts);
     }
 }

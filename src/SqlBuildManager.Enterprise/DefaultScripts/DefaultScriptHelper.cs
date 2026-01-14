@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.SqlServer.Dac.Model;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,6 +11,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
 {
     public class DefaultScriptHelper
     {
+        private static readonly ISqlBuildFileHelper fileHelper = new DefaultSqlBuildFileHelper();
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static bool SetEnterpriseDefaultScripts(List<DefaultScriptRegistryFile> defaultScriptRegs, List<string> groupMemberships)
         {
@@ -86,7 +89,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             string localHash = string.Empty;
             try
             {
-                SqlBuildFileHelper.GetSHA1Hash(new string[] { File.ReadAllText(localFilePath) }, out localHash);
+                localHash = fileHelper.GetSHA1Hash(new string[] { File.ReadAllText(localFilePath) });
                 log.LogDebug($"Local file name and hash: {localFilePath} | {localHash}");
             }
             catch (Exception exe)
@@ -98,7 +101,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             string enterpriseHash = string.Empty;
             try
             {
-                SqlBuildFileHelper.GetSHA1Hash(new string[] { File.ReadAllText(enterpriseFilePath) }, out enterpriseHash);
+                enterpriseHash = fileHelper.GetSHA1Hash(new string[] { File.ReadAllText(enterpriseFilePath) });
                 log.LogDebug($"Enterprise file name and hash: {enterpriseFilePath} | {enterpriseHash}");
             }
             catch (Exception exe)

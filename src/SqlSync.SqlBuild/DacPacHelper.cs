@@ -1,8 +1,10 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Azure.Core;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Dac;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
+using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +16,7 @@ namespace SqlSync.SqlBuild
     public class DacPacHelper
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
 
         public static bool ExtractDacPac(string sourceDatabase, string sourceServer, AuthenticationType authType, string userName, string password, string dacPacFileName, int timeouts, string managedIdentityClientId)
         {
@@ -186,7 +189,7 @@ namespace SqlSync.SqlBuild
 
             List<string> files = new List<string>();
             log.LogInformation("Parsing our master update script into batch scripts");
-            var batched = SqlBuildHelper.ReadBatchFromScriptText(masterScript, true, false);
+            var batched = scriptBatcher.ReadBatchFromScriptText(masterScript, true, false);
             foreach (var script in batched)
             {
                 if (script.Trim().Length == 0)

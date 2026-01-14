@@ -5,6 +5,7 @@ using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.Constants;
 using SqlSync.SqlBuild.MultiDb;
+using SqlSync.SqlBuild.Services;
 using SqlSync.SqlBuild.SqlLogging;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
 using BuildModels = SqlSync.SqlBuild.Models;
@@ -66,6 +67,7 @@ namespace SqlSync.SqlBuild
         /// User description of the build
         /// </summary>
         internal string buildDescription;
+        public string BuildDescription => buildDescription;
         /// <summary>
         /// Index where the build should start
         /// </summary>
@@ -122,6 +124,7 @@ namespace SqlSync.SqlBuild
         /// Name of the build file (.sbm)
         /// </summary>
         internal string buildFileName = string.Empty;
+        public string BuildFileName => buildFileName;
         /// <summary>
         /// Names of scripts selected in the GUI
         /// </summary>
@@ -140,6 +143,7 @@ namespace SqlSync.SqlBuild
         /// The hash signature of the build package scripts
         /// </summary>
         internal string buildPackageHash = string.Empty;
+        public string BuildPackageHash => buildPackageHash;
         /// <summary>
         /// Database to write commits to if an alternate logging database has been specified
         /// </summary>
@@ -293,6 +297,7 @@ namespace SqlSync.SqlBuild
             ScriptBatcher = new Services.DefaultScriptBatcher();
             TokenReplacementService = new Services.DefaultTokenReplacementService();
             SqlLoggingService = new Services.DefaultSqlLoggingService(this);
+
             if (createScriptRunLogFile)
                 ScriptLogWriteEvent += new ScriptLogWriteEventHandler(SqlBuildHelper_ScriptLogWriteEvent);
 
@@ -1104,7 +1109,7 @@ namespace SqlSync.SqlBuild
         /// <param name="scriptTextHash">out string for the hash of the parsed script</param>
         /// <param name="commitDate">out DateTime for the commit date that is blocking the re-run</param>
         /// <returns>True if there is a script block in place</returns>
-        public static bool HasBlockingSqlLog(System.Guid scriptId, ConnectionData cData, string databaseName, out string scriptHash, out string scriptTextHash, out DateTime commitDate)
+        public bool HasBlockingSqlLog(System.Guid scriptId, ConnectionData cData, string databaseName, out string scriptHash, out string scriptTextHash, out DateTime commitDate)
         {
 
 
@@ -1133,7 +1138,7 @@ namespace SqlSync.SqlBuild
                         {
                             scriptHash = (reader[1] == DBNull.Value) ? string.Empty : reader[1].ToString();
                             commitDate = (reader[2] == DBNull.Value) ? DateTime.MinValue : DateTime.Parse(reader[2].ToString());
-                            scriptTextHash = (reader[3] == DBNull.Value) ? string.Empty : SqlBuildFileHelper.GetSHA1Hash(reader[3].ToString());
+                            scriptTextHash = (reader[3] == DBNull.Value) ? string.Empty : FileHelper.GetSHA1Hash(reader[3].ToString());
                             i++;
                         }
 
@@ -1288,52 +1293,7 @@ namespace SqlSync.SqlBuild
 
         #endregion
 
-        #region ## Script File Batching & IO Helper Methods ##
-        #region New File Batching with Regex - honors text in comments
-        public static List<string> ReadBatchFromScriptText(string[] scriptLines, bool stripTransaction, bool maintainBatchDelimiter)
-        {
-            var stringContents = string.Join(Environment.NewLine, scriptLines);
-            return ReadBatchFromScriptText(stringContents, stripTransaction, maintainBatchDelimiter);
-        }
-        public static List<string> ReadBatchFromScriptText(string scriptContents, bool stripTransaction, bool maintainBatchDelimiter)
-        {
-            var batcher = new DefaultScriptBatcher();
-            return batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-        }
-        public static string[] ReadBatchFromScript(string scriptContents, bool stripTransaction, bool maintainBatchDelimiter)
-        {
-            return ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter).ToArray();
-        }
 
-        #endregion
-
-        #region Old File Batching with string replace
-        /// <summary>
-        /// Breaks Sql file into batches
-        /// </summary>
-        /// <param name="fileName">Name of the file to parse</param>
-        /// <param name="stripTransaction">Flag to strip out references to a transaction</param>
-        /// <param name="maintainBatchDelimiter">Flag to keep or remove the batch delimiter ("GO")</param>
-        /// <returns>String array for each command to run in batch</returns>
-        public static string[] ReadBatchFromScriptFile(string fileName, bool stripTransaction, bool maintainBatchDelimiter)
-        {
-            var batcher = new DefaultScriptBatcher();
-            return batcher.ReadBatchFromScriptFile(fileName, stripTransaction, maintainBatchDelimiter);
-        }
-
-        public static async Task<string[]> ReadBatchFromScriptFileAsync(string fileName, bool stripTransaction, bool maintainBatchDelimiter, CancellationToken cancellationToken = default)
-        {
-            var batcher = new DefaultScriptBatcher();
-            return await batcher.ReadBatchFromScriptFileAsync(fileName, stripTransaction, maintainBatchDelimiter, cancellationToken);
-        }
-
-        #endregion
-
-        public static ScriptBatchCollection LoadAndBatchSqlScripts(BuildModels.SqlSyncBuildDataModel model, string projectFilePath)
-        {
-            var batcher = new DefaultScriptBatcher();
-            return batcher.LoadAndBatchSqlScripts(model, projectFilePath);
-        }
         
         public static string RemoveUseStatement(string script)
         {
@@ -1384,7 +1344,6 @@ namespace SqlSync.SqlBuild
             }
             return script;
         }
-        #endregion
 
         #region ## SQL Connection Helper Methods ##
         internal BuildConnectData GetConnectionDataClass(string serverName, string databaseName)
@@ -1706,7 +1665,6 @@ namespace SqlSync.SqlBuild
 
         BuildConnectData ISqlBuildRunnerContext.GetConnectionDataClass(string serverName, string databaseName) => GetConnectionDataClass(serverName, databaseName);
         string ISqlBuildRunnerContext.GetTargetDatabase(string defaultDatabase) => GetTargetDatabase(defaultDatabase);
-        string[] ISqlBuildRunnerContext.ReadBatchFromScriptFile(string path, bool stripTransaction, bool useRegex) => ReadBatchFromScriptFile(path, stripTransaction, useRegex);
         Task<string[]> ISqlBuildRunnerContext.ReadBatchFromScriptFileAsync(string path, bool stripTransaction, bool useRegex, CancellationToken cancellationToken) => ScriptBatcher.ReadBatchFromScriptFileAsync(path, stripTransaction, useRegex, cancellationToken);
         string ISqlBuildRunnerContext.PerformScriptTokenReplacement(string script) => PerformScriptTokenReplacement(script);
         Task<string> ISqlBuildRunnerContext.PerformScriptTokenReplacementAsync(string script, CancellationToken cancellationToken) => TokenReplacementService.ReplaceTokensAsync(script, this, cancellationToken);

@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -415,8 +416,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             string fromPath = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 
-
-            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
+            IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
+            ScriptBatchCollection batch = scriptBatcher.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
             string fromBatch = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             if (Directory.Exists(projectFileExtractionPath))
@@ -473,8 +474,8 @@ needs to be removed");
 
             string fromPath = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 
-
-            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
+            IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
+            ScriptBatchCollection batch = scriptBatcher.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
             string fromBatch = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             if (Directory.Exists(projectFileExtractionPath))
@@ -531,8 +532,8 @@ needs to be removed");
 
             string fromPath = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 
-
-            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
+            IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
+            ScriptBatchCollection batch = scriptBatcher.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
             string fromBatch = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             if (Directory.Exists(projectFileExtractionPath))
@@ -589,7 +590,8 @@ needs to be removed");
 
             string fromPath123 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 
-            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
+            IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
+            ScriptBatchCollection batch = scriptBatcher.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
             string fromBatch123 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             buildData.Script[0].BuildOrder = 2;
@@ -599,7 +601,7 @@ needs to be removed");
 
             string fromPath213 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
 
-            batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
+            batch = scriptBatcher.LoadAndBatchSqlScripts(buildData.ToModel(), projectFileExtractionPath);
             string fromBatch213 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
 
@@ -646,11 +648,12 @@ CREATE TABLE [dbo].[SyncTestTable](
 ) ON [PRIMARY]
 END
 ";
-
-            string[] arrScripts = SqlBuildHelper.ReadBatchFromScriptText(script, true, false).ToArray();
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            ISqlBuildFileHelper fileHelper = new DefaultSqlBuildFileHelper();
+            string[] arrScripts = batcher.ReadBatchFromScriptText(script, true, false).ToArray();
             string hashFromArray;
-            SqlBuildFileHelper.GetSHA1Hash(arrScripts, out hashFromArray);
-            string hashFromString = SqlBuildFileHelper.GetSHA1Hash(script.ClearTrailingCarriageReturn());
+            hashFromArray = fileHelper.GetSHA1Hash(arrScripts);
+            string hashFromString = fileHelper.GetSHA1Hash(script.ClearTrailingCarriageReturn());
             Assert.AreEqual(hashFromString, hashFromArray);
         }
         #endregion

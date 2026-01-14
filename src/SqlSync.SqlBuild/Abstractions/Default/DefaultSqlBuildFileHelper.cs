@@ -1,14 +1,24 @@
+using System.Text;
+
 namespace SqlSync.SqlBuild
 {
-    internal sealed class DefaultSqlBuildFileHelper : ISqlBuildFileHelper
+    public sealed class DefaultSqlBuildFileHelper : ISqlBuildFileHelper
     {
-        public void GetSHA1Hash(string[] batchScripts, out string textHash)
+        public string GetSHA1Hash(string[] batchScripts)
         {
             string scriptText = JoinBatchedScripts(batchScripts);
-            using var sha1 = System.Security.Cryptography.SHA1.Create();
-            var bytes = System.Text.Encoding.ASCII.GetBytes(scriptText);
-            var hash = sha1.ComputeHash(bytes);
-            textHash = System.BitConverter.ToString(hash).Replace("-", "");
+           return GetSHA1Hash(scriptText);
+        }
+
+        public string GetSHA1Hash(string textContents)
+        {
+            var oSHA1Hasher = System.Security.Cryptography.SHA1.Create();
+
+            byte[] textBytes = new ASCIIEncoding().GetBytes(textContents);
+            byte[] arrbytHashValue = oSHA1Hasher.ComputeHash(textBytes);
+            string textHash = System.BitConverter.ToString(arrbytHashValue);
+            textHash = textHash.Replace("-", "");
+            return textHash;
         }
 
         public string JoinBatchedScripts(string[] batchedScripts)

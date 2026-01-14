@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using SqlSync.SqlBuild.Scripting;
 
 namespace SqlSync.SqlBuild.Services
 {

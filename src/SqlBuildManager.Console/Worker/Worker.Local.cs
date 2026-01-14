@@ -249,7 +249,7 @@ namespace SqlBuildManager.Console
             log.LogDebug(cmdLine.ToStringExtension(StringType.Basic));
             log.LogDebug(cmdLine.ToStringExtension(StringType.Batch));
             log.LogInformation("Running Threaded Execution...");
-            ThreadedManager tManager = new ThreadedManager(cmdLine);
+            ThreadedManager tManager = new ThreadedManager(cmdLine, null);
             int retVal = tManager.Execute();
             ExecutionReturn exeResult;
             if (Enum.TryParse<ExecutionReturn>(retVal.ToString(), out exeResult))

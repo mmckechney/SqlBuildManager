@@ -1,5 +1,7 @@
+using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Services;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
@@ -17,7 +19,8 @@ GO
 */
 SELECT 2;
 ";
-            var batches = SqlBuildHelper.ReadBatchFromScriptText(script, stripTransaction: false, maintainBatchDelimiter: false);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            var batches = batcher.ReadBatchFromScriptText(script, stripTransaction: false, maintainBatchDelimiter: false);
             Assert.AreEqual(2, batches.Count);
             StringAssert.Contains(batches[0], "SELECT 1");
             StringAssert.Contains(batches[1], "SELECT 2");
@@ -27,7 +30,8 @@ SELECT 2;
         public void ReadBatchFromScriptText_MaintainsDelimiter_WhenRequested()
         {
             var script = "SELECT 1;\nGO\nSELECT 2;\n";
-            var batches = SqlBuildHelper.ReadBatchFromScriptText(script, stripTransaction: false, maintainBatchDelimiter: true);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            var batches = batcher.ReadBatchFromScriptText(script, stripTransaction: false, maintainBatchDelimiter: true);
             Assert.AreEqual(2, batches.Count);
             StringAssert.Contains(batches[0], "GO");
         }
@@ -39,7 +43,8 @@ SELECT 2;
 SELECT 1;
 COMMIT TRANSACTION
 ";
-            var batches = SqlBuildHelper.ReadBatchFromScriptText(script, stripTransaction: true, maintainBatchDelimiter: false);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            var batches = batcher.ReadBatchFromScriptText(script, stripTransaction: true, maintainBatchDelimiter: false);
             Assert.AreEqual(1, batches.Count);
             Assert.IsFalse(batches[0].ToUpperInvariant().Contains("BEGIN TRAN"));
             Assert.IsFalse(batches[0].ToUpperInvariant().Contains("COMMIT TRAN"));

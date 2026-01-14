@@ -7,6 +7,7 @@ using SqlSync.Connection;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
+using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -109,9 +110,11 @@ namespace SqlBuildManager.Console.Threaded
             get { return buildDataModel; }
         }
 
-        public ThreadedManager(CommandLineArgs cmd)
+        private readonly IScriptBatcher _scriptBatcher;
+        public ThreadedManager(CommandLineArgs cmd, IScriptBatcher scriptBatcher)
         {
             cmdLine = cmd;
+            _scriptBatcher = scriptBatcher ?? new DefaultScriptBatcher();
         }
 
         /// <summary>
@@ -433,7 +436,7 @@ namespace SqlBuildManager.Console.Threaded
                 else
                 {
                     //Load up the batched scripts into a shared object so that we can conserve memory
-                    ThreadedManager.batchColl = SqlBuildHelper.LoadAndBatchSqlScripts(ThreadedManager.buildDataModel, projectFilePath);
+                    ThreadedManager.batchColl = _scriptBatcher.LoadAndBatchSqlScripts(ThreadedManager.buildDataModel, projectFilePath);
                 }
 
             }
