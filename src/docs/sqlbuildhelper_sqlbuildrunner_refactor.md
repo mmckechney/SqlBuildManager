@@ -155,8 +155,11 @@
 - Simplify public surface to POCO models; isolate DataSet usage.
 
 ### Phase 7: Hardening & Docs
-- Add unit tests per extracted service; integration tests with in-memory FS + fake SQL executor.
-- Document module boundaries and extension points.
+- ✅ Added `SqlBuildOrchestratorTests` validating timeout retry → `CommittedWithTimeoutRetries`.
+- ✅ `dotnet test SqlSync.SqlBuild.UnitTest` passing (84 passed, 3 skipped).
+- ⚠️ Warnings remain (nullability + `[Obsolete]` usage in tests); address incrementally.
+- 🔜 Add unit tests per extracted service; integration tests with in-memory FS + fake SQL executor.
+- 🔜 Document module boundaries and extension points.
 
 ## Quick Wins
 - Add tests for `HandleSqlException` and `ReadBatchFromScriptText` (edge cases: `GO` in comments, transaction stripping).
