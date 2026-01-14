@@ -1666,6 +1666,13 @@ namespace SqlSync.SqlBuild
 
         }
 
+        public static async Task<string[]> ReadBatchFromScriptFileAsync(string fileName, bool stripTransaction, bool maintainBatchDelimiter, CancellationToken cancellationToken = default)
+        {
+            var contents = await System.IO.File.ReadAllTextAsync(fileName, cancellationToken).ConfigureAwait(false);
+            var batches = ReadBatchFromScriptText(contents, stripTransaction, maintainBatchDelimiter);
+            return batches.ToArray();
+        }
+
         #endregion
 
         public static ScriptBatchCollection LoadAndBatchSqlScripts(BuildModels.SqlSyncBuildDataModel model, string projectFilePath)
