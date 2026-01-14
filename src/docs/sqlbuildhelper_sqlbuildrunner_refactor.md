@@ -19,6 +19,7 @@
 - [x] 2026-01-14: Phase 5f start — async packaging API variants & tests.
 - [x] 2026-01-14: Phase 5g start — true async ZIP persistence & tests.
 - [x] 2026-01-14: Phase 5h start — consolidate `ISqlBuildFileHelper` default implementation.
+- [x] 2026-01-14: Phase 6 start — deprecate legacy APIs & prep DI seams.
 
 ## Current State
 - `SqlBuildHelper.cs`: ~2356 LOC, multiple responsibilities (prep, execution, batching, logging, persistence, legacy conversions, DacPac, token replacement, FS IO, retries).
@@ -146,8 +147,11 @@
 - ✅ Tests passing.
 
 ### Phase 6: Deprecate & Clean
-- Mark legacy APIs `[Obsolete]`; keep thin adapters.
-- Remove static globals; wire via DI container.
+- ✅ Marked `SqlBuildHelper.SqlBuildRunnerFactory` `[Obsolete]`.
+- ✅ Prior `[Obsolete]` decorations exist on DataSet-based APIs in `SqlBuildFileHelper` and `ClearScriptData`.
+- 🔜 Additional `[Obsolete]` markings for any remaining DataSet overloads (review as needed).
+- 🔜 Remove/reduce static globals; introduce DI seams for runner factory & logger.
+- 🔜 Simplify public surface to POCO models; isolate DataSet usage behind adapters.
 - Simplify public surface to POCO models; isolate DataSet usage.
 
 ### Phase 7: Hardening & Docs
