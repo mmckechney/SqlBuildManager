@@ -392,7 +392,6 @@ namespace SqlSync.SqlBuild
             buildFileName = Path.GetFileName(runData.BuildFileName ?? string.Empty);
             targetDatabaseOverrides = runData.TargetDatabaseOverrides?.ToList();
             logToDatabaseName = runData.LogToDatabaseName ?? string.Empty;
-            int buildRetries = 0;
 
             if (bgWorker != null)
                 bgWorker.ReportProgress(0, new GeneralStatusEventArgs($"Starting Build Process targeting: {serverName} "));
@@ -403,27 +402,8 @@ namespace SqlSync.SqlBuild
                 return prep.Build;
             }
 
-            BuildModels.Build buildResultsModel = null;
-            //Run the build... retry as needed until we exceed the retry count.
-            while (buildRetries <= allowableTimeoutRetries &&
-                (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString()))
-            {
-                if (buildRetries > 0)
-                {
-                    ScriptLogWriteEvent?.Invoke(null, false, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
-                    ResetConnectionsForRetry();
-                }
-                buildResultsModel = RunBuildScripts(prep.FilteredScripts, prep.Build, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref e);
-
-                if (buildRetries > 0 && buildResultsModel.FinalStatus == BuildItemStatus.Committed.ToString())
-                    buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries.ToString() };
-
-                buildRetries++;
-                if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString())
-                {
-                    log.LogWarning($"Timeout encountered. Incrementing retries to {buildRetries}");
-                }
-            }
+            var orchestrator = new Services.SqlBuildOrchestrator(this);
+            var buildResultsModel = orchestrator.Execute(runData, prep, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
 
             bool candidateForCustomDacPac = false;
             switch (buildResultsModel.FinalStatus)
@@ -488,13 +468,9 @@ namespace SqlSync.SqlBuild
             }
 
             //If a timeout gets here.. need to decide how to label the rollback
-            if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString() && buildRetries > 1) //will always be at least 1..
+            if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString())
             {
-                buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.RolledBackAfterRetries.ToString() };
-            }
-            else if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString())
-            {
-                buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.RolledBack.ToString() };
+                buildResultsModel = buildResultsModel with { FinalStatus = allowableTimeoutRetries > 0 ? BuildItemStatus.RolledBackAfterRetries.ToString() : BuildItemStatus.RolledBack.ToString() };
             }
 
             switch (buildResultsModel.FinalStatus)
@@ -639,7 +615,7 @@ namespace SqlSync.SqlBuild
 
     
 
-        private void ResetConnectionsForRetry()
+        internal void ResetConnectionsForRetry()
         {
             try
             {
