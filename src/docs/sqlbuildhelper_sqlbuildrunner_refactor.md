@@ -8,6 +8,7 @@
 - [ ] 2026-01-14: Phase 2 kickoff — introduce interfaces and seams.
  - [x] 2026-01-14: Phase 3 start — scaffold services (prep, batcher, token, logging).
 - [ ] 2026-01-14: Phase 4 start — orchestrator extraction & retry wiring.
+- [ ] 2026-01-14: Phase 5 start — async entry points & progress abstraction.
 
 ## Current State
 - `SqlBuildHelper.cs`: ~2356 LOC, multiple responsibilities (prep, execution, batching, logging, persistence, legacy conversions, DacPac, token replacement, FS IO, retries).

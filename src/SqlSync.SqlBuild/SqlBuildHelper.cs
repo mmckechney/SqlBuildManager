@@ -17,6 +17,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 #nullable enable
 
@@ -59,9 +61,6 @@ namespace SqlSync.SqlBuild
         /// Data collection used to pass connection data
         /// </summary>
         private ConnectionData connData;
-        /// <summary>
-        /// 
-        /// </summary>
         private string buildType;
         /// <summary>
         /// User description of the build

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading;
+using System.Threading.Tasks;
 using SqlSync.SqlBuild;
 using Microsoft.Extensions.Logging.Abstractions;
 using BuildModels = SqlSync.SqlBuild.Models;
@@ -73,6 +75,7 @@ namespace SqlSync.SqlBuild.UnitTest
             public bool ErrorOccured { get; set; }
             public string SqlInfoMessage { get; set; } = string.Empty;
             public int DefaultScriptTimeout => 30;
+            public Task<SqlExecutionResult> ExecuteAsync(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional, CancellationToken cancellationToken = default) => Task.FromResult(new SqlExecutionResult(true, string.Empty));
 
             public BuildConnectData GetConnectionDataClass(string serverName, string databaseName) => throw new NotImplementedException();
             public string GetTargetDatabase(string defaultDatabase) => defaultDatabase;

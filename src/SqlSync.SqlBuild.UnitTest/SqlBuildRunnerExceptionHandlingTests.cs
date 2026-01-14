@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -99,6 +101,8 @@ namespace SqlSync.SqlBuild.UnitTest
             private readonly Exception _ex;
             public SqlCommandExecutorThatThrows(Exception ex) => _ex = ex;
             public SqlExecutionResult Execute(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional) => throw _ex;
+            public Task<SqlExecutionResult> ExecuteAsync(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional, CancellationToken cancellationToken = default)
+                => Task.Run(() => Execute(sql, timeoutSeconds, cData, isTransactional), cancellationToken);
         }
 
         private sealed class FakeRunnerContext : ISqlBuildRunnerContext

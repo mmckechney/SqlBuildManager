@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Data.SqlClient;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using static SqlSync.SqlBuild.SqlBuildHelper;
@@ -40,6 +42,7 @@ namespace SqlSync.SqlBuild
     internal interface ISqlCommandExecutor
     {
         SqlExecutionResult Execute(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional);
+        Task<SqlExecutionResult> ExecuteAsync(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional, CancellationToken cancellationToken = default);
     }
 
     internal sealed record SqlExecutionResult(bool Success, string Results, bool TimeoutDetected = false);
@@ -243,6 +246,20 @@ namespace SqlSync.SqlBuild
                 log.LogDebug("Build Successful!");
             }
             return myBuild;
+        }
+
+        public virtual Task<BuildModels.Build> RunAsync(
+            IReadOnlyList<BuildModels.Script> scripts,
+            BuildModels.Build myBuild,
+            string serverName,
+            bool isMultiDbRun,
+            ScriptBatchCollection scriptBatchColl,
+            BuildModels.SqlSyncBuildDataModel buildDataModel,
+            DoWorkEventArgs workEventArgs,
+            CancellationToken cancellationToken = default)
+        {
+            // For now, wrap synchronous call to maintain behavior. Future: actual async SQL execution.
+            return Task.Run(() => Run(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref workEventArgs), cancellationToken);
         }
 
         internal bool ShouldSkipDueToCommittedScripts(string scriptId, BuildModels.SqlSyncBuildDataModel buildDataModel)
@@ -462,6 +479,12 @@ namespace SqlSync.SqlBuild
                     _log.LogWarning($"Timeout expired executing sql: {sql}");
                     throw;
                 }
+            }
+
+            public Task<SqlExecutionResult> ExecuteAsync(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional, CancellationToken cancellationToken = default)
+            {
+                // Wrap sync for now; swap to truly async ADO if needed.
+                return Task.Run(() => Execute(sql, timeoutSeconds, cData, isTransactional), cancellationToken);
             }
         }
     }

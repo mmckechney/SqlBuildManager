@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
 using SqlSync.SqlBuild.Models;
 
 namespace SqlSync.SqlBuild.Services
@@ -14,5 +16,16 @@ namespace SqlSync.SqlBuild.Services
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,
             int allowableTimeoutRetries);
+
+        Task<Build> ExecuteAsync(
+            SqlBuildRunDataModel runData,
+            SqlBuildHelper.BuildPreparationResult prep,
+            BackgroundWorker bgWorker,
+            DoWorkEventArgs workEventArgs,
+            string serverName,
+            bool isMultiDbRun,
+            ScriptBatchCollection scriptBatchColl,
+            int allowableTimeoutRetries,
+            CancellationToken cancellationToken = default);
     }
 }
