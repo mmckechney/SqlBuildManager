@@ -7,6 +7,8 @@ using SqlSync.SqlBuild;
 using SqlSync.Connection;
 using BuildModels = SqlSync.SqlBuild.Models;
 using SqlLogging = SqlSync.SqlBuild.SqlLogging;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlSync.SqlBuild.UnitTest
 {

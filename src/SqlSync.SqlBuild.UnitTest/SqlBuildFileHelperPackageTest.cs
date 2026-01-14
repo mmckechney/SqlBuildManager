@@ -353,7 +353,14 @@ namespace SqlSync.SqlBuild.UnitTest
         public void PackageSbxFilesIntoSbmFilesTest_FailDirectoryDoesntExist()
         {
             string directoryName = @"C:\" + Guid.NewGuid().ToString();
+            string message;
+            string messageExpected = String.Format("Unable to package SBX files. The specified source directory '{0}' does not exist.", directoryName);
+            List<string> actual;
+            actual = SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(directoryName, out message);
 
+            Assert.AreEqual(messageExpected, message);
+            Assert.AreEqual(0, actual.Count);
+        }
 
         [TestMethod]
         public async Task PackageSbxFileIntoSbmFileAsyncTest_InvalidSbx()
@@ -372,15 +379,6 @@ namespace SqlSync.SqlBuild.UnitTest
             string directoryName = String.Empty;
             var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(directoryName);
             Assert.AreEqual(0, result.Count);
-        }
-            string message;
-            string messageExpected = String.Format("Unable to package SBX files. The specified source directory '{0}' does not exist.", directoryName);
-            List<string> actual;
-            actual = SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(directoryName, out message);
-
-            Assert.AreEqual(messageExpected, message);
-            Assert.AreEqual(0, actual.Count);
-
         }
         #endregion
     }

@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using SqlSync.SqlBuild.Models;
+using System.Threading.Tasks;
+using System.Threading;
 
 #nullable enable
 
@@ -22,6 +24,8 @@ namespace SqlSync.SqlBuild
         public const string FileMissing = "File Missing";
         public const string Sha1HashError = "SHA1 Hash Error";
         public static string DefaultScriptXmlFile = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "Default Scripts", "DefaultScriptRegistry.xml");
+        internal static readonly ISqlBuildFileHelper DefaultFileHelper = new DefaultSqlBuildFileHelper();
+
         public SqlBuildFileHelper()
         {
 
@@ -1443,33 +1447,13 @@ namespace SqlSync.SqlBuild
             return (fileHash, textHash);
         }
 
-        public static string JoinBatchedScripts(string[] batchedScripts)
-        {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < batchedScripts.Length - 1; i++)
-            {
-                if (batchedScripts[i].EndsWith("\r\n"))
-                {
-                    sb.Append(batchedScripts[i] + BatchParsing.Delimiter + "\r\n");
-                }
-                else
-                {
-                    sb.Append(batchedScripts[i] + "\r\n" + BatchParsing.Delimiter + "\r\n");
-                }
-            }
-            sb.Append(batchedScripts[batchedScripts.Length - 1]);
-            return sb.ToString();
-        }
+        public static string JoinBatchedScripts(string[] batchedScripts) => DefaultFileHelper.JoinBatchedScripts(batchedScripts);
         /// <summary>
         /// Gets the file hash of a file that has been split into batch scripts using the SqlBuildHelper.ReadBatchFromScriptFile or SqlBuildHelper.ReadBatchFromScriptText method
         /// </summary>
         /// <param name="batchedScriptLines">Batched Sql script</param>
         /// <param name="textHash">SHA1 hash of the batched script.</param>
-        public static void GetSHA1Hash(string[] batchedScriptLines, out string textHash)
-        {
-            string scriptText = JoinBatchedScripts(batchedScriptLines);
-            textHash = GetSHA1Hash(scriptText);
-        }
+        public static void GetSHA1Hash(string[] batchedScriptLines, out string textHash) => DefaultFileHelper.GetSHA1Hash(batchedScriptLines, out textHash);
         /// <summary>
         /// Computes the SHA1 hash of a string. Should only be used on string recomposed from batching
         /// </summary>
@@ -1579,30 +1563,11 @@ namespace SqlSync.SqlBuild
 
         public static bool ScriptRequiresBuildDescription(string scriptContents)
         {
-            if (scriptContents == null || scriptContents.Length == 0)
+            if (string.IsNullOrEmpty(scriptContents))
                 return false;
 
-
-            if (scriptContents.IndexOf(SqlBuild.ScriptTokens.BuildDescription, 1, StringComparison.CurrentCultureIgnoreCase) > -1)
-                return true;
-            else
-                return false;
-
-            //try
-            //{
-            //    if (File.Exists(pathName))
-            //    {
-            //        if (File.ReadAllText(pathName).IndexOf(SqlBuild.ScriptTokens.BuildDescription, 1, StringComparison.CurrentCultureIgnoreCase) > -1)
-            //            return true;
-
-            //    }
-            //}
-            //catch
-            //{
-            //}
-            //return false;
+            return scriptContents.IndexOf(SqlBuild.ScriptTokens.BuildDescription, 1, StringComparison.CurrentCultureIgnoreCase) > -1;
         }
-
 
         #region .: Updating from Legacy code :.
         public static void ConvertLegacyProjectHistory(ref SqlSyncBuildData buildData, string projFilePath, string zipFileName)
@@ -1768,10 +1733,10 @@ namespace SqlSync.SqlBuild
             }
         }
 
-        public static async Task<bool> CopyIndividualScriptsToFolderAsync(ref SqlSyncBuildData buildData, string destinationFolder, string projectFilePath, bool includeUSE, bool includeSequence, CancellationToken cancellationToken = default)
+        public static async Task<(bool success, SqlSyncBuildData buildData)> CopyIndividualScriptsToFolderAsync(SqlSyncBuildData buildData, string destinationFolder, string projectFilePath, bool includeUSE, bool includeSequence, CancellationToken cancellationToken = default)
         {
             if (buildData.Script == null || buildData.Script.Count == 0)
-                return false;
+                return (false, buildData);
 
             StringBuilder sb = new StringBuilder();
             string[] batch;
@@ -1803,19 +1768,19 @@ namespace SqlSync.SqlBuild
                     await File.WriteAllTextAsync(fileName, sb.ToString(), cancellationToken).ConfigureAwait(false);
                     sb.Length = 0;
                 }
-                return true;
+                return (true, buildData);
             }
             catch (Exception e)
             {
                 log.LogError(e, $"Unable to export script {fileName} to destination folder {destinationFolder}");
-                return false;
+                return (false, buildData);
             }
         }
 
-        public static async Task<bool> CopyScriptsToSingleFileAsync(ref SqlSyncBuildData buildData, string destinationFile, string projectFilePath, string buildFileName, bool includeUSE, CancellationToken cancellationToken = default)
+        public static async Task<(bool success, SqlSyncBuildData buildData)> CopyScriptsToSingleFileAsync(SqlSyncBuildData buildData, string destinationFile, string projectFilePath, string buildFileName, bool includeUSE, CancellationToken cancellationToken = default)
         {
             if (buildData.Script == null || buildData.Script.Count == 0)
-                return false;
+                return (false, buildData);
 
             StringBuilder sb = new StringBuilder();
             string[] batch;
@@ -1842,11 +1807,11 @@ namespace SqlSync.SqlBuild
 
                 await File.WriteAllTextAsync(destinationFile, sb.ToString(), cancellationToken).ConfigureAwait(false);
                 sb.Length = 0;
-                return true;
+                return (true, buildData);
             }
             catch (Exception)
             {
-                return false;
+                return (false, buildData);
             }
         }
         #endregion

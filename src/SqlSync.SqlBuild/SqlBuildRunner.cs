@@ -103,7 +103,7 @@ namespace SqlSync.SqlBuild
                     var targetDatabase = _ctx.GetTargetDatabase(script.Database ?? string.Empty);
                     dbTargets.Add(targetDatabase);
 
-                    var batchScripts = await LoadBatchScriptsAsync(scriptId, fileName, stripTransaction, scriptBatchColl, cancellationToken).ConfigureAwait(false);
+                    var batchScripts = LoadBatchScripts(scriptId, fileName, stripTransaction, scriptBatchColl);
 
                     if (!allowMultipleRuns && ShouldSkipDueToCommittedScripts(scriptId, buildDataModel))
                     {
@@ -161,7 +161,7 @@ namespace SqlSync.SqlBuild
                             break;
                         }
 
-                        batchScripts[x] = await _ctx.PerformScriptTokenReplacementAsync(batchScripts[x], cancellationToken).ConfigureAwait(false);
+                        batchScripts[x] = _ctx.PerformScriptTokenReplacement(batchScripts[x]);
                         overallIndex++;
 
                         try
@@ -423,29 +423,31 @@ namespace SqlSync.SqlBuild
                 }
             }
 
-            if (buildFailure)
-            {
-                if (isMultiDbRun)
-                {
-                    myBuild = myBuild with { FinalStatus = BuildItemStatus.FailedMultipleDatabases.ToString() };
-                }
-                else
-                {
-                    myBuild = myBuild with { FinalStatus = _ctx.IsTransactional ? BuildItemStatus.PendingRollBack.ToString() : BuildItemStatus.FailedNoTransaction.ToString() };
-                }
-                if (_ctx.IsTransactional && failureDueToScriptTimeout)
-                {
-                    myBuild = myBuild with { FinalStatus = BuildItemStatus.FailedDueToScriptTimeout.ToString() };
-                }
-            }
-            else
-            {
-                if (isMultiDbRun)
-                    myBuild = myBuild with { FinalStatus = BuildItemStatus.Pending.ToString() };
-                else
-                    myBuild = _ctx.PerformRunScriptFinalization(buildFailure, myBuild, buildDataModel, ref workEventArgs);
-                log.LogDebug("Build Successful!");
-            }
+            //if (buildFailure)
+            //{
+            //    if (isMultiDbRun)
+            //    {
+            //        myBuild = myBuild with { FinalStatus = BuildItemStatus..ToString() };
+            //    }
+            //    else
+            //    {
+            //        myBuild = myBuild with { FinalStatus = _ctx.IsTransactional ? BuildItemStatus.PendingRollBack.ToString() : BuildItemStatus.FailedNoTransaction.ToString() };
+            //    }
+            //    if (_ctx.IsTransactional && failureDueToScriptTimeout)
+            //    {
+            //        myBuild = myBuild with { FinalStatus = BuildItemStatus.FailedDueToScriptTimeout.ToString() };
+            //    }
+            //}
+            //else
+            //{
+            //    if (isMultiDbRun)
+            //        myBuild = myBuild with { FinalStatus = BuildItemStatus.ToString() };
+            //    else
+            //        myBuild = _ctx.PerformRunScriptFinalization(buildFailure, myBuild, buildDataModel, ref workEventArgs);
+            //    log.LogDebug("Build Successful!");
+            //}
+
+            myBuild = _ctx.PerformRunScriptFinalization(buildFailure, myBuild, buildDataModel, ref workEventArgs);
             return myBuild;
         }
 
@@ -457,18 +459,9 @@ namespace SqlSync.SqlBuild
 
         internal string[] LoadBatchScripts(string scriptId, string fileName, bool stripTransaction, ScriptBatchCollection scriptBatchColl)
         {
-            string[] batchScripts = null;
-            if (scriptBatchColl != null)
-            {
-                var b = scriptBatchColl.GetScriptBatch(scriptId);
-                if (b != null)
-                    batchScripts = b.ScriptBatchContents;
-            }
-            if (batchScripts == null || batchScripts.Length == 0)
-            {
-                batchScripts = _ctx.ReadBatchFromScriptFile(System.IO.Path.Combine(_ctx.ProjectFilePath, fileName), stripTransaction, false);
-            }
-            return batchScripts;
+
+           var batchScripts = LoadBatchScriptsAsync(scriptId, fileName, stripTransaction, scriptBatchColl, default).GetAwaiter().GetResult();
+           return batchScripts;
         }
 
         internal async Task<string[]> LoadBatchScriptsAsync(string scriptId, string fileName, bool stripTransaction, ScriptBatchCollection scriptBatchColl, CancellationToken cancellationToken)

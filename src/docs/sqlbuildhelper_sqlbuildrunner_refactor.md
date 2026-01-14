@@ -18,6 +18,7 @@
 - [x] 2026-01-14: Phase 5e start — consider async variants in `SqlBuildFileHelper` consumers and add tests.
 - [x] 2026-01-14: Phase 5f start — async packaging API variants & tests.
 - [x] 2026-01-14: Phase 5g start — true async ZIP persistence & tests.
+- [x] 2026-01-14: Phase 5h start — consolidate `ISqlBuildFileHelper` default implementation.
 
 ## Current State
 - `SqlBuildHelper.cs`: ~2356 LOC, multiple responsibilities (prep, execution, batching, logging, persistence, legacy conversions, DacPac, token replacement, FS IO, retries).
@@ -137,6 +138,12 @@
 - ✅ Added `ZipHelper.UnpackZipPackageAsync` and `ZipHelper.AppendZipPackageAsync` with async streaming.
 - ✅ Added `ZipHelperAsyncTests` covering async unpack/append.
 - 🔜 Consider async unzip/append variants if needed (no direct BCL async APIs; can stream manually if required).
+
+### Phase 5h: DefaultSqlBuildFileHelper Consolidation
+- ✅ Implemented logic in `DefaultSqlBuildFileHelper` (hash/join logic localized).
+- ✅ `SqlBuildFileHelper` static methods delegate to `DefaultFileHelper` for single source of truth.
+- ✅ Added `DefaultSqlBuildFileHelperTests` to ensure parity with static helper.
+- ✅ Tests passing.
 
 ### Phase 6: Deprecate & Clean
 - Mark legacy APIs `[Obsolete]`; keep thin adapters.

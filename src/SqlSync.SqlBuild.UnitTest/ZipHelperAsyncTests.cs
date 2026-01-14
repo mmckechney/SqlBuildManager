@@ -50,7 +50,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var ok = await ZipHelper.AppendZipPackageAsync(new[] { "file.txt" }, tmpDir, zipPath, keepPathInfo: true);
             Assert.IsTrue(ok);
 
-            using (var zip = ZipFile.OpenRead(zipPath))
+            using (var zip = ZipFile.Open(zipPath, ZipArchiveMode.Read))
             {
                 Assert.IsNotNull(zip.GetEntry("file.txt"));
             }
