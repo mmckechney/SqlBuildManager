@@ -126,6 +126,39 @@ namespace SqlSync.SqlBuild
             }
         }
 
+        public static async Task<bool> UnpackZipPackageAsync(string destinationDir, string zipFileName, bool overwriteExistingProjectFiles, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                string fileUnzipFullName;
+                log.LogDebug($"Unzipping {zipFileName} to folder: {destinationDir}");
+                if (!Directory.Exists(destinationDir))
+                {
+                    Directory.CreateDirectory(destinationDir);
+                }
+                using (ZipArchive archive = ZipFile.Open(zipFileName, ZipArchiveMode.Read))
+                {
+                    foreach (ZipArchiveEntry file in archive.Entries)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        fileUnzipFullName = Path.Combine(destinationDir, file.Name);
+                        if (!File.Exists(fileUnzipFullName) || overwriteExistingProjectFiles)
+                        {
+                            await using var entryStream = file.Open();
+                            await using var outStream = new FileStream(fileUnzipFullName, FileMode.Create, FileAccess.Write, FileShare.None, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
+                            await entryStream.CopyToAsync(outStream, 81920, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                }
+                return true;
+            }
+            catch (Exception exe)
+            {
+                log.LogError(exe, "Unable to unzip package file async");
+                return false;
+            }
+        }
+
         public static bool AppendZipPackage(string[] filesToZip, string basePath, string zipFileName, bool keepPathInfo)
         {
             try
@@ -148,6 +181,33 @@ namespace SqlSync.SqlBuild
             }
 
 
+        }
+
+        public static async Task<bool> AppendZipPackageAsync(string[] filesToZip, string basePath, string zipFileName, bool keepPathInfo, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                using (ZipArchive modFile = ZipFile.Open(zipFileName, ZipArchiveMode.Update))
+                {
+                    foreach (var file in filesToZip)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var fullPath = Path.Combine(basePath, file);
+                        if (!File.Exists(fullPath)) continue;
+                        log.LogDebug($"Adding file '{file}' to package zip file '{zipFileName}'");
+                        var entry = modFile.CreateEntry(Path.GetFileName(file), CompressionLevel.Fastest);
+                        await using var entryStream = entry.Open();
+                        await using var fileStream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
+                        await fileStream.CopyToAsync(entryStream, 81920, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+                return true;
+            }
+            catch (Exception exe)
+            {
+                log.LogError(exe, "Unable to append to zip package async");
+                return false;
+            }
         }
 
         public static async Task<bool> CreateZipPackageAsync(List<string> fullPathFilesToZip, string zipFileName, bool keepPathInfo, int retryCount = 0, CancellationToken cancellationToken = default)

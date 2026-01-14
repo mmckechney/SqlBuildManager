@@ -134,6 +134,8 @@
 - ✅ Updated `PackageSbxFileIntoSbmFileAsync` to use `SaveSqlBuildProjectFileAsync` (no `Task.Run`).
 - ✅ Added `SaveSqlBuildProjectFileAsync_CreatesZip` test.
 - ✅ Tests passing.
+- ✅ Added `ZipHelper.UnpackZipPackageAsync` and `ZipHelper.AppendZipPackageAsync` with async streaming.
+- ✅ Added `ZipHelperAsyncTests` covering async unpack/append.
 - 🔜 Consider async unzip/append variants if needed (no direct BCL async APIs; can stream manually if required).
 
 ### Phase 6: Deprecate & Clean
