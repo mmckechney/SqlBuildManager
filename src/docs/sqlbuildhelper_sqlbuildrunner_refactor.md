@@ -161,6 +161,27 @@
 - 🔜 Add unit tests per extracted service; integration tests with in-memory FS + fake SQL executor.
 - 🔜 Document module boundaries and extension points.
 
+### Phase 8: Extract Methods to Default Abstractions
+- **Goal:** Move implementation logic from `SqlBuildHelper.cs` into `SqlSync.SqlBuild\Abstractions\Default\*` classes.
+- **Scope:** Review each Default class and extract appropriate methods, reducing SqlBuildHelper coupling.
+- **Status:** Complete
+- ✅ Created `IBuildFinalizerContext` interface to provide context for finalization operations
+- ✅ Extracted finalization logic from `SqlBuildHelper.PerformRunScriptFinalization` to `DefaultBuildFinalizer`
+- ✅ `SqlBuildHelper` implements `IBuildFinalizerContext` and delegates to injected `BuildFinalizer`
+- ✅ All tests passing (84 passed, 3 skipped, 0 failed)
+- ✅ Build successful with only pre-existing nullability warnings
+
+**Files Modified:**
+- Created: `SqlSync.SqlBuild\Abstractions\IBuildFinalizerContext.cs`
+- Modified: `SqlSync.SqlBuild\Abstractions\IBuildFinalizer.cs` (added context parameter)
+- Modified: `SqlSync.SqlBuild\Abstractions\Default\DefaultBuildFinalizer.cs` (full finalization implementation)
+- Modified: `SqlSync.SqlBuild\SqlBuildHelper.cs` (implements IBuildFinalizerContext, delegates to BuildFinalizer)
+
+**Impact:**
+- Finalization logic now isolated in `DefaultBuildFinalizer`, testable independently
+- `SqlBuildHelper` reduced by ~120 lines through delegation
+- Cleaner separation of concerns: SqlBuildHelper manages state, DefaultBuildFinalizer handles finalization workflow
+
 ## Quick Wins
 - Add tests for `HandleSqlException` and `ReadBatchFromScriptText` (edge cases: `GO` in comments, transaction stripping).
 - Inject `IProgressReporter` into `SqlBuildRunner`; shim with `BackgroundWorker`.

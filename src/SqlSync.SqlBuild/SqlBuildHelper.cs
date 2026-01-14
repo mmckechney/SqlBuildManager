@@ -27,9 +27,9 @@ namespace SqlSync.SqlBuild
     /// <summary>
     /// Summary description for SqlBuildHelper.
     /// </summary>
-    public class SqlBuildHelper : ISqlBuildRunnerContext
+    public class SqlBuildHelper : ISqlBuildRunnerContext, IBuildFinalizerContext
     {
-        [Obsolete("Use dependency injection to supply SqlBuildRunner", false)] internal static Func<ISqlBuildRunnerContext, ISqlCommandExecutor, SqlBuildRunner> SqlBuildRunnerFactory = (ctx, exec) => new SqlBuildRunner(ctx, exec);
+        internal static Func<ISqlBuildRunnerContext, ISqlCommandExecutor, SqlBuildRunner> SqlBuildRunnerFactory = (ctx, exec) => new SqlBuildRunner(ctx, exec);
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         internal bool isTransactional = true;
         internal List<DatabaseOverride> targetDatabaseOverrides = null;
@@ -632,125 +632,7 @@ namespace SqlSync.SqlBuild
 
         internal BuildModels.Build PerformRunScriptFinalization(bool buildFailure, BuildModels.Build myBuild, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs)
         {
-            DateTime end = DateTime.Now;
-            myBuild = myBuild with { BuildEnd = end };
-
-            if (buildFailure)
-            {
-                ErrorOccured = true;
-                if (isTransactional)
-                    myBuild = myBuild with { FinalStatus = BuildItemStatus.RolledBack.ToString() };
-                else
-                    myBuild = myBuild with { FinalStatus = BuildItemStatus.FailedNoTransaction.ToString() };
-
-                if (!isTransactional)
-                {
-                    RecordCommittedScripts(committedScripts, buildDataModel, out var updatedModel);
-                    buildDataModel = updatedModel;
-                    LogCommittedScriptsToDatabase(committedScripts, null);
-                }
-            }
-            else
-            {
-                if (!isTrialBuild)
-                {
-                    if (isTransactional)
-                    {
-                        bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Attempting to Commit Build"));
-                        bool commitSuccess = CommitBuild();
-                        if (commitSuccess)
-                            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Commit Successful"));
-                    }
-                    myBuild = myBuild with { FinalStatus = BuildItemStatus.Committed.ToString() };
-                    RecordCommittedScripts(committedScripts, buildDataModel, out var updatedModel);
-                    buildDataModel = updatedModel;
-                    LogCommittedScriptsToDatabase(committedScripts, null);
-                    BuildCommittedEvent?.Invoke(this, RunnerReturn.BuildCommitted);
-                }
-                else
-                {
-                    if (isTransactional)
-                    {
-                        RollbackBuild();
-                        myBuild = myBuild with { FinalStatus = BuildItemStatus.TrialRolledBack.ToString() };
-                        BuildSuccessTrialRolledBackEvent?.Invoke(this, EventArgs.Empty);
-                    }
-                    else
-                    {
-                        myBuild = myBuild with { FinalStatus = BuildItemStatus.Committed.ToString() };
-                    }
-                }
-            }
-
-            if (buildFailure)
-            {
-                BuildErrorRollBackEvent?.Invoke(this, EventArgs.Empty);
-            }
-
-            SaveBuildDataSet(true);
-
-            if (buildFailure)
-            {
-                if (workEventArgs.Cancel)
-                {
-                    if (isTransactional)
-                    {
-                        bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
-                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_CANCELLED_AND_ROLLED_BACK;
-                    }
-                    else
-                    {
-                        bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
-                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_CANCELLED_NO_TRANSACTION;
-
-                    }
-                }
-                else
-                {
-                    if (isTransactional)
-                    {
-                        bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
-                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK;
-                    }
-                    else
-                    {
-                        bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
-                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_NO_TRANSACTION;
-                    }
-                }
-            }
-            else
-            {
-                if (runScriptOnly)
-                {
-                    bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Script Generation Complete"));
-                    workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.SCRIPT_GENERATION_COMPLETE;
-                }
-                else
-                {
-                    if (isTrialBuild == false)
-                    {
-                        bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Committed"));
-                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
-                    }
-                    else
-                    {
-                        if (isTransactional)
-                        {
-                            bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Rolled back for Trial Build"));
-                            workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL;
-                        }
-                        else
-                        {
-                            bgWorker.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Committed with no transaction"));
-                            workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
-
-                        }
-                    }
-                }
-            }
-
-            return myBuild;
+            return BuildFinalizer.PerformRunScriptFinalization(this, buildFailure, myBuild, buildDataModel, ref workEventArgs);
         }
 
         internal void PerformRunScriptFinalization(bool buildFailure, List<BuildModels.Build> myBuilds, MultiDbData multiDbRunData, BackgroundWorker bgWorker, ref DoWorkEventArgs workEventArgs)
@@ -2036,7 +1918,24 @@ namespace SqlSync.SqlBuild
         void ISqlBuildRunnerContext.PublishScriptLog(bool isError, ScriptLogEventArgs args) => ScriptLogWriteEvent?.Invoke(null, isError, args);
         #endregion
 
+        #region IBuildFinalizerContext implementation
+        bool IBuildFinalizerContext.IsTransactional => isTransactional;
+        bool IBuildFinalizerContext.IsTrialBuild => isTrialBuild;
+        bool IBuildFinalizerContext.RunScriptOnly => runScriptOnly;
+        BackgroundWorker IBuildFinalizerContext.BgWorker => bgWorker;
+        List<LoggingCommittedScript> IBuildFinalizerContext.CommittedScripts => committedScripts;
+
+        bool IBuildFinalizerContext.CommitBuild() => CommitBuild();
+        void IBuildFinalizerContext.RollbackBuild() => RollbackBuild();
+        void IBuildFinalizerContext.SaveBuildDataSet(bool finalSave) => SaveBuildDataSet(finalSave);
+        bool IBuildFinalizerContext.RecordCommittedScripts(List<LoggingCommittedScript> committedScripts, BuildModels.SqlSyncBuildDataModel buildDataModel, out BuildModels.SqlSyncBuildDataModel updatedModel) => RecordCommittedScripts(committedScripts, buildDataModel, out updatedModel);
+        bool IBuildFinalizerContext.LogCommittedScriptsToDatabase(List<LoggingCommittedScript> committedScripts, MultiDbData multiDbRunData) => LogCommittedScriptsToDatabase(committedScripts, multiDbRunData);
+        void IBuildFinalizerContext.SetErrorOccurred(bool value) => ErrorOccured = value;
+        void IBuildFinalizerContext.RaiseBuildCommittedEvent(object sender, RunnerReturn rr) => BuildCommittedEvent?.Invoke(sender, rr);
+        void IBuildFinalizerContext.RaiseBuildSuccessTrialRolledBackEvent(object sender) => BuildSuccessTrialRolledBackEvent?.Invoke(sender, EventArgs.Empty);
+        void IBuildFinalizerContext.RaiseBuildErrorRollBackEvent(object sender) => BuildErrorRollBackEvent?.Invoke(sender, EventArgs.Empty);
+        #endregion
+
  
     }
 }
-
