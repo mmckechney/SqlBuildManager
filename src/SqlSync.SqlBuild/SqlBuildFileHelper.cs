@@ -1281,6 +1281,34 @@ namespace SqlSync.SqlBuild
             //return(strResult);
         }
 
+        public static async Task<(string fileHash, string textHash)> GetSHA1HashAsync(string pathName, bool stripTransactions, CancellationToken cancellationToken = default)
+        {
+            string fileHash = string.Empty;
+            string textHash = string.Empty;
+            try
+            {
+                await using var fs = new System.IO.FileStream(pathName, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
+                var oSHA1Hasher = System.Security.Cryptography.SHA1.Create();
+                var arrbytHashValue = await oSHA1Hasher.ComputeHashAsync(fs, cancellationToken).ConfigureAwait(false);
+                fileHash = System.BitConverter.ToString(arrbytHashValue).Replace("-", "");
+
+                var split = await SqlBuildHelper.ReadBatchFromScriptFileAsync(pathName, stripTransactions, false, cancellationToken).ConfigureAwait(false);
+                GetSHA1Hash(split, out textHash);
+            }
+            catch (FileNotFoundException)
+            {
+                fileHash = SqlBuildFileHelper.FileMissing;
+                textHash = SqlBuildFileHelper.FileMissing;
+            }
+            catch
+            {
+                fileHash = SqlBuildFileHelper.Sha1HashError;
+                textHash = SqlBuildFileHelper.Sha1HashError;
+            }
+
+            return (fileHash, textHash);
+        }
+
         public static string JoinBatchedScripts(string[] batchedScripts)
         {
             StringBuilder sb = new StringBuilder();
@@ -1602,6 +1630,88 @@ namespace SqlSync.SqlBuild
             catch (Exception e)
             {
                 string debug = e.ToString();
+                return false;
+            }
+        }
+
+        public static async Task<bool> CopyIndividualScriptsToFolderAsync(ref SqlSyncBuildData buildData, string destinationFolder, string projectFilePath, bool includeUSE, bool includeSequence, CancellationToken cancellationToken = default)
+        {
+            if (buildData.Script == null || buildData.Script.Count == 0)
+                return false;
+
+            StringBuilder sb = new StringBuilder();
+            string[] batch;
+            string fileName = string.Empty;
+
+            try
+            {
+                DataView view = buildData.Script.DefaultView;
+                view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
+                for (int i = 0; i < view.Count; i++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow row = (SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow)view[i].Row;
+                    if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
+                        continue;
+
+                    if (includeUSE)
+                        sb.Append("USE " + row.Database + "\r\nGO\r\n");
+
+                    batch = await SqlBuildHelper.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true, cancellationToken).ConfigureAwait(false);
+                    for (int j = 0; j < batch.Length; j++)
+                        sb.Append(batch[j] + "\r\n");
+
+                    if (includeSequence)
+                        fileName = Path.Combine(destinationFolder, (i + 1).ToString().PadLeft(3, '0') + " " + row.FileName);
+                    else
+                        fileName = Path.Combine(destinationFolder, row.FileName);
+
+                    await File.WriteAllTextAsync(fileName, sb.ToString(), cancellationToken).ConfigureAwait(false);
+                    sb.Length = 0;
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, $"Unable to export script {fileName} to destination folder {destinationFolder}");
+                return false;
+            }
+        }
+
+        public static async Task<bool> CopyScriptsToSingleFileAsync(ref SqlSyncBuildData buildData, string destinationFile, string projectFilePath, string buildFileName, bool includeUSE, CancellationToken cancellationToken = default)
+        {
+            if (buildData.Script == null || buildData.Script.Count == 0)
+                return false;
+
+            StringBuilder sb = new StringBuilder();
+            string[] batch;
+
+            try
+            {
+                sb.Append("-- Scripts Consolidated from: " + Path.GetFileName(buildFileName) + "\r\n");
+                DataView view = buildData.Script.DefaultView;
+                view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
+                for (int i = 0; i < view.Count; i++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow row = (SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow)view[i].Row;
+                    if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
+                        continue;
+
+                    sb.Append("\r\n-- Source File: " + row.FileName + "\r\n");
+                    if (includeUSE)
+                        sb.Append("USE " + row.Database + "\r\nGO\r\n");
+                    batch = await SqlBuildHelper.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true, cancellationToken).ConfigureAwait(false);
+                    for (int j = 0; j < batch.Length; j++)
+                        sb.Append(batch[j] + "\r\n");
+                }
+
+                await File.WriteAllTextAsync(destinationFile, sb.ToString(), cancellationToken).ConfigureAwait(false);
+                sb.Length = 0;
+                return true;
+            }
+            catch (Exception)
+            {
                 return false;
             }
         }

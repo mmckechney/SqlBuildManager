@@ -15,6 +15,7 @@
 - [ ] 2026-01-14: Phase 5b planned — async file/token IO abstractions.
 - [x] 2026-01-14: Phase 5c start — async file/token abstractions (ScriptBatcher, IFileSystem, token service).
 - [x] 2026-01-14: Phase 5d start — async helper consumers & service tests (helper static async, batcher/token async tests).
+- [x] 2026-01-14: Phase 5e start — consider async variants in `SqlBuildFileHelper` consumers and add tests.
 
 ## Current State
 - `SqlBuildHelper.cs`: ~2356 LOC, multiple responsibilities (prep, execution, batching, logging, persistence, legacy conversions, DacPac, token replacement, FS IO, retries).
@@ -112,6 +113,13 @@
 - ✅ `DefaultTokenReplacementService.ReplaceTokensAsync` test added in `SqlBuildHelperTokenReplacementTests`.
 - 🔜 Evaluate `SqlBuildFileHelper` async pathways if needed; add async variants where consumption exists.
 
+### Phase 5e: SqlBuildFileHelper Async Variants
+- ✅ Added `SqlBuildFileHelper.GetSHA1HashAsync` (tuple return) using async file hash + batching.
+- ✅ Added `CopyIndividualScriptsToFolderAsync` and `CopyScriptsToSingleFileAsync` leveraging async batch/file IO.
+- ✅ Added `SqlBuildFileHelperAsyncTests` to confirm async hash matches sync path.
+- ✅ Tests passing.
+- 🔜 Consider async variants for packaging APIs if/when consumers need it.
+
 ### Phase 6: Deprecate & Clean
 - Mark legacy APIs `[Obsolete]`; keep thin adapters.
 - Remove static globals; wire via DI container.
@@ -141,6 +149,7 @@
 - [ ] Phase 5b: async IO abstractions for file/token operations.
 - [ ] Phase 5c: async IO abstractions usage complete (follow-up: async file IO in helper/services).
 - [ ] Phase 5d: extend async pathways to `SqlBuildFileHelper` consumers if/when required.
+- [ ] Phase 5e: extend async variants to packaging APIs as needed.
 
 ---
 *Generated: 2026-01-14*
