@@ -299,6 +299,38 @@ namespace SqlSync.SqlBuild
             return val;
         }
 
+        public static async Task<bool> PackageProjectFileIntoZipAsync(SqlSyncBuildDataModel model, string projFilePath, string zipFileName, bool includeHistoryAndLogs, CancellationToken cancellationToken = default)
+        {
+            if (String.IsNullOrEmpty(zipFileName))
+                return true;
+            if (model == null)
+                return false;
+
+            ArrayList alFiles = new ArrayList();
+            SqlSyncBuildDataXmlSerializer.Save(Path.Combine(projFilePath, XmlFileNames.MainProjectFile), model);
+
+            for (int i = 0; i < model.Script.Count; i++)
+                alFiles.Add(model.Script[i].FileName);
+
+            alFiles.Add(XmlFileNames.MainProjectFile);
+
+            if (includeHistoryAndLogs)
+            {
+                if (File.Exists(Path.Combine(projFilePath, XmlFileNames.HistoryFile)))
+                    alFiles.Add(XmlFileNames.HistoryFile);
+
+                string[] logFiles = Directory.GetFiles(projFilePath, "*.log");
+                for (int j = 0; j < logFiles.Length; j++)
+                    alFiles.Add(Path.GetFileName(logFiles[j]));
+            }
+
+            string[] fileList = new string[alFiles.Count];
+            alFiles.CopyTo(fileList);
+
+            bool val = await ZipHelper.CreateZipPackageAsync(fileList, projFilePath, zipFileName, keepPathInfo: true, cancellationToken).ConfigureAwait(false);
+            return val;
+        }
+
         /// <summary>
         /// Minimize the size of the package by cleaing out the logs and the code review items..
         /// </summary>
@@ -462,6 +494,12 @@ namespace SqlSync.SqlBuild
         {
             SqlSyncBuildDataXmlSerializer.Save(projFileName, model);
             PackageProjectFileIntoZip(model, Path.GetDirectoryName(projFileName), buildZipFileName, includeHistoryAndLogs);
+        }
+
+        public static async Task SaveSqlBuildProjectFileAsync(SqlSyncBuildDataModel model, string projFileName, string buildZipFileName, bool includeHistoryAndLogs = true, CancellationToken cancellationToken = default)
+        {
+            SqlSyncBuildDataXmlSerializer.Save(projFileName, model);
+            await PackageProjectFileIntoZipAsync(model, Path.GetDirectoryName(projFileName), buildZipFileName, includeHistoryAndLogs, cancellationToken).ConfigureAwait(false);
         }
 
         public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, int defaultScriptTimeout, bool includeHistoryAndLogs = true)
@@ -737,8 +775,7 @@ namespace SqlSync.SqlBuild
                     }
                 }
 
-                // SaveSqlBuildProjectFile is sync; wrap in Task.Run to avoid blocking if needed
-                await Task.Run(() => SqlBuildFileHelper.SaveSqlBuildProjectFile(model, mainProjectFileFullPath, sbmProjectFileName), cancellationToken).ConfigureAwait(false);
+                await SqlBuildFileHelper.SaveSqlBuildProjectFileAsync(model, mainProjectFileFullPath, sbmProjectFileName, includeHistoryAndLogs: true, cancellationToken).ConfigureAwait(false);
 
                 if (copied)
                 {

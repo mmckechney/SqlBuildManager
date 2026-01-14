@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlSync.SqlBuild
 {
@@ -146,6 +148,63 @@ namespace SqlSync.SqlBuild
             }
 
 
+        }
+
+        public static async Task<bool> CreateZipPackageAsync(List<string> fullPathFilesToZip, string zipFileName, bool keepPathInfo, int retryCount = 0, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName), @"~" + retryCount.ToString() + "~" + Path.GetFileName(zipFileName));
+                await using (var zipFs = new FileStream(tempName, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan))
+                using (var archive = new ZipArchive(zipFs, ZipArchiveMode.Create, leaveOpen: false))
+                {
+                    foreach (string file in fullPathFilesToZip)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        if (!File.Exists(file)) continue;
+                        try
+                        {
+                            var entry = archive.CreateEntry(Path.GetFileName(file), CompressionLevel.Fastest);
+                            await using var entryStream = entry.Open();
+                            await using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
+                            await fileStream.CopyToAsync(entryStream, 81920, cancellationToken).ConfigureAwait(false);
+                        }
+                        catch (IOException ioex)
+                        {
+                            log.LogWarning(ioex, $"Unable to add file {file} to zip package; skipping.");
+                            continue;
+                        }
+                        catch (UnauthorizedAccessException uaex)
+                        {
+                            log.LogWarning(uaex, $"Unable to add file {file} to zip package due to access; skipping.");
+                            continue;
+                        }
+                    }
+                }
+                if (File.Exists(zipFileName)) File.Delete(zipFileName);
+                File.Move(tempName, zipFileName);
+            }
+            catch (Exception e)
+            {
+                if (retryCount < 5)
+                {
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                    return await CreateZipPackageAsync(fullPathFilesToZip, zipFileName, keepPathInfo, retryCount + 1, cancellationToken).ConfigureAwait(false);
+                }
+                log.LogError(e, $"Unable to add file {zipFileName} to zip package");
+                throw;
+            }
+            return true;
+        }
+
+        public static Task<bool> CreateZipPackageAsync(string[] filesToZip, string basePath, string zipFileName, bool keepPathInfo, CancellationToken cancellationToken = default)
+        {
+            List<string> fullPathFiles = new List<string>();
+            foreach (string file in filesToZip)
+            {
+                fullPathFiles.Add(Path.Combine(basePath, file));
+            }
+            return CreateZipPackageAsync(fullPathFiles, zipFileName, keepPathInfo, 0, cancellationToken);
         }
 
 

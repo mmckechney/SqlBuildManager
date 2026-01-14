@@ -17,6 +17,7 @@
 - [x] 2026-01-14: Phase 5d start — async helper consumers & service tests (helper static async, batcher/token async tests).
 - [x] 2026-01-14: Phase 5e start — consider async variants in `SqlBuildFileHelper` consumers and add tests.
 - [x] 2026-01-14: Phase 5f start — async packaging API variants & tests.
+- [x] 2026-01-14: Phase 5g start — true async ZIP persistence & tests.
 
 ## Current State
 - `SqlBuildHelper.cs`: ~2356 LOC, multiple responsibilities (prep, execution, batching, logging, persistence, legacy conversions, DacPac, token replacement, FS IO, retries).
@@ -126,6 +127,14 @@
 - ✅ Async packaging tests added (`PackageSbxFileIntoSbmFileAsyncTest_InvalidSbx`, `PackageSbxFilesIntoSbmFilesAsyncTest_EmptyDirectory`).
 - ✅ Tests passing.
 - 🔜 When actual consumers emerge, consider replacing `Task.Run` wrapping `SaveSqlBuildProjectFile` with truly async ZIP persistence if .NET provides APIs.
+
+### Phase 5g: True Async ZIP Persistence
+- ✅ Added `ZipHelper.CreateZipPackageAsync` using async streams.
+- ✅ Added `SaveSqlBuildProjectFileAsync` and `PackageProjectFileIntoZipAsync` consuming async zip helper.
+- ✅ Updated `PackageSbxFileIntoSbmFileAsync` to use `SaveSqlBuildProjectFileAsync` (no `Task.Run`).
+- ✅ Added `SaveSqlBuildProjectFileAsync_CreatesZip` test.
+- ✅ Tests passing.
+- 🔜 Consider async unzip/append variants if needed (no direct BCL async APIs; can stream manually if required).
 
 ### Phase 6: Deprecate & Clean
 - Mark legacy APIs `[Obsolete]`; keep thin adapters.

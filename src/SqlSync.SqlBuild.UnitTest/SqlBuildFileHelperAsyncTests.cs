@@ -28,5 +28,47 @@ namespace SqlSync.SqlBuild.UnitTest
                 File.Delete(tmp);
             }
         }
+
+        [TestMethod]
+        public async Task SaveSqlBuildProjectFileAsync_CreatesZip()
+        {
+            var tmpDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tmpDir);
+            try
+            {
+                var scriptPath = Path.Combine(tmpDir, "one.sql");
+                await File.WriteAllTextAsync(scriptPath, "SELECT 1;");
+
+                var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+                model = SqlBuildFileHelper.AddScriptFileToBuild(
+                    model,
+                    projFileName: Path.Combine(tmpDir, "build.xml"),
+                    fileName: Path.GetFileName(scriptPath),
+                    buildOrder: 1,
+                    description: "",
+                    rollBackScript: true,
+                    rollBackBuild: true,
+                    databaseName: "db",
+                    stripTransactions: false,
+                    buildZipFileName: Path.Combine(tmpDir, "build.sbm"),
+                    saveToZip: false,
+                    allowMultipleRuns: true,
+                    addedBy: "tester",
+                    scriptTimeOut: 30,
+                    scriptId: Guid.NewGuid(),
+                    tag: "");
+
+                var projFile = Path.Combine(tmpDir, "build.xml");
+                var zipFile = Path.Combine(tmpDir, "build.sbm");
+
+                await SqlBuildFileHelper.SaveSqlBuildProjectFileAsync(model, projFile, zipFile);
+
+                Assert.IsTrue(File.Exists(zipFile));
+            }
+            finally
+            {
+                Directory.Delete(tmpDir, true);
+            }
+        }
     }
 }
