@@ -74,6 +74,7 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             public Microsoft.Extensions.Logging.ILogger Log => NullLogger.Instance;
             public System.ComponentModel.BackgroundWorker BgWorker { get; } = new BackgroundWorker();
+                public IProgressReporter ProgressReporter => null;
             public bool IsTransactional => true;
             public bool IsTrialBuild => false;
             public bool RunScriptOnly => false;

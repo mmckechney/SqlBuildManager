@@ -173,6 +173,20 @@ namespace SqlSync.SqlBuild
             set => buildDataModel = value;
         }
 
+        // New dependencies (Phase 2 seams)
+        internal IClock Clock { get; }
+        internal IGuidProvider GuidProvider { get; }
+        internal IFileSystem FileSystem { get; }
+        internal IProgressReporter ProgressReporter { get; private set; }
+        internal ISqlBuildFileHelper FileHelper { get; }
+        internal IBuildRetryPolicy RetryPolicy { get; }
+        internal IBuildFinalizer BuildFinalizer { get; }
+        internal ILegacyBuildDataAdapter LegacyAdapter { get; }
+        internal Services.IBuildPreparationService BuildPreparationService { get; }
+        internal Services.IScriptBatcher ScriptBatcher { get; }
+        internal Services.ITokenReplacementService TokenReplacementService { get; }
+        internal Services.ISqlLoggingService SqlLoggingService { get; }
+
         internal static BuildModels.SqlSyncBuildDataModel ClearAllowScriptBlocks(BuildModels.SqlSyncBuildDataModel model, string serverName, IReadOnlyList<string> selectedScriptIds)
         {
             var updatedCommitted = model.CommittedScript.ToList();
@@ -252,10 +266,34 @@ namespace SqlSync.SqlBuild
 
         internal string externalScriptLogFileName = string.Empty;
 
-        public SqlBuildHelper(ConnectionData data, bool createScriptRunLogFile = true, string externalScriptLogFileName = "", bool isTransactional = true)
+        public SqlBuildHelper(
+            ConnectionData data,
+            bool createScriptRunLogFile = true,
+            string externalScriptLogFileName = "",
+            bool isTransactional = true,
+            IClock clock = null,
+            IGuidProvider guidProvider = null,
+            IFileSystem fileSystem = null,
+            IProgressReporter progressReporter = null,
+            ISqlBuildFileHelper fileHelper = null,
+            IBuildRetryPolicy retryPolicy = null,
+            IBuildFinalizer buildFinalizer = null,
+            ILegacyBuildDataAdapter legacyAdapter = null)
         {
             connData = data;
             this.isTransactional = isTransactional;
+            Clock = clock ?? new SystemClock();
+            GuidProvider = guidProvider ?? new GuidProvider();
+            FileSystem = fileSystem ?? new DotNetFileSystem();
+            ProgressReporter = progressReporter; // fallback to BackgroundWorker when available
+            FileHelper = fileHelper ?? new DefaultSqlBuildFileHelper();
+            RetryPolicy = retryPolicy ?? new DefaultBuildRetryPolicy();
+            BuildFinalizer = buildFinalizer ?? new DefaultBuildFinalizer();
+            LegacyAdapter = legacyAdapter ?? new DefaultLegacyBuildDataAdapter();
+            BuildPreparationService = new Services.DefaultBuildPreparationService(this);
+            ScriptBatcher = new Services.DefaultScriptBatcher();
+            TokenReplacementService = new Services.DefaultTokenReplacementService();
+            SqlLoggingService = new Services.DefaultSqlLoggingService(this);
             if (createScriptRunLogFile)
                 ScriptLogWriteEvent += new ScriptLogWriteEventHandler(SqlBuildHelper_ScriptLogWriteEvent);
 
@@ -973,7 +1011,7 @@ namespace SqlSync.SqlBuild
         /// <summary>
         /// Ensures that the SqlBuild_Logging table exists and that it is setup properly. Self-heals if it is not. 
         /// </summary>
-        private void EnsureLogTablePresence()
+        internal void EnsureLogTablePresence()
         {
             sqlInfoMessage = string.Empty;
             //Self healing: add the table if needed
@@ -1068,7 +1106,7 @@ namespace SqlSync.SqlBuild
         /// <param name="committedScripts">List of CommittedScript objects</param>
         /// <param name="multiDbRunData">The MultiDbRun data for the run</param>
         /// <returns>True if the commit was successful</returns>
-        private bool LogCommittedScriptsToDatabase(List<CommittedScript> committedScripts, MultiDbData multiDbRunData)
+        internal bool LogCommittedScriptsToDatabase(List<CommittedScript> committedScripts, MultiDbData multiDbRunData)
         {
             var model = buildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             bool returnValue = true;
@@ -1992,6 +2030,7 @@ namespace SqlSync.SqlBuild
         #region ISqlBuildRunnerContext
         ILogger ISqlBuildRunnerContext.Log => log;
         BackgroundWorker ISqlBuildRunnerContext.BgWorker => bgWorker;
+        IProgressReporter ISqlBuildRunnerContext.ProgressReporter => ProgressReporter ?? new BackgroundWorkerProgressReporter(bgWorker);
         bool ISqlBuildRunnerContext.IsTransactional => isTransactional;
         bool ISqlBuildRunnerContext.IsTrialBuild => isTrialBuild;
         bool ISqlBuildRunnerContext.RunScriptOnly => runScriptOnly;

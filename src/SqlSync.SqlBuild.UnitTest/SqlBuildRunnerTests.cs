@@ -63,6 +63,7 @@ namespace SqlSync.SqlBuild.UnitTest
 
             public Microsoft.Extensions.Logging.ILogger Log => NullLogger.Instance;
             public BackgroundWorker BgWorker => throw new NotImplementedException();
+            public IProgressReporter ProgressReporter => null;
             public bool IsTransactional => false;
             public bool IsTrialBuild => false;
             public bool RunScriptOnly => false;

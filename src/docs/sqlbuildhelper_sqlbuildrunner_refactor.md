@@ -3,6 +3,11 @@
 ## Overview
 **Goals:** Improve maintainability, testability, and adherence to the Single Responsibility Principle (SRP) for `SqlBuildHelper` and `SqlBuildRunner` and related classes.
 
+## Execution Log
+- [ ] 2026-01-14: Scaffold execution log and refactor activity tracking.
+- [ ] 2026-01-14: Phase 2 kickoff — introduce interfaces and seams.
+ - [x] 2026-01-14: Phase 3 start — scaffold services (prep, batcher, token, logging).
+
 ## Current State
 - `SqlBuildHelper.cs`: ~2356 LOC, multiple responsibilities (prep, execution, batching, logging, persistence, legacy conversions, DacPac, token replacement, FS IO, retries).
 - `SqlBuildRunner.cs`: ~428 LOC, more cohesive but mixes execution, progress reporting, logging, and time handling.
