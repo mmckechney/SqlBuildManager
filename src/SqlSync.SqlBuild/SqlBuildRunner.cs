@@ -10,42 +10,10 @@ using Microsoft.Extensions.Logging;
 using static SqlSync.SqlBuild.SqlBuildHelper;
 using BuildModels = SqlSync.SqlBuild.Models;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
+using SqlSync.SqlBuild.Services;
 
 namespace SqlSync.SqlBuild
 {
-    internal interface ISqlBuildRunnerContext
-    {
-        ILogger Log { get; }
-        BackgroundWorker BgWorker { get; }
-        IProgressReporter ProgressReporter { get; }
-        bool IsTransactional { get; }
-        bool IsTrialBuild { get; }
-        bool RunScriptOnly { get; }
-        string BuildPackageHash { get; }
-        string ProjectFilePath { get; }
-        List<LoggingCommittedScript> CommittedScripts { get; }
-        bool ErrorOccured { get; set; }
-        string SqlInfoMessage { get; set; }
-        int DefaultScriptTimeout { get; }
-
-        BuildConnectData GetConnectionDataClass(string serverName, string databaseName);
-        string GetTargetDatabase(string defaultDatabase);
-
-        Task<string[]> ReadBatchFromScriptFileAsync(string path, bool stripTransaction, bool useRegex, CancellationToken cancellationToken = default);
-        string PerformScriptTokenReplacement(string script);
-        Task<string> PerformScriptTokenReplacementAsync(string script, CancellationToken cancellationToken = default);
-        void AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild);
-        void RollbackBuild();
-        void SaveBuildDataSet(bool fireSavedEvent);
-        BuildModels.Build PerformRunScriptFinalization(bool buildFailure, BuildModels.Build myBuild, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs);
-        void PublishScriptLog(bool isError, ScriptLogEventArgs args);
-    }
-
-    internal interface ISqlCommandExecutor
-    {
-        SqlExecutionResult Execute(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional);
-        Task<SqlExecutionResult> ExecuteAsync(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional, CancellationToken cancellationToken = default);
-    }
 
     internal sealed record SqlExecutionResult(bool Success, string Results, bool TimeoutDetected = false);
 
@@ -57,12 +25,15 @@ namespace SqlSync.SqlBuild
         private readonly ISqlBuildRunnerContext _ctx;
         private readonly ISqlCommandExecutor _executor;
         private readonly ISqlBuildFileHelper _fileHelper;
+        private readonly IConnectionsService _connectionsService;
+        private readonly ISqlLoggingService _sqlLoggingService;
 
-        public SqlBuildRunner(ISqlBuildRunnerContext ctx, ISqlCommandExecutor executor = null, ISqlBuildFileHelper fileHelper = null)
+        public SqlBuildRunner(IConnectionsService connectionsService, ISqlBuildRunnerContext ctx, ISqlCommandExecutor executor = null, ISqlBuildFileHelper fileHelper = null)
         {
             _ctx = ctx ?? throw new ArgumentNullException(nameof(ctx));
             _executor = executor ?? new SqlCommandExecutor(ctx.Log);
             _fileHelper = fileHelper ?? new DefaultSqlBuildFileHelper();
+            _connectionsService = connectionsService ?? new DefaultConnectionsService();
         }
 
         public virtual BuildModels.Build Run(
@@ -118,7 +89,7 @@ namespace SqlSync.SqlBuild
                     var scriptRunRowId = Guid.NewGuid();
                     try
                     {
-                        cData = _ctx.GetConnectionDataClass(serverName, targetDatabase);
+                        cData = _connectionsService.GetBuildConnectionDataClass(serverName, targetDatabase);
                     }
                     catch (Exception e)
                     {
@@ -309,7 +280,7 @@ namespace SqlSync.SqlBuild
                     BuildModels.ScriptRun currentRun = null;
                     try
                     {
-                        cData = _ctx.GetConnectionDataClass(serverName, targetDatabase);
+                        cData = _connectionsService.GetBuildConnectionDataClass(serverName, targetDatabase);
                         currentRun = new BuildModels.ScriptRun(
                             FileHash: null,
                             Results: string.Empty,
@@ -424,30 +395,6 @@ namespace SqlSync.SqlBuild
                     log.LogDebug("Build failed");
                 }
             }
-
-            //if (buildFailure)
-            //{
-            //    if (isMultiDbRun)
-            //    {
-            //        myBuild = myBuild with { FinalStatus = BuildItemStatus..ToString() };
-            //    }
-            //    else
-            //    {
-            //        myBuild = myBuild with { FinalStatus = _ctx.IsTransactional ? BuildItemStatus.PendingRollBack.ToString() : BuildItemStatus.FailedNoTransaction.ToString() };
-            //    }
-            //    if (_ctx.IsTransactional && failureDueToScriptTimeout)
-            //    {
-            //        myBuild = myBuild with { FinalStatus = BuildItemStatus.FailedDueToScriptTimeout.ToString() };
-            //    }
-            //}
-            //else
-            //{
-            //    if (isMultiDbRun)
-            //        myBuild = myBuild with { FinalStatus = BuildItemStatus.ToString() };
-            //    else
-            //        myBuild = _ctx.PerformRunScriptFinalization(buildFailure, myBuild, buildDataModel, ref workEventArgs);
-            //    log.LogDebug("Build Successful!");
-            //}
 
             myBuild = _ctx.PerformRunScriptFinalization(buildFailure, myBuild, buildDataModel, ref workEventArgs);
             return myBuild;

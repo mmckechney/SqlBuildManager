@@ -21,7 +21,6 @@ namespace SqlSync.SqlBuild
         void RollbackBuild();
         void SaveBuildDataSet(bool finalSave);
         bool RecordCommittedScripts(List<LoggingCommittedScript> committedScripts, Models.SqlSyncBuildDataModel buildDataModel, out Models.SqlSyncBuildDataModel updatedModel);
-        bool LogCommittedScriptsToDatabase(List<LoggingCommittedScript> committedScripts, MultiDbData multiDbRunData);
         
         List<LoggingCommittedScript> CommittedScripts { get; }
         void SetErrorOccurred(bool value);

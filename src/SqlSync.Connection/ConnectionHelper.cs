@@ -8,7 +8,7 @@ namespace SqlSync.Connection
     /// <summary>
     /// Summary description for ConnectionHelper.
     /// </summary>
-    public class ConnectionHelper
+    public class ConnectionHelper : IConnectionHelper
     {
         public static string ConnectCryptoKey
         {

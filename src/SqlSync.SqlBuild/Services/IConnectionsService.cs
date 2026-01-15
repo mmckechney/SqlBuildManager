@@ -1,0 +1,21 @@
+﻿using SqlSync.Connection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SqlSync.SqlBuild.Services
+{
+    /// <summary>
+    /// Managed the connections used during a build
+    /// </summary>
+    public interface IConnectionsService
+    {
+        public BuildConnectData GetOrAddBuildConnectionDataClass(ConnectionData connData, string serverName, string databaseName);
+        public BuildConnectData GetBuildConnectionDataClass(string serverName, string databaseName);
+        public BuildConnectData GetOrAddBuildConnectionDataClassWithLocalAuth(string serverName, string databaseName);
+        Dictionary<string, BuildConnectData> Connections { get; }
+        void ResetConnectionsForRetry();
+    }
+}

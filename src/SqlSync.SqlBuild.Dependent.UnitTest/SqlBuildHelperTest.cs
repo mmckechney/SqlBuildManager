@@ -26,7 +26,14 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
     [DoNotParallelize()]
     public class SqlBuildHelperTest
     {
-
+        private class NullProgressReporter :IProgressReporter
+        {
+            public bool CancellationPending => false;
+            public void ReportProgress(int percent, object userState)
+            {
+                // Do nothing
+            }
+        }
         private static List<Initialization> initColl;
 
         [ClassInitialize()]
@@ -1300,10 +1307,15 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Guid scriptId = new Guid(init.PreRunScriptGuid);
             ConnectionData connData = init.connData;
             IReadOnlyList<ScriptRunLogEntry> actual;
-            actual = SqlBuildHelper.GetScriptRunLog(scriptId, connData);
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter,null);
+
+            actual = dbUtil.GetScriptRunLog(scriptId, connData);
             Assert.IsTrue(actual.Count > 0, String.Format("Missing rows for pre-run script. {0}", Initialization.MissingDatabaseErrorMessage));
 
-            actual = SqlBuildHelper.GetScriptRunLog(Guid.NewGuid(), connData);
+            actual = dbUtil.GetScriptRunLog(Guid.NewGuid(), connData);
             Assert.IsTrue(actual.Count == 0, String.Format("Rows found for new unique script id. {0}", Initialization.MissingDatabaseErrorMessage));
 
 
@@ -1322,7 +1334,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             ConnectionData connData = init.connData;
             connData.DatabaseName = "invalidDatabaseName";
             IReadOnlyList<ScriptRunLogEntry> actual;
-            actual = SqlBuildHelper.GetScriptRunLog(scriptId, connData);
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null);
+            actual = dbUtil.GetScriptRunLog(scriptId, connData);
         }
         #endregion
 
@@ -1465,7 +1481,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0]);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
 
             bool actual = target.CommitBuild();
@@ -1482,7 +1499,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0]);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
             connData.Connection.Close();
             connData.Connection = null; //Set connection to null to create exception when trying to close.
@@ -1519,7 +1537,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0]);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
 
             bool actual = target.RollbackBuild();
@@ -1536,7 +1555,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0]);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
             connData.Connection.Close();
             connData.Connection = null; //Set connection to null to create exception when trying to close.
@@ -1690,16 +1710,20 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             connData.Transaction = null;
 
             BuildConnectData connDataExpected = connData;
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null);
             bool actual;
 
             try
             {
                 connData.Connection.Open();
-                actual = target.GetBlockingSqlLog(scriptId, ref connData);
+                actual = dbUtil.GetBlockingSqlLog(scriptId, ref connData);
                 Assert.AreEqual(connDataExpected, connData);
                 Assert.AreEqual(true, actual);
 
-                actual = target.GetBlockingSqlLog(Guid.NewGuid(), ref connData);
+                actual = dbUtil.GetBlockingSqlLog(Guid.NewGuid(), ref connData);
                 Assert.AreEqual(connDataExpected, connData);
                 Assert.AreEqual(false, actual);
             }
@@ -1710,7 +1734,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             }
 
             //Will return false if an exception is thrown (like connection is closed)
-            actual = target.GetBlockingSqlLog(scriptId, ref connData);
+            actual = dbUtil.GetBlockingSqlLog(scriptId, ref connData);
             Assert.AreEqual(connDataExpected, connData);
             Assert.AreEqual(false, actual);
         }
@@ -1734,7 +1758,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             DateTime commitDate; //Don't test, this will vary by test server.
             bool expected = true;
             bool actual;
-            actual = SqlBuildHelper.HasBlockingSqlLog(scriptId, cData, databaseName, out scriptHash, out scriptTextHash, out commitDate);
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null);
+            actual = dbUtil.HasBlockingSqlLog(scriptId, cData, databaseName, out scriptHash, out scriptTextHash, out commitDate);
             Assert.AreEqual(scriptHashExpected, scriptHash);
             Assert.AreEqual(scriptTextHashExpected, scriptTextHash);
             Assert.AreEqual(expected, actual);
@@ -1757,8 +1785,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             string scriptTextHash;
             DateTime commitDate; //Don't test, this will vary by test server.
             bool actual;
-
-            actual = SqlBuildHelper.HasBlockingSqlLog(scriptId, cData, "invalidDatabaseName", out scriptHash, out scriptTextHash, out commitDate);
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null);
+            actual = dbUtil.HasBlockingSqlLog(scriptId, cData, "invalidDatabaseName", out scriptHash, out scriptTextHash, out commitDate);
             Assert.AreEqual("", scriptHash);
             Assert.AreEqual("", scriptTextHash);
             Assert.AreEqual(DateTime.MinValue, commitDate);
@@ -1777,21 +1808,23 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             SqlConnection conn = ConnectionHelper.GetConnection(init.connData);
-            bool actual = target.LogTableExists(conn);
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            bool actual = sqlLoggingService.LogTableExists(conn);
             Assert.AreEqual(true, actual);
 
             //Invalidate the connection - should return false
             init.connData.DatabaseName = "invalidDBName";
             conn = ConnectionHelper.GetConnection(init.connData);
-            actual = target.LogTableExists(conn);
+            actual = sqlLoggingService.LogTableExists(conn);
             Assert.AreEqual(false, actual);
 
             //Change to master db - should not have the table
             init.connData.DatabaseName = "master";
             conn = ConnectionHelper.GetConnection(init.connData);
-            actual = target.LogTableExists(conn);
+            actual = sqlLoggingService.LogTableExists(conn);
             Assert.AreEqual(false, actual);
         }
 
@@ -1810,15 +1843,17 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             row.ServerName = init.serverName;
             row.AllowScriptBlock = true;
             buildData.CommittedScript.Rows.Add(row);
-
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            ISqlBuildFileHelper fileHelper = new DefaultSqlBuildFileHelper();
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, fileHelper);
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             string[] scripts = new string[] { Guid.NewGuid().ToString(), buildData.Script[0].ScriptId };
             ClearScriptData scrData = new ClearScriptData(scripts, buildData, init.projectFileName, init.projectFileName);
-            BackgroundWorker bgWorker = new BackgroundWorker();
-            bgWorker.WorkerReportsProgress = true;
-            DoWorkEventArgs e = new DoWorkEventArgs(null);
-            target.ClearScriptBlocks(scrData, bgWorker, e);
+            
+            dbUtil.ClearScriptBlocks(scrData, progressReporter);
             Assert.AreEqual(false, buildData.CommittedScript[0].AllowScriptBlock);
         }
 
@@ -1863,7 +1898,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = null;
-            target.SaveBuildDataSet(false);
+            target.SaveBuildDataModel(false);
         }
 
         /// <summary>
@@ -1878,7 +1913,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = string.Empty;
-            target.SaveBuildDataSet(false);
+            target.SaveBuildDataModel(false);
         }
 
         /// <summary>
@@ -1893,7 +1928,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.buildHistoryXmlFile = null;
-            target.SaveBuildDataSet(false);
+            target.SaveBuildDataModel(false);
         }
         /// <summary>
         ///A test for SaveBuildDataSet
@@ -1907,7 +1942,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.buildHistoryXmlFile = string.Empty;
-            target.SaveBuildDataSet(false);
+            target.SaveBuildDataModel(false);
         }
         #endregion
 

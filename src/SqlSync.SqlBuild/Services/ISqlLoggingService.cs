@@ -1,8 +1,16 @@
+using Microsoft.Data.SqlClient;
+using Serilog.Debugging;
+using SqlSync.Connection;
+using SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.MultiDb;
+using System.Collections.Generic;
+
 namespace SqlSync.SqlBuild.Services
 {
-    internal interface ISqlLoggingService
+    public interface ISqlLoggingService
     {
-        void EnsureLogTablePresence();
-        bool LogCommittedScriptsToDatabase(System.Collections.Generic.List<SqlLogging.CommittedScript> committedScripts, MultiDb.MultiDbData multiDbRunData);
+        string EnsureLogTablePresence(Dictionary<string, BuildConnectData> connectDictionary, string logToDatabaseName);
+        bool LogCommittedScriptsToDatabase(List<SqlSync.SqlBuild.SqlLogging.CommittedScript> committedScripts, ISqlBuildRunnerProperties runnerProperties, MultiDbData multiDbRunData);
+        bool LogTableExists(SqlConnection conn);
     }
 }
