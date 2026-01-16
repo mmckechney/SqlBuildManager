@@ -19,5 +19,7 @@ namespace SqlSync.SqlBuild.Services
         public IReadOnlyList<SqlSync.SqlBuild.Models.ScriptRunLogEntry> GetObjectRunHistoryLog(string objectFileName, ConnectionData connData);
         public SqlSync.SqlBuild.Models.ScriptRunLogEntry ReadScriptRunLogEntry(IDataRecord reader);
         public SqlSyncBuildDataModel ClearScriptBlocks(ClearScriptData scrData, ConnectionData connData, IProgressReporter progressReporter, ISqlBuildRunnerProperties runnerProperties);
+
+        public SqlSyncBuildDataModel ClearAllowScriptBlocks(SqlSyncBuildDataModel model, string serverName, IReadOnlyList<string> selectedScriptIds);
     }
 }

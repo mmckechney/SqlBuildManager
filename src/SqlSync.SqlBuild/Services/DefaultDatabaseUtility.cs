@@ -220,52 +220,69 @@ namespace SqlSync.SqlBuild.Services
 
         public SqlSyncBuildDataModel ClearScriptBlocks(ClearScriptData scrData, ConnectionData connData, IProgressReporter progressReporter, ISqlBuildRunnerProperties runnerProperties)//, DoWorkEventArgs e)
         {
-            string projectFileName = scrData.ProjectFileName;
-            var model = scrData.BuildDataModel;
-            if (model == null)
-                throw new ArgumentException("ClearScriptData must provide BuildDataModel", nameof(scrData));
-            string buildFileName = scrData.BuildZipFileName;
-            string[] selectedScriptIds = scrData.SelectedScriptIds;
+            throw new NotImplementedException();
 
-            progressReporter.ReportProgress(0, new GeneralStatusEventArgs("Clearing Script Blocks"));
+            //string projectFileName = scrData.ProjectFileName;
+            //var model = scrData.BuildDataModel;
+            //if (model == null)
+            //    throw new ArgumentException("ClearScriptData must provide BuildDataModel", nameof(scrData));
+            //string buildFileName = scrData.BuildZipFileName;
+            //string[] selectedScriptIds = scrData.SelectedScriptIds;
 
-            sqlLoggingService.EnsureLogTablePresence();
+            //progressReporter.ReportProgress(0, new GeneralStatusEventArgs("Clearing Script Blocks"));
 
-            SqlCommand cmd = new SqlCommand("UPDATE SqlBuild_Logging SET AllowScriptBlock = 0, AllowBlockUpdateId = @UserId WHERE ScriptId = @ScriptId AND AllowScriptBlock = 1");
-            cmd.Parameters.Add("@ScriptId", SqlDbType.UniqueIdentifier);
-            cmd.Parameters.AddWithValue("@UserId", System.Environment.UserName);
-            var scriptsById = model.Script
-                .Where(s => s.ScriptId != null)
-                .ToDictionary(s => s.ScriptId!, s => s, StringComparer.OrdinalIgnoreCase);
+            //sqlLoggingService.EnsureLogTablePresence(connectionsService.Connections, runnerProperties.LogToDataBaseName);
+
+            //SqlCommand cmd = new SqlCommand("UPDATE SqlBuild_Logging SET AllowScriptBlock = 0, AllowBlockUpdateId = @UserId WHERE ScriptId = @ScriptId AND AllowScriptBlock = 1");
+            //cmd.Parameters.Add("@ScriptId", SqlDbType.UniqueIdentifier);
+            //cmd.Parameters.AddWithValue("@UserId", System.Environment.UserName);
+            //var scriptsById = model.Script
+            //    .Where(s => s.ScriptId != null)
+            //    .ToDictionary(s => s.ScriptId!, s => s, StringComparer.OrdinalIgnoreCase);
+            //var updatedCommitted = model.CommittedScript.ToList();
+            //for (int i = 0; i < selectedScriptIds.Length; i++)
+            //{
+            //    var id = selectedScriptIds[i];
+            //    if (!scriptsById.TryGetValue(id, out var script))
+            //        continue;
+
+            //    progressReporter.ReportProgress(0, new GeneralStatusEventArgs("Clearing " + (script.FileName ?? id)));
+
+            //    model = ClearAllowScriptBlocks(model, connData.SQLServerName, selectedScriptIds);
+
+            //    //Update Sql server log
+            //    string targetDatabase = GetTargetDatabase(script.Database ?? string.Empty);
+            //    BuildConnectData cData = connectionsService.GetBuildConnectionDataClass(connData.SQLServerName, targetDatabase);
+            //    sqlLoggingService.EnsureLogTablePresence(connectionsService.Connections, runnerProperties.LogToDataBaseName);
+            //    cmd.Connection = cData.Connection;
+            //    cmd.Transaction = cData.Transaction;
+            //    cmd.Parameters["@ScriptId"].Value = new System.Guid(id);
+            //    cmd.ExecuteNonQuery();
+            //}
+
+
+            //CommitBuild();
+            //SaveBuildDataSet(true);
+
+            //progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Selected Script Blocks Cleared"));
+            //return model;
+        }
+        public SqlSyncBuildDataModel ClearAllowScriptBlocks(SqlSyncBuildDataModel model, string serverName, IReadOnlyList<string> selectedScriptIds)
+        {
             var updatedCommitted = model.CommittedScript.ToList();
-            for (int i = 0; i < selectedScriptIds.Length; i++)
+            var idSet = new HashSet<string>(selectedScriptIds, StringComparer.OrdinalIgnoreCase);
+            for (var j = 0; j < updatedCommitted.Count; j++)
             {
-                var id = selectedScriptIds[i];
-                if (!scriptsById.TryGetValue(id, out var script))
-                    continue;
-
-                progressReporter.ReportProgress(0, new GeneralStatusEventArgs("Clearing " + (script.FileName ?? id)));
-
-                model = ClearAllowScriptBlocks(model, connData.SQLServerName, selectedScriptIds);
-
-                //Update Sql server log
-                string targetDatabase = GetTargetDatabase(script.Database ?? string.Empty);
-                BuildConnectData cData = connectionsService.GetBuildConnectionDataClass(connData.SQLServerName, targetDatabase);
-                sqlLoggingService.EnsureLogTablePresence(connectionsService.Connections, runnerProperties.LogToDataBaseName);
-                cmd.Connection = cData.Connection;
-                cmd.Transaction = cData.Transaction;
-                cmd.Parameters["@ScriptId"].Value = new System.Guid(id);
-                cmd.ExecuteNonQuery();
+                var cs = updatedCommitted[j];
+                if (cs.ScriptId != null && idSet.Contains(cs.ScriptId) && string.Equals(cs.ServerName, serverName, StringComparison.OrdinalIgnoreCase))
+                {
+                    updatedCommitted[j] = cs with { AllowScriptBlock = false };
+                }
             }
-
-
-            CommitBuild();
-            SaveBuildDataSet(true);
-
-            progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Selected Script Blocks Cleared"));
-            return model;
+            return model with { CommittedScript = updatedCommitted };
         }
 
+    }
+   
 
     }
-}

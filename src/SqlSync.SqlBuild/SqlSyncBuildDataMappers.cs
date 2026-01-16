@@ -15,9 +15,7 @@ namespace SqlSync.SqlBuild
             {
                 return new SqlSyncBuildDataModel(
                     SqlSyncBuildProject: new List<SqlSyncBuildProject>(),
-                    Scripts: new List<Scripts>(),
                     Script: new List<Script>(),
-                    Builds: new List<Builds>(),
                     Build: new List<Build>(),
                     ScriptRun: new List<ScriptRun>(),
                     CommittedScript: new List<CommittedScript>(),
@@ -27,9 +25,7 @@ namespace SqlSync.SqlBuild
 
             return new SqlSyncBuildDataModel(
                 SqlSyncBuildProject: ds.SqlSyncBuildProject?.Cast<SqlSyncBuildData.SqlSyncBuildProjectRow>().Select(r => r.ToModel()).ToList() ?? new List<SqlSyncBuildProject>(),
-                Scripts: ds.Scripts?.Cast<SqlSyncBuildData.ScriptsRow>().Select(r => r.ToModel()).ToList() ?? new List<Scripts>(),
                 Script: ds.Script?.Cast<SqlSyncBuildData.ScriptRow>().Select(r => r.ToModel()).ToList() ?? new List<Script>(),
-                Builds: ds.Builds?.Cast<SqlSyncBuildData.BuildsRow>().Select(r => r.ToModel()).ToList() ?? new List<Builds>(),
                 Build: ds.Build?.Cast<SqlSyncBuildData.BuildRow>().Select(r => r.ToModel()).ToList() ?? new List<Build>(),
                 ScriptRun: ds.ScriptRun?.Cast<SqlSyncBuildData.ScriptRunRow>().Select(r => r.ToModel()).ToList() ?? new List<ScriptRun>(),
                 CommittedScript: ds.CommittedScript?.Cast<SqlSyncBuildData.CommittedScriptRow>().Select(r => r.ToModel()).ToList() ?? new List<CommittedScript>(),
@@ -40,16 +36,9 @@ namespace SqlSync.SqlBuild
         public static SqlSyncBuildProject ToModel(this SqlSyncBuildData.SqlSyncBuildProjectRow row)
         {
             return new SqlSyncBuildProject(
-                SqlSyncBuildProject_Id: row.SqlSyncBuildProject_Id,
+                SqlSyncBuildProjectId: row.SqlSyncBuildProject_Id,
                 ProjectName: row.IsProjectNameNull() ? null : row.ProjectName,
                 ScriptTagRequired: row.IsScriptTagRequiredNull() ? null : row.ScriptTagRequired);
-        }
-
-        public static Scripts ToModel(this SqlSyncBuildData.ScriptsRow row)
-        {
-            return new Scripts(
-                Scripts_Id: row.Scripts_Id,
-                SqlSyncBuildProject_Id: row.IsSqlSyncBuildProject_IdNull() ? null : row.SqlSyncBuildProject_Id);
         }
 
         public static Script ToModel(this SqlSyncBuildData.ScriptRow row)
@@ -69,15 +58,7 @@ namespace SqlSync.SqlBuild
                 ScriptTimeOut: row.IsScriptTimeOutNull() ? null : row.ScriptTimeOut,
                 DateModified: row.IsDateModifiedNull() ? null : row.DateModified,
                 ModifiedBy: row.IsModifiedByNull() ? null : row.ModifiedBy,
-                Scripts_Id: row.IsScripts_IdNull() ? null : row.Scripts_Id,
                 Tag: row.IsTagNull() ? null : row.Tag);
-        }
-
-        public static Builds ToModel(this SqlSyncBuildData.BuildsRow row)
-        {
-            return new Builds(
-                Builds_Id: row.Builds_Id,
-                SqlSyncBuildProject_Id: row.IsSqlSyncBuildProject_IdNull() ? null : row.SqlSyncBuildProject_Id);
         }
 
         public static Build ToModel(this SqlSyncBuildData.BuildRow row)
@@ -88,11 +69,9 @@ namespace SqlSync.SqlBuild
                 BuildStart: row.IsBuildStartNull() ? null : row.BuildStart,
                 BuildEnd: row.IsBuildEndNull() ? null : row.BuildEnd,
                 ServerName: row.IsServerNameNull() ? null : row.ServerName,
-                FinalStatus: row.IsFinalStatusNull() ? null : row.FinalStatus,
+                FinalStatus: row.IsFinalStatusNull() ? null : Enum.TryParse<BuildItemStatus>(row.FinalStatus, out var finalStatus) ? finalStatus : null,
                 BuildId: row.IsBuildIdNull() ? null : row.BuildId,
-                UserId: row.IsUserIdNull() ? null : row.UserId,
-                Build_Id: row.Build_Id,
-                Builds_Id: row.IsBuilds_IdNull() ? null : row.Builds_Id);
+                UserId: row.IsUserIdNull() ? null : row.UserId);
         }
 
         public static ScriptRun ToModel(this SqlSyncBuildData.ScriptRunRow row)
@@ -107,7 +86,7 @@ namespace SqlSync.SqlBuild
                 Success: row.IsSuccessNull() ? null : row.Success,
                 Database: row.IsDatabaseNull() ? null : row.Database,
                 ScriptRunId: row.IsScriptRunIdNull() ? null : row.ScriptRunId,
-                Build_Id: row.IsBuild_IdNull() ? null : row.Build_Id);
+                BuildId: row.IsBuild_IdNull() ? null : row.Build_Id.ToString());
         }
 
         public static CommittedScript ToModel(this SqlSyncBuildData.CommittedScriptRow row)
@@ -118,7 +97,7 @@ namespace SqlSync.SqlBuild
                 CommittedDate: row.IsCommittedDateNull() ? null : row.CommittedDate,
                 AllowScriptBlock: row.IsAllowScriptBlockNull() ? null : row.AllowScriptBlock,
                 ScriptHash: row.IsScriptHashNull() ? null : row.ScriptHash,
-                SqlSyncBuildProject_Id: row.IsSqlSyncBuildProject_IdNull() ? null : row.SqlSyncBuildProject_Id);
+                SqlSyncBuildProjectId: row.IsSqlSyncBuildProject_IdNull() ? null : row.SqlSyncBuildProject_Id);
         }
 
         public static CodeReview ToModel(this SqlSyncBuildData.CodeReviewRow row)
@@ -142,19 +121,19 @@ namespace SqlSync.SqlBuild
             foreach (var proj in model.SqlSyncBuildProject)
             {
                 var row = ds.SqlSyncBuildProject.NewSqlSyncBuildProjectRow();
-                row.SqlSyncBuildProject_Id = proj.SqlSyncBuildProject_Id;
+                row.SqlSyncBuildProject_Id = proj.SqlSyncBuildProjectId;
                 if (proj.ProjectName is not null) row.ProjectName = proj.ProjectName;
                 if (proj.ScriptTagRequired.HasValue) row.ScriptTagRequired = proj.ScriptTagRequired.Value;
                 ds.SqlSyncBuildProject.AddSqlSyncBuildProjectRow(row);
             }
 
-            foreach (var scripts in model.Scripts)
-            {
-                var row = ds.Scripts.NewScriptsRow();
-                row.Scripts_Id = scripts.Scripts_Id;
-                if (scripts.SqlSyncBuildProject_Id.HasValue) row.SqlSyncBuildProject_Id = scripts.SqlSyncBuildProject_Id.Value;
-                ds.Scripts.AddScriptsRow(row);
-            }
+            //foreach (var scripts in model.Scripts)
+            //{
+            //    var row = ds.Scripts.NewScriptsRow();
+            //    row.Scripts_Id = scripts.Scripts_Id;
+            //    if (scripts.SqlSyncBuildProject_Id.HasValue) row.SqlSyncBuildProject_Id = scripts.SqlSyncBuildProject_Id.Value;
+            //    ds.Scripts.AddScriptsRow(row);
+            //}
 
             foreach (var s in model.Script)
             {
@@ -173,16 +152,14 @@ namespace SqlSync.SqlBuild
                 if (s.ScriptTimeOut.HasValue) row.ScriptTimeOut = s.ScriptTimeOut.Value;
                 if (s.DateModified.HasValue) row.DateModified = s.DateModified.Value;
                 if (s.ModifiedBy is not null) row.ModifiedBy = s.ModifiedBy;
-                if (s.Scripts_Id.HasValue) row.Scripts_Id = s.Scripts_Id.Value;
                 if (s.Tag is not null) row.Tag = s.Tag;
                 ds.Script.AddScriptRow(row);
             }
 
-            foreach (var b in model.Builds)
+            var buildGroups = model.Build.GroupBy(b => b.BuildId);
+            foreach (var b in buildGroups)
             {
                 var row = ds.Builds.NewBuildsRow();
-                row.Builds_Id = b.Builds_Id;
-                if (b.SqlSyncBuildProject_Id.HasValue) row.SqlSyncBuildProject_Id = b.SqlSyncBuildProject_Id.Value;
                 ds.Builds.AddBuildsRow(row);
             }
 
@@ -194,11 +171,9 @@ namespace SqlSync.SqlBuild
                 if (b.BuildStart.HasValue) row.BuildStart = b.BuildStart.Value;
                 if (b.BuildEnd.HasValue) row.BuildEnd = b.BuildEnd.Value;
                 if (b.ServerName is not null) row.ServerName = b.ServerName;
-                if (b.FinalStatus is not null) row.FinalStatus = b.FinalStatus;
+                if (b.FinalStatus is not null) row.FinalStatus = b.FinalStatus.ToString();
                 if (b.BuildId is not null) row.BuildId = b.BuildId;
                 if (b.UserId is not null) row.UserId = b.UserId;
-                row.Build_Id = b.Build_Id;
-                if (b.Builds_Id.HasValue) row.Builds_Id = b.Builds_Id.Value;
                 ds.Build.AddBuildRow(row);
             }
 
@@ -214,7 +189,6 @@ namespace SqlSync.SqlBuild
                 if (sr.Success.HasValue) row.Success = sr.Success.Value;
                 if (sr.Database is not null) row.Database = sr.Database;
                 if (sr.ScriptRunId is not null) row.ScriptRunId = sr.ScriptRunId;
-                if (sr.Build_Id.HasValue) row.Build_Id = sr.Build_Id.Value;
                 ds.ScriptRun.AddScriptRunRow(row);
             }
 
@@ -226,7 +200,6 @@ namespace SqlSync.SqlBuild
                 if (cs.CommittedDate.HasValue) row.CommittedDate = cs.CommittedDate.Value;
                 if (cs.AllowScriptBlock.HasValue) row.AllowScriptBlock = cs.AllowScriptBlock.Value;
                 if (cs.ScriptHash is not null) row.ScriptHash = cs.ScriptHash;
-                if (cs.SqlSyncBuildProject_Id.HasValue) row.SqlSyncBuildProject_Id = cs.SqlSyncBuildProject_Id.Value;
                 ds.CommittedScript.AddCommittedScriptRow(row);
             }
 

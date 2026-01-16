@@ -2,6 +2,7 @@
 using SqlSync.Constants;
 using SqlSync.DbInformation;
 using SqlSync.DbInformation.ChangeDates;
+using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +10,7 @@ namespace SqlSync.SqlBuild.Status
 {
     public class StatusHelper
     {
-        public static ScriptStatusType DetermineScriptRunStatus(SqlSyncBuildData.ScriptRow row, ConnectionData connData, string projectFilePath, bool checkForChanges, List<DatabaseOverride> overrides, out DateTime commitDate, out DateTime serverChangeDate)
+        public static ScriptStatusType DetermineScriptRunStatus(IDatabaseUtility dbUtil, SqlSyncBuildData.ScriptRow row, ConnectionData connData, string projectFilePath, bool checkForChanges, List<DatabaseOverride> overrides, out DateTime commitDate, out DateTime serverChangeDate)
         {
             string targetDatabase = ConnectionHelper.GetTargetDatabase(row.Database, overrides);
 
@@ -27,7 +28,7 @@ namespace SqlSync.SqlBuild.Status
             commitDate = DateTime.MinValue;
             serverChangeDate = DateTime.MinValue;
             // preRun = (committedScriptView.Find(row.ScriptId) > -1 || helper.HasBlockingSqlLog(new Guid(row.ScriptId), this.data, targetDatabase, out scriptHash, out scriptTextHash) == true);
-            preRun = (SqlBuildHelper.HasBlockingSqlLog(new Guid(row.ScriptId), connData, targetDatabase, out scriptHash, out scriptTextHash, out commitDate) == true);
+            preRun = (dbUtil.HasBlockingSqlLog(new Guid(row.ScriptId), connData, targetDatabase, out scriptHash, out scriptTextHash, out commitDate) == true);
             //Check that the file exists
             if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
             {
@@ -38,7 +39,7 @@ namespace SqlSync.SqlBuild.Status
             if (preRun && checkForChanges)
             {
                 if (scriptHash == string.Empty || scriptTextHash == string.Empty)
-                    SqlBuildHelper.HasBlockingSqlLog(new Guid(row.ScriptId), connData, targetDatabase, out scriptHash, out scriptTextHash, out commitDate);
+                    dbUtil.HasBlockingSqlLog(new Guid(row.ScriptId), connData, targetDatabase, out scriptHash, out scriptTextHash, out commitDate);
 
                 /*If the scriptHash is STILL empty, then the file and the Db are out of sync.
                  *	This could be due to a Db refresh, in which case we'll mark it as changed
@@ -126,13 +127,13 @@ namespace SqlSync.SqlBuild.Status
             }
         }
 
-        public static void SetScriptRunStatusAndDates(ref SqlSyncBuildData buildData, ConnectionData connData, string projectFilePath)
+        public static void SetScriptRunStatusAndDates(ref SqlSyncBuildData buildData, IDatabaseUtility dbUtil, ConnectionData connData, string projectFilePath)
         {
             DateTime commitDate;
             DateTime serverChangeDate;
             foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
             {
-                row.ScriptRunStatus = DetermineScriptRunStatus(row, connData, projectFilePath, true, OverrideData.TargetDatabaseOverrides, out commitDate, out serverChangeDate);
+                row.ScriptRunStatus = DetermineScriptRunStatus(dbUtil, row, connData, projectFilePath, true, OverrideData.TargetDatabaseOverrides, out commitDate, out serverChangeDate);
                 row.LastCommitDate = commitDate;
                 row.ServerChangeDate = serverChangeDate;
             }

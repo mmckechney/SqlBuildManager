@@ -479,9 +479,7 @@ namespace SqlSync.SqlBuild
         {
             return new SqlSyncBuildDataModel(
                 SqlSyncBuildProject: new[] { new SqlSyncBuildProject(0, string.Empty, false) },
-                Scripts: new[] { new Scripts(0, 0) },
                 Script: Array.Empty<Script>(),
-                Builds: new[] { new Builds(0, 0) },
                 Build: Array.Empty<Build>(),
                 ScriptRun: Array.Empty<ScriptRun>(),
                 CommittedScript: Array.Empty<CommittedScript>(),
@@ -898,7 +896,6 @@ namespace SqlSync.SqlBuild
 
         public static SqlSyncBuildDataModel AddScriptFileToBuild(SqlSyncBuildDataModel model, string projFileName, string fileName, double buildOrder, string description, bool rollBackScript, bool rollBackBuild, string databaseName, bool stripTransactions, string buildZipFileName, bool saveToZip, bool allowMultipleRuns, string addedBy, int scriptTimeOut, Guid scriptId, string tag)
         {
-            var scriptsId = model.Scripts.FirstOrDefault()?.Scripts_Id ?? 0;
             var newScript = new Script(
                 FileName: fileName,
                 BuildOrder: buildOrder,
@@ -914,7 +911,6 @@ namespace SqlSync.SqlBuild
                 ScriptTimeOut: scriptTimeOut,
                 DateModified: DateTime.MinValue,
                 ModifiedBy: string.Empty,
-                Scripts_Id: scriptsId,
                 Tag: tag);
 
             var updatedScripts = model.Script.Concat(new[] { newScript }).ToList();

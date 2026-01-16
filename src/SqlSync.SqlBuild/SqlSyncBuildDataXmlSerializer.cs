@@ -7,6 +7,8 @@ using System.Xml;
 using System.IO.Compression;
 using System.Xml.Linq;
 using SqlSync.SqlBuild.Models;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Identity.Client;
 
 #nullable enable
 
@@ -48,10 +50,19 @@ namespace SqlSync.SqlBuild
             return read >= 2 && header[0] == 0x50 && header[1] == 0x4B; // 'PK'
         }
 
+        private class Scripts
+        {
+            public List<Script> ScriptRows { get; } = new();
+        }
+        private class Builds
+        {
+            public List<Build> BuildRows { get; } = new();
+        }
         public static SqlSyncBuildDataModel Load(XDocument doc)
         {
             if (doc.Root is null)
                 throw new InvalidOperationException("SqlSyncBuildData XML has no root element.");
+
 
             var ns = doc.Root.GetDefaultNamespace();
             var projects = new List<SqlSyncBuildProject>();
@@ -72,7 +83,7 @@ namespace SqlSync.SqlBuild
             {
                 var projectId = nextProjectId++;
                 var project = new SqlSyncBuildProject(
-                    SqlSyncBuildProject_Id: projectId,
+                    SqlSyncBuildProjectId: projectId,
                     ProjectName: (string?)projElement.Attribute("ProjectName"),
                     ScriptTagRequired: ParseBoolOrNull((string?)projElement.Attribute("ScriptTagRequired")));
                 projects.Add(project);
@@ -83,14 +94,14 @@ namespace SqlSync.SqlBuild
                 {
                     // dataset would still have a Scripts table row (auto id) even if empty; mimic by creating one empty scripts row
                     var scriptsId = nextScriptsId++;
-                    scriptsTable.Add(new Scripts(Scripts_Id: scriptsId, SqlSyncBuildProject_Id: projectId));
+                    scriptsTable.Add(new Scripts());
                 }
                 else
                 {
                     foreach (var scriptsContainer in scriptsContainers)
                     {
                         var scriptsId = nextScriptsId++;
-                        scriptsTable.Add(new Scripts(Scripts_Id: scriptsId, SqlSyncBuildProject_Id: projectId));
+                        scriptsTable.Add(new Scripts());
                         foreach (var s in scriptsContainer.Elements(ns + "Script"))
                         {
                             scriptRows.Add(ParseScript(s, scriptsId));
@@ -104,21 +115,21 @@ namespace SqlSync.SqlBuild
                 {
                     // dataset would still have a Builds row; mimic
                     var buildsId = nextBuildsId++;
-                    buildsTable.Add(new Builds(buildsId, projectId));
+                    buildsTable.Add(new Builds());
                 }
                 else
                 {
                     foreach (var buildsContainer in buildsContainers)
                     {
                         var buildsId = nextBuildsId++;
-                        buildsTable.Add(new Builds(buildsId, projectId));
+                        buildsTable.Add(new Builds());
                         foreach (var b in buildsContainer.Elements(ns + "Build"))
                         {
                             var buildId = nextBuildId++;
                             buildRows.Add(ParseBuild(b, buildsId, buildId));
                             foreach (var sr in b.Elements(ns + "ScriptRun"))
                             {
-                                scriptRuns.Add(ParseScriptRun(sr, buildId));
+                                scriptRuns.Add(ParseScriptRun(sr, buildId.ToString()));
                             }
                         }
                     }
@@ -137,7 +148,7 @@ namespace SqlSync.SqlBuild
                 codeReviews.Add(ParseCodeReview(cr));
             }
 
-            return new SqlSyncBuildDataModel(projects, scriptsTable, scriptRows, buildsTable, buildRows, scriptRuns, committedScripts, codeReviews);
+            return new SqlSyncBuildDataModel(projects, scriptRows, buildRows, scriptRuns, committedScripts, codeReviews);
         }
 
         private static Script ParseScript(XElement el, int scriptsId)
@@ -157,26 +168,24 @@ namespace SqlSync.SqlBuild
                 ScriptTimeOut: ParseIntOrNull((string?)el.Attribute("ScriptTimeOut")),
                 DateModified: ParseDateTimeOrNull((string?)el.Attribute("DateModified")),
                 ModifiedBy: (string?)el.Attribute("ModifiedBy"),
-                Scripts_Id: scriptsId,
-                Tag: (string?)el.Attribute("Tag"));
+                   Tag: (string?)el.Attribute("Tag"));
         }
 
         private static Build ParseBuild(XElement el, int buildsId, int buildId)
         {
+            var finalStat = Enum.TryParse<BuildItemStatus>((string?)el.Attribute("FinalStatus"), out var finalStatus) ? finalStatus : BuildItemStatus.Unknown;
             return new Build(
                 Name: (string?)el.Attribute("Name"),
                 BuildType: (string?)el.Attribute("BuildType"),
                 BuildStart: ParseDateTimeOrNull((string?)el.Attribute("BuildStart")),
                 BuildEnd: ParseDateTimeOrNull((string?)el.Attribute("BuildEnd")),
                 ServerName: (string?)el.Attribute("ServerName"),
-                FinalStatus: (string?)el.Attribute("FinalStatus"),
+                FinalStatus: finalStatus,
                 BuildId: (string?)el.Attribute("BuildId"),
-                UserId: (string?)el.Attribute("UserId"),
-                Build_Id: buildId,
-                Builds_Id: buildsId);
+                UserId: (string?)el.Attribute("UserId"));
         }
 
-        private static ScriptRun ParseScriptRun(XElement el, int buildId)
+        private static ScriptRun ParseScriptRun(XElement el, string buildId)
         {
             return new ScriptRun(
                 FileHash: (string?)el.Element(Ns + "FileHash"),
@@ -188,7 +197,7 @@ namespace SqlSync.SqlBuild
                 Success: ParseBoolOrNull((string?)el.Attribute("Success")),
                 Database: (string?)el.Attribute("Database"),
                 ScriptRunId: (string?)el.Attribute("ScriptRunId"),
-                Build_Id: buildId);
+                BuildId: buildId);
         }
 
         private static CommittedScript ParseCommittedScript(XElement el, int projectId)
@@ -199,7 +208,7 @@ namespace SqlSync.SqlBuild
                 CommittedDate: ParseDateTimeOrNull((string?)el.Attribute("CommittedDate")),
                 AllowScriptBlock: ParseBoolOrNull((string?)el.Attribute("AllowScriptBlock")),
                 ScriptHash: (string?)el.Attribute("ScriptHash"),
-                SqlSyncBuildProject_Id: projectId);
+                SqlSyncBuildProjectId: projectId);
         }
 
         private static CodeReview ParseCodeReview(XElement el)
@@ -237,7 +246,7 @@ namespace SqlSync.SqlBuild
                 if (proj.ProjectName is not null) projEl.SetAttributeValue("ProjectName", proj.ProjectName);
                 if (proj.ScriptTagRequired.HasValue) projEl.SetAttributeValue("ScriptTagRequired", FormatBool(proj.ScriptTagRequired.Value));
 
-                var scriptsGroups = model.Scripts.Where(s => s.SqlSyncBuildProject_Id == proj.SqlSyncBuildProject_Id).ToList();
+                var scriptsGroups = model.Script.ToList();
                 if (scriptsGroups.Count == 0)
                 {
                     projEl.Add(new XElement(Ns + "Scripts"));
@@ -247,7 +256,7 @@ namespace SqlSync.SqlBuild
                     foreach (var sg in scriptsGroups)
                     {
                         var scriptsEl = new XElement(Ns + "Scripts");
-                        var scripts = model.Script.Where(s => s.Scripts_Id == sg.Scripts_Id).ToList();
+                        var scripts = model.Script.ToList();
                         foreach (var s in scripts)
                         {
                             var scriptEl = new XElement(Ns + "Script");
@@ -272,52 +281,47 @@ namespace SqlSync.SqlBuild
                     }
                 }
 
-                var buildsGroups = model.Builds.Where(b => b.SqlSyncBuildProject_Id == proj.SqlSyncBuildProject_Id).ToList();
-                if (buildsGroups.Count == 0)
+                var buildGroups = model.Build.GroupBy(b => b.BuildId).ToList();
+                var buildsEl = new XElement(Ns + "Builds");
+
+                foreach (var bg in buildGroups)
                 {
-                    projEl.Add(new XElement(Ns + "Builds"));
-                }
-                else
-                {
-                    foreach (var bg in buildsGroups)
+                    var builds = bg.ToList().OrderBy(b => b.BuildStart).ToList();
+                    foreach (var b in builds)
                     {
-                        var buildsEl = new XElement(Ns + "Builds");
-                        var builds = model.Build.Where(b => b.Builds_Id == bg.Builds_Id).ToList();
-                        foreach (var b in builds)
+                        var buildEl = new XElement(Ns + "Build");
+                        SetAttr(buildEl, "Name", b.Name);
+                        SetAttr(buildEl, "BuildType", b.BuildType);
+                        SetAttr(buildEl, "BuildStart", b.BuildStart);
+                        SetAttr(buildEl, "BuildEnd", b.BuildEnd);
+                        SetAttr(buildEl, "ServerName", b.ServerName);
+                        SetAttr(buildEl, "FinalStatus", b.FinalStatus.ToString());
+                        SetAttr(buildEl, "BuildId", b.BuildId);
+                        SetAttr(buildEl, "UserId", b.UserId);
+
+                        var runs = model.ScriptRun.Where(sr => sr.BuildId == b.BuildId).ToList();
+                        foreach (var sr in runs)
                         {
-                            var buildEl = new XElement(Ns + "Build");
-                            SetAttr(buildEl, "Name", b.Name);
-                            SetAttr(buildEl, "BuildType", b.BuildType);
-                            SetAttr(buildEl, "BuildStart", b.BuildStart);
-                            SetAttr(buildEl, "BuildEnd", b.BuildEnd);
-                            SetAttr(buildEl, "ServerName", b.ServerName);
-                            SetAttr(buildEl, "FinalStatus", b.FinalStatus);
-                            SetAttr(buildEl, "BuildId", b.BuildId);
-                            SetAttr(buildEl, "UserId", b.UserId);
-
-                            var runs = model.ScriptRun.Where(sr => sr.Build_Id == b.Build_Id).ToList();
-                            foreach (var sr in runs)
-                            {
-                                var srEl = new XElement(Ns + "ScriptRun");
-                                SetAttr(srEl, "FileName", sr.FileName);
-                                SetAttr(srEl, "RunOrder", sr.RunOrder);
-                                SetAttr(srEl, "RunStart", sr.RunStart);
-                                SetAttr(srEl, "RunEnd", sr.RunEnd);
-                                SetAttr(srEl, "Success", sr.Success);
-                                SetAttr(srEl, "Database", sr.Database);
-                                SetAttr(srEl, "ScriptRunId", sr.ScriptRunId);
-                                if (sr.FileHash is not null) srEl.Add(new XElement(Ns + "FileHash", sr.FileHash));
-                                if (sr.Results is not null) srEl.Add(new XElement(Ns + "Results", sr.Results));
-                                buildEl.Add(srEl);
-                            }
-
-                            buildsEl.Add(buildEl);
+                            var srEl = new XElement(Ns + "ScriptRun");
+                            SetAttr(srEl, "FileName", sr.FileName);
+                            SetAttr(srEl, "RunOrder", sr.RunOrder);
+                            SetAttr(srEl, "RunStart", sr.RunStart);
+                            SetAttr(srEl, "RunEnd", sr.RunEnd);
+                            SetAttr(srEl, "Success", sr.Success);
+                            SetAttr(srEl, "Database", sr.Database);
+                            SetAttr(srEl, "ScriptRunId", sr.ScriptRunId);
+                            if (sr.FileHash is not null) srEl.Add(new XElement(Ns + "FileHash", sr.FileHash));
+                            if (sr.Results is not null) srEl.Add(new XElement(Ns + "Results", sr.Results));
+                            buildEl.Add(srEl);
                         }
-                        projEl.Add(buildsEl);
+
+                        buildsEl.Add(buildEl);
                     }
+                    projEl.Add(buildsEl);
                 }
 
-                var committed = model.CommittedScript.Where(c => c.SqlSyncBuildProject_Id == proj.SqlSyncBuildProject_Id).ToList();
+
+                var committed = model.CommittedScript.Where(c => c.SqlSyncBuildProjectId == proj.SqlSyncBuildProjectId).ToList();
                 foreach (var c in committed)
                 {
                     var csEl = new XElement(Ns + "CommittedScript");

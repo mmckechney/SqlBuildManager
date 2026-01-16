@@ -1,4 +1,5 @@
 ﻿using SqlSync.Connection;
+using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 namespace SqlSync.SqlBuild.Status
@@ -30,12 +31,14 @@ namespace SqlSync.SqlBuild.Status
             set { status = value; }
         }
 
-        public StatusReportRunner(SqlSyncBuildData buildData, string serverName, List<DatabaseOverride> dbOverrides, string projectFilePath)
+        private IDatabaseUtility dbUtil { get; }
+        public StatusReportRunner(IDatabaseUtility dbUtil, SqlSyncBuildData buildData, string serverName, List<DatabaseOverride> dbOverrides, string projectFilePath)
         {
             this.buildData = buildData;
             this.serverName = serverName;
             this.dbOverrides = dbOverrides;
             this.projectFilePath = projectFilePath;
+            this.dbUtil = dbUtil;
         }
         public void RetrieveStatus()
         {
@@ -53,7 +56,7 @@ namespace SqlSync.SqlBuild.Status
                 ScriptStatusData dat = new ScriptStatusData();
                 connData = new SqlSync.Connection.ConnectionData(serverName, databaseName);
 
-                ScriptStatusType stat = StatusHelper.DetermineScriptRunStatus(row, connData, projectFilePath, true, dbOverrides, out commitDate, out serverChangeDate);
+                ScriptStatusType stat = StatusHelper.DetermineScriptRunStatus(dbUtil, row, connData, projectFilePath, true, dbOverrides, out commitDate, out serverChangeDate);
                 dat.Fill(row);
                 dat.DatabaseName = databaseName;
                 dat.ServerName = serverName;

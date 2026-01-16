@@ -45,7 +45,7 @@ namespace SqlSync.SqlBuild.Services
             var runner = SqlBuildHelper.SqlBuildRunnerFactory(connectionsService, _helper, null);
 
             while (buildRetries <= allowableTimeoutRetries &&
-                (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString()))
+                (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout))
             {
                 if (buildRetries > 0)
                 {
@@ -56,8 +56,8 @@ namespace SqlSync.SqlBuild.Services
 
                 buildResultsModel = runner.Run(prep.FilteredScripts, prep.Build, serverName, isMultiDbRun, scriptBatchColl, runData.BuildDataModel!, ref workEventArgs);
 
-                if (buildRetries > 0 && buildResultsModel.FinalStatus == BuildItemStatus.Committed.ToString())
-                    buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries.ToString() };
+                if (buildRetries > 0 && buildResultsModel.FinalStatus == BuildItemStatus.Committed)
+                    buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries };
 
                 if (!_retryPolicy.ShouldRetry(buildResultsModel, buildRetries))
                     break;
@@ -106,7 +106,7 @@ namespace SqlSync.SqlBuild.Services
             var runner = SqlBuildHelper.SqlBuildRunnerFactory(connectionsService, _helper, null);
 
             while (buildRetries <= allowableTimeoutRetries &&
-                (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString()))
+                (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout ))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -122,8 +122,8 @@ namespace SqlSync.SqlBuild.Services
                 if (workEventArgs.Cancel)
                     break;
 
-                if (buildRetries > 0 && buildResultsModel.FinalStatus == BuildItemStatus.Committed.ToString())
-                    buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries.ToString() };
+                if (buildRetries > 0 && buildResultsModel.FinalStatus == BuildItemStatus.Committed)
+                    buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries };
 
                 if (!_retryPolicy.ShouldRetry(buildResultsModel, buildRetries))
                     break;

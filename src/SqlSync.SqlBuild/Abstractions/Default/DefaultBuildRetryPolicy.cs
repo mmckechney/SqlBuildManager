@@ -6,7 +6,7 @@ namespace SqlSync.SqlBuild
     {
         public bool ShouldRetry(Build result, int attemptIndex)
         {
-            return result?.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString();
+            return result?.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout;
         }
     }
 }

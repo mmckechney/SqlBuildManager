@@ -1,4 +1,5 @@
 ﻿using SqlSync.SqlBuild.MultiDb;
+using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,8 +19,10 @@ namespace SqlSync.SqlBuild.Status
         int threadTotal = 0;
         private static SyncObject SyncObj = new SyncObject();
         List<StatusReportRunner> runners = new List<StatusReportRunner>();
-        public StatusReporting(SqlSyncBuildData buildData, MultiDb.MultiDbData multiDbData, string projectFilePath, string buildZipFileName)
+        private IDatabaseUtility dbUtil { get; }
+        public StatusReporting(IDatabaseUtility dbUtil, SqlSyncBuildData buildData, MultiDb.MultiDbData multiDbData, string projectFilePath, string buildZipFileName)
         {
+            this.dbUtil = dbUtil;
             this.buildData = buildData;
             this.multiDbData = multiDbData;
             this.buildZipFileName = buildZipFileName;
@@ -40,7 +43,7 @@ namespace SqlSync.SqlBuild.Status
                 {
                     StatusReporting.SyncObj.WorkingRunners++;
                 }
-                StatusReportRunner runner = new StatusReportRunner(buildData, srv.ServerName, srv.Overrides, projectFilePath);
+                StatusReportRunner runner = new StatusReportRunner(dbUtil, buildData, srv.ServerName, srv.Overrides, projectFilePath);
                 runners.Add(runner);
                 System.Threading.ThreadPool.QueueUserWorkItem(ProcessThreadedScriptStatus, runner);
             }

@@ -12,9 +12,9 @@ namespace SqlSync.SqlBuild.Services
         bool CommitBuild(IConnectionsService connectionsService, bool isTransactional);
         bool RollbackBuild(IConnectionsService connectionsService, bool isTransactional);
         void SaveBuildDataModel(ISqlBuildRunnerProperties context, bool finalSave);
-        (List<Build> buildRecords, SqlSyncBuildDataModel updatedModel, bool errorOccurred) PerformRunScriptFinalization(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, bool buildFailure, List<Build> myBuild, SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs)
+        public (Build updatedBuild, SqlSyncBuildDataModel updatedModel, BuildResultStatus buildResult) PerformRunScriptFinalization(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, bool buildFailure, Build myBuild);
         public SqlSyncBuildDataModel RecordCommittedScripts(List<SqlSync.SqlBuild.SqlLogging.CommittedScript> committedScripts, SqlSyncBuildDataModel buildDataModel);
-
+        public BuildResultStatus CalculateFinalStatus(IList<BuildResultStatus> buildResults);
         // Event invocation helpers
 
         //Build PerformRunScriptFinalization(

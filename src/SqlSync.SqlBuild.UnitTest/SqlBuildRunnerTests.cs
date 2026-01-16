@@ -8,6 +8,9 @@ using SqlSync.SqlBuild;
 using Microsoft.Extensions.Logging.Abstractions;
 using BuildModels = SqlSync.SqlBuild.Models;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
+using SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.MultiDb;
+using SqlSync.Connection;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
@@ -26,7 +29,7 @@ namespace SqlSync.SqlBuild.UnitTest
             {
                 CommittedScript = new List<BuildModels.CommittedScript>
                 {
-                    new BuildModels.CommittedScript(ScriptId, ServerName: null, CommittedDate: null, AllowScriptBlock: null, ScriptHash: null, SqlSyncBuildProject_Id: null)
+                    new BuildModels.CommittedScript(ScriptId, ServerName: null, CommittedDate: null, AllowScriptBlock: null, ScriptHash: null, SqlSyncBuildProjectId: null)
                 }
             };
 
@@ -59,7 +62,7 @@ namespace SqlSync.SqlBuild.UnitTest
             CollectionAssert.AreEqual(new[] { "SELECT 2;" }, result);
         }
 
-        private sealed class FakeRunnerContext : ISqlBuildRunnerContext
+        private sealed class FakeRunnerContext : FakeRunnerProperties, ISqlBuildRunnerContext, ISqlBuildRunnerProperties
         {
             public string[] ReadBatchReturn { get; set; } = Array.Empty<string>();
 
@@ -88,6 +91,44 @@ namespace SqlSync.SqlBuild.UnitTest
             public void SaveBuildDataSet(bool fireSavedEvent) => throw new NotImplementedException();
             public BuildModels.Build PerformRunScriptFinalization(bool buildFailure, BuildModels.Build myBuild, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs) => throw new NotImplementedException();
             public void PublishScriptLog(bool isError, ScriptLogEventArgs args) => throw new NotImplementedException();
+        }
+
+        private class FakeRunnerProperties : ISqlBuildRunnerProperties
+        {
+            public bool IsTransactional => true;
+
+            public bool IsTrialBuild => false;
+
+            public bool RunScriptOnly => false;
+
+            public string BuildPackageHash => "FAKEHASH-WERWEFWEFHWHFWRHC342JWIOEJWIECUJWEUFWIJFWOIEJCWIECJWE";
+
+            public string ProjectFilePath => "FAKEPATH";
+
+            public string ProjectFileName => "FakeProjectName.xml";
+
+            public string BuildFileName => "FakeBuildFileName.sbm";
+
+            public List<LoggingCommittedScript> CommittedScripts => new();
+
+            public bool ErrorOccured { get => false; set => value = false; }
+            public string SqlInfoMessage { get => string.Empty; set => value = string.Empty; }
+
+            public int DefaultScriptTimeout => 30;
+
+            public SqlSyncBuildDataModel BuildDataModel => SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+
+            public MultiDbData MultiDbRunData => new MultiDbData();
+
+            public string BuildRequestedBy => "FakeUser";
+
+            public string BuildDescription => "FakeBuildDescription";
+
+            public string LogToDataBaseName => string.Empty;
+
+            public string BuildHistoryXmlFile => "FakeBuildHistory.xml";
+
+            public ConnectionData ConnectionData => new();
         }
     }
 }

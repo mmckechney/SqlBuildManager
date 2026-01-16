@@ -1,3 +1,4 @@
+using Microsoft.Build.Execution;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild.Models;
@@ -5,6 +6,7 @@ using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
 
@@ -102,7 +104,7 @@ namespace SqlSync.SqlBuild.Services
             if (committedScripts != null)
             {
                 var list = new List<SqlSync.SqlBuild.Models.CommittedScript>(model.CommittedScript);
-                var projectId = model.SqlSyncBuildProject.Count > 0 ? model.SqlSyncBuildProject[0].SqlSyncBuildProject_Id : 0;
+                var projectId = model.SqlSyncBuildProject.Count > 0 ? model.SqlSyncBuildProject[0].SqlSyncBuildProjectId : 0;
                 foreach (var cs in committedScripts)
                 {
                     list.Add(new SqlSync.SqlBuild.Models.CommittedScript(
@@ -146,40 +148,29 @@ namespace SqlSync.SqlBuild.Services
             if (fireSavedEvent)
                 progressReporter.ReportProgress(0, new ScriptRunProjectFileSavedEventArgs(true));
         }
-        public (List<Build> buildRecords, SqlSyncBuildDataModel updatedModel, bool errorOccurred) PerformRunScriptFinalization(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, bool buildFailure, List<Build> myBuild, SqlSyncBuildDataModel buildDataModel,  ref DoWorkEventArgs workEventArgs)
+        public (Build updatedBuild, SqlSyncBuildDataModel updatedModel, BuildResultStatus buildResult) PerformRunScriptFinalization(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, bool buildFailure, Build myBuild)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
             var finalizationErrorOccurred = false;
-            var updatedDataModel = buildDataModel;
+            var updatedDataModel = context.BuildDataModel;
+            BuildResultStatus finalBuildResult;
             DateTime end = DateTime.Now;
-            for(int i=0;i<myBuild.Count; i++)
-            {
-                if (myBuild[i].BuildId == context.BuildPackageHash)
-                {
-                    var buildToUpdate = myBuild[i];
-                    buildToUpdate = buildToUpdate with { BuildEnd = end };
-                    myBuild[i] = buildToUpdate;
-                }
-            }
+            myBuild = myBuild with { BuildId = context.BuildPackageHash , BuildEnd = end};
 
             if (buildFailure)
             {
                 finalizationErrorOccurred = true;
-                for (int i = 0; i < myBuild.Count; i++)
-                {
-                    var buildToUpdate = myBuild[i];
-                    if (context.IsTransactional)
-                        buildToUpdate = buildToUpdate with { FinalStatus = BuildItemStatus.RolledBack.ToString() };
-                    else
-                        buildToUpdate = buildToUpdate with { FinalStatus = BuildItemStatus.FailedNoTransaction.ToString() };
-                    myBuild[i] = buildToUpdate;
-                }
+                if (context.IsTransactional)
+                    myBuild = myBuild with { FinalStatus = BuildItemStatus.RolledBack };
+                else
+                    myBuild = myBuild with { FinalStatus = BuildItemStatus.FailedNoTransaction };
+
 
                 if (!context.IsTransactional)
                 {
-                    updatedDataModel = RecordCommittedScripts(context.CommittedScripts, buildDataModel);
-                    sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context,context.MultiDbRunData);
+                    updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
+                    sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData);
                 }
             }
             else
@@ -194,112 +185,119 @@ namespace SqlSync.SqlBuild.Services
                             progressReporter.ReportProgress(0, new GeneralStatusEventArgs("Commit Successful"));
                     }
 
-                    for (int i = 0; i < myBuild.Count; i++)
-                    {
-                        var buildToUpdate = myBuild[i];
-                        buildToUpdate = buildToUpdate with { FinalStatus = BuildItemStatus.Committed.ToString() };
-                        myBuild[i] = buildToUpdate;
-                    }
-                       
-                    updatedDataModel = RecordCommittedScripts(context.CommittedScripts, buildDataModel);
+                    myBuild = myBuild with { FinalStatus = BuildItemStatus.Committed };
+
+                    updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
                     sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData);
-                    context.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
+                    //TODO: figure out eventing here
+                    //context.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
                 }
                 else
                 {
                     if (context.IsTransactional)
                     {
                         RollbackBuild(connectionsService, context.IsTransactional);
-
-                        for (int i = 0; i < myBuild.Count; i++)
-                        {
-                            var buildToUpdate = myBuild[i];
-                            buildToUpdate = buildToUpdate with { FinalStatus = BuildItemStatus.TrialRolledBack.ToString() };
-                            myBuild[i] = buildToUpdate;
-                        }
-                        context.RaiseBuildSuccessTrialRolledBackEvent(context);
+                        myBuild = myBuild with { FinalStatus = BuildItemStatus.TrialRolledBack };
+                        //TODO: figure out eventing here
+                        //context.RaiseBuildSuccessTrialRolledBackEvent(context);
                     }
                     else
                     {
-                        for (int i = 0; i < myBuild.Count; i++)
-                        {
-                            var buildToUpdate = myBuild[i];
-                            buildToUpdate = buildToUpdate with { FinalStatus = BuildItemStatus.Committed.ToString() };
-                            myBuild[i] = buildToUpdate;
-                        }
+                        myBuild = myBuild with { FinalStatus = BuildItemStatus.Committed };
                     }
                 }
             }
+            
 
             if (buildFailure)
             {
-                context.RaiseBuildErrorRollBackEvent(context);
+                //TODO: figure out eventing here
+                //context.RaiseBuildErrorRollBackEvent(context);
             }
 
             SaveBuildDataModel(context, true);
 
             if (buildFailure)
             {
-                if (workEventArgs.Cancel)
-                {
-                    if (context.IsTransactional)
-                    {
-                        progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
-                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_CANCELLED_AND_ROLLED_BACK;
-                    }
-                    else
-                    {
-                        progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
-                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_CANCELLED_NO_TRANSACTION;
 
-                    }
+                if (context.IsTransactional)
+                {
+                    progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
+                    finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK;
                 }
                 else
                 {
-                    if (context.IsTransactional)
-                    {
-                        progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
-                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK;
-                    }
-                    else
-                    {
-                        progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
-                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_NO_TRANSACTION;
-                    }
+                    progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
+                    finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_NO_TRANSACTION;
                 }
+
             }
             else
             {
                 if (context.RunScriptOnly)
                 {
                     progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Script Generation Complete"));
-                    workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.SCRIPT_GENERATION_COMPLETE;
+                    finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.SCRIPT_GENERATION_COMPLETE;
                 }
                 else
                 {
                     if (context.IsTrialBuild == false)
                     {
                         progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Committed"));
-                        workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
+                        finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
                     }
                     else
                     {
                         if (context.IsTransactional)
                         {
                             progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Rolled back for Trial Build"));
-                            workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL;
+                            finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL;
                         }
                         else
                         {
                             progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Committed with no transaction"));
-                            workEventArgs.Result = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
+                            finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
 
                         }
                     }
                 }
             }
+            connectionsService.Connections.Clear();
+            return (myBuild, updatedDataModel, finalBuildResult);
+        }
 
-            return (myBuild, updatedDataModel, finalizationErrorOccurred) ;
+        public BuildResultStatus CalculateFinalStatus(IList<BuildResultStatus> buildResults)
+        {
+
+            // If all of the results are the same, return that status
+            if (buildResults.Count > 0 && buildResults.All(result => result == buildResults[0]))
+            {
+                return buildResults[0];
+            }
+              
+            // If any build result is failed, the overall status is failed
+            if (buildResults.Any(result => result == BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK))
+            {
+                return BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK;
+            }
+
+            if (buildResults.Any(result => result == BuildResultStatus.BUILD_FAILED_NO_TRANSACTION))
+            {
+                return BuildResultStatus.BUILD_FAILED_NO_TRANSACTION;
+            }
+
+            if (buildResults.All(result => result == BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL))
+            {
+                return BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL;
+            }
+
+            // If all builds are successful, the overall status is successful
+            if (buildResults.All(result => result == BuildResultStatus.BUILD_COMMITTED))
+            {
+                return BuildResultStatus.BUILD_COMMITTED;
+            }
+
+            return BuildResultStatus.UNKNOWN;
         }
     }
 }

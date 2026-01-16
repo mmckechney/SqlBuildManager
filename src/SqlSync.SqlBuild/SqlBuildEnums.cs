@@ -16,17 +16,7 @@ namespace SqlSync.SqlBuild
         LeaveExisting,
         Undefined
     }
-    public enum BuildResultStatus : int
-    {
-        BUILD_FAILED_AND_ROLLED_BACK,
-        SCRIPT_GENERATION_COMPLETE,
-        BUILD_COMMITTED,
-        BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL,
-        BUILD_CANCELLED_AND_ROLLED_BACK,
-        BUILD_FAILED_NO_TRANSACTION,
-        BUILD_CANCELLED_NO_TRANSACTION
 
-    }
     public class ResortBuildType
     {
         public static readonly string[] SortOrder = new string[] { "TAB", "SQL", "VIW", "UDF", "PRC", "TRG" };
@@ -91,45 +81,57 @@ namespace SqlSync.SqlBuild
         public const string TransactionName = "SqlBuildTrans";
     }
 
-    public class BuildItemStatus
+    public enum BuildResultStatus : int
     {
-        public const string Committed = "Committed";
-        public const string RolledBack = "RolledBack";
-        public const string TrialRolledBack = "TrialRolledBack";
+        BUILD_FAILED_AND_ROLLED_BACK,
+        SCRIPT_GENERATION_COMPLETE,
+        BUILD_COMMITTED,
+        BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL,
+        BUILD_CANCELLED_AND_ROLLED_BACK,
+        BUILD_FAILED_NO_TRANSACTION,
+        BUILD_CANCELLED_NO_TRANSACTION,
+        UNKNOWN
+
+    }
+    public enum BuildItemStatus
+    {
+        Committed = 0,
+        RolledBack = -1,
+        TrialRolledBack = 1,
         /// <summary>
         /// This status reserved for MultiDb runs that have failed processing, but not yet rolled back
         /// </summary>
-        public const string PendingRollBack = "PendingRollback";
+        PendingRollBack = -2,
         /// <summary>
         /// This status reserved for MultiDb runs that are currently in progress
         /// </summary>
-        public const string Pending = "Pending";
+        Pending = 10,
         /// <summary>
         /// For when a build fails but was run without a transaction
         /// </summary>
-        public const string FailedNoTransaction = "FailedNoTransaction";
+        FailedNoTransaction = -3,
         /// <summary>
         /// A build failure that was due to a script returning a SqlException with message "Timeout Expired."
         /// </summary>
-        public const string FailedDueToScriptTimeout = "FailedDueToScriptTimeout";
+        FailedDueToScriptTimeout = -4,
         /// <summary>
         /// A build that was committed, but required at least one retry due to a timeout
         /// </summary>
-        public const string CommittedWithTimeoutRetries = "CommittedWithTimeoutRetries";
+        CommittedWithTimeoutRetries = 5,
         /// <summary>
         /// A build that was committed, but required at least one retry due to a timeout
         /// </summary>
-        public const string RolledBackAfterRetries = "RolledBackAfterRetries";
+        RolledBackAfterRetries = -6,
         /// <summary>
         /// The databases were compared via dacpac and are already in sync
         /// </summary>
-        public const string AlreadyInSync = "AlreadyInSync";
+        AlreadyInSync = 6,
         /// <summary>
         /// Database was updated but required the creation and use of a custom dacpac
         /// </summary>
-        public const string CommittedWithCustomDacpac = "CommittedWithCustomDacpac";
-
-        public const string FailedWithCustomDacpac = "FailedWithCustomDacpac";
+        CommittedWithCustomDacpac = 7,
+        FailedWithCustomDacpac = -8,
+        Unknown = -100
     }
     public class BatchParsing
     {

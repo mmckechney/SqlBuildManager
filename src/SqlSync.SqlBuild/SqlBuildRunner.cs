@@ -27,13 +27,19 @@ namespace SqlSync.SqlBuild
         private readonly ISqlBuildFileHelper _fileHelper;
         private readonly IConnectionsService _connectionsService;
         private readonly ISqlLoggingService _sqlLoggingService;
+        private readonly IBuildFinalizer _buildFinalizer;
+        private readonly IProgressReporter _progressReporter;
 
-        public SqlBuildRunner(IConnectionsService connectionsService, ISqlBuildRunnerContext ctx, ISqlCommandExecutor executor = null, ISqlBuildFileHelper fileHelper = null)
+
+        public SqlBuildRunner(IConnectionsService connectionsService, ISqlBuildRunnerContext ctx, ISqlCommandExecutor executor = null, ISqlBuildFileHelper fileHelper = null, IBuildFinalizer buildFinalizer = null, ISqlLoggingService sqlLoggingService = null, IProgressReporter progressReporter = null)
         {
             _ctx = ctx ?? throw new ArgumentNullException(nameof(ctx));
             _executor = executor ?? new SqlCommandExecutor(ctx.Log);
             _fileHelper = fileHelper ?? new DefaultSqlBuildFileHelper();
+            _sqlLoggingService = sqlLoggingService ?? new DefaultSqlLoggingService(connectionsService, progressReporter);
+            _buildFinalizer = buildFinalizer ?? new DefaultBuildFinalizer(sqlLoggingService, progressReporter);
             _connectionsService = connectionsService ?? new DefaultConnectionsService();
+            
         }
 
         public virtual BuildModels.Build Run(
@@ -94,7 +100,7 @@ namespace SqlSync.SqlBuild
                     catch (Exception e)
                     {
                         log.LogError(e, $"Database connection to {serverName}.{targetDatabase} failed");
-                        var currentRunFail = BuildScriptRunFailure(fileName, i + 1, targetDatabase, scriptRunRowId, myBuild.Build_Id, e.Message);
+                        var currentRunFail = BuildScriptRunFailure(fileName, i + 1, targetDatabase, scriptRunRowId, myBuild.BuildId, e.Message);
                         _ctx.AddScriptRunToHistory(currentRunFail, myBuild);
                         _ctx.PublishScriptLog(true, new ScriptLogEventArgs(overallIndex, "Database connection failed", targetDatabase, fileName, e.Message + "\r\n" + _ctx.SqlInfoMessage));
                         _ctx.RollbackBuild();
@@ -113,7 +119,7 @@ namespace SqlSync.SqlBuild
                         Success: null,
                         Database: targetDatabase,
                         ScriptRunId: scriptRunRowId.ToString(),
-                        Build_Id: myBuild.Build_Id);
+                        BuildId: myBuild.BuildId);
 
                     // hash & commit staging
                     string textHash = _fileHelper.GetSHA1Hash(batchScripts);
@@ -195,29 +201,30 @@ namespace SqlSync.SqlBuild
                 WriteFinalScriptLog(dbTargets, buildFailure, isTransactional: _ctx.IsTransactional, isTrialBuild: _ctx.IsTrialBuild);
             }
 
+            bool finalizationError = false;
             // finalize
             if (buildFailure)
             {
                 log.LogError("Build failure. Check execution logs for details");
                 if (!isMultiDbRun)
                 {
-                    myBuild = _ctx.PerformRunScriptFinalization(buildFailure, myBuild, buildDataModel, ref workEventArgs);
+                   ( myBuild, buildDataModel, _ ) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
                 }
                 else
                 {
-                    myBuild = myBuild with { FinalStatus = _ctx.IsTransactional ? BuildItemStatus.PendingRollBack.ToString() : BuildItemStatus.FailedNoTransaction.ToString() };
+                    myBuild = myBuild with { FinalStatus = _ctx.IsTransactional ? BuildItemStatus.PendingRollBack : BuildItemStatus.FailedNoTransaction };
                 }
                 if (_ctx.IsTransactional && failureDueToScriptTimeout)
                 {
-                    myBuild = myBuild with { FinalStatus = BuildItemStatus.FailedDueToScriptTimeout.ToString() };
+                    myBuild = myBuild with { FinalStatus = BuildItemStatus.FailedDueToScriptTimeout };
                 }
             }
             else
             {
                 if (isMultiDbRun)
-                    myBuild = myBuild with { FinalStatus = BuildItemStatus.Pending.ToString() };
+                    myBuild = myBuild with { FinalStatus = BuildItemStatus.Pending};
                 else
-                    myBuild = _ctx.PerformRunScriptFinalization(buildFailure, myBuild, buildDataModel, ref workEventArgs);
+                    (myBuild, buildDataModel, _ ) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
                 log.LogDebug("Build Successful!");
             }
             return myBuild;
@@ -291,7 +298,7 @@ namespace SqlSync.SqlBuild
                             RunOrder: i + 1,
                             Database: targetDatabase,
                             ScriptRunId: scriptRunRowId.ToString(),
-                            Build_Id: myBuild.Build_Id);
+                            BuildId: myBuild.BuildId);
                     }
                     catch (Exception e)
                     {
@@ -396,7 +403,7 @@ namespace SqlSync.SqlBuild
                 }
             }
 
-            myBuild = _ctx.PerformRunScriptFinalization(buildFailure, myBuild, buildDataModel, ref workEventArgs);
+            (myBuild, buildDataModel, _ ) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, buildFailure, myBuild);
             return myBuild;
         }
 
@@ -438,7 +445,7 @@ namespace SqlSync.SqlBuild
             }
         }
 
-        private static BuildModels.ScriptRun BuildScriptRunFailure(string fileName, int runOrder, string targetDatabase, Guid scriptRunRowId, int buildId, string message)
+        private static BuildModels.ScriptRun BuildScriptRunFailure(string fileName, int runOrder, string targetDatabase, Guid scriptRunRowId, string buildId, string message)
         {
             return new BuildModels.ScriptRun(
                 FileHash: null,
@@ -450,7 +457,7 @@ namespace SqlSync.SqlBuild
                 Success: false,
                 Database: targetDatabase,
                 ScriptRunId: scriptRunRowId.ToString(),
-                Build_Id: buildId);
+                BuildId: buildId);
         }
 
         private void TryCreateSavePoint(BuildConnectData cData, string savePointName, string serverName, string targetDatabase, string fileName)

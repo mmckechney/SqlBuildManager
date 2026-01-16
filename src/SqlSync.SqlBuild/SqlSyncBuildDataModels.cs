@@ -6,10 +6,7 @@ using SqlSync.Connection;
 
 namespace SqlSync.SqlBuild.Models
 {
-    public sealed record class SqlSyncBuildProject(int SqlSyncBuildProject_Id, string? ProjectName, bool? ScriptTagRequired);
-
-    public sealed record class Scripts(int Scripts_Id, int? SqlSyncBuildProject_Id);
-
+    public sealed record class SqlSyncBuildProject(int SqlSyncBuildProjectId, string? ProjectName, bool? ScriptTagRequired);
     public sealed record class Script(
         string? FileName,
         double? BuildOrder,
@@ -25,10 +22,8 @@ namespace SqlSync.SqlBuild.Models
         int? ScriptTimeOut,
         DateTime? DateModified,
         string? ModifiedBy,
-        int? Scripts_Id,
         string? Tag);
 
-    public sealed record class Builds(int Builds_Id, int? SqlSyncBuildProject_Id);
 
     public sealed record class Build(
         string? Name,
@@ -36,11 +31,9 @@ namespace SqlSync.SqlBuild.Models
         DateTime? BuildStart,
         DateTime? BuildEnd,
         string? ServerName,
-        string? FinalStatus,
+        BuildItemStatus? FinalStatus,
         string? BuildId,
-        string? UserId,
-        int Build_Id,
-        int? Builds_Id);
+        string? UserId);
 
     public sealed record class ScriptRun(
         string? FileHash,
@@ -52,7 +45,7 @@ namespace SqlSync.SqlBuild.Models
         bool? Success,
         string? Database,
         string? ScriptRunId,
-        int? Build_Id);
+        string? BuildId);
 
     public sealed record class CommittedScript(
         string? ScriptId,
@@ -60,7 +53,7 @@ namespace SqlSync.SqlBuild.Models
         DateTime? CommittedDate,
         bool? AllowScriptBlock,
         string? ScriptHash,
-        int? SqlSyncBuildProject_Id);
+        int? SqlSyncBuildProjectId);
 
     public sealed record class CodeReview(
         Guid? CodeReviewId,
@@ -75,9 +68,7 @@ namespace SqlSync.SqlBuild.Models
 
     public sealed record class SqlSyncBuildDataModel(
         IReadOnlyList<SqlSyncBuildProject> SqlSyncBuildProject,
-        IReadOnlyList<Scripts> Scripts,
         IReadOnlyList<Script> Script,
-        IReadOnlyList<Builds> Builds,
         IReadOnlyList<Build> Build,
         IReadOnlyList<ScriptRun> ScriptRun,
         IReadOnlyList<CommittedScript> CommittedScript,

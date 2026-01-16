@@ -3,9 +3,19 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.Services;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
+    public class NullProgressReporter : IProgressReporter
+    {
+        public bool CancellationPending => false;
+        public void ReportProgress(int percent, object userState)
+        {
+            // Do nothing
+        }
+    }
+
     [TestClass]
     public class ClearAllowScriptBlocksTest
     {
@@ -14,9 +24,7 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             var model = new SqlSyncBuildDataModel(
                 SqlSyncBuildProject: Array.Empty<SqlSyncBuildProject>(),
-                Scripts: Array.Empty<Scripts>(),
                 Script: Array.Empty<Script>(),
-                Builds: Array.Empty<Builds>(),
                 Build: Array.Empty<Build>(),
                 ScriptRun: Array.Empty<ScriptRun>(),
                 CommittedScript: new List<CommittedScript>
@@ -26,11 +34,16 @@ namespace SqlSync.SqlBuild.UnitTest
                 },
                 CodeReview: Array.Empty<CodeReview>()
             );
-
-            var updated = SqlBuildHelper.ClearAllowScriptBlocks(model, "ServerA", new [] { "id-1" });
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null);
+            var updated = dbUtil.ClearAllowScriptBlocks(model, "ServerA", new [] { "id-1" });
 
             Assert.AreEqual(false, updated.CommittedScript[0].AllowScriptBlock);
             Assert.AreEqual(true, updated.CommittedScript[1].AllowScriptBlock);
         }
     }
+
+
 }

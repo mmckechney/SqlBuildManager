@@ -23,7 +23,6 @@ namespace SqlSync.SqlBuild
         void AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild);
         void RollbackBuild();
         void SaveBuildDataSet(bool fireSavedEvent);
-        BuildModels.Build PerformRunScriptFinalization(bool buildFailure, BuildModels.Build myBuild, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs);
         void PublishScriptLog(bool isError, ScriptLogEventArgs args);
     }
 

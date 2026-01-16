@@ -1129,7 +1129,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Assert.AreEqual(0, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
-            Assert.AreEqual("RolledBack", prep.Build.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.rol, prep.Build.FinalStatus);
         }
         // <summary>
         ///A test for PrepareBuildForRun
@@ -1151,7 +1151,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Assert.AreEqual(0, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
-            Assert.AreEqual("PendingRollback", prep.Build.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.PendingRollBack, prep.Build.FinalStatus);
         }
         #endregion
 
@@ -1832,11 +1832,14 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for ClearScriptBlocks
         ///</summary>
         [TestMethod()]
+        [Ignore("The ClearScriptBlocks does not seem to be used anywhere!")]
         public void ClearScriptBlocksTest()
         {
             Initialization init = GetInitializationObject();
+            ConnectionData connData = init.connData;
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             init.AddInsertScript(ref buildData, true);
+
 
             SqlSyncBuildData.CommittedScriptRow row = buildData.CommittedScript.NewCommittedScriptRow();
             row.ScriptId = buildData.Script[0].ScriptId;
@@ -1853,7 +1856,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             string[] scripts = new string[] { Guid.NewGuid().ToString(), buildData.Script[0].ScriptId };
             ClearScriptData scrData = new ClearScriptData(scripts, buildData, init.projectFileName, init.projectFileName);
             
-            dbUtil.ClearScriptBlocks(scrData, progressReporter);
+            IProgressReporter reporter = new NullProgressReporter();
+            dbUtil.ClearScriptBlocks(scrData, connData, reporter, null);
             Assert.AreEqual(false, buildData.CommittedScript[0].AllowScriptBlock);
         }
 

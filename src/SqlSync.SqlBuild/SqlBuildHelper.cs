@@ -134,13 +134,8 @@ namespace SqlSync.SqlBuild
         /// <summary>
         /// Public accessor to get the GUID of the current build
         /// </summary>
-        public System.Guid CurrentBuildId
-        {
-            get
-            {
-                return currentBuildId;
-            }
-        }
+        public System.Guid CurrentBuildId => currentBuildId;
+
         /// <summary>
         /// The hash signature of the build package scripts
         /// </summary>
@@ -195,20 +190,20 @@ namespace SqlSync.SqlBuild
         internal Services.IConnectionsService ConnectionsService { get; }
         internal Services.IBuildFinalizer BuildFinalizer { get; }
 
-        internal static BuildModels.SqlSyncBuildDataModel ClearAllowScriptBlocks(BuildModels.SqlSyncBuildDataModel model, string serverName, IReadOnlyList<string> selectedScriptIds)
-        {
-            var updatedCommitted = model.CommittedScript.ToList();
-            var idSet = new HashSet<string>(selectedScriptIds, StringComparer.OrdinalIgnoreCase);
-            for (var j = 0; j < updatedCommitted.Count; j++)
-            {
-                var cs = updatedCommitted[j];
-                if (cs.ScriptId != null && idSet.Contains(cs.ScriptId) && string.Equals(cs.ServerName, serverName, StringComparison.OrdinalIgnoreCase))
-                {
-                    updatedCommitted[j] = cs with { AllowScriptBlock = false };
-                }
-            }
-            return model with { CommittedScript = updatedCommitted };
-        }
+        //internal static BuildModels.SqlSyncBuildDataModel ClearAllowScriptBlocks(BuildModels.SqlSyncBuildDataModel model, string serverName, IReadOnlyList<string> selectedScriptIds)
+        //{
+        //    var updatedCommitted = model.CommittedScript.ToList();
+        //    var idSet = new HashSet<string>(selectedScriptIds, StringComparer.OrdinalIgnoreCase);
+        //    for (var j = 0; j < updatedCommitted.Count; j++)
+        //    {
+        //        var cs = updatedCommitted[j];
+        //        if (cs.ScriptId != null && idSet.Contains(cs.ScriptId) && string.Equals(cs.ServerName, serverName, StringComparison.OrdinalIgnoreCase))
+        //        {
+        //            updatedCommitted[j] = cs with { AllowScriptBlock = false };
+        //        }
+        //    }
+        //    return model with { CommittedScript = updatedCommitted };
+        //}
 
         private static SqlBuildRunData MapToLegacyRunData(BuildModels.SqlBuildRunDataModel model)
         {
@@ -334,6 +329,8 @@ namespace SqlSync.SqlBuild
             committedScripts.Clear();
             ConnectionsService.Connections.Clear();
             var buildResults = new List<BuildModels.Build>();
+            List<BuildResultStatus> finalizedBuildStatus = new List<BuildResultStatus>();
+            BuildResultStatus tmpStatus;
 
             foreach (var srvData in multiDbRunData)
             {
@@ -361,20 +358,24 @@ namespace SqlSync.SqlBuild
 
                 targetDatabaseOverrides = srvData.Overrides;
                 var buildResult = ProcessBuild(runData, bgWorker, e, srvData.ServerName, true, null, multiDbRunData.AllowableTimeoutRetries);
-                buildResults.Add(buildResult);
+                
 
                 if (buildResult.FinalStatus == BuildItemStatus.PendingRollBack || buildResult.FinalStatus == BuildItemStatus.FailedNoTransaction)
                 {
-                    (List<Build> buildRecords, SqlSyncBuildDataModel updatedModel, bool errorOccurred) = BuildFinalizer.PerformRunScriptFinalization(this, ConnectionsService,true, buildResults, (IProgressReporter)bgWorker, ref e);
-                    buildResults = buildRecords;
-                    ErrorOccured = errorOccurred;
-                    return;
+                    (buildResult, buildDataModel, tmpStatus) = BuildFinalizer.PerformRunScriptFinalization(this, ConnectionsService, true, buildResult);
+                    finalizedBuildStatus.Add(tmpStatus);
+                    buildResults.Add(buildResult);
+                }
+                else
+                {
+                    (buildResult, buildDataModel, tmpStatus) = BuildFinalizer.PerformRunScriptFinalization(this, ConnectionsService, false, buildResult);
+                    finalizedBuildStatus.Add(tmpStatus);
+                    buildResults.Add(buildResult);
                 }
             }
+            BuildResultStatus calculatedStatus =  BuildFinalizer.CalculateFinalStatus(finalizedBuildStatus);
 
-            (List<Build> goodBuildRecords, SqlSyncBuildDataModel goodUpdatedModel, bool finalizeErrorOccurred) = BuildFinalizer.PerformRunScriptFinalization(this, ConnectionsService, false, buildResults, (IProgressReporter)bgWorker, ref e);
-            buildResults = goodBuildRecords;
-            ErrorOccured = finalizeErrorOccurred;
+            e.Result = calculatedStatus;
         }
 
 
@@ -466,20 +467,20 @@ namespace SqlSync.SqlBuild
                     log.LogInformation($"Executing custom dacpac on {targetDatabase}");
                     var dacBuild = ProcessBuild(updatedRunData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
                     var dacFinalStatus = dacBuild.FinalStatus;
-                    if (dacFinalStatus == BuildItemStatus.Committed.ToString() || dacFinalStatus == BuildItemStatus.CommittedWithTimeoutRetries.ToString())
+                    if (dacFinalStatus == BuildItemStatus.Committed || dacFinalStatus == BuildItemStatus.CommittedWithTimeoutRetries)
                     {
-                        buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithCustomDacpac.ToString() };
+                        buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithCustomDacpac };
                         if (BuildCommittedEvent != null)
                             BuildCommittedEvent(this, RunnerReturn.CommittedWithCustomDacpac);
                     }
                     else
                     {
-                        buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.FailedWithCustomDacpac.ToString() };
+                        buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.FailedWithCustomDacpac };
                     }
                 }
                 else if (stat == DacpacDeltasStatus.InSync || stat == DacpacDeltasStatus.OnlyPostDeployment)
                 {
-                    buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.AlreadyInSync.ToString() };
+                    buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.AlreadyInSync };
                     if (BuildCommittedEvent != null)
                         BuildCommittedEvent(this, RunnerReturn.DacpacDatabasesInSync);
                 }
@@ -487,9 +488,9 @@ namespace SqlSync.SqlBuild
             }
 
             //If a timeout gets here.. need to decide how to label the rollback
-            if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout.ToString())
+            if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout)
             {
-                buildResultsModel = buildResultsModel with { FinalStatus = allowableTimeoutRetries > 0 ? BuildItemStatus.RolledBackAfterRetries.ToString() : BuildItemStatus.RolledBack.ToString() };
+                buildResultsModel = buildResultsModel with { FinalStatus = allowableTimeoutRetries > 0 ? BuildItemStatus.RolledBackAfterRetries : BuildItemStatus.RolledBack };
             }
 
             switch (buildResultsModel.FinalStatus)
@@ -544,7 +545,7 @@ namespace SqlSync.SqlBuild
                 scriptLogFileName = Path.Combine(projectFilePath, $"LogFile-{DateTime.Now:yyyy-MM-dd at HH_mm_ss}.log");
 
                 bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Generating Build Record"));
-                var nextBuildId = (buildDataModelParam.Build.Count > 0 ? buildDataModelParam.Build.Max(b => b.Build_Id) + 1 : 1);
+                var nextBuildId = new Guid().ToString();
                 var myBuild = new BuildModels.Build(
                     Name: buildDescription,
                     BuildType: buildType,
@@ -553,9 +554,7 @@ namespace SqlSync.SqlBuild
                     ServerName: serverName,
                     FinalStatus: null,
                     BuildId: Guid.NewGuid().ToString(),
-                    UserId: Environment.UserName,
-                    Build_Id: nextBuildId,
-                    Builds_Id: null);
+                    UserId: Environment.UserName);
 
                 // add the build to model
                 var builds = buildDataModelParam.Build?.ToList() ?? new List<BuildModels.Build>();
@@ -583,9 +582,9 @@ namespace SqlSync.SqlBuild
                 if (filtered.Count == 0)
                 {
                     if (isMultiDbRun)
-                        myBuild = myBuild with { FinalStatus = BuildItemStatus.PendingRollBack.ToString() };
+                        myBuild = myBuild with { FinalStatus = BuildItemStatus.PendingRollBack };
                     else
-                        myBuild = myBuild with { FinalStatus = BuildItemStatus.RolledBack.ToString() };
+                        myBuild = myBuild with { FinalStatus = BuildItemStatus.RolledBack };
 
                     return new BuildPreparationResult(Array.Empty<BuildModels.Script>(), myBuild, string.Empty);
                 }
@@ -651,7 +650,7 @@ namespace SqlSync.SqlBuild
             {
                 ErrorOccured = true;
                 for (int i = 0; i < myBuilds.Count; i++)
-                    myBuilds[i] = myBuilds[i] with { FinalStatus = (isTransactional ? BuildItemStatus.RolledBack.ToString() : BuildItemStatus.FailedNoTransaction.ToString()) };
+                    myBuilds[i] = myBuilds[i] with { FinalStatus = (isTransactional ? BuildItemStatus.RolledBack : BuildItemStatus.FailedNoTransaction) };
 
                 if (!isTransactional)
                 {
@@ -672,7 +671,7 @@ namespace SqlSync.SqlBuild
                     }
 
                     for (int i = 0; i < myBuilds.Count; i++)
-                        myBuilds[i] = myBuilds[i] with { FinalStatus = BuildItemStatus.Committed.ToString() };
+                        myBuilds[i] = myBuilds[i] with { FinalStatus = BuildItemStatus.Committed };
 
                     buildDataModel = BuildFinalizer.RecordCommittedScripts(committedScripts, buildDataModel);
                     SqlLoggingService.LogCommittedScriptsToDatabase(committedScripts, this, multiDbRunData);
@@ -685,13 +684,13 @@ namespace SqlSync.SqlBuild
                     {
                         BuildFinalizer.CommitBuild(ConnectionsService, this.isTransactional);
                         for (int i = 0; i < myBuilds.Count; i++)
-                            myBuilds[i] = myBuilds[i] with { FinalStatus = BuildItemStatus.TrialRolledBack.ToString() };
+                            myBuilds[i] = myBuilds[i] with { FinalStatus = BuildItemStatus.TrialRolledBack };
                         BuildSuccessTrialRolledBackEvent?.Invoke(this, EventArgs.Empty);
                     }
                     else
                     {
                         for (int i = 0; i < myBuilds.Count; i++)
-                            myBuilds[i] = myBuilds[i] with { FinalStatus = BuildItemStatus.Committed.ToString() };
+                            myBuilds[i] = myBuilds[i] with { FinalStatus = BuildItemStatus.Committed };
                     }
                 }
             }
@@ -753,7 +752,7 @@ namespace SqlSync.SqlBuild
             ConnectionsService.Connections.Clear();
         }
  
-        internal bool RecordCommittedScripts(List<CommittedScript> committedScripts, BuildModels.SqlSyncBuildDataModel buildDataModel, out BuildModels.SqlSyncBuildDataModel updatedModel)
+        internal bool RecordCommittedScripts(List<SqlSync.SqlBuild.SqlLogging.CommittedScript> committedScripts, BuildModels.SqlSyncBuildDataModel buildDataModel, out BuildModels.SqlSyncBuildDataModel updatedModel)
         {
             var model = buildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
@@ -761,7 +760,7 @@ namespace SqlSync.SqlBuild
             if (committedScripts != null)
             {
                 var list = new List<BuildModels.CommittedScript>(model.CommittedScript);
-                var projectId = model.SqlSyncBuildProject.Count > 0 ? model.SqlSyncBuildProject[0].SqlSyncBuildProject_Id : 0;
+                var projectId = model.SqlSyncBuildProject.Count > 0 ? model.SqlSyncBuildProject[0].SqlSyncBuildProjectId : 0;
                 foreach (var cs in committedScripts)
                 {
                     list.Add(new BuildModels.CommittedScript(
@@ -1180,7 +1179,6 @@ namespace SqlSync.SqlBuild
         void ISqlBuildRunnerContext.AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild) => AddScriptRunToHistory(run, myBuild);
         void ISqlBuildRunnerContext.RollbackBuild() => RollbackBuild();
         void ISqlBuildRunnerContext.SaveBuildDataSet(bool fireSavedEvent) => SaveBuildDataModel(fireSavedEvent);
-        BuildModels.Build ISqlBuildRunnerContext.PerformRunScriptFinalization(bool buildFailure, BuildModels.Build myBuild, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs) => PerformRunScriptFinalization(buildFailure, myBuild, buildDataModel, ref workEventArgs);
         void ISqlBuildRunnerContext.PublishScriptLog(bool isError, ScriptLogEventArgs args) => ScriptLogWriteEvent?.Invoke(null, isError, args);
         #endregion
 
