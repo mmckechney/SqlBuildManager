@@ -31,7 +31,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 Success: true,
                 Database: "db1",
                 ScriptRunId: Guid.NewGuid().ToString(),
-                Build_Id: myBuild.Build_Id);
+                BuildId: myBuild.Build_Id.ToString());
 
             var addScriptRun = typeof(SqlBuildHelper).GetMethod("AddScriptRunToHistory", BindingFlags.NonPublic | BindingFlags.Instance, [typeof(SqlSync.SqlBuild.Models.ScriptRun), typeof(SqlSyncBuildData.BuildRow)]);
             Assert.IsNotNull(addScriptRun, "AddScriptRunToHistory reflection lookup failed");

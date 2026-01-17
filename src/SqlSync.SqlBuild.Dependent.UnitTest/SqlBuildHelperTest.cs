@@ -60,7 +60,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             var buildDataModel = buildData.ToModel();
             var scripts = buildDataModel.Script ?? new List<BuildModels.Script>();
             var myBuildModel = myBuildRow.ToModel();
-            if (!(buildDataModel.Build?.Any(b => b.Build_Id == myBuildModel.Build_Id) ?? false))
+            if (!(buildDataModel.Build?.Any(b => b.BuildId == myBuildModel.BuildId) ?? false))
             {
                 var builds = buildDataModel.Build?.ToList() ?? new List<BuildModels.Build>();
                 builds.Add(myBuildModel);
@@ -106,7 +106,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -141,7 +141,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.RolledBack.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -172,7 +172,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
             var actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
-            Assert.AreEqual(BuildItemStatus.RolledBack.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -206,7 +206,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.RolledBack.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -240,7 +240,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -282,7 +282,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             buildDataModel = buildDataModel with { CommittedScript = csList };
             actual = sbh.RunBuildScripts(scripts, myBuildModel, init.serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByScriptId(0, buildData.Script[0].ScriptId);
@@ -319,7 +319,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.RolledBack.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -355,7 +355,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.TrialRolledBack.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.TrialRolledBack, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -391,7 +391,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.RolledBack.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -425,7 +425,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -459,7 +459,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -494,7 +494,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -530,7 +530,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -561,7 +561,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -594,7 +594,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(target, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(1);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -633,7 +633,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(target, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -668,7 +668,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -702,7 +702,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.FailedNoTransaction.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.FailedNoTransaction, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -738,7 +738,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -775,7 +775,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.Committed.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -813,7 +813,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Execute the run...
             actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
 
-            Assert.AreEqual(BuildItemStatus.FailedNoTransaction.ToString(), actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.FailedNoTransaction, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -1050,7 +1050,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Assert.AreEqual(Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
             Assert.IsTrue(string.IsNullOrEmpty(prep.BuildPackageHash));
-            Assert.AreEqual(BuildItemStatus.RolledBack.ToString(), prep.Build.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.RolledBack, prep.Build.FinalStatus);
         }
 
         /// <summary>
@@ -1129,7 +1129,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Assert.AreEqual(0, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
-            Assert.AreEqual(BuildItemStatus.rol, prep.Build.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.RolledBack, prep.Build.FinalStatus);
         }
         // <summary>
         ///A test for PrepareBuildForRun

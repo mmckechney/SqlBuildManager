@@ -487,11 +487,21 @@ namespace SqlSync.SqlBuild
                 logMsg.Append("----------------");
                 log.LogError($"Error running script in: {fileName}");
                 log.LogError(error.Message);
+                
+                // Check for timeout error number (-2) or timeout message
+                if (error.Number == -2 || error.Message.Trim().ToLower().Contains("timeout expired."))
+                {
+                    timeoutDetected = true;
+                }
             }
-            if (e.Message.Trim().ToLower().Contains("timeout expired."))
+            if (!timeoutDetected && e.Message.Trim().ToLower().Contains("timeout expired."))
             {
                 log.LogWarning($"Encountered a Timeout exception for script: \"{batchScript}\"");
                 timeoutDetected = true;
+            }
+            if (timeoutDetected)
+            {
+                log.LogWarning($"Encountered a Timeout exception for script: \"{batchScript}\"");
             }
             currentRun = currentRun with { Success = false, Results = (currentRun.Results ?? string.Empty) + logMsg.ToString() };
             log.LogDebug(e, logMsg.ToString());

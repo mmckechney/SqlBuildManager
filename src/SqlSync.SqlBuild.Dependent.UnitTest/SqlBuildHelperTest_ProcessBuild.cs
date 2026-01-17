@@ -50,7 +50,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 0;
 
-            string expected = BuildItemStatus.Committed;
+            BuildItemStatus expected = BuildItemStatus.Committed;
             Build actual;
             actual = target.ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
             Assert.AreEqual(expected, actual.FinalStatus);
@@ -77,7 +77,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 3;
 
-            string expected = BuildItemStatus.Committed;
+            BuildItemStatus expected = BuildItemStatus.Committed;
             Build actual;
             actual = target.ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
             Assert.AreEqual(expected, actual.FinalStatus);
@@ -110,7 +110,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 THRInfinite = new Thread(new ParameterizedThreadStart(StartInfiniteLockingThread));
                 THRInfinite.Start(init);
 
-                string expected = BuildItemStatus.RolledBackAfterRetries;
+                BuildItemStatus expected = BuildItemStatus.RolledBackAfterRetries;
                 Build actual;
                 actual = target.ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
                 Assert.AreEqual(expected, actual.FinalStatus);
@@ -149,7 +149,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 THRInfinite = new Thread(new ParameterizedThreadStart(StartInfiniteLockingThread));
                 THRInfinite.Start(init);
 
-                string expected = BuildItemStatus.RolledBack;
+                BuildItemStatus expected = BuildItemStatus.RolledBack;
                 Build actual;
                 actual = target.ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
                 Assert.AreEqual(expected, actual.FinalStatus);
@@ -187,7 +187,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 THRInfinite = new Thread(new ParameterizedThreadStart(StartInfiniteLockingThread));
                 THRInfinite.Start(init);
 
-                string expected = BuildItemStatus.CommittedWithTimeoutRetries;
+                BuildItemStatus expected = BuildItemStatus.CommittedWithTimeoutRetries;
                 Build actual;
                 actual = target.ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
                 Assert.AreEqual(expected, actual.FinalStatus);

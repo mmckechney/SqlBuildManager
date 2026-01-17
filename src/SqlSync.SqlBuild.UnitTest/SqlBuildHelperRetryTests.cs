@@ -14,13 +14,13 @@ namespace SqlSync.SqlBuild.UnitTest
         public void ProcessBuild_RetriesOnTimeout_ThenSucceeds()
         {
             var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
-            var statuses = new Queue<string>(new[]
+            var statuses = new Queue<BuildItemStatus>(new[]
             {
-                BuildItemStatus.FailedDueToScriptTimeout.ToString(),
-                BuildItemStatus.Committed.ToString()
+                BuildItemStatus.FailedDueToScriptTimeout,
+                BuildItemStatus.Committed
             });
             var originalFactory = SqlBuildHelper.SqlBuildRunnerFactory;
-            SqlBuildHelper.SqlBuildRunnerFactory = (ctx, exec) => new TestSqlBuildRunner(ctx, statuses);
+            SqlBuildHelper.SqlBuildRunnerFactory = (connSvc, ctx, exec) => new TestSqlBuildRunner(ctx, statuses);
             try
             {
                 var scriptId = "abc";
@@ -44,7 +44,6 @@ namespace SqlSync.SqlBuild.UnitTest
                                 ScriptTimeOut: 5,
                                 DateModified: null,
                                 ModifiedBy: null,
-                                Scripts_Id: null,
                                 Tag: null)
                         }
                     },
@@ -74,7 +73,7 @@ namespace SqlSync.SqlBuild.UnitTest
 
                 var result = helper.ProcessBuild(runData, bgWorker, e, allowableTimeoutRetries: 3, buildRequestedBy: string.Empty, scriptBatchColl: scriptBatchColl);
 
-                Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries.ToString(), result.FinalStatus);
+                Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries, result.FinalStatus);
             }
             finally
             {
@@ -84,8 +83,8 @@ namespace SqlSync.SqlBuild.UnitTest
 
         private sealed class TestSqlBuildRunner : SqlBuildRunner
         {
-            private readonly Queue<string> _statuses;
-            public TestSqlBuildRunner(ISqlBuildRunnerContext ctx, Queue<string> statuses) : base(ctx) => _statuses = statuses;
+            private readonly Queue<BuildItemStatus> _statuses;
+            public TestSqlBuildRunner(ISqlBuildRunnerContext ctx, Queue<BuildItemStatus> statuses) : base(MockFactory.CreateMockConnectionsService().Object, ctx) => _statuses = statuses;
 
             public override BuildModels.Build Run(
                 System.Collections.Generic.IReadOnlyList<BuildModels.Script> scripts,
@@ -96,7 +95,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 BuildModels.SqlSyncBuildDataModel buildDataModel,
                 ref DoWorkEventArgs workEventArgs)
             {
-                var status = _statuses.Count > 0 ? _statuses.Dequeue() : BuildItemStatus.Committed.ToString();
+                var status = _statuses.Count > 0 ? _statuses.Dequeue() : BuildItemStatus.Committed;
                 return myBuild with { FinalStatus = status };
             }
         }

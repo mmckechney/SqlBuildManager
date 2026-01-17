@@ -15,8 +15,8 @@ namespace SqlSync.SqlBuild.UnitTest
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             Assert.IsNotNull(model);
             Assert.AreEqual(1, model.SqlSyncBuildProject.Count);
-            Assert.AreEqual(1, model.Scripts.Count);
-            Assert.AreEqual(1, model.Builds.Count);
+            Assert.AreEqual(0, model.Script.Count);
+            Assert.AreEqual(0, model.Build.Count);
         }
 
         [TestMethod]
@@ -62,7 +62,6 @@ namespace SqlSync.SqlBuild.UnitTest
                 ScriptTimeOut: 30,
                 DateModified: null,
                 ModifiedBy: null,
-                Scripts_Id: null,
                 Tag: null);
             model = model with { Script = new[] { script } };
 

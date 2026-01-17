@@ -25,15 +25,15 @@ namespace SqlSync.SqlBuild.UnitTest.Services
 
             var runnerCalls = 0;
             var queue = new Queue<BuildModels.Build>();
-            queue.Enqueue(new BuildModels.Build("n", "t", DateTime.UtcNow, null, "srv", BuildItemStatus.FailedDueToScriptTimeout.ToString(), Guid.NewGuid().ToString(), "u", 1, null));
-            queue.Enqueue(new BuildModels.Build("n", "t", DateTime.UtcNow, null, "srv", BuildItemStatus.Committed.ToString(), Guid.NewGuid().ToString(), "u", 1, null));
+            queue.Enqueue(new BuildModels.Build("n", "t", DateTime.UtcNow, null, "srv", BuildItemStatus.FailedDueToScriptTimeout, Guid.NewGuid().ToString(), "u"));
+            queue.Enqueue(new BuildModels.Build("n", "t", DateTime.UtcNow, null, "srv", BuildItemStatus.Committed, Guid.NewGuid().ToString(), "u"));
 
             var originalFactory = SqlBuildHelper.SqlBuildRunnerFactory;
             try
             {
-                SqlBuildHelper.SqlBuildRunnerFactory = (ctx, exec) => new FakeRunner(ctx, queue, () => runnerCalls++);
+                SqlBuildHelper.SqlBuildRunnerFactory = (connSvc, ctx, exec) => new FakeRunner(ctx, queue, () => runnerCalls++);
 
-                var orchestrator = new SqlBuildOrchestrator(helper);
+                var orchestrator = new SqlBuildOrchestrator(helper, MockFactory.CreateMockConnectionsService().Object, MockFactory.CreateMockSqlLoggingService().Object);
                 var runData = new SqlBuildRunDataModel(
                     BuildDataModel: SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
                     BuildType: "type",
@@ -55,15 +55,15 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                     AllowObjectDelete: false);
 
                 var prep = new SqlBuildHelper.BuildPreparationResult(
-                    FilteredScripts: new List<BuildModels.Script> { new BuildModels.Script("one.sql", 1, null, null, null, null, "1", "db", false, true, null, null, null, null, null, null) },
-                    Build: new BuildModels.Build("n", "t", DateTime.UtcNow, null, "srv", null, Guid.NewGuid().ToString(), "u", 1, null),
+                    FilteredScripts: new List<BuildModels.Script> { new BuildModels.Script("one.sql", 1, null, null, null, null, "1", "db", false, true, null, null, null, null, null) },
+                    Build: new BuildModels.Build("n", "t", DateTime.UtcNow, null, "srv", null, Guid.NewGuid().ToString(), "u"),
                     BuildPackageHash: "hash");
 
                 var doa = new DoWorkEventArgs(null);
                 var result = await orchestrator.ExecuteAsync(runData, prep, helper.bgWorker, doa, "srv", false, null, allowableTimeoutRetries: 2, CancellationToken.None);
 
                 Assert.IsNotNull(result);
-                Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries.ToString(), result.FinalStatus);
+                Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries, result.FinalStatus);
                 Assert.AreEqual(2, runnerCalls);
             }
             finally
@@ -76,7 +76,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         {
             private readonly Queue<BuildModels.Build> _queue;
             private readonly Action _onCall;
-            public FakeRunner(ISqlBuildRunnerContext ctx, Queue<BuildModels.Build> queue, Action onCall) : base(ctx) { _queue = queue; _onCall = onCall; }
+            public FakeRunner(ISqlBuildRunnerContext ctx, Queue<BuildModels.Build> queue, Action onCall) : base(MockFactory.CreateMockConnectionsService().Object, ctx) { _queue = queue; _onCall = onCall; }
 
             public override async Task<BuildModels.Build> RunAsync(
                 IReadOnlyList<BuildModels.Script> scripts,

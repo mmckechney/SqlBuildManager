@@ -23,7 +23,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void ShouldSkipDueToCommittedScripts_ReturnsTrue_WhenCommitted()
         {
             var ctx = new FakeRunnerContext();
-            var runner = new SqlBuildRunner(ctx);
+            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx);
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             model = model with
             {
@@ -42,7 +42,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void LoadBatchScripts_PrefersPreBatchedScripts()
         {
             var ctx = new FakeRunnerContext();
-            var runner = new SqlBuildRunner(ctx);
+            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx);
             var coll = new ScriptBatchCollection();
             coll.Add(new ScriptBatch("file.sql", new[] { "SELECT 1;" }, ScriptId));
 
@@ -55,80 +55,11 @@ namespace SqlSync.SqlBuild.UnitTest
         public void LoadBatchScripts_ReadsViaContext_WhenNoPreBatch()
         {
             var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "SELECT 2;" } };
-            var runner = new SqlBuildRunner(ctx);
+            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx);
 
             var result = runner.LoadBatchScripts(ScriptId, "file.sql", stripTransaction: false, scriptBatchColl: null);
 
             CollectionAssert.AreEqual(new[] { "SELECT 2;" }, result);
-        }
-
-        private sealed class FakeRunnerContext : FakeRunnerProperties, ISqlBuildRunnerContext, ISqlBuildRunnerProperties
-        {
-            public string[] ReadBatchReturn { get; set; } = Array.Empty<string>();
-
-            public Microsoft.Extensions.Logging.ILogger Log => NullLogger.Instance;
-            public BackgroundWorker BgWorker => throw new NotImplementedException();
-            public IProgressReporter ProgressReporter => null;
-            public bool IsTransactional => false;
-            public bool IsTrialBuild => false;
-            public bool RunScriptOnly => false;
-            public string BuildPackageHash => string.Empty;
-            public string ProjectFilePath => string.Empty;
-            public List<LoggingCommittedScript> CommittedScripts => new();
-            public bool ErrorOccured { get; set; }
-            public string SqlInfoMessage { get; set; } = string.Empty;
-            public int DefaultScriptTimeout => 30;
-            public Task<SqlExecutionResult> ExecuteAsync(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional, CancellationToken cancellationToken = default) => Task.FromResult(new SqlExecutionResult(true, string.Empty));
-
-            public BuildConnectData GetConnectionDataClass(string serverName, string databaseName) => throw new NotImplementedException();
-            public string GetTargetDatabase(string defaultDatabase) => defaultDatabase;
-            public string[] ReadBatchFromScriptFile(string path, bool stripTransaction, bool useRegex) => ReadBatchReturn;
-            public Task<string[]> ReadBatchFromScriptFileAsync(string path, bool stripTransaction, bool useRegex, CancellationToken cancellationToken = default) => Task.FromResult(ReadBatchReturn);
-            public string PerformScriptTokenReplacement(string script) => script;
-            public Task<string> PerformScriptTokenReplacementAsync(string script, CancellationToken cancellationToken = default) => Task.FromResult(script);
-            public void AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild) => throw new NotImplementedException();
-            public void RollbackBuild() => throw new NotImplementedException();
-            public void SaveBuildDataSet(bool fireSavedEvent) => throw new NotImplementedException();
-            public BuildModels.Build PerformRunScriptFinalization(bool buildFailure, BuildModels.Build myBuild, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs) => throw new NotImplementedException();
-            public void PublishScriptLog(bool isError, ScriptLogEventArgs args) => throw new NotImplementedException();
-        }
-
-        private class FakeRunnerProperties : ISqlBuildRunnerProperties
-        {
-            public bool IsTransactional => true;
-
-            public bool IsTrialBuild => false;
-
-            public bool RunScriptOnly => false;
-
-            public string BuildPackageHash => "FAKEHASH-WERWEFWEFHWHFWRHC342JWIOEJWIECUJWEUFWIJFWOIEJCWIECJWE";
-
-            public string ProjectFilePath => "FAKEPATH";
-
-            public string ProjectFileName => "FakeProjectName.xml";
-
-            public string BuildFileName => "FakeBuildFileName.sbm";
-
-            public List<LoggingCommittedScript> CommittedScripts => new();
-
-            public bool ErrorOccured { get => false; set => value = false; }
-            public string SqlInfoMessage { get => string.Empty; set => value = string.Empty; }
-
-            public int DefaultScriptTimeout => 30;
-
-            public SqlSyncBuildDataModel BuildDataModel => SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-
-            public MultiDbData MultiDbRunData => new MultiDbData();
-
-            public string BuildRequestedBy => "FakeUser";
-
-            public string BuildDescription => "FakeBuildDescription";
-
-            public string LogToDataBaseName => string.Empty;
-
-            public string BuildHistoryXmlFile => "FakeBuildHistory.xml";
-
-            public ConnectionData ConnectionData => new();
         }
     }
 }

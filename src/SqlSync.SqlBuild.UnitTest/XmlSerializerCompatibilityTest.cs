@@ -40,7 +40,6 @@ namespace SqlSync.SqlBuild.UnitTest
 
             Assert.AreEqual(1, model.SqlSyncBuildProject.Count);
             Assert.AreEqual(true, model.SqlSyncBuildProject.Single().ScriptTagRequired);
-            Assert.AreEqual(1, model.Scripts.Count);
             Assert.AreEqual(1, model.Script.Count);
             var script = model.Script.Single();
             Assert.AreEqual("Simple Select.sql", script.FileName);

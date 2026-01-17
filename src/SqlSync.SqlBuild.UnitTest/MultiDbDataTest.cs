@@ -140,9 +140,7 @@ namespace SqlSync.SqlBuild.UnitTest
             MultiDbData target = new MultiDbData();
             SqlSyncBuildDataModel expected = new SqlSyncBuildDataModel(
                 SqlSyncBuildProject: Array.Empty<SqlSyncBuildProject>(),
-                Scripts: Array.Empty<Scripts>(),
                 Script: Array.Empty<Script>(),
-                Builds: Array.Empty<Builds>(),
                 Build: Array.Empty<Build>(),
                 ScriptRun: Array.Empty<ScriptRun>(),
                 CommittedScript: Array.Empty<CommittedScript>(),

@@ -9,7 +9,6 @@ using System.Data;
 using System.IO;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
-
     public class Initialization : IDisposable
     {
         public int TableLockingLoopCount = 1000000;
@@ -27,8 +26,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public string serverName = @"(local)\SQLEXPRESS";
 
         public string PreRunScriptGuid = "47037F10-C217-4e7b-89AE-482F8C09D672";
-
-      
         public Initialization()
         {
             testDatabaseNames = new List<string>();
