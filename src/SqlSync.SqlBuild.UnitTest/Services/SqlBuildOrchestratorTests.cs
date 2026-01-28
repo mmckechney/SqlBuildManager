@@ -19,11 +19,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         [TestMethod]
         public async Task ExecuteAsync_RetriesOnTimeoutAndSucceeds()
         {
-            var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false)
-            {
-                bgWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true }
-            };
-
+            var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
             var runnerCalls = 0;
             var queue = new Queue<BuildModels.Build>();
             queue.Enqueue(new BuildModels.Build("n", "t", DateTime.UtcNow, null, "srv", BuildItemStatus.FailedDueToScriptTimeout, Guid.NewGuid().ToString(), "u"));
@@ -61,7 +57,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                     BuildPackageHash: "hash");
 
                 var doa = new DoWorkEventArgs(null);
-                var result = await orchestrator.ExecuteAsync(runData, prep, helper.bgWorker, doa, "srv", false, null, allowableTimeoutRetries: 2, CancellationToken.None);
+                var result = await orchestrator.ExecuteAsync(runData, prep, "srv", false, null, allowableTimeoutRetries: 2, CancellationToken.None);
 
                 Assert.IsNotNull(result);
                 Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries, result.FinalStatus);
@@ -86,7 +82,6 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 bool isMultiDbRun,
                 ScriptBatchCollection scriptBatchColl,
                 BuildModels.SqlSyncBuildDataModel buildDataModel,
-                DoWorkEventArgs workEventArgs,
                 CancellationToken cancellationToken = default)
             {
                 _onCall();

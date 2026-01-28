@@ -74,7 +74,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 var bgWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
                 var e = new DoWorkEventArgs(null);
 
-                var result = await helper.ProcessBuild(runData, bgWorker, e, allowableTimeoutRetries: 3, buildRequestedBy: string.Empty, scriptBatchColl: scriptBatchColl);
+                var result = await helper.ProcessBuild(runData, allowableTimeoutRetries: 3, buildRequestedBy: string.Empty, scriptBatchColl: scriptBatchColl);
 
                 Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries, result.FinalStatus);
             }
@@ -95,8 +95,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 string serverName,
                 bool isMultiDbRun,
                 ScriptBatchCollection scriptBatchColl,
-                BuildModels.SqlSyncBuildDataModel buildDataModel,
-                ref DoWorkEventArgs workEventArgs)
+                BuildModels.SqlSyncBuildDataModel buildDataModel)
             {
                 var status = _statuses.Count > 0 ? _statuses.Dequeue() : BuildItemStatus.Committed;
                 return myBuild with { FinalStatus = status };

@@ -13,16 +13,13 @@ namespace SqlSync.SqlBuild
     public interface ISqlBuildRunnerContext : ISqlBuildRunnerProperties
     {
         ILogger Log { get; }
-        BackgroundWorker BgWorker { get; }
         IProgressReporter ProgressReporter { get; }
-
 
         string GetTargetDatabase(string defaultDatabase);
         Task<string[]> ReadBatchFromScriptFileAsync(string path, bool stripTransaction, bool useRegex, CancellationToken cancellationToken = default);
         string PerformScriptTokenReplacement(string script);
         Task<string> PerformScriptTokenReplacementAsync(string script, CancellationToken cancellationToken = default);
         void AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild);
-        void SaveBuildDataSet(bool fireSavedEvent);
         void PublishScriptLog(bool isError, ScriptLogEventArgs args);
     }
 

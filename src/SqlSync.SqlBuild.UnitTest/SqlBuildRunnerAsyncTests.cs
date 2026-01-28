@@ -32,9 +32,8 @@ namespace SqlSync.SqlBuild.UnitTest
             var scripts = new List<BuildModels.Script>();
             var myBuild = new BuildModels.Build("name", "type", DateTime.UtcNow, null, "srv", null, Guid.NewGuid().ToString(), "u");
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var doa = new DoWorkEventArgs(null);
 
-            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null, model, doa, CancellationToken.None);
+            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null, model, CancellationToken.None);
             Assert.IsNotNull(result);
         }
 
@@ -58,12 +57,10 @@ namespace SqlSync.SqlBuild.UnitTest
             };
             var myBuild = new BuildModels.Build("name", "type", DateTime.UtcNow, null, "srv", null, Guid.NewGuid().ToString(), "u");
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var doa = new DoWorkEventArgs(null);
 
-            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null, model, doa, CancellationToken.None);
+            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null, model, CancellationToken.None);
 
             Assert.IsNotNull(result);
-            Assert.IsFalse(doa.Cancel);
         }
 
         [TestMethod]
@@ -88,9 +85,8 @@ namespace SqlSync.SqlBuild.UnitTest
             };
             var myBuild = new BuildModels.Build("name", "type", DateTime.UtcNow, null, "srv", null, Guid.NewGuid().ToString(), "u");
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var doa = new DoWorkEventArgs(null);
-
-            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null, model, doa, cts.Token);
+   
+            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null, model, cts.Token);
 
             Assert.IsNotNull(result);
         }

@@ -420,11 +420,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
 
             //Set fields
-            BackgroundWorker bg = new BackgroundWorker();
-            bg.WorkerReportsProgress = true;
-            bg.WorkerSupportsCancellation = true;
-            target.bgWorker = bg;
-
             target.SetBuildData(buildData);
 
             string logFile = GetTrulyUniqueFile();
@@ -446,10 +441,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
         public SqlBuildHelper SetSqlBuildHelperValues(SqlBuildHelper sbh, SqlSyncBuildData buildData)
         {
-            BackgroundWorker bg = new BackgroundWorker();
-            bg.WorkerReportsProgress = true;
-            bg.WorkerSupportsCancellation = true;
-            sbh.bgWorker = bg;
 
             sbh.SetBuildData(buildData);
 

@@ -294,7 +294,7 @@ namespace SqlBuildManager.Console.Threaded
                     DefaultScriptTimeout: runData.DefaultScriptTimeout,
                     AllowObjectDelete: runData.AllowObjectDelete);
 
-                 var result = await helper.ProcessBuild(runDataModel, bg, e, cmdArgs.TimeoutRetryCount, buildRequestedBy, ThreadedManager.BatchColl);
+                 var result = await helper.ProcessBuild(runDataModel,cmdArgs.TimeoutRetryCount, buildRequestedBy, ThreadedManager.BatchColl);
                 returnValue = (int)result.FinalStatus;
 
 

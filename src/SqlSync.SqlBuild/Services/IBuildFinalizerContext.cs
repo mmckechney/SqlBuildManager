@@ -14,10 +14,7 @@ namespace SqlSync.SqlBuild.Services
         bool IsTransactional { get; }
         bool IsTrialBuild { get; }
         bool RunScriptOnly { get; }
-        BackgroundWorker BgWorker { get; }
-
-        void SaveBuildDataSet(bool finalSave);
-        
+       
         List<SqlLogging.CommittedScript> CommittedScripts { get; }
         // Event invocation helpers
         void RaiseBuildCommittedEvent(object sender, RunnerReturn rr);

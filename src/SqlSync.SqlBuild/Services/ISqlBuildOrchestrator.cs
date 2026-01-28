@@ -10,8 +10,6 @@ namespace SqlSync.SqlBuild.Services
         Build Execute(
             SqlBuildRunDataModel runData,
             SqlBuildHelper.BuildPreparationResult prep,
-            BackgroundWorker bgWorker,
-            DoWorkEventArgs workEventArgs,
             string serverName,
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,
@@ -20,8 +18,6 @@ namespace SqlSync.SqlBuild.Services
         Task<Build> ExecuteAsync(
             SqlBuildRunDataModel runData,
             SqlBuildHelper.BuildPreparationResult prep,
-            BackgroundWorker bgWorker,
-            DoWorkEventArgs workEventArgs,
             string serverName,
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,

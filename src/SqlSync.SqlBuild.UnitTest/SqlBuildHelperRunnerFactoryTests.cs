@@ -21,12 +21,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void RunBuildScripts_UsesRunnerFactory()
         {
             // Arrange
-            var helper = new SqlBuildHelper(new ConnectionData())
-            {
-                // Ensure bgWorker not null for reporting
-                bgWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true }
-            };
-
+            var helper = new SqlBuildHelper(new ConnectionData());
             var expectedBuild = new BuildModels.Build(
                 Name: "test",
                 BuildType: "type",
@@ -41,10 +36,9 @@ namespace SqlSync.SqlBuild.UnitTest
 
             var scripts = new List<BuildModels.Script>();
             var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var dwea = new DoWorkEventArgs(null);
 
             // Act
-            var result = helper.RunBuildScripts(scripts, expectedBuild, "srv", false, null, buildData, ref dwea);
+            var result = helper.RunBuildScripts(scripts, expectedBuild, "srv", false, null, buildData);
 
             // Assert
             Assert.AreEqual(expectedBuild.BuildId, result.BuildId);
@@ -65,8 +59,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 string serverName,
                 bool isMultiDbRun,
                 ScriptBatchCollection scriptBatchColl,
-                BuildModels.SqlSyncBuildDataModel buildDataModel,
-                ref DoWorkEventArgs workEventArgs)
+                BuildModels.SqlSyncBuildDataModel buildDataModel)
             {
                 return _result;
             }

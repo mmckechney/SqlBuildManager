@@ -66,9 +66,8 @@ namespace SqlSync.SqlBuild.UnitTest
                 BuildId: Guid.NewGuid().ToString(),
                 UserId: "user");
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel() with { Script = scripts };
-            var e = new DoWorkEventArgs(null);
 
-            var result = runner.Run(scripts, myBuild, "srv", isMultiDbRun: false, scriptBatchColl: new ScriptBatchCollection { new ScriptBatch("file.sql", new[] { "SELECT 1;" }, "abc") }, buildDataModel: model, ref e);
+            var result = runner.Run(scripts, myBuild, "srv", isMultiDbRun: false, scriptBatchColl: new ScriptBatchCollection { new ScriptBatch("file.sql", new[] { "SELECT 1;" }, "abc") }, buildDataModel: model);
 
             Assert.AreEqual(BuildItemStatus.FailedDueToScriptTimeout, result.FinalStatus);
             Assert.IsTrue(ctx.ErrorOccured);

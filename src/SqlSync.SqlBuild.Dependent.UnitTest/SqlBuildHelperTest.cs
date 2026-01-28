@@ -54,8 +54,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlSyncBuildData.BuildRow myBuildRow,
             string serverName,
             bool isMultiDbRun,
-            ScriptBatchCollection scriptBatchColl,
-            ref DoWorkEventArgs workEventArgs)
+            ScriptBatchCollection scriptBatchColl)
+            
         {
             var buildDataModel = buildData.ToModel();
             var scripts = buildDataModel.Script ?? new List<BuildModels.Script>();
@@ -66,7 +66,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 builds.Add(myBuildModel);
                 buildDataModel = buildDataModel with { Build = builds };
             }
-            return sbh.RunBuildScripts(scripts, myBuildModel, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref workEventArgs);
+            return sbh.RunBuildScripts(scripts, myBuildModel, serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
         }
         [ClassCleanup()]
         public static void Cleanup()
@@ -96,7 +96,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -104,7 +103,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -131,7 +130,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
+
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -139,7 +138,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
@@ -163,7 +162,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
 
 
             //Get initialized SqlBuildHelper object...
@@ -171,7 +169,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            var actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            var actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
 
@@ -195,7 +193,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -204,7 +201,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
@@ -229,7 +226,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
+
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -238,7 +235,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -263,7 +260,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -280,7 +276,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             var preRun = buildData.Script[0];
             csList.Add(new BuildModels.CommittedScript(preRun.ScriptId.ToString(), init.serverName, DateTime.UtcNow, null, null, null));
             buildDataModel = buildDataModel with { CommittedScript = csList };
-            actual = sbh.RunBuildScripts(scripts, myBuildModel, init.serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref workEventArgs);
+            actual = sbh.RunBuildScripts(scripts, myBuildModel, init.serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -305,7 +301,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -313,11 +308,9 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
-            //Set bgWorker to cancelled
-            BackgroundWorker bg = sbh.bgWorker;
-            bg.CancelAsync();
+
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
@@ -344,7 +337,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -353,7 +345,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = true;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.TrialRolledBack, actual.FinalStatus);
 
@@ -380,7 +372,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -389,7 +380,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = true;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
@@ -414,7 +405,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -423,7 +413,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -448,7 +438,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -457,7 +446,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -483,7 +472,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             bool isMultiDbRun = false;
             IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
             ScriptBatchCollection scriptBatchColl = scriptBatcher.LoadAndBatchSqlScripts(buildData.ToModel(), string.Empty);
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -492,7 +480,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
 
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -518,7 +506,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -528,7 +515,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Set the script only flag
             sbh.runScriptOnly = true;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -551,7 +538,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -559,7 +545,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -583,7 +569,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
@@ -592,7 +577,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = target.buildHistoryData.Build.NewBuildRow(); //init.GetRunBuildRow(po);
             //Execute the run...
-            actual = RunBuildScripts(target, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(target, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -623,7 +608,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -631,7 +615,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(target);
             //Execute the run...
-            actual = RunBuildScripts(target, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(target, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -658,7 +642,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -666,7 +649,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -692,7 +675,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -700,7 +682,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.FailedNoTransaction, actual.FinalStatus);
 
@@ -727,7 +709,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -736,7 +717,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -764,7 +745,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -773,7 +753,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -807,11 +787,9 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             //Get BuildRow...
             SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
-            //Set bgWorker to cancelled
-            BackgroundWorker bg = sbh.bgWorker;
-            bg.CancelAsync();
+
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.FailedNoTransaction, actual.FinalStatus);
 
@@ -980,10 +958,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
-            Assert.AreEqual(workEventArgsExpected, workEventArgs);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1004,10 +979,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
-            Assert.AreEqual(workEventArgsExpected, workEventArgs);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1026,8 +998,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
+
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
             Assert.AreEqual(Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1044,8 +1016,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(0, prep.FilteredScripts.Count);
             Assert.AreEqual(Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1068,13 +1039,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            DoWorkEventArgs workEventArgsExpected = workEventArgs;
+
 
             ScriptBatchCollection coll = init.GetScriptBatchCollection();
 
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, coll, ref workEventArgs);
-            Assert.AreEqual(workEventArgsExpected, workEventArgs);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, coll);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1099,11 +1068,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            DoWorkEventArgs workEventArgsExpected = workEventArgs;
             target.runItemIndexes = new double[] { 0, 1 };
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
-            Assert.AreEqual(workEventArgsExpected, workEventArgs);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(3, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1122,10 +1088,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
-            Assert.AreEqual(workEventArgsExpected, workEventArgs);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(0, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1144,10 +1107,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = true;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null, ref workEventArgs);
-            Assert.AreEqual(workEventArgsExpected, workEventArgs);
+            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
+
             Assert.AreEqual(0, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1901,7 +1862,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = null;
-            target.SaveBuildDataModel(false);
+            target.BuildFinalizer.SaveBuildDataModel(target, false);
         }
 
         /// <summary>
@@ -1916,7 +1877,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = string.Empty;
-            target.SaveBuildDataModel(false);
+            target.BuildFinalizer.SaveBuildDataModel(target, false);
         }
 
         /// <summary>
@@ -1931,7 +1892,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.buildHistoryXmlFile = null;
-            target.SaveBuildDataModel(false);
+            target.BuildFinalizer.SaveBuildDataModel(target, false);
         }
         /// <summary>
         ///A test for SaveBuildDataSet
@@ -1945,7 +1906,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.buildHistoryXmlFile = string.Empty;
-            target.SaveBuildDataModel(false);
+            target.BuildFinalizer.SaveBuildDataModel(target, false);
         }
         #endregion
 

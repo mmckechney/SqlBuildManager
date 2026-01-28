@@ -43,8 +43,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
-            BackgroundWorker bgWorker = init.GetBackgroundWorker();
-            DoWorkEventArgs e = new DoWorkEventArgs(null);
             string serverName = init.serverName;
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
@@ -52,7 +50,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             BuildItemStatus expected = BuildItemStatus.Committed;
             Build actual;
-            actual = target.ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+            actual = target.ProcessBuild(runData, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
             Assert.AreEqual(expected, actual.FinalStatus);
 
         }
@@ -70,8 +68,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
-            BackgroundWorker bgWorker = init.GetBackgroundWorker();
-            DoWorkEventArgs e = new DoWorkEventArgs(null);
             string serverName = init.serverName;
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
@@ -79,7 +75,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             BuildItemStatus expected = BuildItemStatus.Committed;
             Build actual;
-            actual = target.ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+            actual = target.ProcessBuild(runData, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
             Assert.AreEqual(expected, actual.FinalStatus);
 
         }
@@ -97,8 +93,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
 
-            BackgroundWorker bgWorker = init.GetBackgroundWorker();
-            DoWorkEventArgs e = new DoWorkEventArgs(null);
             string serverName = init.serverName;
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
@@ -112,7 +106,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
                 BuildItemStatus expected = BuildItemStatus.RolledBackAfterRetries;
                 Build actual;
-                actual = target.ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+                actual = target.ProcessBuild(runData,serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
                 Assert.AreEqual(expected, actual.FinalStatus);
             }
             finally
@@ -136,8 +130,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
 
-            BackgroundWorker bgWorker = init.GetBackgroundWorker();
-            DoWorkEventArgs e = new DoWorkEventArgs(null);
             string serverName = init.serverName;
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
@@ -151,7 +143,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
                 BuildItemStatus expected = BuildItemStatus.RolledBack;
                 Build actual;
-                actual = target.ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+                actual = target.ProcessBuild(runData, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
                 Assert.AreEqual(expected, actual.FinalStatus);
             }
             finally
@@ -174,8 +166,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
 
-            BackgroundWorker bgWorker = init.GetBackgroundWorker();
-            DoWorkEventArgs e = new DoWorkEventArgs(null);
             string serverName = init.serverName;
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
@@ -189,7 +179,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
                 BuildItemStatus expected = BuildItemStatus.CommittedWithTimeoutRetries;
                 Build actual;
-                actual = target.ProcessBuild(runData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+                actual = target.ProcessBuild(runData,serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
                 Assert.AreEqual(expected, actual.FinalStatus);
             }
             finally

@@ -124,12 +124,6 @@ namespace SqlBuildManager.Console
                     ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId
                 };
                 sqlB.SqlBuildHelper helper = new sqlB.SqlBuildHelper(connData, true, "", cmdLine.Transactional);
-                BackgroundWorker bg = new BackgroundWorker()
-                {
-                    WorkerReportsProgress = true,
-                };
-                bg.ProgressChanged += Bg_ProgressChanged;
-                DoWorkEventArgs workArgs = new DoWorkEventArgs(sqlBuildRunData);
                 LocalRunInfo.Sq1SyncBuildData = buildModel;
                 LocalRunInfo.BuildZipFileName = cmdLine.BuildFileName;
                 LocalRunInfo.WorkingDirectory = workingDir;
@@ -156,7 +150,7 @@ namespace SqlBuildManager.Console
                         DefaultScriptTimeout: sqlBuildRunData.DefaultScriptTimeout,
                         AllowObjectDelete: sqlBuildRunData.AllowObjectDelete);
 
-                    await helper.ProcessBuild(runData: runDataModel, allowableTimeoutRetries: cmdLine.TimeoutRetryCount, bgWorker: bg, e: workArgs);
+                    await helper.ProcessBuild(runData: runDataModel, allowableTimeoutRetries: cmdLine.TimeoutRetryCount);
                 }
                 else
                 {
@@ -165,7 +159,7 @@ namespace SqlBuildManager.Console
                     multiDbData.BuildFileName = cmdLine.BuildFileName;
                     multiDbData.BuildDescription = cmdLine.Description;
                     multiDbData.BuildData = buildModel;
-                    var res = helper.ProcessMultiDbBuild(multiDbData, projectFileName, bg, workArgs);
+                    var res = helper.ProcessMultiDbBuild(multiDbData, projectFileName);
                     log.LogInformation(res.ToString());
                 }
             }

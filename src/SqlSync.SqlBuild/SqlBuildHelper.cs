@@ -40,7 +40,6 @@ namespace SqlSync.SqlBuild
             get { return targetDatabaseOverrides; }
             set { targetDatabaseOverrides = value; }
         }
-        internal BackgroundWorker bgWorker;
         /// <summary>
         /// Indicator for external callers that an error occurred. Can also subscribe to ScriptingErrorEvent
         /// </summary>
@@ -290,7 +289,7 @@ namespace SqlSync.SqlBuild
             Clock = clock ?? new SystemClock();
             GuidProvider = guidProvider ?? new GuidProvider();
             FileSystem = fileSystem ?? new DotNetFileSystem();
-            ProgressReporter = progressReporter ?? new BackgroundWorkerProgressReporter(new BackgroundWorker() { WorkerReportsProgress = true});
+            ProgressReporter = progressReporter ?? new DefaultProgressReporter();
             FileHelper = fileHelper ?? new DefaultSqlBuildFileHelper();
             RetryPolicy = retryPolicy ?? new DefaultBuildRetryPolicy();
             LegacyAdapter = legacyAdapter ?? new DefaultLegacyBuildDataAdapter();
@@ -311,10 +310,10 @@ namespace SqlSync.SqlBuild
 
         }
 
-        public BuildResultStatus ProcessMultiDbBuild(MultiDbData multiDbRunData, string projectFileName, BackgroundWorker bgWorker, DoWorkEventArgs e)
+        public BuildResultStatus ProcessMultiDbBuild(MultiDbData multiDbRunData, string projectFileName)
         {
             this.projectFileName = projectFileName;
-            return ProcessMultiDbBuild(multiDbRunData, bgWorker, e); // Call to process the multi-db build
+            return ProcessMultiDbBuild(multiDbRunData); // Call to process the multi-db build
         }
         /// <summary>
         /// Used when the user wants to run the build across multiple databases and/or servers
@@ -322,10 +321,9 @@ namespace SqlSync.SqlBuild
         /// <param name="multiDbRunData"></param>
         /// <param name="bgWorker"></param>
         /// <param name="e"></param>
-        public BuildResultStatus ProcessMultiDbBuild(MultiDbData multiDbRunData, BackgroundWorker bgWorker, DoWorkEventArgs e)
+        public BuildResultStatus ProcessMultiDbBuild(MultiDbData multiDbRunData)
         {
             this.multiDbRunData = multiDbRunData;
-            this.bgWorker = bgWorker;
             committedScripts.Clear();
             ConnectionsService.Connections.Clear();
             var buildResults = new List<BuildModels.Build>();
@@ -357,7 +355,7 @@ namespace SqlSync.SqlBuild
                     AllowObjectDelete: false);
 
                 targetDatabaseOverrides = srvData.Overrides;
-                var buildResult = ProcessBuild(runData, bgWorker, e, srvData.ServerName, true, null, multiDbRunData.AllowableTimeoutRetries);
+                var buildResult = ProcessBuild(runData,srvData.ServerName, true, null, multiDbRunData.AllowableTimeoutRetries);
                 
 
                 if (buildResult.FinalStatus == BuildItemStatus.PendingRollBack || buildResult.FinalStatus == BuildItemStatus.FailedNoTransaction)
@@ -379,16 +377,7 @@ namespace SqlSync.SqlBuild
             return calculatedStatus;
         }
 
-
-        //public BuildModels.Build ProcessBuild(BuildModels.SqlBuildRunDataModel runData, int allowableTimeoutRetries, BackgroundWorker bgWorker, DoWorkEventArgs e)
-        //{
-        //    connectDictionary.Clear();
-        //    committedScripts.Clear();
-
-        //    return ProcessBuild(runData, bgWorker, e, connData.SQLServerName, false, null, allowableTimeoutRetries);
-        //}
-
-        public async Task<BuildModels.Build> ProcessBuild(BuildModels.SqlBuildRunDataModel runData, BackgroundWorker bgWorker, DoWorkEventArgs e, int allowableTimeoutRetries = 3,  string buildRequestedBy = "", ScriptBatchCollection scriptBatchColl = null)
+        public async Task<BuildModels.Build> ProcessBuild(BuildModels.SqlBuildRunDataModel runData, int allowableTimeoutRetries = 3,  string buildRequestedBy = "", ScriptBatchCollection scriptBatchColl = null)
         {
             ConnectionsService.Connections.Clear();
             committedScripts.Clear();
@@ -396,15 +385,14 @@ namespace SqlSync.SqlBuild
             BuildModels.Build returnval = null;
             await Task.Run(() =>
             {
-                returnval =  ProcessBuild(runData: runData, bgWorker: bgWorker, e: e, serverName: connData.SQLServerName, isMultiDbRun: false, scriptBatchColl: scriptBatchColl, allowableTimeoutRetries: allowableTimeoutRetries);
+                returnval =  ProcessBuild(runData: runData, serverName: connData.SQLServerName, isMultiDbRun: false, scriptBatchColl: scriptBatchColl, allowableTimeoutRetries: allowableTimeoutRetries);
             });
 
             return returnval;
         }
 
-        internal BuildModels.Build ProcessBuild(BuildModels.SqlBuildRunDataModel runData, BackgroundWorker bgWorker, DoWorkEventArgs e, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, int allowableTimeoutRetries)
+        internal BuildModels.Build ProcessBuild(BuildModels.SqlBuildRunDataModel runData, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, int allowableTimeoutRetries)
         {
-            this.bgWorker = bgWorker;
             ErrorOccured = false;
             buildDataModel = runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             buildType = runData.BuildType ?? string.Empty;
@@ -419,17 +407,16 @@ namespace SqlSync.SqlBuild
             targetDatabaseOverrides = runData.TargetDatabaseOverrides?.ToList();
             logToDatabaseName = runData.LogToDatabaseName ?? string.Empty;
 
-            if (bgWorker != null)
-                bgWorker.ReportProgress(0, new GeneralStatusEventArgs($"Starting Build Process targeting: {serverName} "));
+            log.LogInformation($"Starting Build Process targeting: {serverName} ");
 
-            var prep = PrepareBuildForRun(buildDataModel, serverName, isMultiDbRun, scriptBatchColl, ref e);
+            var prep = PrepareBuildForRun(buildDataModel, serverName, isMultiDbRun, scriptBatchColl);
             if (prep.FilteredScripts == null || prep.FilteredScripts.Count == 0)
             {
                 return prep.Build;
             }
 
             var orchestrator = new Services.SqlBuildOrchestrator(this, ConnectionsService, SqlLoggingService);
-            var buildResultsModel = orchestrator.Execute(runData, prep, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+            var buildResultsModel = orchestrator.Execute(runData, prep, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
 
             bool candidateForCustomDacPac = false;
             switch (buildResultsModel.FinalStatus)
@@ -471,7 +458,7 @@ namespace SqlSync.SqlBuild
                 {
                     var updatedRunData = MapToRunDataModel(legacyRunData) with { PlatinumDacPacFileName = string.Empty };
                     log.LogInformation($"Executing custom dacpac on {targetDatabase}");
-                    var dacBuild = ProcessBuild(updatedRunData, bgWorker, e, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+                    var dacBuild = ProcessBuild(updatedRunData,serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
                     var dacFinalStatus = dacBuild.FinalStatus;
                     if (dacFinalStatus == BuildItemStatus.Committed || dacFinalStatus == BuildItemStatus.CommittedWithTimeoutRetries)
                     {
@@ -518,11 +505,10 @@ namespace SqlSync.SqlBuild
             return buildResultsModel;
         }
 
-        internal BuildPreparationResult PrepareBuildForRun(BuildModels.SqlSyncBuildDataModel buildDataModelParam, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs)
+        internal BuildPreparationResult PrepareBuildForRun(BuildModels.SqlSyncBuildDataModel buildDataModelParam, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl)
         {
             try
             {
-                EnsureBgWorker();
                 // Make sure the project file is not read-only
                 if (File.Exists(projectFileName))
                 {
@@ -547,11 +533,14 @@ namespace SqlSync.SqlBuild
                 buildHistoryXmlFile = Path.Combine(projectFilePath, SqlBuild.XmlFileNames.HistoryFile);
                 log.LogDebug($"[PrepareBuildForRunModel] projectFilePath='{projectFilePath}'");
 
-                bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Creating Script Log File"));
+               
                 scriptLogFileName = Path.Combine(projectFilePath, $"LogFile-{DateTime.Now:yyyy-MM-dd at HH_mm_ss}.log");
+                log.LogInformation($"Creating Script Log File: {scriptLogFileName}");
 
-                bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Generating Build Record"));
+                
                 var nextBuildId = new Guid().ToString();
+                log.LogInformation($"Generating Build Record ID: {nextBuildId}");
+
                 var myBuild = new BuildModels.Build(
                     Name: buildDescription,
                     BuildType: buildType,
@@ -567,7 +556,7 @@ namespace SqlSync.SqlBuild
                 builds.Add(myBuild);
                 buildDataModelParam = buildDataModelParam with { Build = builds };
 
-                bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Reading Scripting configuration"));
+                log.LogInformation("Reading Scripting configuration");
                 var scripts = buildDataModelParam.Script ?? Array.Empty<BuildModels.Script>();
 
                 var filtered = scripts
@@ -610,154 +599,18 @@ namespace SqlSync.SqlBuild
             }
         }
 
-
-        private void EnsureBgWorker()
-        {
-            if (bgWorker == null)
-            {
-                var bg = new BackgroundWorker()
-                {
-                    WorkerReportsProgress = true,
-                    WorkerSupportsCancellation = true
-                };
-                bgWorker = bg;
-            }
-        }
-
         internal BuildModels.Build RunBuildScripts(
             IReadOnlyList<BuildModels.Script> scripts,
             BuildModels.Build myBuild,
             string serverName,
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,
-            BuildModels.SqlSyncBuildDataModel buildDataModel,
-            ref DoWorkEventArgs workEventArgs)
+            BuildModels.SqlSyncBuildDataModel buildDataModel)
         {
             var runner = SqlBuildRunnerFactory(ConnectionsService, this, this, null);
-            return runner.Run(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, ref workEventArgs);
+            return runner.Run(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
         }
 
-    
-
-     
-
-        //internal BuildModels.Build PerformRunScriptFinalization(bool buildFailure, BuildModels.Build myBuild, BuildModels.SqlSyncBuildDataModel buildDataModel, ref DoWorkEventArgs workEventArgs)
-        //{
-        //    return BuildFinalizer.PerformRunScriptFinalization(this, SqlLoggingService, buildFailure, myBuild, buildDataModel, ref workEventArgs);
-        //}
-
-        //internal void PerformRunScriptFinalization(bool buildFailure, List<BuildModels.Build> myBuilds, MultiDbData multiDbRunData, BackgroundWorker bgWorker, ref DoWorkEventArgs workEventArgs)
-        //{
-        //    DateTime end = DateTime.Now;
-        //    for (int i = 0; i < myBuilds.Count; i++)
-        //        myBuilds[i] = myBuilds[i] with { BuildEnd = DateTime.Now };
-
-        //    if (buildFailure)
-        //    {
-        //        ErrorOccured = true;
-        //        for (int i = 0; i < myBuilds.Count; i++)
-        //            myBuilds[i] = myBuilds[i] with { FinalStatus = (isTransactional ? BuildItemStatus.RolledBack : BuildItemStatus.FailedNoTransaction) };
-
-        //        if (!isTransactional)
-        //        {
-        //            buildDataModel = BuildFinalizer.RecordCommittedScripts(committedScripts, buildDataModel);
-        //            SqlLoggingService.LogCommittedScriptsToDatabase(committedScripts, this, multiDbRunData);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        if (!isTrialBuild)
-        //        {
-        //            if (isTransactional)
-        //            {
-        //                bgWorker?.ReportProgress(0, new GeneralStatusEventArgs("Attempting to Commit Build"));
-        //                bool commitSuccess = BuildFinalizer.CommitBuild(ConnectionsService, this.isTransactional);
-        //                if (commitSuccess)
-        //                    bgWorker?.ReportProgress(0, new GeneralStatusEventArgs("Commit Successful"));
-        //            }
-
-        //            for (int i = 0; i < myBuilds.Count; i++)
-        //                myBuilds[i] = myBuilds[i] with { FinalStatus = BuildItemStatus.Committed };
-
-        //            buildDataModel = BuildFinalizer.RecordCommittedScripts(committedScripts, buildDataModel);
-        //            SqlLoggingService.LogCommittedScriptsToDatabase(committedScripts, this, multiDbRunData);
-
-        //            BuildCommittedEvent?.Invoke(this, RunnerReturn.BuildCommitted);
-        //        }
-        //        else
-        //        {
-        //            if (isTransactional)
-        //            {
-        //                BuildFinalizer.CommitBuild(ConnectionsService, this.isTransactional);
-        //                for (int i = 0; i < myBuilds.Count; i++)
-        //                    myBuilds[i] = myBuilds[i] with { FinalStatus = BuildItemStatus.TrialRolledBack };
-        //                BuildSuccessTrialRolledBackEvent?.Invoke(this, EventArgs.Empty);
-        //            }
-        //            else
-        //            {
-        //                for (int i = 0; i < myBuilds.Count; i++)
-        //                    myBuilds[i] = myBuilds[i] with { FinalStatus = BuildItemStatus.Committed };
-        //            }
-        //        }
-        //    }
-
-        //    if (buildFailure)
-        //        BuildErrorRollBackEvent?.Invoke(this, EventArgs.Empty);
-
-        //    SaveBuildDataModel(true);
-
-        //    if (buildFailure)
-        //    {
-        //        if (workEventArgs.Cancel)
-        //        {
-        //            if (isTransactional)
-        //                bgWorker?.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
-        //            else
-        //                bgWorker?.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
-        //            workEventArgs.Result = isTransactional ? BuildResultStatus.BUILD_CANCELLED_AND_ROLLED_BACK : BuildResultStatus.BUILD_CANCELLED_NO_TRANSACTION;
-        //        }
-        //        else
-        //        {
-        //            if (isTransactional)
-        //                bgWorker?.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
-        //            else
-        //                bgWorker?.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
-        //            workEventArgs.Result = isTransactional ? BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK : BuildResultStatus.BUILD_FAILED_NO_TRANSACTION;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        if (runScriptOnly)
-        //        {
-        //            bgWorker?.ReportProgress(100, new GeneralStatusEventArgs("Script Generation Complete"));
-        //            workEventArgs.Result = BuildResultStatus.SCRIPT_GENERATION_COMPLETE;
-        //        }
-        //        else
-        //        {
-        //            if (!isTrialBuild)
-        //            {
-        //                bgWorker?.ReportProgress(100, new GeneralStatusEventArgs("Build Committed"));
-        //                workEventArgs.Result = BuildResultStatus.BUILD_COMMITTED;
-        //            }
-        //            else
-        //            {
-        //                if (isTransactional)
-        //                {
-        //                    bgWorker?.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Rolled back for Trial Build"));
-        //                    workEventArgs.Result = BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL;
-        //                }
-        //                else
-        //                {
-        //                    bgWorker?.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Committed with no transaction"));
-        //                    workEventArgs.Result = BuildResultStatus.BUILD_COMMITTED;
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    ConnectionsService.Connections.Clear();
-        //}
- 
         internal bool RecordCommittedScripts(List<SqlSync.SqlBuild.SqlLogging.CommittedScript> committedScripts, BuildModels.SqlSyncBuildDataModel buildDataModel, out BuildModels.SqlSyncBuildDataModel updatedModel)
         {
             var model = buildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -807,27 +660,6 @@ namespace SqlSync.SqlBuild
             }
 
         }
-        //public static string GetTargetDatabase(string serverName, string defaultDatabase, MultiDbData multiDbRunData)
-        //{
-        //    foreach (ServerData srvData in multiDbRunData)
-        //    {
-        //        if (serverName.ToUpper() != srvData.ServerName.ToUpper())
-        //            continue;
-
-        //        foreach (KeyValuePair<string, List<DatabaseOverride>> sequence in srvData.Overrides)
-        //        {
-        //            List<DatabaseOverride> tmp = sequence.Value;
-        //            for (int i = 0; i < tmp.Count; i++)
-        //                if (tmp[i].DefaultDbTarget.ToUpper() == defaultDatabase.ToUpper())
-        //                    return tmp[i].OverrideDbTarget;
-        //        }
-        //    }
-        //    return defaultDatabase;
-        //}
-
-
-
-
         
         public static string RemoveUseStatement(string script)
         {
@@ -1010,16 +842,16 @@ namespace SqlSync.SqlBuild
                     string tmpPath = Path.GetDirectoryName(externalScriptLogFileName);
                     if (!Directory.Exists(tmpPath))
                     {
-                        bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Creating External Log file directory \"" + tmpPath + "\""));
+                        log.LogInformation($"Creating External Log file directory '{tmpPath}'");
                         Directory.CreateDirectory(tmpPath);
                     }
 
                     File.Copy(scriptLogFileName, externalScriptLogFileName, true);
-                    bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Copied log file to \"" + externalScriptLogFileName + "\""));
+                    log.LogInformation($"Copied log file to '{externalScriptLogFileName}'");
                 }
                 catch (Exception exe)
                 {
-                    bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Error copying results file to " + externalScriptLogFileName + "\r\n" + exe.ToString()));
+                    log.LogError($"Error copying results file to '{externalScriptLogFileName}': {exe}");
                 }
             }
 
@@ -1050,34 +882,34 @@ namespace SqlSync.SqlBuild
             return TokenReplacementService.ReplaceTokens(script, this);
         }
 
-        internal void SaveBuildDataModel(bool fireSavedEvent)
-        {
-            bgWorker.ReportProgress(0, new GeneralStatusEventArgs("Saving Build File Updates"));
+        //internal void SaveBuildDataModel(bool fireSavedEvent)
+        //{
+        //    log.LogInformation("Saving Build File Updates");
 
-            if (projectFileName == null || projectFileName.Length == 0)
-            {
-                string message = "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.";
-                bgWorker.ReportProgress(0, new GeneralStatusEventArgs(message));
-                throw new ArgumentException(message);
-            }
+        //    if (projectFileName == null || projectFileName.Length == 0)
+        //    {
+        //        string message = "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.";
+        //        log.LogWarning(message);
+        //        throw new ArgumentException(message);
+        //    }
 
-            SqlBuildFileHelper.SaveSqlBuildProjectFile(buildDataModel, projectFileName, buildFileName, includeHistoryAndLogs: true);
+        //    SqlBuildFileHelper.SaveSqlBuildProjectFile(buildDataModel, projectFileName, buildFileName, includeHistoryAndLogs: true);
 
 
-            if (buildHistoryXmlFile == null || buildHistoryXmlFile.Length == 0)
-            {
-                string message = "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.";
-                bgWorker.ReportProgress(0, new GeneralStatusEventArgs(message));
-                throw new ArgumentException(message);
-            }
+        //    if (buildHistoryXmlFile == null || buildHistoryXmlFile.Length == 0)
+        //    {
+        //        string message = "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.";
+        //        log.LogWarning(message);
+        //        throw new ArgumentException(message);
+        //    }
 
-            if (buildHistoryModel != null)
-                SqlSyncBuildDataXmlSerializer.Save(buildHistoryXmlFile, buildHistoryModel); //TODO: Fix this so it writes an actual file!!
-                //buildHistoryData.WriteXml(buildHistoryXmlFile);
+        //    if (buildHistoryModel != null)
+        //        SqlSyncBuildDataXmlSerializer.Save(buildHistoryXmlFile, buildHistoryModel); //TODO: Fix this so it writes an actual file!!
+        //        //buildHistoryData.WriteXml(buildHistoryXmlFile);
 
-            if (fireSavedEvent)
-                bgWorker.ReportProgress(0, new ScriptRunProjectFileSavedEventArgs(true));
-        }
+        //    if (fireSavedEvent)
+        //        bgWorker.ReportProgress(0, new ScriptRunProjectFileSavedEventArgs(true));
+        //}
 
         private void AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild)
         {
@@ -1119,8 +951,7 @@ namespace SqlSync.SqlBuild
 
         #region ISqlBuildRunnerContext
         ILogger ISqlBuildRunnerContext.Log => log;
-        BackgroundWorker ISqlBuildRunnerContext.BgWorker => bgWorker;
-        IProgressReporter ISqlBuildRunnerContext.ProgressReporter => ProgressReporter ?? new BackgroundWorkerProgressReporter(bgWorker);
+        IProgressReporter ISqlBuildRunnerContext.ProgressReporter => ProgressReporter ?? new DefaultProgressReporter();
         bool ISqlBuildRunnerProperties.IsTransactional => isTransactional;
         bool ISqlBuildRunnerProperties.IsTrialBuild => isTrialBuild;
         bool ISqlBuildRunnerProperties.RunScriptOnly => runScriptOnly;
@@ -1145,7 +976,6 @@ namespace SqlSync.SqlBuild
         string ISqlBuildRunnerContext.PerformScriptTokenReplacement(string script) => PerformScriptTokenReplacement(script);
         Task<string> ISqlBuildRunnerContext.PerformScriptTokenReplacementAsync(string script, CancellationToken cancellationToken) => TokenReplacementService.ReplaceTokensAsync(script, this, cancellationToken);
         void ISqlBuildRunnerContext.AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild) => AddScriptRunToHistory(run, myBuild);
-        void ISqlBuildRunnerContext.SaveBuildDataSet(bool fireSavedEvent) => SaveBuildDataModel(fireSavedEvent);
         void ISqlBuildRunnerContext.PublishScriptLog(bool isError, ScriptLogEventArgs args) => ScriptLogWriteEvent?.Invoke(null, isError, args);
         #endregion
 
@@ -1153,10 +983,8 @@ namespace SqlSync.SqlBuild
         bool IBuildFinalizerContext.IsTransactional => isTransactional;
         bool IBuildFinalizerContext.IsTrialBuild => isTrialBuild;
         bool IBuildFinalizerContext.RunScriptOnly => runScriptOnly;
-        BackgroundWorker IBuildFinalizerContext.BgWorker => bgWorker;
         List<LoggingCommittedScript> IBuildFinalizerContext.CommittedScripts => committedScripts;
 
-        void IBuildFinalizerContext.SaveBuildDataSet(bool finalSave) => SaveBuildDataModel(finalSave);
         void IBuildFinalizerContext.RaiseBuildCommittedEvent(object sender, RunnerReturn rr) => BuildCommittedEvent?.Invoke(sender, rr);
         void IBuildFinalizerContext.RaiseBuildSuccessTrialRolledBackEvent(object sender) => BuildSuccessTrialRolledBackEvent?.Invoke(sender, EventArgs.Empty);
         void IBuildFinalizerContext.RaiseBuildErrorRollBackEvent(object sender) => BuildErrorRollBackEvent?.Invoke(sender, EventArgs.Empty);

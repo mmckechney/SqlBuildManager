@@ -125,12 +125,12 @@ namespace SqlSync.SqlBuild.Services
 
         public void SaveBuildDataModel(ISqlBuildRunnerProperties context, bool fireSavedEvent)
         {
-            progressReporter.ReportProgress(0, new GeneralStatusEventArgs("Saving Build File Updates"));
+            log.LogInformation("Saving Build File Updates");
 
             if (context.ProjectFileName == null || context.ProjectFileName.Length == 0)
             {
                 string message = "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.";
-                progressReporter.ReportProgress(0, new GeneralStatusEventArgs(message));
+                log.LogError(message);
                 throw new ArgumentException(message);
             }
 
@@ -140,14 +140,13 @@ namespace SqlSync.SqlBuild.Services
             if (context.BuildHistoryXmlFile == null || context.BuildHistoryXmlFile.Length == 0)
             {
                 string message = "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.";
-                progressReporter.ReportProgress(0, new GeneralStatusEventArgs(message));
+                log.LogError(message); 
                 throw new ArgumentException(message);
             }
 
             SqlSyncBuildDataXmlSerializer.Save(context.BuildHistoryXmlFile, context.BuildDataModel);
 
-            if (fireSavedEvent)
-                progressReporter.ReportProgress(0, new ScriptRunProjectFileSavedEventArgs(true));
+            log.LogInformation("Build Data saved successfully.");
         }
         public (Build updatedBuild, SqlSyncBuildDataModel updatedModel, BuildResultStatus buildResult) PerformRunScriptFinalization(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, IBuildFinalizerContext finalizerContext, bool buildFailure, Build myBuild)
         {
@@ -180,10 +179,10 @@ namespace SqlSync.SqlBuild.Services
                 {
                     if (context.IsTransactional)
                     {
-                        progressReporter.ReportProgress(0, new GeneralStatusEventArgs("Attempting to Commit Build"));
+                        log.LogInformation("Attempting to Commit Build");
                         bool commitSuccess = CommitBuild(connectionsService, context.IsTransactional);
                         if (commitSuccess)
-                            progressReporter.ReportProgress(0, new GeneralStatusEventArgs("Commit Successful"));
+                            log.LogInformation("Commit Successful");
                     }
 
                     myBuild = myBuild with { FinalStatus = BuildItemStatus.Committed };
@@ -221,12 +220,12 @@ namespace SqlSync.SqlBuild.Services
 
                 if (context.IsTransactional)
                 {
-                    progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Failed and Rolled Back"));
+                    log.LogInformation("Build Failed and Rolled Back");
                     finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK;
                 }
                 else
                 {
-                    progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Failed. No Transaction Set."));
+                    log.LogInformation("Build Failed. No Transaction Set.");
                     finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_NO_TRANSACTION;
                 }
 
@@ -235,26 +234,26 @@ namespace SqlSync.SqlBuild.Services
             {
                 if (context.RunScriptOnly)
                 {
-                    progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Script Generation Complete"));
+                    log.LogInformation("Script Generation Complete");
                     finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.SCRIPT_GENERATION_COMPLETE;
                 }
                 else
                 {
                     if (context.IsTrialBuild == false)
                     {
-                        progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Committed"));
+                        log.LogInformation("Build Committed");
                         finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
                     }
                     else
                     {
                         if (context.IsTransactional)
                         {
-                            progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Rolled back for Trial Build"));
+                            log.LogInformation("Build Successful. Rolled back for Trial Build");
                             finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL;
                         }
                         else
                         {
-                            progressReporter.ReportProgress(100, new GeneralStatusEventArgs("Build Successful. Committed with no transaction"));
+                            log.LogInformation("Build Successful. Committed with no transaction");
                             finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
 
                         }

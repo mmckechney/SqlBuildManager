@@ -179,7 +179,6 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             var mock = new Mock<ISqlBuildRunnerContext>();
             mock.Setup(x => x.Log).Returns(NullLogger.Instance);
-            mock.Setup(x => x.BgWorker).Returns(new BackgroundWorker { WorkerReportsProgress = true });
             mock.Setup(x => x.ProgressReporter).Returns(new NoopProgressReporter());
             mock.Setup(x => x.IsTransactional).Returns(true);
             mock.Setup(x => x.IsTrialBuild).Returns(false);

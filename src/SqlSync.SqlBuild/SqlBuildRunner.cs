@@ -30,14 +30,14 @@ namespace SqlSync.SqlBuild
         private readonly IBuildFinalizer _buildFinalizer;
         private readonly IProgressReporter _progressReporter;
         private readonly IBuildFinalizerContext _finalizerContext;
-        
+
 
         public SqlBuildRunner(IConnectionsService connectionsService, ISqlBuildRunnerContext ctx, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null, ISqlBuildFileHelper fileHelper = null, IBuildFinalizer buildFinalizer = null, ISqlLoggingService sqlLoggingService = null, IProgressReporter progressReporter = null)
         {
             _ctx = ctx ?? throw new ArgumentNullException(nameof(ctx));
             _executor = executor ?? new SqlCommandExecutor(ctx.Log);
             _fileHelper = fileHelper ?? new DefaultSqlBuildFileHelper();
-            _progressReporter = progressReporter ?? new BackgroundWorkerProgressReporter(_ctx.BgWorker);
+            _progressReporter = progressReporter ?? new DefaultProgressReporter();
             _sqlLoggingService = sqlLoggingService ?? new DefaultSqlLoggingService(connectionsService, _progressReporter);
             _buildFinalizer = buildFinalizer ?? new DefaultBuildFinalizer(_sqlLoggingService, _progressReporter);
             _connectionsService = connectionsService ?? new DefaultConnectionsService();
@@ -52,15 +52,13 @@ namespace SqlSync.SqlBuild
             string serverName,
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,
-            BuildModels.SqlSyncBuildDataModel buildDataModel,
-            ref DoWorkEventArgs workEventArgs)
+            BuildModels.SqlSyncBuildDataModel buildDataModel)
         {
-            var bgWorker = _ctx.BgWorker;
-            var progress = _ctx.ProgressReporter ?? new BackgroundWorkerProgressReporter(bgWorker);
+            var progress = _ctx.ProgressReporter ?? new DefaultProgressReporter();
             var log = _ctx.Log;
             var committedScripts = _ctx.CommittedScripts;
 
-            progress.ReportProgress(0, new GeneralStatusEventArgs("Proceeding with Build"));
+            log.LogInformation("Proceeding with Build");
             log.LogDebug($"Processing with build for build Package hash = {_ctx.BuildPackageHash}");
 
             int overallIndex = 0;
@@ -99,8 +97,8 @@ namespace SqlSync.SqlBuild
                     var scriptRunRowId = Guid.NewGuid();
                     try
                     {
-                     
-                        cData =    _connectionsService.GetOrAddBuildConnectionDataClass(_ctx.ConnectionData, serverName, targetDatabase, _ctx.IsTransactional);
+
+                        cData = _connectionsService.GetOrAddBuildConnectionDataClass(_ctx.ConnectionData, serverName, targetDatabase, _ctx.IsTransactional);
                     }
                     catch (Exception e)
                     {
@@ -138,12 +136,12 @@ namespace SqlSync.SqlBuild
                     var start = DateTime.Now;
                     for (int x = 0; x < batchScripts.Length; x++)
                     {
-                        if (bgWorker.CancellationPending)
-                        {
-                            log.LogInformation("Encountered cancellation pending directive. Breaking out of build");
-                            workEventArgs.Cancel = true;
-                            break;
-                        }
+                        //if (bgWorker.CancellationPending)
+                        //{
+                        //    log.LogInformation("Encountered cancellation pending directive. Breaking out of build");
+                        //    workEventArgs.Cancel = true;
+                        //    break;
+                        //}
 
                         batchScripts[x] = _ctx.PerformScriptTokenReplacement(batchScripts[x]);
                         overallIndex++;
@@ -172,12 +170,12 @@ namespace SqlSync.SqlBuild
                         if (rollBackOnError && currentRun.Success == false) break;
                     }
 
-                    if (workEventArgs.Cancel)
-                    {
-                            progress.ReportProgress(0, new ScriptRunStatusEventArgs("Build Cancelled", TimeSpan.Zero));
-                        buildFailure = true;
-                    }
-                    else if (currentRun.Success == true)
+                    //if (workEventArgs.Cancel)
+                    //{
+                    //        progress.ReportProgress(0, new ScriptRunStatusEventArgs("Build Cancelled", TimeSpan.Zero));
+                    //    buildFailure = true;
+                    //}else
+                    if (currentRun.Success == true)
                     {
                         var span = DateTime.Now - currentRun.RunStart!.Value;
                         tmpCommitted.RunStart = currentRun.RunStart ?? DateTime.MinValue;
@@ -202,7 +200,7 @@ namespace SqlSync.SqlBuild
             }
             finally
             {
-                _ctx.SaveBuildDataSet(false);
+                _buildFinalizer.SaveBuildDataModel(_ctx, false);
                 WriteFinalScriptLog(dbTargets, buildFailure, isTransactional: _ctx.IsTransactional, isTrialBuild: _ctx.IsTrialBuild);
             }
 
@@ -213,7 +211,7 @@ namespace SqlSync.SqlBuild
                 log.LogError("Build failure. Check execution logs for details");
                 if (!isMultiDbRun)
                 {
-                   ( myBuild, buildDataModel, _ ) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
+                    (myBuild, buildDataModel, _) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
                 }
                 else
                 {
@@ -227,9 +225,9 @@ namespace SqlSync.SqlBuild
             else
             {
                 if (isMultiDbRun)
-                    myBuild = myBuild with { FinalStatus = BuildItemStatus.Pending};
+                    myBuild = myBuild with { FinalStatus = BuildItemStatus.Pending };
                 else
-                    (myBuild, buildDataModel, _ ) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
+                    (myBuild, buildDataModel, _) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
                 log.LogDebug("Build Successful!");
             }
             return myBuild;
@@ -242,15 +240,13 @@ namespace SqlSync.SqlBuild
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,
             BuildModels.SqlSyncBuildDataModel buildDataModel,
-            DoWorkEventArgs workEventArgs,
             CancellationToken cancellationToken = default)
         {
-            var bgWorker = _ctx.BgWorker;
-            var progress = _ctx.ProgressReporter ?? new BackgroundWorkerProgressReporter(bgWorker);
+            var progress = _ctx.ProgressReporter ?? new DefaultProgressReporter();
             var log = _ctx.Log;
             var committedScripts = _ctx.CommittedScripts;
 
-            progress.ReportProgress(0, new GeneralStatusEventArgs("Proceeding with Build"));
+            log.LogInformation("Proceeding with Build");
             log.LogDebug($"Processing with build for build Package hash = {_ctx.BuildPackageHash}");
 
             int overallIndex = 0;
@@ -329,10 +325,9 @@ namespace SqlSync.SqlBuild
                     var start = DateTime.Now;
                     for (int x = 0; x < batchScripts.Length; x++)
                     {
-                        if (cancellationToken.IsCancellationRequested || bgWorker?.CancellationPending == true)
+                        if (cancellationToken.IsCancellationRequested)
                         {
                             log.LogInformation("Encountered cancellation pending directive. Breaking out of build");
-                            workEventArgs.Cancel = true;
                             break;
                         }
 
@@ -363,7 +358,7 @@ namespace SqlSync.SqlBuild
                         if (rollBackOnError && currentRun.Success == false) break;
                     }
 
-                    if (workEventArgs.Cancel)
+                    if (cancellationToken.IsCancellationRequested)
                     {
                         progress.ReportProgress(0, new ScriptRunStatusEventArgs("Build Cancelled", TimeSpan.Zero));
                         buildFailure = true;
@@ -386,7 +381,6 @@ namespace SqlSync.SqlBuild
             }
             catch (OperationCanceledException)
             {
-                workEventArgs.Cancel = true;
                 buildFailure = true;
                 progress.ReportProgress(0, new ScriptRunStatusEventArgs("Build Cancelled", TimeSpan.Zero));
             }
@@ -399,7 +393,7 @@ namespace SqlSync.SqlBuild
             }
             finally
             {
-                _ctx.SaveBuildDataSet(false);
+                _buildFinalizer.SaveBuildDataModel(_ctx, false);
                 WriteFinalScriptLog(dbTargets, buildFailure, isTransactional: _ctx.IsTransactional, isTrialBuild: _ctx.IsTrialBuild);
                 if (buildFailure)
                 {
@@ -408,7 +402,7 @@ namespace SqlSync.SqlBuild
                 }
             }
 
-            (myBuild, buildDataModel, _ ) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild);
+            (myBuild, buildDataModel, _) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild);
             return myBuild;
         }
 
@@ -421,8 +415,8 @@ namespace SqlSync.SqlBuild
         internal string[] LoadBatchScripts(string scriptId, string fileName, bool stripTransaction, ScriptBatchCollection scriptBatchColl)
         {
 
-           var batchScripts = LoadBatchScriptsAsync(scriptId, fileName, stripTransaction, scriptBatchColl, default).GetAwaiter().GetResult();
-           return batchScripts;
+            var batchScripts = LoadBatchScriptsAsync(scriptId, fileName, stripTransaction, scriptBatchColl, default).GetAwaiter().GetResult();
+            return batchScripts;
         }
 
         internal async Task<string[]> LoadBatchScriptsAsync(string scriptId, string fileName, bool stripTransaction, ScriptBatchCollection scriptBatchColl, CancellationToken cancellationToken)
@@ -481,7 +475,7 @@ namespace SqlSync.SqlBuild
         private (bool buildFailure, bool timeoutDetected) HandleSqlException(SqlException e, string fileName, string batchScript, string targetDatabase, string savePointName, DateTime start, bool rollBackOnError, bool causesBuildFailure, BuildConnectData cData, ref BuildModels.ScriptRun currentRun)
         {
             var log = _ctx.Log;
-            var progress = _ctx.ProgressReporter ?? new BackgroundWorkerProgressReporter(_ctx.BgWorker);
+            var progress = _ctx.ProgressReporter ?? new DefaultProgressReporter();
             var logMsg = new StringBuilder($"Script File: {fileName}{Environment.NewLine}");
             bool timeoutDetected = false;
             foreach (SqlError error in e.Errors)
@@ -492,7 +486,7 @@ namespace SqlSync.SqlBuild
                 logMsg.Append("----------------");
                 log.LogError($"Error running script in: {fileName}");
                 log.LogError(error.Message);
-                
+
                 // Check for timeout error number (-2) or timeout message
                 if (error.Number == -2 || error.Message.Trim().ToLower().Contains("timeout expired."))
                 {
@@ -522,10 +516,10 @@ namespace SqlSync.SqlBuild
                     if (_ctx.IsTransactional)
                     {
                         cData.Transaction.Rollback(savePointName);
-                        progress.ReportProgress(0, new ScriptRunStatusEventArgs("Script Rolled Back", span));
+                        log.LogWarning($"Script Rolled Back for {fileName}");
                     }
                     else
-                        progress.ReportProgress(0, new ScriptRunStatusEventArgs("Script Error. No Rollback Available.", span));
+                        log.LogError($"Script Error. No Rollback Available for {fileName}");
                 }
                 catch (SqlException sqle)
                 {
@@ -536,10 +530,10 @@ namespace SqlSync.SqlBuild
                     if (_ctx.IsTransactional)
                     {
                         _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);
-                        progress.ReportProgress(0, new ScriptRunStatusEventArgs("Build Rolled Back", TimeSpan.Zero));
+                        log.LogWarning($"Build Rolled Back");
                     }
                     else
-                        progress.ReportProgress(0, new ScriptRunStatusEventArgs("Error. No Rollback Available.", TimeSpan.Zero));
+                        log.LogError($"Error. No Rollback Available.");
                     buildFailure = true;
                 }
                 catch (InvalidOperationException invalExe)
@@ -549,11 +543,11 @@ namespace SqlSync.SqlBuild
                     if (_ctx.IsTransactional && !invalExe.Message.Contains("no longer usable"))
                     {
                         _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);
-                        _ctx.BgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Build Rolled Back", TimeSpan.Zero));
+                        log.LogWarning($"Build Rolled Back");
                     }
                     else
                     {
-                        _ctx.BgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Error. No Rollback Available.", TimeSpan.Zero));
+                        log.LogError($"Error. No Rollback Available.");
                         zombiedTransaction = true;
                     }
                     buildFailure = true;
@@ -562,9 +556,9 @@ namespace SqlSync.SqlBuild
             else
             {
                 if (_ctx.IsTransactional)
-                    progress.ReportProgress(0, new ScriptRunStatusEventArgs("Error, Save Point Not Rolled Back", TimeSpan.Zero));
+                    log.LogError($"Error, Save Point Not Rolled Back");
                 else
-                    progress.ReportProgress(0, new ScriptRunStatusEventArgs("Error. No Rollback Available.", TimeSpan.Zero));
+                    log.LogError($"Error. No Rollback Available.");
             }
 
             if (causesBuildFailure || buildFailure)
@@ -572,10 +566,10 @@ namespace SqlSync.SqlBuild
                 if (_ctx.IsTransactional && !zombiedTransaction)
                 {
                     _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);
-                    _ctx.BgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Build Rolled Back", TimeSpan.Zero));
+                    log.LogWarning($"Build Rolled Back");
                 }
                 else
-                    _ctx.BgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Error. No Rollback Available.", TimeSpan.Zero));
+                    log.LogError("Error. No Rollback Available.");
                 buildFailure = true;
             }
 

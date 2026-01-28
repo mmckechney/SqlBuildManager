@@ -24,19 +24,15 @@ namespace SqlSync.SqlBuild.Services
         public Build Execute(
             SqlBuildRunDataModel runData,
             SqlBuildHelper.BuildPreparationResult prep,
-            BackgroundWorker bgWorker,
-            DoWorkEventArgs workEventArgs,
             string serverName,
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,
             int allowableTimeoutRetries)
         {
-            _helper.bgWorker = bgWorker;
             _helper.ErrorOccured = false;
 
             if (prep.FilteredScripts == null || prep.FilteredScripts.Count == 0)
             {
-                workEventArgs.Cancel = true;
                 return prep.Build;
             }
 
@@ -54,7 +50,7 @@ namespace SqlSync.SqlBuild.Services
                     _helper.CommittedScripts.Clear();
                 }
 
-                buildResultsModel = runner.Run(prep.FilteredScripts, prep.Build, serverName, isMultiDbRun, scriptBatchColl, runData.BuildDataModel!, ref workEventArgs);
+                buildResultsModel = runner.Run(prep.FilteredScripts, prep.Build, serverName, isMultiDbRun, scriptBatchColl, runData.BuildDataModel!);
 
                 if (buildRetries > 0 && buildResultsModel.FinalStatus == BuildItemStatus.Committed)
                     buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries };
@@ -71,30 +67,25 @@ namespace SqlSync.SqlBuild.Services
         public Task<Build> ExecuteAsync(
             SqlBuildRunDataModel runData,
             SqlBuildHelper.BuildPreparationResult prep,
-            BackgroundWorker bgWorker,
-            DoWorkEventArgs workEventArgs,
             string serverName,
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,
             int allowableTimeoutRetries,
             CancellationToken cancellationToken = default)
         {
-            _helper.bgWorker = bgWorker;
             _helper.ErrorOccured = false;
 
             if (prep.FilteredScripts == null || prep.FilteredScripts.Count == 0)
             {
-                workEventArgs.Cancel = true;
                 return Task.FromResult(prep.Build);
             }
 
-            return ExecuteAsyncCore(runData, prep, workEventArgs, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries, cancellationToken);
+            return ExecuteAsyncCore(runData, prep, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries, cancellationToken);
         }
 
         private async Task<Build> ExecuteAsyncCore(
             SqlBuildRunDataModel runData,
             SqlBuildHelper.BuildPreparationResult prep,
-            DoWorkEventArgs workEventArgs,
             string serverName,
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,
@@ -117,10 +108,9 @@ namespace SqlSync.SqlBuild.Services
                     _helper.CommittedScripts.Clear();
                 }
 
-                buildResultsModel = await runner.RunAsync(prep.FilteredScripts, prep.Build, serverName, isMultiDbRun, scriptBatchColl, runData.BuildDataModel!, workEventArgs, cancellationToken).ConfigureAwait(false);
+                buildResultsModel = await runner.RunAsync(prep.FilteredScripts, prep.Build, serverName, isMultiDbRun, scriptBatchColl, runData.BuildDataModel!, cancellationToken).ConfigureAwait(false);
 
-                if (workEventArgs.Cancel)
-                    break;
+
 
                 if (buildRetries > 0 && buildResultsModel.FinalStatus == BuildItemStatus.Committed)
                     buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries };

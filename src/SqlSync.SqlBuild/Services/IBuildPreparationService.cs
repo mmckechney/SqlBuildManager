@@ -5,6 +5,6 @@ namespace SqlSync.SqlBuild.Services
 {
     internal interface IBuildPreparationService
     {
-        SqlBuildHelper.BuildPreparationResult PrepareBuildForRun(SqlSyncBuildDataModel model, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, ref DoWorkEventArgs workEventArgs);
+        SqlBuildHelper.BuildPreparationResult PrepareBuildForRun(SqlSyncBuildDataModel model, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl);
     }
 }
