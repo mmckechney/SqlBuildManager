@@ -337,15 +337,6 @@ namespace SqlSync.SqlBuild
             return val;
         }
 
-        /// <summary>
-        /// Minimize the size of the package by cleaing out the logs and the code review items..
-        /// </summary>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
-        public static byte[] CleanProjectFileForRemoteExecution(string fileName)
-        {
-            return CleanProjectFileForRemoteExecution(fileName, out SqlSyncBuildDataModel _);
-        }
 
         public static byte[] CleanProjectFileForRemoteExecution(string fileName, out SqlSyncBuildDataModel cleanedBuildData)
         {
@@ -369,9 +360,9 @@ namespace SqlSync.SqlBuild
                 if (ExtractSqlBuildZipFile(tmpZipFullName, ref tmpDir, ref tmpDir, ref tmpProjectFileName, false, false, out result))
                 {
                     LoadSqlBuildProjectFile(out cleanedBuildData, tmpProjectFileName, false);
-                    cleanedBuildData.CodeReview = Array.Empty<CodeReview>();
-                    cleanedBuildData.ScriptRun = Array.Empty<ScriptRun>();
-                    cleanedBuildData.Build = Array.Empty<Build>();
+                    cleanedBuildData.CodeReview = new List<CodeReview>();
+                    cleanedBuildData.ScriptRun = new List<ScriptRun>();
+                    cleanedBuildData.Build = new List<Build>();
                     SqlSyncBuildDataXmlSerializer.Save(tmpProjectFileName, cleanedBuildData);
 
                     if (PackageProjectFileIntoZip(cleanedBuildData, tmpDir, tmpZipFullName, includeHistoryAndLogs: false))
@@ -475,12 +466,12 @@ namespace SqlSync.SqlBuild
         public static SqlSyncBuildDataModel CreateShellSqlSyncBuildDataModel()
         {
             return new SqlSyncBuildDataModel(
-                sqlSyncBuildProject: new[] { new SqlSyncBuildProject(0, string.Empty, false) },
-                script: Array.Empty<Script>(),
-                build: Array.Empty<Build>(),
-                scriptRun: Array.Empty<ScriptRun>(),
-                committedScript: Array.Empty<CommittedScript>(),
-                codeReview: Array.Empty<CodeReview>());
+                sqlSyncBuildProject: new List<SqlSyncBuildProject> { new SqlSyncBuildProject(0, string.Empty, false) },
+                script: new List<Script>(),
+                build: new List<Build>(),
+                scriptRun: new List<ScriptRun>(),
+                committedScript: new List<CommittedScript>(),
+                codeReview: new List<CodeReview>());
         }
 
 

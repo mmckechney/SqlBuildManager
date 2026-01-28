@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
@@ -240,11 +241,11 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 return false;
             }
         }
-        public SqlSyncBuildData CreateSqlSyncSqlBuildDataObject()
+        public SqlSyncBuildDataModel CreateSqlSyncSqlBuildDataModelObject()
         {
             try
             {
-                SqlSyncBuildData data = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+                SqlSyncBuildDataModel data = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
                 return data;
             }
             catch
@@ -252,9 +253,9 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 return null;
             }
         }
-        public void AddInsertScript(ref SqlSyncBuildData data, bool multipleRun)
+        public void AddInsertScript(ref SqlSyncBuildDataModel data, bool multipleRun)
         {
-            SqlSyncBuildData.ScriptRow row = data.Script.NewScriptRow();
+            Models.Script row = new Script();
             row.AllowMultipleRuns = multipleRun;
             row.BuildOrder = 1;
             row.CausesBuildFailure = true;
@@ -268,17 +269,16 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.Description = "Test Script to successfully insert into TransactionTest table";
             row.AddedBy = "UnitTest";
             row.ScriptId = Guid.NewGuid().ToString();
-            row.SetParentRow(data.Scripts[0]);
-            data.Script.AddScriptRow(row);
-            data.Script.AcceptChanges();
+
+            data.Script.Add(row);
             string script = "INSERT INTO TransactionTest (Message, Guid, DateTimeStamp) VALUES ('INSERT TEST','" + testGuid + "','" + testTimeStamp.ToString() + "')";
             File.WriteAllText(fileName, script);
 
 
         }
-        public void AddSelectScript(ref SqlSyncBuildData data)
+        public void AddSelectScript(ref SqlSyncBuildDataModel data)
         {
-            SqlSyncBuildData.ScriptRow row = data.Script.NewScriptRow();
+            Script row = new();
             row.AllowMultipleRuns = true;
             row.BuildOrder = 1;
             row.CausesBuildFailure = true;
@@ -292,17 +292,15 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.Description = "Test Script to successfully select from TransactionTest table";
             row.AddedBy = "UnitTest";
             row.ScriptId = Guid.NewGuid().ToString();
-            row.SetParentRow(data.Scripts[0]);
-            data.Script.AddScriptRow(row);
-            data.Script.AcceptChanges();
+            data.Script.Add(row);
             string script = "SELECT * FROM TransactionTest";
             File.WriteAllText(fileName, script);
 
 
         }
-        public void AddFailureScript(ref SqlSyncBuildData data, bool rollBackOnError, bool causeBuildFailure)
+        public void AddFailureScript(ref SqlSyncBuildDataModel data, bool rollBackOnError, bool causeBuildFailure)
         {
-            SqlSyncBuildData.ScriptRow row = data.Script.NewScriptRow();
+            Script row = new();
             row.AllowMultipleRuns = true;
             row.BuildOrder = 10;
             row.CausesBuildFailure = causeBuildFailure;
@@ -316,17 +314,15 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.Description = "Test Script to cause a failure when inserting into TransactionTest table";
             row.AddedBy = "UnitTest";
             row.ScriptId = Guid.NewGuid().ToString();
-            row.SetParentRow(data.Scripts[0]);
-            data.Script.AddScriptRow(row);
-            data.Script.AcceptChanges();
+            data.Script.Add(row);
             string script = "INSERT INTO TransactionTest (INVALID, Guid, DateTimeStamp) VALUES ('INSERT TEST','" + testGuid + "','" + testTimeStamp.ToString() + "')";
             File.WriteAllText(fileName, script);
 
 
         }
-        public void AddScriptWithBadDatabase(ref SqlSyncBuildData data)
+        public void AddScriptWithBadDatabase(ref SqlSyncBuildDataModel data)
         {
-            SqlSyncBuildData.ScriptRow row = data.Script.NewScriptRow();
+            Script row = new();
             row.AllowMultipleRuns = true;
             row.BuildOrder = 1;
             row.CausesBuildFailure = true;
@@ -340,17 +336,16 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.Description = "Test Script that has an invalid database name";
             row.AddedBy = "UnitTest";
             row.ScriptId = Guid.NewGuid().ToString();
-            row.SetParentRow(data.Scripts[0]);
-            data.Script.AddScriptRow(row);
-            data.Script.AcceptChanges();
+            data.Script.Add(row);
+
             string script = "INSERT INTO TransactionTest (Message, Guid, DateTimeStamp) VALUES ('INSERT TEST','" + testGuid + "','" + testTimeStamp.ToString() + "')";
             File.WriteAllText(fileName, script);
 
 
         }
-        public void AddBatchInsertScripts(ref SqlSyncBuildData data, bool multipleRun)
+        public void AddBatchInsertScripts(ref SqlSyncBuildDataModel data, bool multipleRun)
         {
-            SqlSyncBuildData.ScriptRow row = data.Script.NewScriptRow();
+            Script row = new();
             row.AllowMultipleRuns = multipleRun;
             row.BuildOrder = 1;
             row.CausesBuildFailure = true;
@@ -364,16 +359,14 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.Description = "Test Script to successfully insert into TransactionTest table";
             row.AddedBy = "UnitTest";
             row.ScriptId = Guid.NewGuid().ToString();
-            row.SetParentRow(data.Scripts[0]);
-            data.Script.AddScriptRow(row);
-            data.Script.AcceptChanges();
+            data.Script.Add(row);
             string script = "INSERT INTO TransactionTest (Message, Guid, DateTimeStamp) VALUES ('INSERT TEST','" + testGuid + "','" + testTimeStamp.ToString() + "')";
             script = script + "\r\nGO\r\n" + script;
             File.WriteAllText(fileName, script);
         }
-        public void AddPreRunScript(ref SqlSyncBuildData data, bool multipleRun)
+        public void AddPreRunScript(ref SqlSyncBuildDataModel data, bool multipleRun)
         {
-            SqlSyncBuildData.ScriptRow row = data.Script.NewScriptRow();
+            Script row = new();
             row.AllowMultipleRuns = multipleRun;
             row.BuildOrder = 1;
             row.CausesBuildFailure = true;
@@ -387,9 +380,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.Description = "Test Script to be skipped";
             row.AddedBy = "UnitTest";
             row.ScriptId = PreRunScriptGuid;
-            row.SetParentRow(data.Scripts[0]);
-            data.Script.AddScriptRow(row);
-            data.Script.AcceptChanges();
+            data.Script.Add(row);
             string script = "INSERT INTO TransactionTest (Message, Guid, DateTimeStamp) VALUES ('INSERT TEST','" + testGuid + "','" + testTimeStamp.ToString() + "')";
             File.WriteAllText(fileName, script);
 
@@ -398,12 +389,12 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         }
 
-        public SqlBuildHelper CreateSqlBuildHelper(SqlSyncBuildData buildData)
+        public SqlBuildHelper CreateSqlBuildHelper(SqlSyncBuildDataModel buildData)
         {
             SqlBuildHelper helper = new SqlBuildHelper(connData);
             return SetSqlBuildHelperValues(helper, buildData);
         }
-        public SqlBuildHelper CreateSqlBuildHelper_NonTransactional(SqlSyncBuildData buildData, bool withScriptLog)
+        public SqlBuildHelper CreateSqlBuildHelper_NonTransactional(SqlSyncBuildDataModel buildData, bool withScriptLog)
         {
             SqlBuildHelper helper = new SqlBuildHelper(connData, withScriptLog, string.Empty, false);
             return SetSqlBuildHelperValues(helper, buildData);
@@ -414,20 +405,20 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             return SetSqlBuildHelperValues(helper, null);
         }
 
-        public SqlBuildHelper CreateSqlBuildHelperAccessor(SqlSyncBuildData buildData)
+        public SqlBuildHelper CreateSqlBuildHelperAccessor(SqlSyncBuildDataModel buildData)
         {
             SqlBuildHelper target = new SqlBuildHelper(data: connData, connectionsService: new DefaultConnectionsService());
 
 
             //Set fields
-            target.SetBuildData(buildData);
+            target.BuildDataModel = buildData;
 
             string logFile = GetTrulyUniqueFile();
             tempFiles.Add(logFile);
             target.scriptLogFileName = logFile;
 
-            SqlSyncBuildData buildHist = CreateSqlSyncSqlBuildDataObject();
-            target.buildHistoryData = buildHist;
+            SqlSyncBuildDataModel buildHist = CreateSqlSyncSqlBuildDataModelObject();
+            target.BuildHistoryModel = buildHist;
 
             projectFileName = GetTrulyUniqueFile();
             tempFiles.Add(projectFileName);
@@ -439,16 +430,16 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             return target;
         }
-        public SqlBuildHelper SetSqlBuildHelperValues(SqlBuildHelper sbh, SqlSyncBuildData buildData)
+        public SqlBuildHelper SetSqlBuildHelperValues(SqlBuildHelper sbh, SqlSyncBuildDataModel buildData)
         {
 
-            sbh.SetBuildData(buildData);
+            sbh.BuildDataModel = buildData;
 
             string logFile = GetTrulyUniqueFile();
             sbh.scriptLogFileName = logFile;
 
-            SqlSyncBuildData buildHist = CreateSqlSyncSqlBuildDataObject();
-            sbh.buildHistoryData = buildHist;
+            SqlSyncBuildDataModel buildHist = CreateSqlSyncSqlBuildDataModelObject();
+            sbh.BuildHistoryModel = buildHist;
 
             projectFileName = GetTrulyUniqueFile();
             sbh.projectFileName = projectFileName;
@@ -457,10 +448,9 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             sbh.buildHistoryXmlFile = buildHistoryXmlFile;
             return sbh;
         }
-        public SqlSyncBuildData.BuildRow GetRunBuildRow(SqlBuildHelper sqlBuildHelper)
+        public Build GetRunBuildRow(SqlBuildHelper sqlBuildHelper)
         {
-            SqlSyncBuildData histData = sqlBuildHelper.buildHistoryData;
-            return histData.Build.NewBuildRow();
+            return new Build();
         }
 
         public ScriptBatchCollection GetScriptBatchCollection()
@@ -482,9 +472,9 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         }
 
-        public void AddScriptForProcessBuild(ref SqlSyncBuildData data, bool multipleRun, int scriptTimeout)
+        public void AddScriptForProcessBuild(ref SqlSyncBuildDataModel data, bool multipleRun, int scriptTimeout)
         {
-            SqlSyncBuildData.ScriptRow row = data.Script.NewScriptRow();
+            Script row = new();
             row.AllowMultipleRuns = multipleRun;
             row.BuildOrder = 1;
             row.CausesBuildFailure = true;
@@ -499,9 +489,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             row.Description = "Test Script to successfully insert into TransactionTest table";
             row.AddedBy = "UnitTest";
             row.ScriptId = "59F8CBCA-3FE5-4142-ACB0-3D1D2C25184D"; //Must match GUID from GetScriptBatchCollectionForProcessBuild()
-            row.SetParentRow(data.Scripts[0]);
-            data.Script.AddScriptRow(row);
-            data.Script.AcceptChanges();
+            data.Script.Add(row);
             string script = "INSERT INTO TransactionTest (Message, Guid, DateTimeStamp) VALUES ('INSERT TEST','" + testGuid + "','" + testTimeStamp.ToString() + "')";
             File.WriteAllText(fileName, script);
 
@@ -546,12 +534,11 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             return o;
 
         }
-        public SqlBuildRunData GetSqlBuildRunData_TransactionalNotTrial(SqlSyncBuildData buildData)
+        public SqlBuildRunData GetSqlBuildRunData_TransactionalNotTrial(SqlSyncBuildDataModel buildData)
         {
-            var model = buildData.ToModel();
             SqlBuildRunData runData = new SqlBuildRunData()
             {
-                BuildDataModel = model,
+                BuildDataModel = buildData,
                 BuildDescription = "UnitTestRun",
                 BuildFileName = @"C:\temp\UnitTestBuildFile.sbm",
                 BuildType = "Development",
@@ -567,11 +554,10 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             return runData;
         }
 
-        public SqlSync.SqlBuild.Models.SqlBuildRunDataModel GetSqlBuildRunDataModel_TransactionalNotTrial(SqlSyncBuildData buildData)
+        public SqlSync.SqlBuild.Models.SqlBuildRunDataModel GetSqlBuildRunDataModel_TransactionalNotTrial(SqlSyncBuildDataModel buildData)
         {
-            var model = buildData.ToModel();
             return new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
-                buildDataModel: model,
+                buildDataModel: buildData,
                 buildType: "Development",
                 server: serverName,
                 buildDescription: "UnitTestRun",

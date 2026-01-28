@@ -38,7 +38,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public void ProcessBuildTest_CommitWithZeroRetries()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddScriptForProcessBuild(ref buildData, true, 20);
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
@@ -63,7 +63,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public void ProcessBuildTest_CommitWithRetriesNotUsed()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddScriptForProcessBuild(ref buildData, true, 20);
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
@@ -87,7 +87,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             Initialization init = GetInitializationObject();
             init.TableLockingLoopCount = 10000000;
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddScriptForProcessBuild(ref buildData, true, 1);
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
@@ -124,7 +124,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             Initialization init = GetInitializationObject();
             init.TableLockingLoopCount = 10000000;
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddScriptForProcessBuild(ref buildData, true, 2);
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
@@ -160,7 +160,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             Initialization init = GetInitializationObject();
             init.TableLockingLoopCount = 700000;
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddScriptForProcessBuild(ref buildData, true, 2);
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);

@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 #nullable enable
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Models;
+using System.Collections.Generic;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
@@ -139,12 +140,12 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             MultiDbData target = new MultiDbData();
             SqlSyncBuildDataModel expected = new SqlSyncBuildDataModel(
-                sqlSyncBuildProject: Array.Empty<SqlSyncBuildProject>(),
-                script: Array.Empty<Script>(),
-                build: Array.Empty<Build>(),
-                scriptRun: Array.Empty<ScriptRun>(),
-                committedScript: Array.Empty<CommittedScript>(),
-                codeReview: Array.Empty<CodeReview>());
+                sqlSyncBuildProject: new List<SqlSyncBuildProject>(),
+                script: new List<Script>(),
+                build: new List<Build>(),
+                scriptRun: new List<ScriptRun>(),
+                committedScript: new List<CommittedScript>(),
+                codeReview: new List<CodeReview>());
             SqlSyncBuildDataModel actual;
             target.BuildData = expected;
             actual = target.BuildData;

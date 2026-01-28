@@ -44,10 +44,10 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.AreEqual(1, helper.BuildHistoryModel.ScriptRun.Count);
             Assert.AreEqual("script.sql", helper.BuildHistoryModel.ScriptRun[0].FileName);
             Assert.AreEqual(true, helper.BuildHistoryModel.ScriptRun[0].Success);
-            Assert.IsNotNull(helper.buildHistoryData);
-            Assert.AreEqual(1, helper.buildHistoryData.ScriptRun.Count);
-            Assert.AreEqual("script.sql", helper.buildHistoryData.ScriptRun[0].FileName);
-            Assert.AreEqual(true, helper.buildHistoryData.ScriptRun[0].Success);
+            Assert.IsNotNull(helper.BuildHistoryModel);
+            Assert.AreEqual(1, helper.BuildHistoryModel.ScriptRun.Count);
+            Assert.AreEqual("script.sql", helper.BuildHistoryModel.ScriptRun[0].FileName);
+            Assert.AreEqual(true, helper.BuildHistoryModel.ScriptRun[0].Success);
         }
     }
 }

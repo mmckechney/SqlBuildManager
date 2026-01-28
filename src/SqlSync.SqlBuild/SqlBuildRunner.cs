@@ -47,7 +47,7 @@ namespace SqlSync.SqlBuild
         }
 
         public virtual BuildModels.Build Run(
-            IReadOnlyList<BuildModels.Script> scripts,
+            IList<BuildModels.Script> scripts,
             BuildModels.Build myBuild,
             string serverName,
             bool isMultiDbRun,
@@ -235,7 +235,7 @@ namespace SqlSync.SqlBuild
         }
 
         public virtual async Task<BuildModels.Build> RunAsync(
-            IReadOnlyList<BuildModels.Script> scripts,
+            IList<BuildModels.Script> scripts,
             BuildModels.Build myBuild,
             string serverName,
             bool isMultiDbRun,
@@ -414,7 +414,7 @@ namespace SqlSync.SqlBuild
 
         internal bool ShouldSkipDueToCommittedScripts(string scriptId, BuildModels.SqlSyncBuildDataModel buildDataModel)
         {
-            var csList = buildDataModel?.CommittedScript ?? Array.Empty<BuildModels.CommittedScript>();
+            var csList = buildDataModel?.CommittedScript ?? new List<BuildModels.CommittedScript>();
             return csList.Any(cs => string.Equals(cs.ScriptId, scriptId, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -441,7 +441,7 @@ namespace SqlSync.SqlBuild
             return batchScripts;
         }
 
-        private void ValidateScriptsInput(IReadOnlyList<BuildModels.Script> scripts)
+        private void ValidateScriptsInput(IList<BuildModels.Script> scripts)
         {
             if (scripts == null || scripts.Count == 0)
             {

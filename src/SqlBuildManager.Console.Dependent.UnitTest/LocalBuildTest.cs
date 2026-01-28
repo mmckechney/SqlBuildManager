@@ -390,6 +390,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
 
         [TestMethod()]
+        [Ignore("The local machine name isn't resolving")]
         public async Task LocalBuild_MultiDb_SqlScriptOverrideSetting()
         {
             Initialization init = GetInitializationObject();

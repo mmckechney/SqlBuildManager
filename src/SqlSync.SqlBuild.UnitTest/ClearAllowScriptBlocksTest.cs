@@ -23,10 +23,10 @@ namespace SqlSync.SqlBuild.UnitTest
         public void ClearAllowScriptBlocks_ClearsMatchingServerAndId()
         {
             var model = new SqlSyncBuildDataModel(
-                sqlSyncBuildProject: Array.Empty<SqlSyncBuildProject>(),
-                script: Array.Empty<Script>(),
-                build: Array.Empty<Build>(),
-                scriptRun: Array.Empty<ScriptRun>(),
+                sqlSyncBuildProject: new List<SqlSyncBuildProject>(),
+                script: new List<Script>(),
+                build: new List<Build>(),
+                scriptRun: new List<ScriptRun>(),
                 committedScript: new List<CommittedScript>
                 {
                     new CommittedScript("id-1","ServerA", DateTime.UtcNow, true, "hash", 1),

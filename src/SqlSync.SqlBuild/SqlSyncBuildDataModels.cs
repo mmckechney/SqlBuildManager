@@ -38,6 +38,7 @@ namespace SqlSync.SqlBuild.Models
         public string? ModifiedBy { get; set; }
         public string? Tag { get; set; }
 
+        public Script() { }
         public Script(
             string? fileName,
             double? buildOrder,
@@ -84,6 +85,7 @@ namespace SqlSync.SqlBuild.Models
         public string? BuildId { get; set; }
         public string? UserId { get; set; }
 
+        public Build() { }
         public Build(
             string? name,
             string? buildType,
@@ -118,6 +120,7 @@ namespace SqlSync.SqlBuild.Models
         public string? ScriptRunId { get; set; }
         public string? BuildId { get; set; }
 
+        public ScriptRun() { }
         public ScriptRun(
             string? fileHash,
             string? results,
@@ -152,6 +155,7 @@ namespace SqlSync.SqlBuild.Models
         public string? ScriptHash { get; set; }
         public int? SqlSyncBuildProjectId { get; set; }
 
+        public CommittedScript() { }
         public CommittedScript(
             string? scriptId,
             string? serverName,
@@ -206,20 +210,20 @@ namespace SqlSync.SqlBuild.Models
 
     public sealed class SqlSyncBuildDataModel
     {
-        public IReadOnlyList<SqlSyncBuildProject> SqlSyncBuildProject { get; set; }
-        public IReadOnlyList<Script> Script { get; set; }
-        public IReadOnlyList<Build> Build { get; set; }
-        public IReadOnlyList<ScriptRun> ScriptRun { get; set; }
-        public IReadOnlyList<CommittedScript> CommittedScript { get; set; }
-        public IReadOnlyList<CodeReview> CodeReview { get; set; }
+        public IList<SqlSyncBuildProject> SqlSyncBuildProject { get; set; } = new List<SqlSyncBuildProject>();
+        public IList<Script> Script { get; set; } = new List<Script>();
+        public IList<Build> Build { get; set; } = new List<Build>();
+        public IList<ScriptRun> ScriptRun { get; set; } = new List<ScriptRun>();
+        public IList<CommittedScript> CommittedScript { get; set; } = new List<CommittedScript>();
+        public IList<CodeReview> CodeReview { get; set; } = new List<CodeReview>();
 
         public SqlSyncBuildDataModel(
-            IReadOnlyList<SqlSyncBuildProject> sqlSyncBuildProject,
-            IReadOnlyList<Script> script,
-            IReadOnlyList<Build> build,
-            IReadOnlyList<ScriptRun> scriptRun,
-            IReadOnlyList<CommittedScript> committedScript,
-            IReadOnlyList<CodeReview> codeReview)
+            IList<SqlSyncBuildProject> sqlSyncBuildProject,
+            IList<Script> script,
+            IList<Build> build,
+            IList<ScriptRun> scriptRun,
+            IList<CommittedScript> committedScript,
+            IList<CodeReview> codeReview)
         {
             SqlSyncBuildProject = sqlSyncBuildProject;
             Script = script;
@@ -239,13 +243,13 @@ namespace SqlSync.SqlBuild.Models
         public double? StartIndex { get; set; }
         public string? ProjectFileName { get; set; }
         public bool? IsTrial { get; set; }
-        public IReadOnlyList<double>? RunItemIndexes { get; set; }
+        public IList<double>? RunItemIndexes { get; set; } = new List<double>();
         public bool? RunScriptOnly { get; set; }
         public string? BuildFileName { get; set; }
         public string? LogToDatabaseName { get; set; }
         public bool? IsTransactional { get; set; }
         public string? PlatinumDacPacFileName { get; set; }
-        public IReadOnlyList<DatabaseOverride>? TargetDatabaseOverrides { get; set; }
+        public IList<DatabaseOverride>? TargetDatabaseOverrides { get; set; } = new List<DatabaseOverride>();
         public bool? ForceCustomDacpac { get; set; }
         public string? BuildRevision { get; set; }
         public int? DefaultScriptTimeout { get; set; }
@@ -259,13 +263,13 @@ namespace SqlSync.SqlBuild.Models
             double? startIndex,
             string? projectFileName,
             bool? isTrial,
-            IReadOnlyList<double>? runItemIndexes,
+            IList<double>? runItemIndexes,
             bool? runScriptOnly,
             string? buildFileName,
             string? logToDatabaseName,
             bool? isTransactional,
             string? platinumDacPacFileName,
-            IReadOnlyList<DatabaseOverride>? targetDatabaseOverrides,
+            IList<DatabaseOverride>? targetDatabaseOverrides,
             bool? forceCustomDacpac,
             string? buildRevision,
             int? defaultScriptTimeout,

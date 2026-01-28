@@ -76,7 +76,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             public FakeRunner(ISqlBuildRunnerContext ctx, Queue<BuildModels.Build> queue, Action onCall) : base(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object) { _queue = queue; _onCall = onCall; }
 
             public override async Task<BuildModels.Build> RunAsync(
-                IReadOnlyList<BuildModels.Script> scripts,
+                IList<BuildModels.Script> scripts,
                 BuildModels.Build myBuild,
                 string serverName,
                 bool isMultiDbRun,

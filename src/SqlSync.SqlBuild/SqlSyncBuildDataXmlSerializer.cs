@@ -253,43 +253,40 @@ namespace SqlSync.SqlBuild
                 }
                 else
                 {
-                    foreach (var sg in scriptsGroups)
+                    
+                    var scriptsEl = new XElement(Ns + "Scripts");
+                    var scripts = model.Script.ToList();
+                    foreach (var s in scripts)
                     {
-                        var scriptsEl = new XElement(Ns + "Scripts");
-                        var scripts = model.Script.ToList();
-                        foreach (var s in scripts)
-                        {
-                            var scriptEl = new XElement(Ns + "Script");
-                            SetAttr(scriptEl, "FileName", s.FileName);
-                            SetAttr(scriptEl, "BuildOrder", s.BuildOrder);
-                            SetAttr(scriptEl, "Description", s.Description);
-                            SetAttr(scriptEl, "RollBackOnError", s.RollBackOnError);
-                            SetAttr(scriptEl, "CausesBuildFailure", s.CausesBuildFailure);
-                            SetAttr(scriptEl, "DateAdded", s.DateAdded);
-                            SetAttr(scriptEl, "ScriptId", s.ScriptId);
-                            SetAttr(scriptEl, "Database", s.Database);
-                            SetAttr(scriptEl, "StripTransactionText", s.StripTransactionText);
-                            SetAttr(scriptEl, "AllowMultipleRuns", s.AllowMultipleRuns);
-                            SetAttr(scriptEl, "AddedBy", s.AddedBy);
-                            SetAttr(scriptEl, "ScriptTimeOut", s.ScriptTimeOut);
-                            SetAttr(scriptEl, "DateModified", s.DateModified);
-                            SetAttr(scriptEl, "ModifiedBy", s.ModifiedBy);
-                            SetAttr(scriptEl, "Tag", s.Tag);
-                            scriptsEl.Add(scriptEl);
-                        }
-                        if (scripts.Count > 0 || true) // Always add Scripts element
-                        {
-                            projEl.Add(scriptsEl);
-                        }
+                        var scriptEl = new XElement(Ns + "Script");
+                        SetAttr(scriptEl, "FileName", s.FileName);
+                        SetAttr(scriptEl, "BuildOrder", s.BuildOrder);
+                        SetAttr(scriptEl, "Description", s.Description);
+                        SetAttr(scriptEl, "RollBackOnError", s.RollBackOnError);
+                        SetAttr(scriptEl, "CausesBuildFailure", s.CausesBuildFailure);
+                        SetAttr(scriptEl, "DateAdded", s.DateAdded);
+                        SetAttr(scriptEl, "ScriptId", s.ScriptId);
+                        SetAttr(scriptEl, "Database", s.Database);
+                        SetAttr(scriptEl, "StripTransactionText", s.StripTransactionText);
+                        SetAttr(scriptEl, "AllowMultipleRuns", s.AllowMultipleRuns);
+                        SetAttr(scriptEl, "AddedBy", s.AddedBy);
+                        SetAttr(scriptEl, "ScriptTimeOut", s.ScriptTimeOut);
+                        SetAttr(scriptEl, "DateModified", s.DateModified);
+                        SetAttr(scriptEl, "ModifiedBy", s.ModifiedBy);
+                        SetAttr(scriptEl, "Tag", s.Tag);
+                        scriptsEl.Add(scriptEl);
                     }
+                    if (scripts.Count > 0 || true) // Always add Scripts element
+                    {
+                        projEl.Add(scriptsEl);
+                    }
+                    
                 }
 
-                var buildGroups = model.Build.GroupBy(b => b.BuildId).ToList();
+
                 var buildsEl = new XElement(Ns + "Builds");
 
-                foreach (var bg in buildGroups)
-                {
-                    var builds = bg.ToList().OrderBy(b => b.BuildStart).ToList();
+                    var builds = model.Build.ToList().OrderBy(b => b.BuildStart).ToList();
                     foreach (var b in builds)
                     {
                         var buildEl = new XElement(Ns + "Build");
@@ -321,7 +318,7 @@ namespace SqlSync.SqlBuild
                         buildsEl.Add(buildEl);
                     }
                     projEl.Add(buildsEl);
-                }
+                
 
 
                 var committed = model.CommittedScript.Where(c => c.SqlSyncBuildProjectId == proj.SqlSyncBuildProjectId).ToList();

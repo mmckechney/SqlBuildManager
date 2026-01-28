@@ -54,7 +54,7 @@ namespace SqlSync.SqlBuild.UnitTest
             }
 
             public override BuildModels.Build Run(
-                IReadOnlyList<BuildModels.Script> scripts,
+                IList<BuildModels.Script> scripts,
                 BuildModels.Build myBuild,
                 string serverName,
                 bool isMultiDbRun,

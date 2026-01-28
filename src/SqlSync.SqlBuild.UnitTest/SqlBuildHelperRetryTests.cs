@@ -95,7 +95,7 @@ namespace SqlSync.SqlBuild.UnitTest
             public TestSqlBuildRunner(ISqlBuildRunnerContext ctx, Queue<BuildItemStatus> statuses) : base(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object) => _statuses = statuses;
 
             public override BuildModels.Build Run(
-                System.Collections.Generic.IReadOnlyList<BuildModels.Script> scripts,
+                System.Collections.Generic.IList<BuildModels.Script> scripts,
                 BuildModels.Build myBuild,
                 string serverName,
                 bool isMultiDbRun,

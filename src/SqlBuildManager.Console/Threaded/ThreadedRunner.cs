@@ -218,7 +218,7 @@ namespace SqlBuildManager.Console.Threaded
                     //Get a full copy of the build data to work with (avoid threading sync issues)
                     SqlSyncBuildDataModel cloned = ThreadedManager.BuildDataModel;
                     //Clear out any existing CommittedScript data.. just log what is relevant to this run.
-                    cloned.CommittedScript = Array.Empty<SqlSync.SqlBuild.Models.CommittedScript>();
+                    cloned.CommittedScript = new List<SqlSync.SqlBuild.Models.CommittedScript>();
 
                     runData.BuildDataModel = cloned;
                     runData.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(ThreadedManager.ProjectFileName));

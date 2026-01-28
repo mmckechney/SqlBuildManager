@@ -54,7 +54,7 @@ namespace SqlSync.SqlBuild
         internal SqlSyncBuildData buildDataCompat;
 
         internal sealed record BuildPreparationResult(
-            IReadOnlyList<BuildModels.Script> FilteredScripts,
+            IList<BuildModels.Script> FilteredScripts,
             BuildModels.Build Build,
             string BuildPackageHash
         );
@@ -163,10 +163,13 @@ namespace SqlSync.SqlBuild
         private string buildRequestedBy = string.Empty;
 
         internal string buildHistoryXmlFile = string.Empty;
-        internal SqlSyncBuildData buildHistoryData = null;
         private BuildModels.SqlSyncBuildDataModel buildHistoryModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-        internal BuildModels.SqlSyncBuildDataModel BuildHistoryModel => buildHistoryModel;
+        internal BuildModels.SqlSyncBuildDataModel BuildHistoryModel
+        {
+            get => buildHistoryModel;
+            set => buildHistoryModel = value;
+        }
         internal BuildModels.SqlSyncBuildDataModel BuildDataModel
         {
             get => buildDataModel;
@@ -257,14 +260,6 @@ namespace SqlSync.SqlBuild
 
         private static BuildModels.Build MapLegacyBuildRowToModel(SqlSyncBuildData.BuildRow row) => row.ToModel();
         private void SyncBuildDataModel(SqlSyncBuildData ds) => buildDataModel = ds.ToModel();
-
-        internal void SetBuildData(SqlSyncBuildData ds)
-        {
-            buildDataCompat = ds;
-            BuildDataModel = ds.ToModel();
-        }
-
-
 
         internal string externalScriptLogFileName = string.Empty;
 
@@ -606,7 +601,7 @@ namespace SqlSync.SqlBuild
                     else
                         myBuild.FinalStatus = BuildItemStatus.RolledBack;
 
-                    return new BuildPreparationResult(Array.Empty<BuildModels.Script>(), myBuild, string.Empty);
+                    return new BuildPreparationResult(new List<BuildModels.Script>(), myBuild, string.Empty);
                 }
 
                 if (scriptBatchColl == null)
@@ -625,7 +620,7 @@ namespace SqlSync.SqlBuild
         }
 
         internal BuildModels.Build RunBuildScripts(
-            IReadOnlyList<BuildModels.Script> scripts,
+            IList<BuildModels.Script> scripts,
             BuildModels.Build myBuild,
             string serverName,
             bool isMultiDbRun,
@@ -980,17 +975,7 @@ namespace SqlSync.SqlBuild
             //}
         }
 
-        public static SqlSyncBuildData.ScriptDataTable GetScriptSourceTable(BuildModels.SqlSyncBuildDataModel buildDataModel)
-        {
-            if (buildDataModel == null)
-            {
-                log.LogWarning("The SqlSyncBuildDataModel object passed into \"GetScriptSourceTable\" was null. Unable to process build");
-                return null;
-            }
-
-            var ds = buildDataModel.ToDataSet();
-            return GetScriptSourceTable(ds.ToModel());
-        }
+  
 
         #region ISqlBuildRunnerContext
         ILogger ISqlBuildRunnerContext.Log => log;

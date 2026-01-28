@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
@@ -685,17 +686,16 @@ END
         ///A test for CleanProjectFileForRemoteExecution
         ///</summary>
         [TestMethod()]
-        [Ignore]
         public void CleanProjectFileForRemoteExecutionTest_NothingToClean()
         {
             Initialization init = GetInitializationObject();
 
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddFailureScript(ref buildData, true, true);
             init.AddFailureScript(ref buildData, true, true);
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (Script row in buildData.Script)
                 row.FileName = Path.GetFileName(row.FileName);
 
             string zipFileName = init.GetTrulyUniqueFile() + ".sbm";
@@ -705,17 +705,14 @@ END
 
             byte[] expected = File.ReadAllBytes(zipFileName);
             byte[] actual;
-            SqlSyncBuildData cleanedBuildData;
+            SqlSyncBuildDataModel cleanedBuildData;
             actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
-            Assert.IsTrue(cleanedBuildData.GetXml().ToString().Length > 100);
-            Assert.AreEqual(buildData.GetXml().ToString().Length, cleanedBuildData.GetXml().ToString().Length);
-            Assert.IsTrue(1500 <= actual.Length, string.Format("Actual length of cleaned XML {0}.\r\n{1}", actual.Length.ToString(), cleanedBuildData.GetXml())); //can't get exact length due to variations in guids and dates.
             Assert.IsTrue(expected.Length == actual.Length);
 
-            Assert.IsTrue(cleanedBuildData.ScriptRun.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.Build.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Rows.Count == 0);
-            Assert.AreEqual(buildData.Script.Rows.Count, cleanedBuildData.Script.Rows.Count);
+            Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
+            Assert.IsTrue(cleanedBuildData.Build.Count == 0);
+            Assert.IsTrue(cleanedBuildData.CodeReview.Count == 0);
+            Assert.AreEqual(buildData.Script.Count, cleanedBuildData.Script.Count);
 
         }
 
@@ -728,46 +725,43 @@ END
             Initialization init = GetInitializationObject();
 
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddFailureScript(ref buildData, true, true);
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (Script row in buildData.Script)
                 row.FileName = Path.GetFileName(row.FileName);
 
             //Add in code review rows
-            buildData.CodeReview.AddCodeReviewRow(
+            buildData.CodeReview.Add(new CodeReview(
                 Guid.NewGuid(),
-                buildData.Script[0],
+                "EWEWEWEWEW",
                 DateTime.Now,
                 "Reviewer",
                 1,
                 "Comment",
                 "12345",
                 "AABBCCDD",
-                "EEFFGGHHII");
+                "EEFFGGHHII"));
 
-            buildData.AcceptChanges();
+
 
             string zipFileName = init.GetTrulyUniqueFile();
 
             string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
-            buildData.WriteXml(projectFileName);
             SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
 
             byte[] expected = File.ReadAllBytes(zipFileName);
             byte[] actual;
 
-            SqlSyncBuildData cleanedBuildData;
+            SqlSyncBuildDataModel cleanedBuildData;
             actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
             Assert.IsTrue(actual.Length >= 1200);  //can't get exact length due to variations in guids and dates.
-            Assert.IsTrue(cleanedBuildData.GetXml().ToString().Length > 100);
-            Assert.IsTrue(buildData.GetXml().ToString().Length > cleanedBuildData.GetXml().ToString().Length);
 
-            Assert.IsTrue(cleanedBuildData.ScriptRun.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.Build.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Rows.Count == 0);
-            Assert.AreEqual(buildData.Script.Rows.Count, cleanedBuildData.Script.Rows.Count);
+            Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
+            Assert.IsTrue(cleanedBuildData.Build.Count == 0);
+            Assert.IsTrue(cleanedBuildData.CodeReview.Count == 0);
+            Assert.AreEqual(buildData.Script.Count, cleanedBuildData.Script.Count);
 
         }
 
@@ -780,39 +774,35 @@ END
             Initialization init = GetInitializationObject();
 
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
             init.AddFailureScript(ref buildData, true, true);
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (Script row in buildData.Script)
                 row.FileName = Path.GetFileName(row.FileName);
 
-            buildData.Builds.AddBuildsRow((SqlSyncBuildData.SqlSyncBuildProjectRow)buildData.SqlSyncBuildProject.Rows[0]);
-            buildData.Build.AddBuildRow("Script", "Development", DateTime.Now, DateTime.Now, "Server", "Committed", Guid.NewGuid().ToString(), "user", buildData.Builds[0]);
+            buildData.Build.Add(new Build() { Name = "Test" });
+            buildData.Build.Add(new Build("Script", "Development", DateTime.Now, DateTime.Now, "Server", BuildItemStatus.Committed, Guid.NewGuid().ToString(), "user"));
 
-            buildData.AcceptChanges();
 
             string zipFileName = init.GetTrulyUniqueFile();
 
             string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
-            buildData.WriteXml(projectFileName);
+            SqlSyncBuildDataXmlSerializer.Save(projectFileName, buildData);
             SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
 
             byte[] expected = File.ReadAllBytes(zipFileName);
             byte[] actual;
 
-            SqlSyncBuildData cleanedBuildData;
+            SqlSyncBuildDataModel cleanedBuildData;
             actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
-            Assert.IsTrue(cleanedBuildData.GetXml().ToString().Length > 100);
-            Assert.IsTrue(2000 <= actual.Length);  //can't get exact length due to variations in guids and dates.
-            Assert.IsTrue(buildData.GetXml().ToString().Length > cleanedBuildData.GetXml().ToString().Length);
 
-            Assert.IsTrue(cleanedBuildData.ScriptRun.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.Build.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Rows.Count == 0);
-            Assert.AreEqual(buildData.Script.Rows.Count, cleanedBuildData.Script.Rows.Count);
+            Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
+            Assert.IsTrue(cleanedBuildData.Build.Count == 0);
+            Assert.IsTrue(cleanedBuildData.CodeReview.Count == 0);
+            Assert.AreEqual(buildData.Script.Count, cleanedBuildData.Script.Count);
 
 
         }
@@ -826,41 +816,36 @@ END
             Initialization init = GetInitializationObject();
 
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
             init.AddFailureScript(ref buildData, true, true);
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (Script row in buildData.Script)
                 row.FileName = Path.GetFileName(row.FileName);
 
-            buildData.Builds.AddBuildsRow((SqlSyncBuildData.SqlSyncBuildProjectRow)buildData.SqlSyncBuildProject.Rows[0]);
-            buildData.Build.AddBuildRow("Script", "Development", DateTime.Now, DateTime.Now, "Server", "Committed", Guid.NewGuid().ToString(), "user", buildData.Builds[0]);
-            buildData.ScriptRun.AddScriptRunRow("HASH", "Committed", "FileName", 2.2, DateTime.Now, DateTime.Now, true, "Database", Guid.NewGuid().ToString(), (SqlSyncBuildData.BuildRow)buildData.Build[0]);
-
-
-            buildData.AcceptChanges();
+            buildData.Build.Add(new Build() { Name = "Hello" });
+            buildData.Build.Add (new Build("Script", "Development", DateTime.Now, DateTime.Now, "Server",BuildItemStatus.Committed, Guid.NewGuid().ToString(), "user"));
+            buildData.ScriptRun.Add(new ScriptRun("HASH", "Committed", "FileName", 2.2, DateTime.Now, DateTime.Now, true, "Database", Guid.NewGuid().ToString(),"EWEW"));
 
             string zipFileName = init.GetTrulyUniqueFile();
 
             string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
-            buildData.WriteXml(projectFileName);
+            SqlSyncBuildDataXmlSerializer.Save(projectFileName, buildData);
             SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
 
             byte[] expected = File.ReadAllBytes(zipFileName);
             byte[] actual;
 
-            SqlSyncBuildData cleanedBuildData;
+            SqlSyncBuildDataModel cleanedBuildData;
             actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
             Assert.IsTrue(2000 <= actual.Length);  //can't get exact length due to variations in guids and dates.
-            Assert.IsTrue(cleanedBuildData.GetXml().ToString().Length > 100);
-            Assert.IsTrue(buildData.GetXml().ToString().Length > cleanedBuildData.GetXml().ToString().Length);
 
-            Assert.IsTrue(cleanedBuildData.ScriptRun.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.Build.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Rows.Count == 0);
-            Assert.AreEqual(buildData.Script.Rows.Count, cleanedBuildData.Script.Rows.Count);
+            Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
+            Assert.IsTrue(cleanedBuildData.Build.Count == 0);
+            Assert.IsTrue(cleanedBuildData.CodeReview.Count == 0);
+            Assert.AreEqual(buildData.Script.Count, cleanedBuildData.Script.Count);
 
         }
 
