@@ -81,7 +81,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 committedScript: model.CommittedScript,
                 codeReview: model.CodeReview);
 
-            var table = model.Script
+            var table = model.Script;
             Assert.IsNotNull(table);
             Assert.AreEqual(1, table.Count);
         }
