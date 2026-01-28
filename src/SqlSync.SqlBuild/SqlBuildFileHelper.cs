@@ -369,12 +369,9 @@ namespace SqlSync.SqlBuild
                 if (ExtractSqlBuildZipFile(tmpZipFullName, ref tmpDir, ref tmpDir, ref tmpProjectFileName, false, false, out result))
                 {
                     LoadSqlBuildProjectFile(out cleanedBuildData, tmpProjectFileName, false);
-                    cleanedBuildData = cleanedBuildData with
-                    {
-                        CodeReview = Array.Empty<CodeReview>(),
-                        ScriptRun = Array.Empty<ScriptRun>(),
-                        Build = Array.Empty<Build>()
-                    };
+                    cleanedBuildData.CodeReview = Array.Empty<CodeReview>();
+                    cleanedBuildData.ScriptRun = Array.Empty<ScriptRun>();
+                    cleanedBuildData.Build = Array.Empty<Build>();
                     SqlSyncBuildDataXmlSerializer.Save(tmpProjectFileName, cleanedBuildData);
 
                     if (PackageProjectFileIntoZip(cleanedBuildData, tmpDir, tmpZipFullName, includeHistoryAndLogs: false))
@@ -478,12 +475,12 @@ namespace SqlSync.SqlBuild
         public static SqlSyncBuildDataModel CreateShellSqlSyncBuildDataModel()
         {
             return new SqlSyncBuildDataModel(
-                SqlSyncBuildProject: new[] { new SqlSyncBuildProject(0, string.Empty, false) },
-                Script: Array.Empty<Script>(),
-                Build: Array.Empty<Build>(),
-                ScriptRun: Array.Empty<ScriptRun>(),
-                CommittedScript: Array.Empty<CommittedScript>(),
-                CodeReview: Array.Empty<CodeReview>());
+                sqlSyncBuildProject: new[] { new SqlSyncBuildProject(0, string.Empty, false) },
+                script: Array.Empty<Script>(),
+                build: Array.Empty<Build>(),
+                scriptRun: Array.Empty<ScriptRun>(),
+                committedScript: Array.Empty<CommittedScript>(),
+                codeReview: Array.Empty<CodeReview>());
         }
 
 
@@ -897,24 +894,30 @@ namespace SqlSync.SqlBuild
         public static SqlSyncBuildDataModel AddScriptFileToBuild(SqlSyncBuildDataModel model, string projFileName, string fileName, double buildOrder, string description, bool rollBackScript, bool rollBackBuild, string databaseName, bool stripTransactions, string buildZipFileName, bool saveToZip, bool allowMultipleRuns, string addedBy, int scriptTimeOut, Guid scriptId, string tag)
         {
             var newScript = new Script(
-                FileName: fileName,
-                BuildOrder: buildOrder,
-                Description: description,
-                RollBackOnError: rollBackScript,
-                CausesBuildFailure: rollBackBuild,
-                DateAdded: DateTime.Now,
-                ScriptId: (scriptId == Guid.Empty ? Guid.NewGuid() : scriptId).ToString(),
-                Database: databaseName,
-                StripTransactionText: stripTransactions,
-                AllowMultipleRuns: allowMultipleRuns,
-                AddedBy: addedBy,
-                ScriptTimeOut: scriptTimeOut,
-                DateModified: DateTime.MinValue,
-                ModifiedBy: string.Empty,
-                Tag: tag);
+                fileName: fileName,
+                buildOrder: buildOrder,
+                description: description,
+                rollBackOnError: rollBackScript,
+                causesBuildFailure: rollBackBuild,
+                dateAdded: DateTime.Now,
+                scriptId: (scriptId == Guid.Empty ? Guid.NewGuid() : scriptId).ToString(),
+                database: databaseName,
+                stripTransactionText: stripTransactions,
+                allowMultipleRuns: allowMultipleRuns,
+                addedBy: addedBy,
+                scriptTimeOut: scriptTimeOut,
+                dateModified: DateTime.MinValue,
+                modifiedBy: string.Empty,
+                tag: tag);
 
             var updatedScripts = model.Script.Concat(new[] { newScript }).ToList();
-            var updatedModel = model with { Script = updatedScripts };
+            var updatedModel = new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: model.SqlSyncBuildProject,
+                script: updatedScripts,
+                build: model.Build,
+                scriptRun: model.ScriptRun,
+                committedScript: model.CommittedScript,
+                codeReview: model.CodeReview);
             if (saveToZip)
             {
                 SaveSqlBuildProjectFile(updatedModel, projFileName, buildZipFileName);

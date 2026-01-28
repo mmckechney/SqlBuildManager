@@ -22,16 +22,16 @@ namespace SqlSync.SqlBuild.UnitTest
             var myBuild = (SqlSyncBuildData.BuildRow)getNewBuildRow.Invoke(helper, new object[] { "server" });
 
             var run = new ScriptRun(
-                FileHash: "HASH",
-                Results: "OK",
-                FileName: "script.sql",
-                RunOrder: 1,
-                RunStart: DateTime.UtcNow,
-                RunEnd: DateTime.UtcNow,
-                Success: true,
-                Database: "db1",
-                ScriptRunId: Guid.NewGuid().ToString(),
-                BuildId: myBuild.Build_Id.ToString());
+                fileHash: "HASH",
+                results: "OK",
+                fileName: "script.sql",
+                runOrder: 1,
+                runStart: DateTime.UtcNow,
+                runEnd: DateTime.UtcNow,
+                success: true,
+                database: "db1",
+                scriptRunId: Guid.NewGuid().ToString(),
+                buildId: myBuild.Build_Id.ToString());
 
             var addScriptRun = typeof(SqlBuildHelper).GetMethod("AddScriptRunToHistory", BindingFlags.NonPublic | BindingFlags.Instance, [typeof(SqlSync.SqlBuild.Models.ScriptRun), typeof(SqlSyncBuildData.BuildRow)]);
             Assert.IsNotNull(addScriptRun, "AddScriptRunToHistory reflection lookup failed");

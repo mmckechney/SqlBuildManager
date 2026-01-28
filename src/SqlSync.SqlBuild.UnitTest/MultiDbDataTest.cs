@@ -139,12 +139,12 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             MultiDbData target = new MultiDbData();
             SqlSyncBuildDataModel expected = new SqlSyncBuildDataModel(
-                SqlSyncBuildProject: Array.Empty<SqlSyncBuildProject>(),
-                Script: Array.Empty<Script>(),
-                Build: Array.Empty<Build>(),
-                ScriptRun: Array.Empty<ScriptRun>(),
-                CommittedScript: Array.Empty<CommittedScript>(),
-                CodeReview: Array.Empty<CodeReview>());
+                sqlSyncBuildProject: Array.Empty<SqlSyncBuildProject>(),
+                script: Array.Empty<Script>(),
+                build: Array.Empty<Build>(),
+                scriptRun: Array.Empty<ScriptRun>(),
+                committedScript: Array.Empty<CommittedScript>(),
+                codeReview: Array.Empty<CodeReview>());
             SqlSyncBuildDataModel actual;
             target.BuildData = expected;
             actual = target.BuildData;

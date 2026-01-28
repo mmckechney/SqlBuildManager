@@ -14,104 +14,104 @@ namespace SqlSync.SqlBuild
             if (ds == null)
             {
                 return new SqlSyncBuildDataModel(
-                    SqlSyncBuildProject: new List<SqlSyncBuildProject>(),
-                    Script: new List<Script>(),
-                    Build: new List<Build>(),
-                    ScriptRun: new List<ScriptRun>(),
-                    CommittedScript: new List<CommittedScript>(),
-                    CodeReview: new List<CodeReview>()
+                    sqlSyncBuildProject: new List<SqlSyncBuildProject>(),
+                    script: new List<Script>(),
+                    build: new List<Build>(),
+                    scriptRun: new List<ScriptRun>(),
+                    committedScript: new List<CommittedScript>(),
+                    codeReview: new List<CodeReview>()
                 );
             }
 
             return new SqlSyncBuildDataModel(
-                SqlSyncBuildProject: ds.SqlSyncBuildProject?.Cast<SqlSyncBuildData.SqlSyncBuildProjectRow>().Select(r => r.ToModel()).ToList() ?? new List<SqlSyncBuildProject>(),
-                Script: ds.Script?.Cast<SqlSyncBuildData.ScriptRow>().Select(r => r.ToModel()).ToList() ?? new List<Script>(),
-                Build: ds.Build?.Cast<SqlSyncBuildData.BuildRow>().Select(r => r.ToModel()).ToList() ?? new List<Build>(),
-                ScriptRun: ds.ScriptRun?.Cast<SqlSyncBuildData.ScriptRunRow>().Select(r => r.ToModel()).ToList() ?? new List<ScriptRun>(),
-                CommittedScript: ds.CommittedScript?.Cast<SqlSyncBuildData.CommittedScriptRow>().Select(r => r.ToModel()).ToList() ?? new List<CommittedScript>(),
-                CodeReview: ds.CodeReview?.Cast<SqlSyncBuildData.CodeReviewRow>().Select(r => r.ToModel()).ToList() ?? new List<CodeReview>()
+                sqlSyncBuildProject: ds.SqlSyncBuildProject?.Cast<SqlSyncBuildData.SqlSyncBuildProjectRow>().Select(r => r.ToModel()).ToList() ?? new List<SqlSyncBuildProject>(),
+                script: ds.Script?.Cast<SqlSyncBuildData.ScriptRow>().Select(r => r.ToModel()).ToList() ?? new List<Script>(),
+                build: ds.Build?.Cast<SqlSyncBuildData.BuildRow>().Select(r => r.ToModel()).ToList() ?? new List<Build>(),
+                scriptRun: ds.ScriptRun?.Cast<SqlSyncBuildData.ScriptRunRow>().Select(r => r.ToModel()).ToList() ?? new List<ScriptRun>(),
+                committedScript: ds.CommittedScript?.Cast<SqlSyncBuildData.CommittedScriptRow>().Select(r => r.ToModel()).ToList() ?? new List<CommittedScript>(),
+                codeReview: ds.CodeReview?.Cast<SqlSyncBuildData.CodeReviewRow>().Select(r => r.ToModel()).ToList() ?? new List<CodeReview>()
             );
         }
 
         public static SqlSyncBuildProject ToModel(this SqlSyncBuildData.SqlSyncBuildProjectRow row)
         {
             return new SqlSyncBuildProject(
-                SqlSyncBuildProjectId: row.SqlSyncBuildProject_Id,
-                ProjectName: row.IsProjectNameNull() ? null : row.ProjectName,
-                ScriptTagRequired: row.IsScriptTagRequiredNull() ? null : row.ScriptTagRequired);
+                sqlSyncBuildProjectId: row.SqlSyncBuildProject_Id,
+                projectName: row.IsProjectNameNull() ? null : row.ProjectName,
+                scriptTagRequired: row.IsScriptTagRequiredNull() ? null : row.ScriptTagRequired);
         }
 
         public static Script ToModel(this SqlSyncBuildData.ScriptRow row)
         {
             return new Script(
-                FileName: row.IsFileNameNull() ? null : row.FileName,
-                BuildOrder: row.IsBuildOrderNull() ? null : row.BuildOrder,
-                Description: row.IsDescriptionNull() ? null : row.Description,
-                RollBackOnError: row.IsRollBackOnErrorNull() ? null : row.RollBackOnError,
-                CausesBuildFailure: row.IsCausesBuildFailureNull() ? null : row.CausesBuildFailure,
-                DateAdded: row.IsDateAddedNull() ? null : row.DateAdded,
-                ScriptId: row.IsScriptIdNull() ? null : row.ScriptId,
-                Database: row.IsDatabaseNull() ? null : row.Database,
-                StripTransactionText: row.IsStripTransactionTextNull() ? null : row.StripTransactionText,
-                AllowMultipleRuns: row.IsAllowMultipleRunsNull() ? null : row.AllowMultipleRuns,
-                AddedBy: row.IsAddedByNull() ? null : row.AddedBy,
-                ScriptTimeOut: row.IsScriptTimeOutNull() ? null : row.ScriptTimeOut,
-                DateModified: row.IsDateModifiedNull() ? null : row.DateModified,
-                ModifiedBy: row.IsModifiedByNull() ? null : row.ModifiedBy,
-                Tag: row.IsTagNull() ? null : row.Tag);
+                fileName: row.IsFileNameNull() ? null : row.FileName,
+                buildOrder: row.IsBuildOrderNull() ? null : row.BuildOrder,
+                description: row.IsDescriptionNull() ? null : row.Description,
+                rollBackOnError: row.IsRollBackOnErrorNull() ? null : row.RollBackOnError,
+                causesBuildFailure: row.IsCausesBuildFailureNull() ? null : row.CausesBuildFailure,
+                dateAdded: row.IsDateAddedNull() ? null : row.DateAdded,
+                scriptId: row.IsScriptIdNull() ? null : row.ScriptId,
+                database: row.IsDatabaseNull() ? null : row.Database,
+                stripTransactionText: row.IsStripTransactionTextNull() ? null : row.StripTransactionText,
+                allowMultipleRuns: row.IsAllowMultipleRunsNull() ? null : row.AllowMultipleRuns,
+                addedBy: row.IsAddedByNull() ? null : row.AddedBy,
+                scriptTimeOut: row.IsScriptTimeOutNull() ? null : row.ScriptTimeOut,
+                dateModified: row.IsDateModifiedNull() ? null : row.DateModified,
+                modifiedBy: row.IsModifiedByNull() ? null : row.ModifiedBy,
+                tag: row.IsTagNull() ? null : row.Tag);
         }
 
         public static Build ToModel(this SqlSyncBuildData.BuildRow row)
         {
             return new Build(
-                Name: row.IsNameNull() ? null : row.Name,
-                BuildType: row.IsBuildTypeNull() ? null : row.BuildType,
-                BuildStart: row.IsBuildStartNull() ? null : row.BuildStart,
-                BuildEnd: row.IsBuildEndNull() ? null : row.BuildEnd,
-                ServerName: row.IsServerNameNull() ? null : row.ServerName,
-                FinalStatus: row.IsFinalStatusNull() ? null : Enum.TryParse<BuildItemStatus>(row.FinalStatus, out var finalStatus) ? finalStatus : null,
-                BuildId: row.IsBuildIdNull() ? null : row.BuildId,
-                UserId: row.IsUserIdNull() ? null : row.UserId);
+                name: row.IsNameNull() ? null : row.Name,
+                buildType: row.IsBuildTypeNull() ? null : row.BuildType,
+                buildStart: row.IsBuildStartNull() ? null : row.BuildStart,
+                buildEnd: row.IsBuildEndNull() ? null : row.BuildEnd,
+                serverName: row.IsServerNameNull() ? null : row.ServerName,
+                finalStatus: row.IsFinalStatusNull() ? null : Enum.TryParse<BuildItemStatus>(row.FinalStatus, out var finalStatus) ? finalStatus : null,
+                buildId: row.IsBuildIdNull() ? null : row.BuildId,
+                userId: row.IsUserIdNull() ? null : row.UserId);
         }
 
         public static ScriptRun ToModel(this SqlSyncBuildData.ScriptRunRow row)
         {
             return new ScriptRun(
-                FileHash: row.IsFileHashNull() ? null : row.FileHash,
-                Results: row.IsResultsNull() ? null : row.Results,
-                FileName: row.IsFileNameNull() ? null : row.FileName,
-                RunOrder: row.IsRunOrderNull() ? null : row.RunOrder,
-                RunStart: row.IsRunStartNull() ? null : row.RunStart,
-                RunEnd: row.IsRunEndNull() ? null : row.RunEnd,
-                Success: row.IsSuccessNull() ? null : row.Success,
-                Database: row.IsDatabaseNull() ? null : row.Database,
-                ScriptRunId: row.IsScriptRunIdNull() ? null : row.ScriptRunId,
-                BuildId: row.IsBuild_IdNull() ? null : row.Build_Id.ToString());
+                fileHash: row.IsFileHashNull() ? null : row.FileHash,
+                results: row.IsResultsNull() ? null : row.Results,
+                fileName: row.IsFileNameNull() ? null : row.FileName,
+                runOrder: row.IsRunOrderNull() ? null : row.RunOrder,
+                runStart: row.IsRunStartNull() ? null : row.RunStart,
+                runEnd: row.IsRunEndNull() ? null : row.RunEnd,
+                success: row.IsSuccessNull() ? null : row.Success,
+                database: row.IsDatabaseNull() ? null : row.Database,
+                scriptRunId: row.IsScriptRunIdNull() ? null : row.ScriptRunId,
+                buildId: row.IsBuild_IdNull() ? null : row.Build_Id.ToString());
         }
 
         public static CommittedScript ToModel(this SqlSyncBuildData.CommittedScriptRow row)
         {
             return new CommittedScript(
-                ScriptId: row.IsScriptIdNull() ? null : row.ScriptId,
-                ServerName: row.IsServerNameNull() ? null : row.ServerName,
-                CommittedDate: row.IsCommittedDateNull() ? null : row.CommittedDate,
-                AllowScriptBlock: row.IsAllowScriptBlockNull() ? null : row.AllowScriptBlock,
-                ScriptHash: row.IsScriptHashNull() ? null : row.ScriptHash,
-                SqlSyncBuildProjectId: row.IsSqlSyncBuildProject_IdNull() ? null : row.SqlSyncBuildProject_Id);
+                scriptId: row.IsScriptIdNull() ? null : row.ScriptId,
+                serverName: row.IsServerNameNull() ? null : row.ServerName,
+                committedDate: row.IsCommittedDateNull() ? null : row.CommittedDate,
+                allowScriptBlock: row.IsAllowScriptBlockNull() ? null : row.AllowScriptBlock,
+                scriptHash: row.IsScriptHashNull() ? null : row.ScriptHash,
+                sqlSyncBuildProjectId: row.IsSqlSyncBuildProject_IdNull() ? null : row.SqlSyncBuildProject_Id);
         }
 
         public static CodeReview ToModel(this SqlSyncBuildData.CodeReviewRow row)
         {
             return new CodeReview(
-                CodeReviewId: row.IsCodeReviewIdNull() ? null : row.CodeReviewId,
-                ScriptId: row.IsScriptIdNull() ? null : row.ScriptId,
-                ReviewDate: row.IsReviewDateNull() ? null : row.ReviewDate,
-                ReviewBy: row.IsReviewByNull() ? null : row.ReviewBy,
-                ReviewStatus: row.IsReviewStatusNull() ? null : row.ReviewStatus,
-                Comment: row.IsCommentNull() ? null : row.Comment,
-                ReviewNumber: row.IsReviewNumberNull() ? null : row.ReviewNumber,
-                CheckSum: row.IsCheckSumNull() ? null : row.CheckSum,
-                ValidationKey: row.IsValidationKeyNull() ? null : row.ValidationKey);
+                codeReviewId: row.IsCodeReviewIdNull() ? null : row.CodeReviewId,
+                scriptId: row.IsScriptIdNull() ? null : row.ScriptId,
+                reviewDate: row.IsReviewDateNull() ? null : row.ReviewDate,
+                reviewBy: row.IsReviewByNull() ? null : row.ReviewBy,
+                reviewStatus: row.IsReviewStatusNull() ? null : row.ReviewStatus,
+                comment: row.IsCommentNull() ? null : row.Comment,
+                reviewNumber: row.IsReviewNumberNull() ? null : row.ReviewNumber,
+                checkSum: row.IsCheckSumNull() ? null : row.CheckSum,
+                validationKey: row.IsValidationKeyNull() ? null : row.ValidationKey);
         }
 
         public static SqlSyncBuildData ToDataSet(this SqlSyncBuildDataModel model)

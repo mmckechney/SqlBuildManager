@@ -27,46 +27,51 @@ namespace SqlSync.SqlBuild.UnitTest
             try
             {
                 var scriptId = "abc";
-                var runData = new BuildModels.SqlBuildRunDataModel(
-                    BuildDataModel: SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel() with
+                var baseModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+                var buildDataModel = new BuildModels.SqlSyncBuildDataModel(
+                    sqlSyncBuildProject: baseModel.SqlSyncBuildProject,
+                    script: new List<BuildModels.Script>
                     {
-                        Script = new List<BuildModels.Script>
-                        {
-                            new BuildModels.Script(
-                                FileName: "file.sql",
-                                BuildOrder: 1,
-                                Description: null,
-                                RollBackOnError: true,
-                                CausesBuildFailure: true,
-                                DateAdded: null,
-                                ScriptId: scriptId,
-                                Database: "db",
-                                StripTransactionText: false,
-                                AllowMultipleRuns: true,
-                                AddedBy: null,
-                                ScriptTimeOut: 5,
-                                DateModified: null,
-                                ModifiedBy: null,
-                                Tag: null)
-                        }
+                        new BuildModels.Script(
+                            fileName: "file.sql",
+                            buildOrder: 1,
+                            description: null,
+                            rollBackOnError: true,
+                            causesBuildFailure: true,
+                            dateAdded: null,
+                            scriptId: scriptId,
+                            database: "db",
+                            stripTransactionText: false,
+                            allowMultipleRuns: true,
+                            addedBy: null,
+                            scriptTimeOut: 5,
+                            dateModified: null,
+                            modifiedBy: null,
+                            tag: null)
                     },
-                    BuildType: "type",
-                    Server: "srv",
-                    BuildDescription: "desc",
-                    StartIndex: 0,
-                    ProjectFileName: null,
-                    IsTrial: false,
-                    RunItemIndexes: System.Array.Empty<double>(),
-                    RunScriptOnly: false,
-                    BuildFileName: "file.sbm",
-                    LogToDatabaseName: string.Empty,
-                    IsTransactional: true,
-                    PlatinumDacPacFileName: string.Empty,
-                    TargetDatabaseOverrides: null,
-                    ForceCustomDacpac: false,
-                    BuildRevision: null,
-                    DefaultScriptTimeout: 5,
-                    AllowObjectDelete: false);
+                    build: baseModel.Build,
+                    scriptRun: baseModel.ScriptRun,
+                    committedScript: baseModel.CommittedScript,
+                    codeReview: baseModel.CodeReview);
+                var runData = new BuildModels.SqlBuildRunDataModel(
+                    buildDataModel: buildDataModel,
+                    buildType: "type",
+                    server: "srv",
+                    buildDescription: "desc",
+                    startIndex: 0,
+                    projectFileName: null,
+                    isTrial: false,
+                    runItemIndexes: System.Array.Empty<double>(),
+                    runScriptOnly: false,
+                    buildFileName: "file.sbm",
+                    logToDatabaseName: string.Empty,
+                    isTransactional: true,
+                    platinumDacPacFileName: string.Empty,
+                    targetDatabaseOverrides: null,
+                    forceCustomDacpac: false,
+                    buildRevision: null,
+                    defaultScriptTimeout: 5,
+                    allowObjectDelete: false);
 
                 var scriptBatchColl = new ScriptBatchCollection();
                 scriptBatchColl.Add(new ScriptBatch("file.sql", new[] { "SELECT 1;" }, scriptId));
@@ -98,7 +103,15 @@ namespace SqlSync.SqlBuild.UnitTest
                 BuildModels.SqlSyncBuildDataModel buildDataModel)
             {
                 var status = _statuses.Count > 0 ? _statuses.Dequeue() : BuildItemStatus.Committed;
-                return myBuild with { FinalStatus = status };
+                return new BuildModels.Build(
+                    name: myBuild.Name,
+                    buildType: myBuild.BuildType,
+                    buildStart: myBuild.BuildStart,
+                    buildEnd: myBuild.BuildEnd,
+                    serverName: myBuild.ServerName,
+                    finalStatus: status,
+                    buildId: myBuild.BuildId,
+                    userId: myBuild.UserId);
             }
         }
     }

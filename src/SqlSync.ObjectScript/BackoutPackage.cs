@@ -120,7 +120,23 @@ namespace SqlSync.ObjectScript
                         var idx = scripts.FindIndex(s => s.FileName == obj.ScriptName);
                         if (idx >= 0)
                         {
-                            scripts[idx] = scripts[idx] with { DateModified = updateTime, ModifiedBy = System.Environment.UserName };
+                            var existing = scripts[idx];
+                            scripts[idx] = new Script(
+                                fileName: existing.FileName,
+                                buildOrder: existing.BuildOrder,
+                                description: existing.Description,
+                                rollBackOnError: existing.RollBackOnError,
+                                causesBuildFailure: existing.CausesBuildFailure,
+                                dateAdded: existing.DateAdded,
+                                scriptId: existing.ScriptId,
+                                database: existing.Database,
+                                stripTransactionText: existing.StripTransactionText,
+                                allowMultipleRuns: existing.AllowMultipleRuns,
+                                addedBy: existing.AddedBy,
+                                scriptTimeOut: existing.ScriptTimeOut,
+                                dateModified: updateTime,
+                                modifiedBy: System.Environment.UserName,
+                                tag: existing.Tag);
                         }
 
                     }
@@ -159,11 +175,41 @@ namespace SqlSync.ObjectScript
                                     string str = CreateRoutineDropScript(schema, objName, obj.ObjectType);
                                     var newFileName = "DROP " + row.FileName;
                                     File.WriteAllText(projectPath + newFileName, str);
-                                    row = row with { FileName = newFileName, DateModified = updateTime, ModifiedBy = System.Environment.UserName };
+                                    row = new Script(
+                                        fileName: newFileName,
+                                        buildOrder: row.BuildOrder,
+                                        description: row.Description,
+                                        rollBackOnError: row.RollBackOnError,
+                                        causesBuildFailure: row.CausesBuildFailure,
+                                        dateAdded: row.DateAdded,
+                                        scriptId: row.ScriptId,
+                                        database: row.Database,
+                                        stripTransactionText: row.StripTransactionText,
+                                        allowMultipleRuns: row.AllowMultipleRuns,
+                                        addedBy: row.AddedBy,
+                                        scriptTimeOut: row.ScriptTimeOut,
+                                        dateModified: updateTime,
+                                        modifiedBy: System.Environment.UserName,
+                                        tag: row.Tag);
                                 }
                                 else
                                 {
-                                    row = row with { AllowMultipleRuns = false, DateModified = updateTime, ModifiedBy = System.Environment.UserName };
+                                    row = new Script(
+                                        fileName: row.FileName,
+                                        buildOrder: row.BuildOrder,
+                                        description: row.Description,
+                                        rollBackOnError: row.RollBackOnError,
+                                        causesBuildFailure: row.CausesBuildFailure,
+                                        dateAdded: row.DateAdded,
+                                        scriptId: row.ScriptId,
+                                        database: row.Database,
+                                        stripTransactionText: row.StripTransactionText,
+                                        allowMultipleRuns: false,
+                                        addedBy: row.AddedBy,
+                                        scriptTimeOut: row.ScriptTimeOut,
+                                        dateModified: updateTime,
+                                        modifiedBy: System.Environment.UserName,
+                                        tag: row.Tag);
                                 }
                             }
                             else if (removeNewObjectsFromPackage)
@@ -172,7 +218,22 @@ namespace SqlSync.ObjectScript
                             }
                             else
                             {
-                                row = row with { AllowMultipleRuns = false, DateModified = updateTime, ModifiedBy = System.Environment.UserName };
+                                row = new Script(
+                                    fileName: row.FileName,
+                                    buildOrder: row.BuildOrder,
+                                    description: row.Description,
+                                    rollBackOnError: row.RollBackOnError,
+                                    causesBuildFailure: row.CausesBuildFailure,
+                                    dateAdded: row.DateAdded,
+                                    scriptId: row.ScriptId,
+                                    database: row.Database,
+                                    stripTransactionText: row.StripTransactionText,
+                                    allowMultipleRuns: false,
+                                    addedBy: row.AddedBy,
+                                    scriptTimeOut: row.ScriptTimeOut,
+                                    dateModified: updateTime,
+                                    modifiedBy: System.Environment.UserName,
+                                    tag: row.Tag);
                             }
                             if (idx < scripts.Count)
                                 scripts[idx] = row;
@@ -207,7 +268,22 @@ namespace SqlSync.ObjectScript
                             var row = scripts[idx];
                             if ((row.BuildOrder ?? 0) < 1000)
                             {
-                                row = row with { AllowMultipleRuns = false, DateModified = updateTime, ModifiedBy = System.Environment.UserName };
+                                row = new Script(
+                                    fileName: row.FileName,
+                                    buildOrder: row.BuildOrder,
+                                    description: row.Description,
+                                    rollBackOnError: row.RollBackOnError,
+                                    causesBuildFailure: row.CausesBuildFailure,
+                                    dateAdded: row.DateAdded,
+                                    scriptId: row.ScriptId,
+                                    database: row.Database,
+                                    stripTransactionText: row.StripTransactionText,
+                                    allowMultipleRuns: false,
+                                    addedBy: row.AddedBy,
+                                    scriptTimeOut: row.ScriptTimeOut,
+                                    dateModified: updateTime,
+                                    modifiedBy: System.Environment.UserName,
+                                    tag: row.Tag);
                                 scripts[idx] = row;
                             }
                         }
@@ -226,7 +302,13 @@ namespace SqlSync.ObjectScript
                 return false;
             if (reportProgress) bg.ReportProgress(-1, "Saving backout package.");
 
-            buildModel = buildModel with { Script = scripts };
+            buildModel = new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: buildModel.SqlSyncBuildProject,
+                script: scripts,
+                build: buildModel.Build,
+                scriptRun: buildModel.ScriptRun,
+                committedScript: buildModel.CommittedScript,
+                codeReview: buildModel.CodeReview);
             SqlBuildFileHelper.SaveSqlBuildProjectFile(buildModel, projectFileName, destinationBuildZipFileName);
 
 

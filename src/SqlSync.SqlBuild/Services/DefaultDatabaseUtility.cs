@@ -276,10 +276,22 @@ namespace SqlSync.SqlBuild.Services
                 var cs = updatedCommitted[j];
                 if (cs.ScriptId != null && idSet.Contains(cs.ScriptId) && string.Equals(cs.ServerName, serverName, StringComparison.OrdinalIgnoreCase))
                 {
-                    updatedCommitted[j] = cs with { AllowScriptBlock = false };
+                    updatedCommitted[j] = new CommittedScript(
+                        scriptId: cs.ScriptId,
+                        serverName: cs.ServerName,
+                        committedDate: cs.CommittedDate,
+                        allowScriptBlock: false,
+                        scriptHash: cs.ScriptHash,
+                        sqlSyncBuildProjectId: cs.SqlSyncBuildProjectId);
                 }
             }
-            return model with { CommittedScript = updatedCommitted };
+            return new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: model.SqlSyncBuildProject,
+                script: model.Script,
+                build: model.Build,
+                scriptRun: model.ScriptRun,
+                committedScript: updatedCommitted,
+                codeReview: model.CodeReview);
         }
 
     }

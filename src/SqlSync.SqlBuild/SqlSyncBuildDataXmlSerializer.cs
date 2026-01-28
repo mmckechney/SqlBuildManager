@@ -83,9 +83,9 @@ namespace SqlSync.SqlBuild
             {
                 var projectId = nextProjectId++;
                 var project = new SqlSyncBuildProject(
-                    SqlSyncBuildProjectId: projectId,
-                    ProjectName: (string?)projElement.Attribute("ProjectName"),
-                    ScriptTagRequired: ParseBoolOrNull((string?)projElement.Attribute("ScriptTagRequired")));
+                    sqlSyncBuildProjectId: projectId,
+                    projectName: (string?)projElement.Attribute("ProjectName"),
+                    scriptTagRequired: ParseBoolOrNull((string?)projElement.Attribute("ScriptTagRequired")));
                 projects.Add(project);
 
                 // Scripts container(s)
@@ -154,75 +154,75 @@ namespace SqlSync.SqlBuild
         private static Script ParseScript(XElement el, int scriptsId)
         {
             return new Script(
-                FileName: (string?)el.Attribute("FileName"),
-                BuildOrder: ParseDoubleOrNull((string?)el.Attribute("BuildOrder")),
-                Description: (string?)el.Attribute("Description"),
-                RollBackOnError: ParseBoolOrNull((string?)el.Attribute("RollBackOnError")),
-                CausesBuildFailure: ParseBoolOrNull((string?)el.Attribute("CausesBuildFailure")),
-                DateAdded: ParseDateTimeOrNull((string?)el.Attribute("DateAdded")),
-                ScriptId: (string?)el.Attribute("ScriptId"),
-                Database: (string?)el.Attribute("Database"),
-                StripTransactionText: ParseBoolOrNull((string?)el.Attribute("StripTransactionText")),
-                AllowMultipleRuns: ParseBoolOrNull((string?)el.Attribute("AllowMultipleRuns")),
-                AddedBy: (string?)el.Attribute("AddedBy"),
-                ScriptTimeOut: ParseIntOrNull((string?)el.Attribute("ScriptTimeOut")),
-                DateModified: ParseDateTimeOrNull((string?)el.Attribute("DateModified")),
-                ModifiedBy: (string?)el.Attribute("ModifiedBy"),
-                   Tag: (string?)el.Attribute("Tag"));
+                fileName: (string?)el.Attribute("FileName"),
+                buildOrder: ParseDoubleOrNull((string?)el.Attribute("BuildOrder")),
+                description: (string?)el.Attribute("Description"),
+                rollBackOnError: ParseBoolOrNull((string?)el.Attribute("RollBackOnError")),
+                causesBuildFailure: ParseBoolOrNull((string?)el.Attribute("CausesBuildFailure")),
+                dateAdded: ParseDateTimeOrNull((string?)el.Attribute("DateAdded")),
+                scriptId: (string?)el.Attribute("ScriptId"),
+                database: (string?)el.Attribute("Database"),
+                stripTransactionText: ParseBoolOrNull((string?)el.Attribute("StripTransactionText")),
+                allowMultipleRuns: ParseBoolOrNull((string?)el.Attribute("AllowMultipleRuns")),
+                addedBy: (string?)el.Attribute("AddedBy"),
+                scriptTimeOut: ParseIntOrNull((string?)el.Attribute("ScriptTimeOut")),
+                dateModified: ParseDateTimeOrNull((string?)el.Attribute("DateModified")),
+                modifiedBy: (string?)el.Attribute("ModifiedBy"),
+                tag: (string?)el.Attribute("Tag"));
         }
 
         private static Build ParseBuild(XElement el, int buildsId, int buildId)
         {
             var finalStat = Enum.TryParse<BuildItemStatus>((string?)el.Attribute("FinalStatus"), out var finalStatus) ? finalStatus : BuildItemStatus.Unknown;
             return new Build(
-                Name: (string?)el.Attribute("Name"),
-                BuildType: (string?)el.Attribute("BuildType"),
-                BuildStart: ParseDateTimeOrNull((string?)el.Attribute("BuildStart")),
-                BuildEnd: ParseDateTimeOrNull((string?)el.Attribute("BuildEnd")),
-                ServerName: (string?)el.Attribute("ServerName"),
-                FinalStatus: finalStatus,
-                BuildId: (string?)el.Attribute("BuildId"),
-                UserId: (string?)el.Attribute("UserId"));
+                name: (string?)el.Attribute("Name"),
+                buildType: (string?)el.Attribute("BuildType"),
+                buildStart: ParseDateTimeOrNull((string?)el.Attribute("BuildStart")),
+                buildEnd: ParseDateTimeOrNull((string?)el.Attribute("BuildEnd")),
+                serverName: (string?)el.Attribute("ServerName"),
+                finalStatus: finalStatus,
+                buildId: (string?)el.Attribute("BuildId"),
+                userId: (string?)el.Attribute("UserId"));
         }
 
         private static ScriptRun ParseScriptRun(XElement el, string buildId)
         {
             return new ScriptRun(
-                FileHash: (string?)el.Element(Ns + "FileHash"),
-                Results: (string?)el.Element(Ns + "Results"),
-                FileName: (string?)el.Attribute("FileName"),
-                RunOrder: ParseDoubleOrNull((string?)el.Attribute("RunOrder")),
-                RunStart: ParseDateTimeOrNull((string?)el.Attribute("RunStart")),
-                RunEnd: ParseDateTimeOrNull((string?)el.Attribute("RunEnd")),
-                Success: ParseBoolOrNull((string?)el.Attribute("Success")),
-                Database: (string?)el.Attribute("Database"),
-                ScriptRunId: (string?)el.Attribute("ScriptRunId"),
-                BuildId: buildId);
+                fileHash: (string?)el.Element(Ns + "FileHash"),
+                results: (string?)el.Element(Ns + "Results"),
+                fileName: (string?)el.Attribute("FileName"),
+                runOrder: ParseDoubleOrNull((string?)el.Attribute("RunOrder")),
+                runStart: ParseDateTimeOrNull((string?)el.Attribute("RunStart")),
+                runEnd: ParseDateTimeOrNull((string?)el.Attribute("RunEnd")),
+                success: ParseBoolOrNull((string?)el.Attribute("Success")),
+                database: (string?)el.Attribute("Database"),
+                scriptRunId: (string?)el.Attribute("ScriptRunId"),
+                buildId: buildId);
         }
 
         private static CommittedScript ParseCommittedScript(XElement el, int projectId)
         {
             return new CommittedScript(
-                ScriptId: (string?)el.Attribute("ScriptId"),
-                ServerName: (string?)el.Attribute("ServerName"),
-                CommittedDate: ParseDateTimeOrNull((string?)el.Attribute("CommittedDate")),
-                AllowScriptBlock: ParseBoolOrNull((string?)el.Attribute("AllowScriptBlock")),
-                ScriptHash: (string?)el.Attribute("ScriptHash"),
-                SqlSyncBuildProjectId: projectId);
+                scriptId: (string?)el.Attribute("ScriptId"),
+                serverName: (string?)el.Attribute("ServerName"),
+                committedDate: ParseDateTimeOrNull((string?)el.Attribute("CommittedDate")),
+                allowScriptBlock: ParseBoolOrNull((string?)el.Attribute("AllowScriptBlock")),
+                scriptHash: (string?)el.Attribute("ScriptHash"),
+                sqlSyncBuildProjectId: projectId);
         }
 
         private static CodeReview ParseCodeReview(XElement el)
         {
             return new CodeReview(
-                CodeReviewId: ParseGuidOrNull((string?)el.Element(Ns + "CodeReviewId")),
-                ScriptId: (string?)el.Element(Ns + "ScriptId"),
-                ReviewDate: ParseDateTimeOrNull((string?)el.Element(Ns + "ReviewDate")),
-                ReviewBy: (string?)el.Element(Ns + "ReviewBy"),
-                ReviewStatus: ParseShortOrNull((string?)el.Element(Ns + "ReviewStatus")),
-                Comment: (string?)el.Element(Ns + "Comment"),
-                ReviewNumber: (string?)el.Element(Ns + "ReviewNumber"),
-                CheckSum: (string?)el.Element(Ns + "CheckSum"),
-                ValidationKey: (string?)el.Element(Ns + "ValidationKey"));
+                codeReviewId: ParseGuidOrNull((string?)el.Element(Ns + "CodeReviewId")),
+                scriptId: (string?)el.Element(Ns + "ScriptId"),
+                reviewDate: ParseDateTimeOrNull((string?)el.Element(Ns + "ReviewDate")),
+                reviewBy: (string?)el.Element(Ns + "ReviewBy"),
+                reviewStatus: ParseShortOrNull((string?)el.Element(Ns + "ReviewStatus")),
+                comment: (string?)el.Element(Ns + "Comment"),
+                reviewNumber: (string?)el.Element(Ns + "ReviewNumber"),
+                checkSum: (string?)el.Element(Ns + "CheckSum"),
+                validationKey: (string?)el.Element(Ns + "ValidationKey"));
         }
 
         public static void Save(string path, SqlSyncBuildDataModel model)

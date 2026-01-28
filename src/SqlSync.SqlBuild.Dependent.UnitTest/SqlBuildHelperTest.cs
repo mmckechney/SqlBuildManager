@@ -64,7 +64,13 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             {
                 var builds = buildDataModel.Build?.ToList() ?? new List<BuildModels.Build>();
                 builds.Add(myBuildModel);
-                buildDataModel = buildDataModel with { Build = builds };
+                buildDataModel = new BuildModels.SqlSyncBuildDataModel(
+                    sqlSyncBuildProject: buildDataModel.SqlSyncBuildProject,
+                    script: buildDataModel.Script,
+                    build: builds,
+                    scriptRun: buildDataModel.ScriptRun,
+                    committedScript: buildDataModel.CommittedScript,
+                    codeReview: buildDataModel.CodeReview);
             }
             return sbh.RunBuildScripts(scripts, myBuildModel, serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
         }
@@ -275,7 +281,13 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             var csList = buildDataModel.CommittedScript?.ToList() ?? new List<BuildModels.CommittedScript>();
             var preRun = buildData.Script[0];
             csList.Add(new BuildModels.CommittedScript(preRun.ScriptId.ToString(), init.serverName, DateTime.UtcNow, null, null, null));
-            buildDataModel = buildDataModel with { CommittedScript = csList };
+            buildDataModel = new BuildModels.SqlSyncBuildDataModel(
+                sqlSyncBuildProject: buildDataModel.SqlSyncBuildProject,
+                script: buildDataModel.Script,
+                build: buildDataModel.Build,
+                scriptRun: buildDataModel.ScriptRun,
+                committedScript: csList,
+                codeReview: buildDataModel.CodeReview);
             actual = sbh.RunBuildScripts(scripts, myBuildModel, init.serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);

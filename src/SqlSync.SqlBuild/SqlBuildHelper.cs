@@ -232,24 +232,24 @@ namespace SqlSync.SqlBuild
         private static BuildModels.SqlBuildRunDataModel MapToRunDataModel(SqlBuildRunData runData)
         {
             return new BuildModels.SqlBuildRunDataModel(
-                BuildDataModel: runData.BuildDataModel,
-                BuildType: runData.BuildType,
-                Server: runData.Server,
-                BuildDescription: runData.BuildDescription,
-                StartIndex: runData.StartIndex,
-                ProjectFileName: runData.ProjectFileName,
-                IsTrial: runData.IsTrial,
-                RunItemIndexes: runData.RunItemIndexes,
-                RunScriptOnly: runData.RunScriptOnly,
-                BuildFileName: runData.BuildFileName,
-                LogToDatabaseName: runData.LogToDatabaseName,
-                IsTransactional: runData.IsTransactional,
-                PlatinumDacPacFileName: runData.PlatinumDacPacFileName,
-                TargetDatabaseOverrides: runData.TargetDatabaseOverrides,
-                ForceCustomDacpac: runData.ForceCustomDacpac,
-                BuildRevision: runData.BuildRevision,
-                DefaultScriptTimeout: runData.DefaultScriptTimeout,
-                AllowObjectDelete: runData.AllowObjectDelete);
+                buildDataModel: runData.BuildDataModel,
+                buildType: runData.BuildType,
+                server: runData.Server,
+                buildDescription: runData.BuildDescription,
+                startIndex: runData.StartIndex,
+                projectFileName: runData.ProjectFileName,
+                isTrial: runData.IsTrial,
+                runItemIndexes: runData.RunItemIndexes,
+                runScriptOnly: runData.RunScriptOnly,
+                buildFileName: runData.BuildFileName,
+                logToDatabaseName: runData.LogToDatabaseName,
+                isTransactional: runData.IsTransactional,
+                platinumDacPacFileName: runData.PlatinumDacPacFileName,
+                targetDatabaseOverrides: runData.TargetDatabaseOverrides,
+                forceCustomDacpac: runData.ForceCustomDacpac,
+                buildRevision: runData.BuildRevision,
+                defaultScriptTimeout: runData.DefaultScriptTimeout,
+                allowObjectDelete: runData.AllowObjectDelete);
         }
 
 
@@ -333,26 +333,26 @@ namespace SqlSync.SqlBuild
             foreach (var srvData in multiDbRunData)
             {
                 var runData = new BuildModels.SqlBuildRunDataModel(
-                    BuildDataModel: multiDbRunData.BuildData,
-                    BuildType: "Multi Db Build",
-                    Server: srvData.ServerName,
-                    BuildDescription: string.IsNullOrEmpty(multiDbRunData.BuildDescription)
+                    buildDataModel: multiDbRunData.BuildData,
+                    buildType: "Multi Db Build",
+                    server: srvData.ServerName,
+                    buildDescription: string.IsNullOrEmpty(multiDbRunData.BuildDescription)
                         ? $"Multi-Database Run ID: {multiDbRunData.MultiRunId}.  Server:{srvData.ServerName}"
                         : multiDbRunData.BuildDescription,
-                    StartIndex: 0,
-                    ProjectFileName: multiDbRunData.ProjectFileName,
-                    IsTrial: multiDbRunData.RunAsTrial,
-                    RunItemIndexes: Array.Empty<double>(),
-                    RunScriptOnly: false,
-                    BuildFileName: multiDbRunData.BuildFileName,
-                    LogToDatabaseName: string.Empty,
-                    IsTransactional: true,
-                    PlatinumDacPacFileName: string.Empty,
-                    TargetDatabaseOverrides: srvData.Overrides,
-                    ForceCustomDacpac: false,
-                    BuildRevision: string.Empty,
-                    DefaultScriptTimeout: 500,
-                    AllowObjectDelete: false);
+                    startIndex: 0,
+                    projectFileName: multiDbRunData.ProjectFileName,
+                    isTrial: multiDbRunData.RunAsTrial,
+                    runItemIndexes: Array.Empty<double>(),
+                    runScriptOnly: false,
+                    buildFileName: multiDbRunData.BuildFileName,
+                    logToDatabaseName: string.Empty,
+                    isTransactional: true,
+                    platinumDacPacFileName: string.Empty,
+                    targetDatabaseOverrides: srvData.Overrides,
+                    forceCustomDacpac: false,
+                    buildRevision: string.Empty,
+                    defaultScriptTimeout: 500,
+                    allowObjectDelete: false);
 
                 targetDatabaseOverrides = srvData.Overrides;
                 var buildResult = ProcessBuild(runData,srvData.ServerName, true, null, multiDbRunData.AllowableTimeoutRetries);
@@ -456,24 +456,43 @@ namespace SqlSync.SqlBuild
 
                 if (stat == DacpacDeltasStatus.Success)
                 {
-                    var updatedRunData = MapToRunDataModel(legacyRunData) with { PlatinumDacPacFileName = string.Empty };
+                    var tempRunData = MapToRunDataModel(legacyRunData);
+                    var updatedRunData = new BuildModels.SqlBuildRunDataModel(
+                        buildDataModel: tempRunData.BuildDataModel,
+                        buildType: tempRunData.BuildType,
+                        server: tempRunData.Server,
+                        buildDescription: tempRunData.BuildDescription,
+                        startIndex: tempRunData.StartIndex,
+                        projectFileName: tempRunData.ProjectFileName,
+                        isTrial: tempRunData.IsTrial,
+                        runItemIndexes: tempRunData.RunItemIndexes,
+                        runScriptOnly: tempRunData.RunScriptOnly,
+                        buildFileName: tempRunData.BuildFileName,
+                        logToDatabaseName: tempRunData.LogToDatabaseName,
+                        isTransactional: tempRunData.IsTransactional,
+                        platinumDacPacFileName: string.Empty,
+                        targetDatabaseOverrides: tempRunData.TargetDatabaseOverrides,
+                        forceCustomDacpac: tempRunData.ForceCustomDacpac,
+                        buildRevision: tempRunData.BuildRevision,
+                        defaultScriptTimeout: tempRunData.DefaultScriptTimeout,
+                        allowObjectDelete: tempRunData.AllowObjectDelete);
                     log.LogInformation($"Executing custom dacpac on {targetDatabase}");
                     var dacBuild = ProcessBuild(updatedRunData,serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
                     var dacFinalStatus = dacBuild.FinalStatus;
                     if (dacFinalStatus == BuildItemStatus.Committed || dacFinalStatus == BuildItemStatus.CommittedWithTimeoutRetries)
                     {
-                        buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithCustomDacpac };
+                        buildResultsModel.FinalStatus = BuildItemStatus.CommittedWithCustomDacpac;
                         if (BuildCommittedEvent != null)
                             BuildCommittedEvent(this, RunnerReturn.CommittedWithCustomDacpac);
                     }
                     else
                     {
-                        buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.FailedWithCustomDacpac };
+                        buildResultsModel.FinalStatus = BuildItemStatus.FailedWithCustomDacpac;
                     }
                 }
                 else if (stat == DacpacDeltasStatus.InSync || stat == DacpacDeltasStatus.OnlyPostDeployment)
                 {
-                    buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.AlreadyInSync };
+                    buildResultsModel.FinalStatus = BuildItemStatus.AlreadyInSync;
                     if (BuildCommittedEvent != null)
                         BuildCommittedEvent(this, RunnerReturn.DacpacDatabasesInSync);
                 }
@@ -483,7 +502,7 @@ namespace SqlSync.SqlBuild
             //If a timeout gets here.. need to decide how to label the rollback
             if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout)
             {
-                buildResultsModel = buildResultsModel with { FinalStatus = allowableTimeoutRetries > 0 ? BuildItemStatus.RolledBackAfterRetries : BuildItemStatus.RolledBack };
+                buildResultsModel.FinalStatus = allowableTimeoutRetries > 0 ? BuildItemStatus.RolledBackAfterRetries : BuildItemStatus.RolledBack;
             }
 
             switch (buildResultsModel.FinalStatus)
@@ -542,19 +561,25 @@ namespace SqlSync.SqlBuild
                 log.LogInformation($"Generating Build Record ID: {nextBuildId}");
 
                 var myBuild = new BuildModels.Build(
-                    Name: buildDescription,
-                    BuildType: buildType,
-                    BuildStart: DateTime.Now,
-                    BuildEnd: null,
-                    ServerName: serverName,
-                    FinalStatus: null,
-                    BuildId: Guid.NewGuid().ToString(),
-                    UserId: Environment.UserName);
+                    name: buildDescription,
+                    buildType: buildType,
+                    buildStart: DateTime.Now,
+                    buildEnd: null,
+                    serverName: serverName,
+                    finalStatus: null,
+                    buildId: Guid.NewGuid().ToString(),
+                    userId: Environment.UserName);
 
                 // add the build to model
                 var builds = buildDataModelParam.Build?.ToList() ?? new List<BuildModels.Build>();
                 builds.Add(myBuild);
-                buildDataModelParam = buildDataModelParam with { Build = builds };
+                buildDataModelParam = new SqlSyncBuildDataModel(
+                    sqlSyncBuildProject: buildDataModelParam.SqlSyncBuildProject,
+                    script: buildDataModelParam.Script,
+                    build: builds,
+                    scriptRun: buildDataModelParam.ScriptRun,
+                    committedScript: buildDataModelParam.CommittedScript,
+                    codeReview: buildDataModelParam.CodeReview);
 
                 log.LogInformation("Reading Scripting configuration");
                 var scripts = buildDataModelParam.Script ?? Array.Empty<BuildModels.Script>();
@@ -577,9 +602,9 @@ namespace SqlSync.SqlBuild
                 if (filtered.Count == 0)
                 {
                     if (isMultiDbRun)
-                        myBuild = myBuild with { FinalStatus = BuildItemStatus.PendingRollBack };
+                        myBuild.FinalStatus = BuildItemStatus.PendingRollBack;
                     else
-                        myBuild = myBuild with { FinalStatus = BuildItemStatus.RolledBack };
+                        myBuild.FinalStatus = BuildItemStatus.RolledBack;
 
                     return new BuildPreparationResult(Array.Empty<BuildModels.Script>(), myBuild, string.Empty);
                 }
@@ -630,7 +655,13 @@ namespace SqlSync.SqlBuild
                         cs.FileHash,
                         projectId));
                 }
-                updatedModel = model with { CommittedScript = list };
+                updatedModel = new SqlSyncBuildDataModel(
+                    sqlSyncBuildProject: model.SqlSyncBuildProject,
+                    script: model.Script,
+                    build: model.Build,
+                    scriptRun: model.ScriptRun,
+                    committedScript: list,
+                    codeReview: model.CodeReview);
                 return true;
             }
 
@@ -755,7 +786,7 @@ namespace SqlSync.SqlBuild
                 messages.Append(err.Message + "\r\n");
             }
             if (currentRun != null)
-                currentRun = currentRun with { Results = (currentRun.Results ?? string.Empty) + messages.ToString() };
+                currentRun.Results = (currentRun.Results ?? string.Empty) + messages.ToString();
 
             sqlInfoMessage += messages.ToString();
         }
@@ -914,10 +945,22 @@ namespace SqlSync.SqlBuild
         private void AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild)
         {
             if (run == null) return;
-            buildHistoryModel = buildHistoryModel with { ScriptRun = buildHistoryModel.ScriptRun.Concat(new[] { run }).ToList() };
+            buildHistoryModel = new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: buildHistoryModel.SqlSyncBuildProject,
+                script: buildHistoryModel.Script,
+                build: buildHistoryModel.Build,
+                scriptRun: buildHistoryModel.ScriptRun.Concat(new[] { run }).ToList(),
+                committedScript: buildHistoryModel.CommittedScript,
+                codeReview: buildHistoryModel.CodeReview);
             if(!buildHistoryModel.Build.Contains(myBuild))
             {
-                buildHistoryModel = buildHistoryModel with { Build = buildHistoryModel.Build.Concat(new[] { myBuild }).ToList() };
+                buildHistoryModel = new SqlSyncBuildDataModel(
+                    sqlSyncBuildProject: buildHistoryModel.SqlSyncBuildProject,
+                    script: buildHistoryModel.Script,
+                    build: buildHistoryModel.Build.Concat(new[] { myBuild }).ToList(),
+                    scriptRun: buildHistoryModel.ScriptRun,
+                    committedScript: buildHistoryModel.CommittedScript,
+                    codeReview: buildHistoryModel.CodeReview);
             }
             // optionally keep dataset for compatibility
             //if (buildHistoryData != null)

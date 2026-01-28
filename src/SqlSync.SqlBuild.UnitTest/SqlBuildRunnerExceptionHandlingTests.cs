@@ -40,32 +40,39 @@ namespace SqlSync.SqlBuild.UnitTest
             var scripts = new List<BuildModels.Script>
             {
                 new BuildModels.Script(
-                    FileName: "file.sql",
-                    BuildOrder: 1,
-                    Description: null,
-                    RollBackOnError: true,
-                    CausesBuildFailure: true,
-                    DateAdded: null,
-                    ScriptId: "abc",
-                    Database: "db",
-                    StripTransactionText: false,
-                    AllowMultipleRuns: true,
-                    AddedBy: null,
-                    ScriptTimeOut: 5,
-                    DateModified: null,
-                    ModifiedBy: null,
-                    Tag: null)
+                    fileName: "file.sql",
+                    buildOrder: 1,
+                    description: null,
+                    rollBackOnError: true,
+                    causesBuildFailure: true,
+                    dateAdded: null,
+                    scriptId: "abc",
+                    database: "db",
+                    stripTransactionText: false,
+                    allowMultipleRuns: true,
+                    addedBy: null,
+                    scriptTimeOut: 5,
+                    dateModified: null,
+                    modifiedBy: null,
+                    tag: null)
             };
             var myBuild = new BuildModels.Build(
-                Name: "name",
-                BuildType: "type",
-                BuildStart: DateTime.UtcNow,
-                BuildEnd: null,
-                ServerName: "srv",
-                FinalStatus: null,
-                BuildId: Guid.NewGuid().ToString(),
-                UserId: "user");
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel() with { Script = scripts };
+                name: "name",
+                buildType: "type",
+                buildStart: DateTime.UtcNow,
+                buildEnd: null,
+                serverName: "srv",
+                finalStatus: null,
+                buildId: Guid.NewGuid().ToString(),
+                userId: "user");
+            var baseModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var model = new BuildModels.SqlSyncBuildDataModel(
+                sqlSyncBuildProject: baseModel.SqlSyncBuildProject,
+                script: scripts,
+                build: baseModel.Build,
+                scriptRun: baseModel.ScriptRun,
+                committedScript: baseModel.CommittedScript,
+                codeReview: baseModel.CodeReview);
 
             var result = runner.Run(scripts, myBuild, "srv", isMultiDbRun: false, scriptBatchColl: new ScriptBatchCollection { new ScriptBatch("file.sql", new[] { "SELECT 1;" }, "abc") }, buildDataModel: model);
 

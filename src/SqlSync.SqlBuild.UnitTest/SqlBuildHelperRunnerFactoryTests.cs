@@ -23,14 +23,14 @@ namespace SqlSync.SqlBuild.UnitTest
             // Arrange
             var helper = new SqlBuildHelper(new ConnectionData());
             var expectedBuild = new BuildModels.Build(
-                Name: "test",
-                BuildType: "type",
-                BuildStart: DateTime.Now,
-                BuildEnd: null,
-                ServerName: "srv",
-                FinalStatus: BuildItemStatus.Committed,
-                BuildId: Guid.NewGuid().ToString(),
-                UserId: "user");
+                name: "test",
+                buildType: "type",
+                buildStart: DateTime.Now,
+                buildEnd: null,
+                serverName: "srv",
+                finalStatus: BuildItemStatus.Committed,
+                buildId: Guid.NewGuid().ToString(),
+                userId: "user");
 
             SqlBuildHelper.SqlBuildRunnerFactory = (connSvc, ctx, finalizerContext, exec) => new FakeRunner(expectedBuild);
 

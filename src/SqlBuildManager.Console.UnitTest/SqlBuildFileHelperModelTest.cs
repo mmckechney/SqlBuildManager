@@ -27,8 +27,18 @@ namespace SqlBuildManager.Console.UnitTest
             try
             {
                 var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-                var proj = model.SqlSyncBuildProject[0] with { ProjectName = "Proj1" };
-                model = model with { SqlSyncBuildProject = new[] { proj } };
+                var oldProj = model.SqlSyncBuildProject[0];
+                var proj = new SqlSyncBuildProject(
+                    projectName: "Proj1",
+                    scriptTagRequired: oldProj.ScriptTagRequired,
+                    sqlSyncBuildProjectId: oldProj.SqlSyncBuildProjectId);
+                model = new SqlSyncBuildDataModel(
+                    sqlSyncBuildProject: new[] { proj },
+                    script: model.Script,
+                    build: model.Build,
+                    scriptRun: model.ScriptRun,
+                    committedScript: model.CommittedScript,
+                    codeReview: model.CodeReview);
                 SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFile, zipFile, includeHistoryAndLogs: false);
                 SqlBuildFileHelper.LoadSqlBuildProjectFile(out SqlSyncBuildDataModel loaded, projFile, validateSchema: false);
                 Assert.AreEqual("Proj1", loaded.SqlSyncBuildProject[0].ProjectName);

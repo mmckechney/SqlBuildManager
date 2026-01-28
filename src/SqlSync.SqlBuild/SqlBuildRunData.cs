@@ -29,24 +29,24 @@ namespace SqlSync.SqlBuild
         public bool AllowObjectDelete { get; set; } = false;
 
         public Models.SqlBuildRunDataModel ToModel() => new Models.SqlBuildRunDataModel(
-            BuildDataModel: BuildDataModel,
-            BuildType: BuildType,
-            Server: Server,
-            BuildDescription: BuildDescription,
-            StartIndex: StartIndex,
-            ProjectFileName: ProjectFileName,
-            IsTrial: IsTrial,
-            RunItemIndexes: RunItemIndexes,
-            RunScriptOnly: RunScriptOnly,
-            BuildFileName: BuildFileName,
-            LogToDatabaseName: LogToDatabaseName,
-            IsTransactional: IsTransactional,
-            PlatinumDacPacFileName: PlatinumDacPacFileName,
-            TargetDatabaseOverrides: TargetDatabaseOverrides,
-            ForceCustomDacpac: ForceCustomDacpac,
-            BuildRevision: BuildRevision,
-            DefaultScriptTimeout: DefaultScriptTimeout,
-            AllowObjectDelete: AllowObjectDelete);
+            buildDataModel: BuildDataModel,
+            buildType: BuildType,
+            server: Server,
+            buildDescription: BuildDescription,
+            startIndex: StartIndex,
+            projectFileName: ProjectFileName,
+            isTrial: IsTrial,
+            runItemIndexes: RunItemIndexes,
+            runScriptOnly: RunScriptOnly,
+            buildFileName: BuildFileName,
+            logToDatabaseName: LogToDatabaseName,
+            isTransactional: IsTransactional,
+            platinumDacPacFileName: PlatinumDacPacFileName,
+            targetDatabaseOverrides: TargetDatabaseOverrides,
+            forceCustomDacpac: ForceCustomDacpac,
+            buildRevision: BuildRevision,
+            defaultScriptTimeout: DefaultScriptTimeout,
+            allowObjectDelete: AllowObjectDelete);
 
         public static SqlBuildRunData FromModel(Models.SqlBuildRunDataModel model) => new SqlBuildRunData
         {

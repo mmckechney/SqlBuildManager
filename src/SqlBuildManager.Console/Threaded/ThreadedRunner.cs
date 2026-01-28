@@ -218,7 +218,7 @@ namespace SqlBuildManager.Console.Threaded
                     //Get a full copy of the build data to work with (avoid threading sync issues)
                     SqlSyncBuildDataModel cloned = ThreadedManager.BuildDataModel;
                     //Clear out any existing CommittedScript data.. just log what is relevant to this run.
-                    cloned = cloned with { CommittedScript = Array.Empty<SqlSync.SqlBuild.Models.CommittedScript>() };
+                    cloned.CommittedScript = Array.Empty<SqlSync.SqlBuild.Models.CommittedScript>();
 
                     runData.BuildDataModel = cloned;
                     runData.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(ThreadedManager.ProjectFileName));
@@ -275,24 +275,24 @@ namespace SqlBuildManager.Console.Threaded
 
                
                 var runDataModel = new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
-                    BuildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
-                    BuildType: runData.BuildType,
-                    Server: runData.Server,
-                    BuildDescription: runData.BuildDescription,
-                    StartIndex: runData.StartIndex,
-                    ProjectFileName: runData.ProjectFileName,
-                    IsTrial: runData.IsTrial,
-                    RunItemIndexes: runData.RunItemIndexes,
-                    RunScriptOnly: runData.RunScriptOnly,
-                    BuildFileName: runData.BuildFileName,
-                    LogToDatabaseName: runData.LogToDatabaseName,
-                    IsTransactional: runData.IsTransactional,
-                    PlatinumDacPacFileName: runData.PlatinumDacPacFileName,
-                    TargetDatabaseOverrides: runData.TargetDatabaseOverrides,
-                    ForceCustomDacpac: runData.ForceCustomDacpac,
-                    BuildRevision: runData.BuildRevision,
-                    DefaultScriptTimeout: runData.DefaultScriptTimeout,
-                    AllowObjectDelete: runData.AllowObjectDelete);
+                    buildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
+                    buildType: runData.BuildType,
+                    server: runData.Server,
+                    buildDescription: runData.BuildDescription,
+                    startIndex: runData.StartIndex,
+                    projectFileName: runData.ProjectFileName,
+                    isTrial: runData.IsTrial,
+                    runItemIndexes: runData.RunItemIndexes,
+                    runScriptOnly: runData.RunScriptOnly,
+                    buildFileName: runData.BuildFileName,
+                    logToDatabaseName: runData.LogToDatabaseName,
+                    isTransactional: runData.IsTransactional,
+                    platinumDacPacFileName: runData.PlatinumDacPacFileName,
+                    targetDatabaseOverrides: runData.TargetDatabaseOverrides,
+                    forceCustomDacpac: runData.ForceCustomDacpac,
+                    buildRevision: runData.BuildRevision,
+                    defaultScriptTimeout: runData.DefaultScriptTimeout,
+                    allowObjectDelete: runData.AllowObjectDelete);
 
                  var result = await helper.ProcessBuild(runDataModel,cmdArgs.TimeoutRetryCount, buildRequestedBy, ThreadedManager.BatchColl);
                 returnValue = (int)result.FinalStatus;

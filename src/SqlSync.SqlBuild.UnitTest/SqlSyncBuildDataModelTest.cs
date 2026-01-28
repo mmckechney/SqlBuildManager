@@ -23,8 +23,18 @@ namespace SqlSync.SqlBuild.UnitTest
         public void SaveAndLoadModel_RoundTrips()
         {
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var proj = model.SqlSyncBuildProject[0] with { ProjectName = "TestProj", ScriptTagRequired = true };
-            model = model with { SqlSyncBuildProject = new[] { proj } };
+            var oldProj = model.SqlSyncBuildProject[0];
+            var proj = new SqlSyncBuildProject(
+                projectName: "TestProj",
+                scriptTagRequired: true,
+                sqlSyncBuildProjectId: oldProj.SqlSyncBuildProjectId);
+            model = new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: new[] { proj },
+                script: model.Script,
+                build: model.Build,
+                scriptRun: model.ScriptRun,
+                committedScript: model.CommittedScript,
+                codeReview: model.CodeReview);
 
             var tmpDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tmpDir);
@@ -48,22 +58,28 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             var script = new Script(
-                FileName: "file.sql",
-                BuildOrder: 1,
-                Description: null,
-                RollBackOnError: false,
-                CausesBuildFailure: false,
-                DateAdded: DateTime.UtcNow,
-                ScriptId: Guid.NewGuid().ToString(),
-                Database: "db",
-                StripTransactionText: false,
-                AllowMultipleRuns: false,
-                AddedBy: "tester",
-                ScriptTimeOut: 30,
-                DateModified: null,
-                ModifiedBy: null,
-                Tag: null);
-            model = model with { Script = new[] { script } };
+                fileName: "file.sql",
+                buildOrder: 1,
+                description: null,
+                rollBackOnError: false,
+                causesBuildFailure: false,
+                dateAdded: DateTime.UtcNow,
+                scriptId: Guid.NewGuid().ToString(),
+                database: "db",
+                stripTransactionText: false,
+                allowMultipleRuns: false,
+                addedBy: "tester",
+                scriptTimeOut: 30,
+                dateModified: null,
+                modifiedBy: null,
+                tag: null);
+            model = new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: model.SqlSyncBuildProject,
+                script: new[] { script },
+                build: model.Build,
+                scriptRun: model.ScriptRun,
+                committedScript: model.CommittedScript,
+                codeReview: model.CodeReview);
 
             var table = SqlBuildHelper.GetScriptSourceTable(model);
             Assert.IsNotNull(table);

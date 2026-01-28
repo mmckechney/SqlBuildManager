@@ -113,20 +113,20 @@ namespace SqlSync.SqlBuild
                     }
 
                     var currentRun = new BuildModels.ScriptRun(
-                        FileHash: null,
-                        Results: string.Empty,
-                        FileName: fileName,
-                        RunOrder: i + 1,
-                        RunStart: DateTime.Now,
-                        RunEnd: null,
-                        Success: null,
-                        Database: targetDatabase,
-                        ScriptRunId: scriptRunRowId.ToString(),
-                        BuildId: myBuild.BuildId);
+                        fileHash: null,
+                        results: string.Empty,
+                        fileName: fileName,
+                        runOrder: i + 1,
+                        runStart: DateTime.Now,
+                        runEnd: null,
+                        success: null,
+                        database: targetDatabase,
+                        scriptRunId: scriptRunRowId.ToString(),
+                        buildId: myBuild.BuildId);
 
                     // hash & commit staging
                     string textHash = _fileHelper.GetSHA1Hash(batchScripts);
-                    currentRun = currentRun with { FileHash = textHash };
+                    currentRun.FileHash = textHash;
                     var scriptText = SqlBuildFileHelper.JoinBatchedScripts(batchScripts);
                     var tmpCommitted = new LoggingCommittedScript(new Guid(scriptId), currentRun.FileHash, runSequence++, scriptText, script.Tag, cData.ServerName, cData.DatabaseName);
 
@@ -156,7 +156,8 @@ namespace SqlSync.SqlBuild
 
                             var execResult = _executor.Execute(batchScripts[x], scriptTimeout, cData, _ctx.IsTransactional);
                             failureDueToScriptTimeout = failureDueToScriptTimeout || execResult.TimeoutDetected;
-                            currentRun = currentRun with { Success = true, Results = (currentRun.Results ?? string.Empty) + execResult.Results };
+                            currentRun.Success = true;
+                            currentRun.Results = (currentRun.Results ?? string.Empty) + execResult.Results;
                             _ctx.PublishScriptLog(false, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, fileName, currentRun.Results + _ctx.SqlInfoMessage));
                         }
                         catch (SqlException e)
@@ -184,7 +185,7 @@ namespace SqlSync.SqlBuild
                         progress.ReportProgress(0, new ScriptRunStatusEventArgs($"Script Successful against {currentRun.Database}", span));
                     }
 
-                    currentRun = currentRun with { RunEnd = DateTime.Now };
+                    currentRun.RunEnd = DateTime.Now;
                     _ctx.AddScriptRunToHistory(currentRun, myBuild);
                     if (buildFailure) { _ctx.ErrorOccured = true; break; }
                     if (_ctx.RunScriptOnly)
@@ -215,17 +216,17 @@ namespace SqlSync.SqlBuild
                 }
                 else
                 {
-                    myBuild = myBuild with { FinalStatus = _ctx.IsTransactional ? BuildItemStatus.PendingRollBack : BuildItemStatus.FailedNoTransaction };
+                    myBuild.FinalStatus = _ctx.IsTransactional ? BuildItemStatus.PendingRollBack : BuildItemStatus.FailedNoTransaction;
                 }
                 if (_ctx.IsTransactional && failureDueToScriptTimeout)
                 {
-                    myBuild = myBuild with { FinalStatus = BuildItemStatus.FailedDueToScriptTimeout };
+                    myBuild.FinalStatus = BuildItemStatus.FailedDueToScriptTimeout;
                 }
             }
             else
             {
                 if (isMultiDbRun)
-                    myBuild = myBuild with { FinalStatus = BuildItemStatus.Pending };
+                    myBuild.FinalStatus = BuildItemStatus.Pending;
                 else
                     (myBuild, buildDataModel, _) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
                 log.LogDebug("Build Successful!");
@@ -290,16 +291,16 @@ namespace SqlSync.SqlBuild
                     {
                         cData = _connectionsService.GetBuildConnectionDataClass(serverName, targetDatabase, _ctx.IsTransactional);
                         currentRun = new BuildModels.ScriptRun(
-                            FileHash: null,
-                            Results: string.Empty,
-                            RunStart: DateTime.Now,
-                            RunEnd: null,
-                            Success: false,
-                            FileName: fileName,
-                            RunOrder: i + 1,
-                            Database: targetDatabase,
-                            ScriptRunId: scriptRunRowId.ToString(),
-                            BuildId: myBuild.BuildId);
+                            fileHash: null,
+                            results: string.Empty,
+                            runStart: DateTime.Now,
+                            runEnd: null,
+                            success: false,
+                            fileName: fileName,
+                            runOrder: i + 1,
+                            database: targetDatabase,
+                            scriptRunId: scriptRunRowId.ToString(),
+                            buildId: myBuild.BuildId);
                     }
                     catch (Exception e)
                     {
@@ -308,14 +309,18 @@ namespace SqlSync.SqlBuild
                         buildFailure = true;
                         progress.ReportProgress(0, new ScriptRunStatusEventArgs($"ERROR connecting to {serverName}.{targetDatabase}", TimeSpan.Zero));
                         if (currentRun != null)
-                            _ctx.AddScriptRunToHistory(currentRun with { Success = false, Results = "Connection failed" }, myBuild);
+                        {
+                            currentRun.Success = false;
+                            currentRun.Results = "Connection failed";
+                            _ctx.AddScriptRunToHistory(currentRun, myBuild);
+                        }
                         if (buildFailure) break;
                         continue;
                     }
 
                     // hash & commit staging
                     string textHash = _fileHelper.GetSHA1Hash(batchScripts);
-                    currentRun = currentRun with { FileHash = textHash };
+                    currentRun.FileHash = textHash;
                     var scriptText = _fileHelper.JoinBatchedScripts(batchScripts);
                     var tmpCommitted = new LoggingCommittedScript(new Guid(scriptId), currentRun.FileHash, runSequence++, scriptText, script.Tag, cData.ServerName, cData.DatabaseName);
 
@@ -344,7 +349,8 @@ namespace SqlSync.SqlBuild
 
                             var execResult = await _executor.ExecuteAsync(batchScripts[x], scriptTimeout, cData, _ctx.IsTransactional, cancellationToken).ConfigureAwait(false);
                             failureDueToScriptTimeout = failureDueToScriptTimeout || execResult.TimeoutDetected;
-                            currentRun = currentRun with { Success = true, Results = (currentRun.Results ?? string.Empty) + execResult.Results };
+                            currentRun.Success = true;
+                            currentRun.Results = (currentRun.Results ?? string.Empty) + execResult.Results;
                             _ctx.PublishScriptLog(false, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, fileName, currentRun.Results + _ctx.SqlInfoMessage));
                         }
                         catch (SqlException e)
@@ -372,7 +378,7 @@ namespace SqlSync.SqlBuild
                         progress.ReportProgress(0, new ScriptRunStatusEventArgs($"Script Successful against {currentRun.Database}", span));
                     }
 
-                    currentRun = currentRun with { RunEnd = DateTime.Now };
+                    currentRun.RunEnd = DateTime.Now;
                     _ctx.AddScriptRunToHistory(currentRun, myBuild);
                     if (buildFailure) { _ctx.ErrorOccured = true; break; }
                     if (_ctx.RunScriptOnly)
@@ -447,16 +453,16 @@ namespace SqlSync.SqlBuild
         private static BuildModels.ScriptRun BuildScriptRunFailure(string fileName, int runOrder, string targetDatabase, Guid scriptRunRowId, string buildId, string message)
         {
             return new BuildModels.ScriptRun(
-                FileHash: null,
-                Results: "Database connection failed\r\n" + message,
-                FileName: fileName,
-                RunOrder: runOrder,
-                RunStart: DateTime.Now,
-                RunEnd: DateTime.Now,
-                Success: false,
-                Database: targetDatabase,
-                ScriptRunId: scriptRunRowId.ToString(),
-                BuildId: buildId);
+                fileHash: null,
+                results: "Database connection failed\r\n" + message,
+                fileName: fileName,
+                runOrder: runOrder,
+                runStart: DateTime.Now,
+                runEnd: DateTime.Now,
+                success: false,
+                database: targetDatabase,
+                scriptRunId: scriptRunRowId.ToString(),
+                buildId: buildId);
         }
 
         private void TryCreateSavePoint(BuildConnectData cData, string savePointName, string serverName, string targetDatabase, string fileName)
@@ -502,7 +508,8 @@ namespace SqlSync.SqlBuild
             {
                 log.LogWarning($"Encountered a Timeout exception for script: \"{batchScript}\"");
             }
-            currentRun = currentRun with { Success = false, Results = (currentRun.Results ?? string.Empty) + logMsg.ToString() };
+            currentRun.Success = false;
+            currentRun.Results = (currentRun.Results ?? string.Empty) + logMsg.ToString();
             log.LogDebug(e, logMsg.ToString());
             _ctx.PublishScriptLog(true, new ScriptLogEventArgs(0, batchScript, targetDatabase, fileName, logMsg.ToString() + _ctx.SqlInfoMessage));
 
@@ -526,7 +533,7 @@ namespace SqlSync.SqlBuild
                     logMsg.Clear();
                     foreach (SqlError err in sqle.Errors)
                         logMsg.Append(err.Message + "\r\n");
-                    currentRun = currentRun with { Results = (currentRun.Results ?? string.Empty) + logMsg.ToString() };
+                    currentRun.Results = (currentRun.Results ?? string.Empty) + logMsg.ToString();
                     if (_ctx.IsTransactional)
                     {
                         _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);
@@ -539,7 +546,7 @@ namespace SqlSync.SqlBuild
                 catch (InvalidOperationException invalExe)
                 {
                     logMsg.Clear(); logMsg.Append(invalExe.Message + Environment.NewLine);
-                    currentRun = currentRun with { Results = (currentRun.Results ?? string.Empty) + logMsg.ToString() };
+                    currentRun.Results = (currentRun.Results ?? string.Empty) + logMsg.ToString();
                     if (_ctx.IsTransactional && !invalExe.Message.Contains("no longer usable"))
                     {
                         _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);

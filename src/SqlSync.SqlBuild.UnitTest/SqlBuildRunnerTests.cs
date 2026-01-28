@@ -26,13 +26,16 @@ namespace SqlSync.SqlBuild.UnitTest
             var ctx = new FakeRunnerContext();
             var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object,  ctx, new Mock<IBuildFinalizerContext>().Object);
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            model = model with
-            {
-                CommittedScript = new List<BuildModels.CommittedScript>
+            model = new BuildModels.SqlSyncBuildDataModel(
+                sqlSyncBuildProject: model.SqlSyncBuildProject,
+                script: model.Script,
+                build: model.Build,
+                scriptRun: model.ScriptRun,
+                committedScript: new List<BuildModels.CommittedScript>
                 {
-                    new BuildModels.CommittedScript(ScriptId, ServerName: null, CommittedDate: null, AllowScriptBlock: null, ScriptHash: null, SqlSyncBuildProjectId: null)
-                }
-            };
+                    new BuildModels.CommittedScript(ScriptId, serverName: null, committedDate: null, allowScriptBlock: null, scriptHash: null, sqlSyncBuildProjectId: null)
+                },
+                codeReview: model.CodeReview);
 
             var result = runner.ShouldSkipDueToCommittedScripts(ScriptId, model);
 

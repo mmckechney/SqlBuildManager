@@ -571,24 +571,24 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             var model = buildData.ToModel();
             return new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
-                BuildDataModel: model,
-                BuildType: "Development",
-                Server: serverName,
-                BuildDescription: "UnitTestRun",
-                StartIndex: 0,
-                ProjectFileName: @"C:\\temp\\ProjectFile.xml",
-                IsTrial: false,
-                RunItemIndexes: Array.Empty<double>(),
-                RunScriptOnly: false,
-                BuildFileName: @"C:\\temp\\UnitTestBuildFile.sbm",
-                LogToDatabaseName: string.Empty,
-                IsTransactional: true,
-                PlatinumDacPacFileName: string.Empty,
-                TargetDatabaseOverrides: GetDatabaseOverrides(),
-                ForceCustomDacpac: false,
-                BuildRevision: string.Empty,
-                DefaultScriptTimeout: 500,
-                AllowObjectDelete: false);
+                buildDataModel: model,
+                buildType: "Development",
+                server: serverName,
+                buildDescription: "UnitTestRun",
+                startIndex: 0,
+                projectFileName: @"C:\\temp\\ProjectFile.xml",
+                isTrial: false,
+                runItemIndexes: Array.Empty<double>(),
+                runScriptOnly: false,
+                buildFileName: @"C:\\temp\\UnitTestBuildFile.sbm",
+                logToDatabaseName: string.Empty,
+                isTransactional: true,
+                platinumDacPacFileName: string.Empty,
+                targetDatabaseOverrides: GetDatabaseOverrides(),
+                forceCustomDacpac: false,
+                buildRevision: string.Empty,
+                defaultScriptTimeout: 500,
+                allowObjectDelete: false);
         }
 
         public int GetSqlBuildLoggingRowCountByBuildFileName(int databaseIndex)

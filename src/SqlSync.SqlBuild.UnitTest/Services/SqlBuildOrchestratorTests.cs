@@ -32,24 +32,24 @@ namespace SqlSync.SqlBuild.UnitTest.Services
 
                 var orchestrator = new SqlBuildOrchestrator(helper, MockFactory.CreateMockConnectionsService().Object, MockFactory.CreateMockSqlLoggingService().Object);
                 var runData = new SqlBuildRunDataModel(
-                    BuildDataModel: SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
-                    BuildType: "type",
-                    Server: "srv",
-                    BuildDescription: "desc",
-                    StartIndex: 0,
-                    ProjectFileName: "proj",
-                    IsTrial: false,
-                    RunItemIndexes: Array.Empty<double>(),
-                    RunScriptOnly: false,
-                    BuildFileName: "file",
-                    LogToDatabaseName: string.Empty,
-                    IsTransactional: true,
-                    PlatinumDacPacFileName: string.Empty,
-                    TargetDatabaseOverrides: null,
-                    ForceCustomDacpac: false,
-                    BuildRevision: null,
-                    DefaultScriptTimeout: 30,
-                    AllowObjectDelete: false);
+                    buildDataModel: SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
+                    buildType: "type",
+                    server: "srv",
+                    buildDescription: "desc",
+                    startIndex: 0,
+                    projectFileName: "proj",
+                    isTrial: false,
+                    runItemIndexes: Array.Empty<double>(),
+                    runScriptOnly: false,
+                    buildFileName: "file",
+                    logToDatabaseName: string.Empty,
+                    isTransactional: true,
+                    platinumDacPacFileName: string.Empty,
+                    targetDatabaseOverrides: null,
+                    forceCustomDacpac: false,
+                    buildRevision: null,
+                    defaultScriptTimeout: 30,
+                    allowObjectDelete: false);
 
                 var prep = new SqlBuildHelper.BuildPreparationResult(
                     FilteredScripts: new List<BuildModels.Script> { new BuildModels.Script("one.sql", 1, null, null, null, null, "1", "db", false, true, null, null, null, null, null) },

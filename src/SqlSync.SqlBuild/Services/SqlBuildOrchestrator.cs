@@ -53,7 +53,7 @@ namespace SqlSync.SqlBuild.Services
                 buildResultsModel = runner.Run(prep.FilteredScripts, prep.Build, serverName, isMultiDbRun, scriptBatchColl, runData.BuildDataModel!);
 
                 if (buildRetries > 0 && buildResultsModel.FinalStatus == BuildItemStatus.Committed)
-                    buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries };
+                    buildResultsModel.FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries;
 
                 if (!_retryPolicy.ShouldRetry(buildResultsModel, buildRetries))
                     break;
@@ -113,7 +113,7 @@ namespace SqlSync.SqlBuild.Services
 
 
                 if (buildRetries > 0 && buildResultsModel.FinalStatus == BuildItemStatus.Committed)
-                    buildResultsModel = buildResultsModel with { FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries };
+                    buildResultsModel.FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries;
 
                 if (!_retryPolicy.ShouldRetry(buildResultsModel, buildRetries))
                     break;

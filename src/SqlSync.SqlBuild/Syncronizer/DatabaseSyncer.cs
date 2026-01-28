@@ -114,10 +114,34 @@ namespace SqlSync.SqlBuild.Syncronizer
                 }
 
                 //set the build data for a new run 
-                var updatedScripts = buildModel.Script
-                    .Select(s => s with { Database = "placeholder", AllowMultipleRuns = true })
-                    .ToList();
-                buildModel = buildModel with { Script = updatedScripts };
+                var updatedScripts = new List<Models.Script>();
+                foreach (var s in buildModel.Script)
+                {
+                    var updated = new Models.Script(
+                        fileName: s.FileName,
+                        buildOrder: s.BuildOrder,
+                        description: s.Description,
+                        rollBackOnError: s.RollBackOnError,
+                        causesBuildFailure: s.CausesBuildFailure,
+                        dateAdded: s.DateAdded,
+                        scriptId: s.ScriptId,
+                        database: "placeholder",
+                        stripTransactionText: s.StripTransactionText,
+                        allowMultipleRuns: true,
+                        addedBy: s.AddedBy,
+                        scriptTimeOut: s.ScriptTimeOut,
+                        dateModified: s.DateModified,
+                        modifiedBy: s.ModifiedBy,
+                        tag: s.Tag);
+                    updatedScripts.Add(updated);
+                }
+                buildModel = new Models.SqlSyncBuildDataModel(
+                    sqlSyncBuildProject: buildModel.SqlSyncBuildProject,
+                    script: updatedScripts,
+                    build: buildModel.Build,
+                    scriptRun: buildModel.ScriptRun,
+                    committedScript: buildModel.CommittedScript,
+                    codeReview: buildModel.CodeReview);
 
                 List<DatabaseOverride> lstOverride = new List<DatabaseOverride>();
                 lstOverride.Add(new DatabaseOverride()
@@ -128,24 +152,24 @@ namespace SqlSync.SqlBuild.Syncronizer
 
                 //Set the run meta-data
                 var runDataModel = new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
-                    BuildDataModel: buildModel,
-                    BuildType: BuildType.Other,
-                    Server: toUpdate.SQLServerName,
-                    BuildDescription: new Random().Next(int.MinValue, int.MaxValue).ToString(),
-                    StartIndex: -1000,
-                    ProjectFileName: projFileName,
-                    IsTrial: runAsTrial,
-                    RunItemIndexes: Array.Empty<double>(),
-                    RunScriptOnly: false,
-                    BuildFileName: sbmPackageName,
-                    LogToDatabaseName: string.Empty,
-                    IsTransactional: true,
-                    PlatinumDacPacFileName: string.Empty,
-                    TargetDatabaseOverrides: lstOverride,
-                    ForceCustomDacpac: false,
-                    BuildRevision: string.Empty,
-                    DefaultScriptTimeout: 0,
-                    AllowObjectDelete: false);
+                    buildDataModel: buildModel,
+                    buildType: BuildType.Other,
+                    server: toUpdate.SQLServerName,
+                    buildDescription: new Random().Next(int.MinValue, int.MaxValue).ToString(),
+                    startIndex: -1000,
+                    projectFileName: projFileName,
+                    isTrial: runAsTrial,
+                    runItemIndexes: Array.Empty<double>(),
+                    runScriptOnly: false,
+                    buildFileName: sbmPackageName,
+                    logToDatabaseName: string.Empty,
+                    isTransactional: true,
+                    platinumDacPacFileName: string.Empty,
+                    targetDatabaseOverrides: lstOverride,
+                    forceCustomDacpac: false,
+                    buildRevision: string.Empty,
+                    defaultScriptTimeout: 0,
+                    allowObjectDelete: false);
 
                 //Execute the package
                 SqlBuildHelper helper = new SqlBuildHelper(toUpdate, false, string.Empty, runDataModel.IsTransactional ?? true);

@@ -241,12 +241,28 @@ namespace SqlSync.SqlBuild.UnitTest
                     {
                         // Set FinalStatus based on transaction state
                         var status = ctx.IsTransactional ? BuildItemStatus.RolledBack : BuildItemStatus.FailedNoTransaction;
-                        finalBuild = b with { FinalStatus = status };
+                        finalBuild = new Build(
+                            name: b.Name,
+                            buildType: b.BuildType,
+                            buildStart: b.BuildStart,
+                            buildEnd: b.BuildEnd,
+                            serverName: b.ServerName,
+                            finalStatus: status,
+                            buildId: b.BuildId,
+                            userId: b.UserId);
                         result = ctx.IsTransactional ? BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK : BuildResultStatus.BUILD_FAILED_NO_TRANSACTION;
                     }
                     else
                     {
-                        finalBuild = b with { FinalStatus = BuildItemStatus.Committed };
+                        finalBuild = new Build(
+                            name: b.Name,
+                            buildType: b.BuildType,
+                            buildStart: b.BuildStart,
+                            buildEnd: b.BuildEnd,
+                            serverName: b.ServerName,
+                            finalStatus: BuildItemStatus.Committed,
+                            buildId: b.BuildId,
+                            userId: b.UserId);
                         result = BuildResultStatus.BUILD_COMMITTED;
                     }
                     

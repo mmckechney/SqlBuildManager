@@ -131,24 +131,24 @@ namespace SqlBuildManager.Console
                 if (multiDbData == null)
                 {
                     var runDataModel = new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
-                        BuildDataModel: sqlBuildRunData.BuildDataModel ?? buildModel,
-                        BuildType: sqlBuildRunData.BuildType,
-                        Server: sqlBuildRunData.Server,
-                        BuildDescription: sqlBuildRunData.BuildDescription,
-                        StartIndex: sqlBuildRunData.StartIndex,
-                        ProjectFileName: sqlBuildRunData.ProjectFileName,
-                        IsTrial: sqlBuildRunData.IsTrial,
-                        RunItemIndexes: sqlBuildRunData.RunItemIndexes,
-                        RunScriptOnly: sqlBuildRunData.RunScriptOnly,
-                        BuildFileName: sqlBuildRunData.BuildFileName,
-                        LogToDatabaseName: sqlBuildRunData.LogToDatabaseName,
-                        IsTransactional: sqlBuildRunData.IsTransactional,
-                        PlatinumDacPacFileName: sqlBuildRunData.PlatinumDacPacFileName,
-                        TargetDatabaseOverrides: sqlBuildRunData.TargetDatabaseOverrides,
-                        ForceCustomDacpac: sqlBuildRunData.ForceCustomDacpac,
-                        BuildRevision: sqlBuildRunData.BuildRevision,
-                        DefaultScriptTimeout: sqlBuildRunData.DefaultScriptTimeout,
-                        AllowObjectDelete: sqlBuildRunData.AllowObjectDelete);
+                        buildDataModel: sqlBuildRunData.BuildDataModel ?? buildModel,
+                        buildType: sqlBuildRunData.BuildType,
+                        server: sqlBuildRunData.Server,
+                        buildDescription: sqlBuildRunData.BuildDescription,
+                        startIndex: sqlBuildRunData.StartIndex,
+                        projectFileName: sqlBuildRunData.ProjectFileName,
+                        isTrial: sqlBuildRunData.IsTrial,
+                        runItemIndexes: sqlBuildRunData.RunItemIndexes,
+                        runScriptOnly: sqlBuildRunData.RunScriptOnly,
+                        buildFileName: sqlBuildRunData.BuildFileName,
+                        logToDatabaseName: sqlBuildRunData.LogToDatabaseName,
+                        isTransactional: sqlBuildRunData.IsTransactional,
+                        platinumDacPacFileName: sqlBuildRunData.PlatinumDacPacFileName,
+                        targetDatabaseOverrides: sqlBuildRunData.TargetDatabaseOverrides,
+                        forceCustomDacpac: sqlBuildRunData.ForceCustomDacpac,
+                        buildRevision: sqlBuildRunData.BuildRevision,
+                        defaultScriptTimeout: sqlBuildRunData.DefaultScriptTimeout,
+                        allowObjectDelete: sqlBuildRunData.AllowObjectDelete);
 
                     await helper.ProcessBuild(runData: runDataModel, allowableTimeoutRetries: cmdLine.TimeoutRetryCount);
                 }
