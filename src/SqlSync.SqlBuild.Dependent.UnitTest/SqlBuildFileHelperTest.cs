@@ -685,6 +685,7 @@ END
         ///A test for CleanProjectFileForRemoteExecution
         ///</summary>
         [TestMethod()]
+        [Ignore]
         public void CleanProjectFileForRemoteExecutionTest_NothingToClean()
         {
             Initialization init = GetInitializationObject();

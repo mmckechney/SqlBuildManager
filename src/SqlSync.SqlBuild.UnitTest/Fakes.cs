@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.Models;
@@ -160,13 +160,13 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             var mock = new Mock<IConnectionsService>();
             mock.Setup(x => x.GetBuildConnectionDataClass(It.IsAny<string>(), It.IsAny<string>(),It.IsAny<bool>()))
-                .Returns((string server, string database) => new BuildConnectData
+                .Returns((string server, string database, bool isTransactional) => new BuildConnectData
                 {
                     ServerName = server,
                     DatabaseName = database
                 });
             mock.Setup(x => x.GetOrAddBuildConnectionDataClass(It.IsAny<ConnectionData>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
-                .Returns((ConnectionData connData, string server, string database) => new BuildConnectData
+                .Returns((ConnectionData connData, string server, string database, bool isTransactional) => new BuildConnectData
                 {
                     ServerName = server,
                     DatabaseName = database
@@ -231,7 +231,7 @@ namespace SqlSync.SqlBuild.UnitTest
                     It.IsAny<IBuildFinalizerContext>(),
                     It.IsAny<bool>(),
                     It.IsAny<Build>()))
-                .Returns((ISqlBuildRunnerProperties ctx, IConnectionsService conn, bool buildFailure, Build b) =>
+                .Returns((ISqlBuildRunnerProperties ctx, IConnectionsService conn, IBuildFinalizerContext finalizerContext, bool buildFailure, Build b) =>
                 {
                     // Mimic the real DefaultBuildFinalizer behavior
                     Build finalBuild;
