@@ -8,6 +8,8 @@ using SqlSync.SqlBuild;
 using BuildModels = SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Models;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
+using SqlSync.SqlBuild.Services;
+using Moq;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
@@ -21,6 +23,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var runner = new SqlBuildRunner(
                 MockFactory.CreateMockConnectionsService().Object, 
                 ctx, 
+                new Mock<IBuildFinalizerContext>().Object,
                 new NoopExecutor(),
                 null,
                 MockFactory.CreateMockBuildFinalizer().Object,
@@ -42,7 +45,8 @@ namespace SqlSync.SqlBuild.UnitTest
             var exec = new TrackingExecutor();
             var runner = new SqlBuildRunner(
                 MockFactory.CreateMockConnectionsService().Object, 
-                ctx, 
+                ctx,
+                new Mock<IBuildFinalizerContext>().Object,
                 exec,
                 null,
                 MockFactory.CreateMockBuildFinalizer().Object,
@@ -70,7 +74,8 @@ namespace SqlSync.SqlBuild.UnitTest
             var exec = new CancelOnFirstExecutor(cts);
             var runner = new SqlBuildRunner(
                 MockFactory.CreateMockConnectionsService().Object, 
-                ctx, 
+                ctx,
+                new Mock<IBuildFinalizerContext>().Object,
                 exec,
                 null,
                 MockFactory.CreateMockBuildFinalizer().Object,

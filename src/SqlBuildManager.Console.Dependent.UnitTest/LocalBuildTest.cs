@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
@@ -80,7 +81,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
 
         [TestMethod()]
-        public void LocalBuild_SingleDb_NoOverrideSetting()
+        public async Task LocalBuild_SingleDb_NoOverrideSetting()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -102,7 +103,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
 
-            int actual = Worker.RunLocalBuildAsync(cmdLine);
+            int actual = await Worker.RunLocalBuildAsync(cmdLine);
 
 
             try
@@ -141,7 +142,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
 
         [TestMethod()]
-        public void LocalBuild_SingleDb_SingleOverrideSetting()
+        public async Task LocalBuild_SingleDb_SingleOverrideSetting()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -163,7 +164,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
 
-            int actual = Worker.RunLocalBuildAsync(cmdLine);
+            int actual = await Worker.RunLocalBuildAsync(cmdLine);
 
 
             try
@@ -202,7 +203,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
 
         [TestMethod()]
-        public void LocalBuild_SingleDb_NoOverrideSetting_NoDbTarget_Success()
+        public async Task LocalBuild_SingleDb_NoOverrideSetting_NoDbTarget_Success()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -223,7 +224,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
 
-            int actual = Worker.RunLocalBuildAsync(cmdLine);
+            int actual = await Worker.RunLocalBuildAsync(cmdLine);
 
 
             try
@@ -261,7 +262,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
 
         [TestMethod()]
-        public void LocalBuild_MultiDb_DoubleOverrideSetting()
+        public async Task LocalBuild_MultiDb_DoubleOverrideSetting()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -286,7 +287,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
 
-            int actual = Worker.RunLocalBuildAsync(cmdLine);
+            int actual = await Worker.RunLocalBuildAsync(cmdLine);
 
 
             try
@@ -300,11 +301,10 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
                 //Should be all sequential!
                 Assert.IsTrue(executionLogFile.Contains("Commit Successful"), "Didn't find successful commit message");
-                Assert.IsTrue(executionLogFile.Contains("Build Committed"), "Didn't find build commited message");
+                Assert.IsTrue(executionLogFile.Contains("BUILD_COMMITTED"), "Didn't find build commited message");
                 var regex = new Regex("Recording Commited Script:");
                 Assert.AreEqual(15, regex.Matches(executionLogFile).Count(), "Didn't find 10 scripts commits");
 
-                Assert.IsTrue(executionLogFile.Contains("Build Committed"), "Didn't find commit message");
             }
 
             finally
@@ -325,7 +325,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
 
         [TestMethod()]
-        public void LocalBuild_MultiDb_SingleOverrideSetting()
+        public async Task LocalBuild_MultiDb_SingleOverrideSetting()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -350,7 +350,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
 
-            int actual = Worker.RunLocalBuildAsync(cmdLine);
+            int actual = await Worker.RunLocalBuildAsync(cmdLine);
 
 
             try
@@ -364,12 +364,10 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
                 //Should be all sequential!
                 Assert.IsTrue(executionLogFile.Contains("Commit Successful"), "Didn't find successful commit message");
-                Assert.IsTrue(executionLogFile.Contains("Build Committed"), "Didn't find build commited message");
+                Assert.IsTrue(executionLogFile.Contains("BUILD_COMMITTED"), "Didn't find build commited message");
 
                 var regex = new Regex("Recording Commited Script:");
                 Assert.AreEqual(2, regex.Matches(executionLogFile).Count(), "Didn't find 2 scripts commits");
-
-                Assert.IsTrue(executionLogFile.Contains("Build Committed"), "Didn't find commit message");
 
             }
 
@@ -392,7 +390,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
 
         [TestMethod()]
-        public void LocalBuild_MultiDb_SqlScriptOverrideSetting()
+        public async Task LocalBuild_MultiDb_SqlScriptOverrideSetting()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -420,7 +418,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             };
             var cmdLine = CommandLineBuilder.ParseArguments(args);
 
-            int actual = Worker.RunLocalBuildAsync(cmdLine);
+            int actual = await Worker.RunLocalBuildAsync(cmdLine);
 
 
             try

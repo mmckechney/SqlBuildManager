@@ -1,3 +1,10 @@
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using SqlSync.Connection;
+using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,11 +13,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.SqlBuild;
 using BuildModels = SqlSync.SqlBuild.Models;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
 
@@ -27,7 +29,8 @@ namespace SqlSync.SqlBuild.UnitTest
             var ctx = new FakeRunnerContext(bg) { IsTransactionalValue = true };
             var runner = new SqlBuildRunner(
                 MockFactory.CreateMockConnectionsService().Object, 
-                ctx, 
+                ctx,
+                new Mock<IBuildFinalizerContext>().Object,
                 new SqlCommandExecutorThatThrows(CreateTimeoutException()),
                 null,
                 MockFactory.CreateMockBuildFinalizer().Object,

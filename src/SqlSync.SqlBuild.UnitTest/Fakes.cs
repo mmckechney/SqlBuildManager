@@ -93,6 +93,11 @@ namespace SqlSync.SqlBuild.UnitTest
         public string BuildHistoryXmlFile => "FakeBuildHistory.xml";
 
         public ConnectionData ConnectionData => new();
+
+        public event ScriptLogWriteEventHandler ScriptLogWriteEvent;
+        public event BuildCommittedEventHandler BuildCommittedEvent;
+        public event EventHandler BuildSuccessTrialRolledBackEvent;
+        public event EventHandler BuildErrorRollBackEvent;
     }
 
 
@@ -101,6 +106,11 @@ namespace SqlSync.SqlBuild.UnitTest
         private static readonly IProgressReporter NoopProgress = new NoopProgressReporter();
         private readonly BackgroundWorker _bg = new BackgroundWorker { WorkerReportsProgress = true };
         private readonly string _projectFilePath;
+
+        public event ScriptLogWriteEventHandler ScriptLogWriteEvent;
+        public event BuildCommittedEventHandler BuildCommittedEvent;
+        public event EventHandler BuildSuccessTrialRolledBackEvent;
+        public event EventHandler BuildErrorRollBackEvent;
 
         public LocalFakeRunnerContext()
         {
@@ -149,13 +159,13 @@ namespace SqlSync.SqlBuild.UnitTest
         public static Mock<IConnectionsService> CreateMockConnectionsService()
         {
             var mock = new Mock<IConnectionsService>();
-            mock.Setup(x => x.GetBuildConnectionDataClass(It.IsAny<string>(), It.IsAny<string>()))
+            mock.Setup(x => x.GetBuildConnectionDataClass(It.IsAny<string>(), It.IsAny<string>(),It.IsAny<bool>()))
                 .Returns((string server, string database) => new BuildConnectData
                 {
                     ServerName = server,
                     DatabaseName = database
                 });
-            mock.Setup(x => x.GetOrAddBuildConnectionDataClass(It.IsAny<ConnectionData>(), It.IsAny<string>(), It.IsAny<string>()))
+            mock.Setup(x => x.GetOrAddBuildConnectionDataClass(It.IsAny<ConnectionData>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
                 .Returns((ConnectionData connData, string server, string database) => new BuildConnectData
                 {
                     ServerName = server,
@@ -219,6 +229,7 @@ namespace SqlSync.SqlBuild.UnitTest
             mock.Setup(x => x.PerformRunScriptFinalization(
                     It.IsAny<ISqlBuildRunnerProperties>(),
                     It.IsAny<IConnectionsService>(),
+                    It.IsAny<IBuildFinalizerContext>(),
                     It.IsAny<bool>(),
                     It.IsAny<Build>()))
                 .Returns((ISqlBuildRunnerProperties ctx, IConnectionsService conn, bool buildFailure, Build b) =>

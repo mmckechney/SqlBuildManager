@@ -1,14 +1,16 @@
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using SqlSync.Connection;
+using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
-using SqlSync.Connection;
-using BuildModels = SqlSync.SqlBuild.Models;
-using SqlLogging = SqlSync.SqlBuild.SqlLogging;
 using System.Threading;
 using System.Threading.Tasks;
+using BuildModels = SqlSync.SqlBuild.Models;
+using SqlLogging = SqlSync.SqlBuild.SqlLogging;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
@@ -35,7 +37,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 BuildId: Guid.NewGuid().ToString(),
                 UserId: "user");
 
-            SqlBuildHelper.SqlBuildRunnerFactory = (connSvc, ctx, exec) => new FakeRunner(expectedBuild);
+            SqlBuildHelper.SqlBuildRunnerFactory = (connSvc, ctx, finalizerContext, exec) => new FakeRunner(expectedBuild);
 
             var scripts = new List<BuildModels.Script>();
             var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -52,7 +54,7 @@ namespace SqlSync.SqlBuild.UnitTest
         private sealed class FakeRunner : SqlBuildRunner
         {
             private readonly BuildModels.Build _result;
-            public FakeRunner(BuildModels.Build result) : base(MockFactory.CreateMockConnectionsService().Object, MockFactory.CreateMockRunnerContext().Object)
+            public FakeRunner(BuildModels.Build result) : base(MockFactory.CreateMockConnectionsService().Object, MockFactory.CreateMockRunnerContext().Object, new Mock<IBuildFinalizerContext>().Object)
             {
                 _result = result;
             }

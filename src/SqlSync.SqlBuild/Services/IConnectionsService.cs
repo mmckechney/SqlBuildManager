@@ -12,9 +12,9 @@ namespace SqlSync.SqlBuild.Services
     /// </summary>
     public interface IConnectionsService
     {
-        public BuildConnectData GetOrAddBuildConnectionDataClass(ConnectionData connData, string serverName, string databaseName);
-        public BuildConnectData GetBuildConnectionDataClass(string serverName, string databaseName);
-        public BuildConnectData GetOrAddBuildConnectionDataClassWithLocalAuth(string serverName, string databaseName);
+        public BuildConnectData GetOrAddBuildConnectionDataClass(ConnectionData connData, string serverName, string databaseName, bool isTransactional);
+        public BuildConnectData GetBuildConnectionDataClass(string serverName, string databaseName, bool isTransactional);
+        public BuildConnectData GetOrAddBuildConnectionDataClassWithLocalAuth(string serverName, string databaseName, bool isTransactional);
         Dictionary<string, BuildConnectData> Connections { get; }
         void ResetConnectionsForRetry();
     }

@@ -24,7 +24,7 @@ namespace SqlSync.SqlBuild.Services
         {
             return serverName.ToUpper() + ":" + databaseName.ToUpper();
         }
-        private BuildConnectData PrepConnectionAndTransaction(BuildConnectData buildConnectData)
+        private BuildConnectData PrepConnectionAndTransaction(BuildConnectData buildConnectData, bool isTransactional)
         {
             try
             {
@@ -33,7 +33,10 @@ namespace SqlSync.SqlBuild.Services
                     var pollyConnection = Policy.Handle<SqlException>().WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
                     pollyConnection.Execute(() => buildConnectData.Connection.Open());
                 }
-                buildConnectData.Transaction = buildConnectData.Transaction ?? buildConnectData.Connection.BeginTransaction(BuildTransaction.TransactionName);
+                if (isTransactional)
+                {
+                    buildConnectData.Transaction = buildConnectData.Transaction ?? buildConnectData.Connection.BeginTransaction(BuildTransaction.TransactionName);
+                }
 
                 return buildConnectData;
             }
@@ -43,7 +46,7 @@ namespace SqlSync.SqlBuild.Services
                 throw;
             }
         }
-        public BuildConnectData GetBuildConnectionDataClass(string serverName, string databaseName)
+        public BuildConnectData GetBuildConnectionDataClass(string serverName, string databaseName, bool isTransactional)
         {
             var dbKey = GetDatabaseKey(serverName, databaseName);
             if (!Connections.ContainsKey(dbKey))
@@ -52,12 +55,12 @@ namespace SqlSync.SqlBuild.Services
             }
 
             var buildConn = Connections[dbKey];
-            buildConn = PrepConnectionAndTransaction(buildConn);
+            buildConn = PrepConnectionAndTransaction(buildConn, isTransactional);
             return buildConn;
         }
 
         [Description("This should only be used for local windows authentication connections and test scenarios")]
-        public BuildConnectData GetOrAddBuildConnectionDataClassWithLocalAuth(string serverName, string databaseName)
+        public BuildConnectData GetOrAddBuildConnectionDataClassWithLocalAuth(string serverName, string databaseName, bool isTransactional)
         {
             try
             {
@@ -67,7 +70,7 @@ namespace SqlSync.SqlBuild.Services
                 {
                     BuildConnectData cData = new BuildConnectData();
                     cData.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, serverName,"","",AuthenticationType.Windows,20,"");
-                    cData = PrepConnectionAndTransaction(cData);
+                    cData = PrepConnectionAndTransaction(cData, isTransactional);
                     cData.DatabaseName = databaseName;
                     cData.ServerName = serverName;
 
@@ -86,7 +89,7 @@ namespace SqlSync.SqlBuild.Services
             }
         }
 
-        public BuildConnectData GetOrAddBuildConnectionDataClass(ConnectionData connData, string serverName, string databaseName)
+        public BuildConnectData GetOrAddBuildConnectionDataClass(ConnectionData connData, string serverName, string databaseName, bool isTransactional)
         {
             try
             {
@@ -96,7 +99,7 @@ namespace SqlSync.SqlBuild.Services
                 {
                     BuildConnectData cData = new BuildConnectData();
                     cData.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, serverName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
-                    cData = PrepConnectionAndTransaction(cData);
+                    cData = PrepConnectionAndTransaction(cData, isTransactional);
                     cData.DatabaseName = databaseName;
                     cData.ServerName = serverName;
 

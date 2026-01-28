@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
+using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -415,7 +416,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         public SqlBuildHelper CreateSqlBuildHelperAccessor(SqlSyncBuildData buildData)
         {
-            SqlBuildHelper target = new SqlBuildHelper(connData);
+            SqlBuildHelper target = new SqlBuildHelper(data: connData, connectionsService: new DefaultConnectionsService());
 
 
             //Set fields

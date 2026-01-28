@@ -2,8 +2,8 @@
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
-using System.Xml.Linq;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 namespace SqlBuildManager.Console.Threaded
 {
     class ThreadedRunner
@@ -215,14 +216,13 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     runData.ForceCustomDacpac = false;
                     //Get a full copy of the build data to work with (avoid threading sync issues)
-                    var cloned = SqlSyncBuildDataXmlSerializer.Load(
-                        XDocument.Parse("<?xml version=\"1.0\" standalone=\"yes\"?>\r\n" + ThreadedManager.BuildDataModel.ToDataSet().GetXml())
-                    );
+                    SqlSyncBuildDataModel cloned = ThreadedManager.BuildDataModel;
                     //Clear out any existing CommittedScript data.. just log what is relevant to this run.
                     cloned = cloned with { CommittedScript = Array.Empty<SqlSync.SqlBuild.Models.CommittedScript>() };
 
                     runData.BuildDataModel = cloned;
                     runData.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(ThreadedManager.ProjectFileName));
+                    SqlSyncBuildDataXmlSerializer.Save(runData.ProjectFileName, cloned);
                     runData.BuildFileName = ThreadedManager.BuildZipFileName;
                 }
 
@@ -273,30 +273,31 @@ namespace SqlBuildManager.Console.Threaded
                     helper.ScriptLogWriteEvent += new ScriptLogWriteEventHandler(helper_ScriptLogWriteEvent);
                 }
 
-                await Task.Run(() =>
-                {
-                    var runDataModel = new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
-                        BuildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
-                        BuildType: runData.BuildType,
-                        Server: runData.Server,
-                        BuildDescription: runData.BuildDescription,
-                        StartIndex: runData.StartIndex,
-                        ProjectFileName: runData.ProjectFileName,
-                        IsTrial: runData.IsTrial,
-                        RunItemIndexes: runData.RunItemIndexes,
-                        RunScriptOnly: runData.RunScriptOnly,
-                        BuildFileName: runData.BuildFileName,
-                        LogToDatabaseName: runData.LogToDatabaseName,
-                        IsTransactional: runData.IsTransactional,
-                        PlatinumDacPacFileName: runData.PlatinumDacPacFileName,
-                        TargetDatabaseOverrides: runData.TargetDatabaseOverrides,
-                        ForceCustomDacpac: runData.ForceCustomDacpac,
-                        BuildRevision: runData.BuildRevision,
-                        DefaultScriptTimeout: runData.DefaultScriptTimeout,
-                        AllowObjectDelete: runData.AllowObjectDelete);
+               
+                var runDataModel = new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
+                    BuildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
+                    BuildType: runData.BuildType,
+                    Server: runData.Server,
+                    BuildDescription: runData.BuildDescription,
+                    StartIndex: runData.StartIndex,
+                    ProjectFileName: runData.ProjectFileName,
+                    IsTrial: runData.IsTrial,
+                    RunItemIndexes: runData.RunItemIndexes,
+                    RunScriptOnly: runData.RunScriptOnly,
+                    BuildFileName: runData.BuildFileName,
+                    LogToDatabaseName: runData.LogToDatabaseName,
+                    IsTransactional: runData.IsTransactional,
+                    PlatinumDacPacFileName: runData.PlatinumDacPacFileName,
+                    TargetDatabaseOverrides: runData.TargetDatabaseOverrides,
+                    ForceCustomDacpac: runData.ForceCustomDacpac,
+                    BuildRevision: runData.BuildRevision,
+                    DefaultScriptTimeout: runData.DefaultScriptTimeout,
+                    AllowObjectDelete: runData.AllowObjectDelete);
 
-                    helper.ProcessBuild(runDataModel, bg, e, cmdArgs.TimeoutRetryCount, buildRequestedBy, ThreadedManager.BatchColl);
-                });
+                 var result = await helper.ProcessBuild(runDataModel, bg, e, cmdArgs.TimeoutRetryCount, buildRequestedBy, ThreadedManager.BatchColl);
+                returnValue = (int)result.FinalStatus;
+
+
             }
             catch (Exception exe)
             {

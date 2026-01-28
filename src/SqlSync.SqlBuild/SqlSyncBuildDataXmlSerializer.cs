@@ -277,7 +277,10 @@ namespace SqlSync.SqlBuild
                             SetAttr(scriptEl, "Tag", s.Tag);
                             scriptsEl.Add(scriptEl);
                         }
-                        projEl.Add(scriptsEl);
+                        if (scripts.Count > 0 || true) // Always add Scripts element
+                        {
+                            projEl.Add(scriptsEl);
+                        }
                     }
                 }
 

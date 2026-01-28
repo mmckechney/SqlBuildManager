@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Models;
@@ -31,7 +32,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var originalFactory = SqlBuildHelper.SqlBuildRunnerFactory;
             try
             {
-                SqlBuildHelper.SqlBuildRunnerFactory = (connSvc, ctx, exec) => new FakeRunner(ctx, queue, () => runnerCalls++);
+                SqlBuildHelper.SqlBuildRunnerFactory = (connSvc, ctx, finalizerContext, exec) => new FakeRunner(ctx, queue, () => runnerCalls++);
 
                 var orchestrator = new SqlBuildOrchestrator(helper, MockFactory.CreateMockConnectionsService().Object, MockFactory.CreateMockSqlLoggingService().Object);
                 var runData = new SqlBuildRunDataModel(
@@ -76,7 +77,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         {
             private readonly Queue<BuildModels.Build> _queue;
             private readonly Action _onCall;
-            public FakeRunner(ISqlBuildRunnerContext ctx, Queue<BuildModels.Build> queue, Action onCall) : base(MockFactory.CreateMockConnectionsService().Object, ctx) { _queue = queue; _onCall = onCall; }
+            public FakeRunner(ISqlBuildRunnerContext ctx, Queue<BuildModels.Build> queue, Action onCall) : base(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object) { _queue = queue; _onCall = onCall; }
 
             public override async Task<BuildModels.Build> RunAsync(
                 IReadOnlyList<BuildModels.Script> scripts,

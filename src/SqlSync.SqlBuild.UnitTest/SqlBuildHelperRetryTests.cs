@@ -1,8 +1,11 @@
-using System.Collections.Generic;
-using System.ComponentModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Services;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Threading.Tasks;
 using BuildModels = SqlSync.SqlBuild.Models;
 
 namespace SqlSync.SqlBuild.UnitTest
@@ -11,7 +14,7 @@ namespace SqlSync.SqlBuild.UnitTest
     public class SqlBuildHelperRetryTests
     {
         [TestMethod]
-        public void ProcessBuild_RetriesOnTimeout_ThenSucceeds()
+        public async Task ProcessBuild_RetriesOnTimeout_ThenSucceeds()
         {
             var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
             var statuses = new Queue<BuildItemStatus>(new[]
@@ -20,7 +23,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 BuildItemStatus.Committed
             });
             var originalFactory = SqlBuildHelper.SqlBuildRunnerFactory;
-            SqlBuildHelper.SqlBuildRunnerFactory = (connSvc, ctx, exec) => new TestSqlBuildRunner(ctx, statuses);
+            SqlBuildHelper.SqlBuildRunnerFactory = (connSvc, ctx, finalizerCtx, exec) => new TestSqlBuildRunner(ctx, statuses);
             try
             {
                 var scriptId = "abc";
@@ -71,7 +74,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 var bgWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
                 var e = new DoWorkEventArgs(null);
 
-                var result = helper.ProcessBuild(runData, bgWorker, e, allowableTimeoutRetries: 3, buildRequestedBy: string.Empty, scriptBatchColl: scriptBatchColl);
+                var result = await helper.ProcessBuild(runData, bgWorker, e, allowableTimeoutRetries: 3, buildRequestedBy: string.Empty, scriptBatchColl: scriptBatchColl);
 
                 Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries, result.FinalStatus);
             }
@@ -84,7 +87,7 @@ namespace SqlSync.SqlBuild.UnitTest
         private sealed class TestSqlBuildRunner : SqlBuildRunner
         {
             private readonly Queue<BuildItemStatus> _statuses;
-            public TestSqlBuildRunner(ISqlBuildRunnerContext ctx, Queue<BuildItemStatus> statuses) : base(MockFactory.CreateMockConnectionsService().Object, ctx) => _statuses = statuses;
+            public TestSqlBuildRunner(ISqlBuildRunnerContext ctx, Queue<BuildItemStatus> statuses) : base(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object) => _statuses = statuses;
 
             public override BuildModels.Build Run(
                 System.Collections.Generic.IReadOnlyList<BuildModels.Script> scripts,

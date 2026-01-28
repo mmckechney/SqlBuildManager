@@ -16,12 +16,13 @@ using SqlSync.SqlBuild;
 using sqlB = SqlSync.SqlBuild;
 using sqlM = SqlSync.SqlBuild.Models;
 using Cryptography = SqlBuildManager.Console.CommandLine.Cryptography;
+using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console
 {
     internal partial class Worker
     {
-        internal static int RunLocalBuildAsync(CommandLineArgs cmdLine)
+        internal static async Task<int> RunLocalBuildAsync(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Worker>(Program.applicationLogFileName, cmdLine.RootLoggingPath);
@@ -155,7 +156,7 @@ namespace SqlBuildManager.Console
                         DefaultScriptTimeout: sqlBuildRunData.DefaultScriptTimeout,
                         AllowObjectDelete: sqlBuildRunData.AllowObjectDelete);
 
-                    helper.ProcessBuild(runData: runDataModel, allowableTimeoutRetries: cmdLine.TimeoutRetryCount, bgWorker: bg, e: workArgs);
+                    await helper.ProcessBuild(runData: runDataModel, allowableTimeoutRetries: cmdLine.TimeoutRetryCount, bgWorker: bg, e: workArgs);
                 }
                 else
                 {
@@ -164,7 +165,8 @@ namespace SqlBuildManager.Console
                     multiDbData.BuildFileName = cmdLine.BuildFileName;
                     multiDbData.BuildDescription = cmdLine.Description;
                     multiDbData.BuildData = buildModel;
-                    helper.ProcessMultiDbBuild(multiDbData, projectFileName, bg, workArgs);
+                    var res = helper.ProcessMultiDbBuild(multiDbData, projectFileName, bg, workArgs);
+                    log.LogInformation(res.ToString());
                 }
             }
             finally

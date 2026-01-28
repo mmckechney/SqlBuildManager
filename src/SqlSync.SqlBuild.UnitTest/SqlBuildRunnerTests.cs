@@ -11,7 +11,8 @@ using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.Connection;
-
+using Moq;
+using SqlSync.SqlBuild.Services;
 namespace SqlSync.SqlBuild.UnitTest
 {
     [TestClass]
@@ -23,7 +24,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void ShouldSkipDueToCommittedScripts_ReturnsTrue_WhenCommitted()
         {
             var ctx = new FakeRunnerContext();
-            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx);
+            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object,  ctx, new Mock<IBuildFinalizerContext>().Object);
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             model = model with
             {
@@ -42,7 +43,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void LoadBatchScripts_PrefersPreBatchedScripts()
         {
             var ctx = new FakeRunnerContext();
-            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx);
+            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
             var coll = new ScriptBatchCollection();
             coll.Add(new ScriptBatch("file.sql", new[] { "SELECT 1;" }, ScriptId));
 
@@ -55,7 +56,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void LoadBatchScripts_ReadsViaContext_WhenNoPreBatch()
         {
             var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "SELECT 2;" } };
-            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx);
+            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
 
             var result = runner.LoadBatchScripts(ScriptId, "file.sql", stripTransaction: false, scriptBatchColl: null);
 

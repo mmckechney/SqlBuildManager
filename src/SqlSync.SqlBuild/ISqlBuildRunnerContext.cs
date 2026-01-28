@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
@@ -21,7 +22,6 @@ namespace SqlSync.SqlBuild
         string PerformScriptTokenReplacement(string script);
         Task<string> PerformScriptTokenReplacementAsync(string script, CancellationToken cancellationToken = default);
         void AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild);
-        void RollbackBuild();
         void SaveBuildDataSet(bool fireSavedEvent);
         void PublishScriptLog(bool isError, ScriptLogEventArgs args);
     }
@@ -48,5 +48,10 @@ namespace SqlSync.SqlBuild
         string LogToDataBaseName { get; }
         string BuildHistoryXmlFile { get; }
         ConnectionData ConnectionData { get; }
+
+        event ScriptLogWriteEventHandler ScriptLogWriteEvent;
+        event BuildCommittedEventHandler BuildCommittedEvent;
+        event EventHandler BuildSuccessTrialRolledBackEvent;
+        event EventHandler BuildErrorRollBackEvent;
     }
 }

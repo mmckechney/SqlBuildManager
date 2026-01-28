@@ -148,7 +148,7 @@ namespace SqlSync.SqlBuild.Services
 
                 for (int i = 0; i < servers.Count; i++)
                 {
-                    BuildConnectData tmp = connectionsService.GetOrAddBuildConnectionDataClass(runnerProperties.ConnectionData, servers[i], runnerProperties.LogToDataBaseName);
+                    BuildConnectData tmp = connectionsService.GetOrAddBuildConnectionDataClass(runnerProperties.ConnectionData, servers[i], runnerProperties.LogToDataBaseName, runnerProperties.IsTransactional);
                 }
             }
             EnsureLogTablePresence(connectionsService.Connections, runnerProperties.LogToDataBaseName);
@@ -219,13 +219,16 @@ namespace SqlSync.SqlBuild.Services
                     if (row != null)
                     {
 
-                        progressReporter.ReportProgress(0, new GeneralStatusEventArgs("Recording Commited Script: " + row.FileName));
+                        
+                        //progressReporter.ReportProgress(0, new GeneralStatusEventArgs("Recording Commited Script: " + row.FileName));
 
                         BuildConnectData tmpConnDat;
                         if (runnerProperties.LogToDataBaseName.Length > 0)
-                            tmpConnDat = connectionsService.GetBuildConnectionDataClass(script.ServerName, runnerProperties.LogToDataBaseName);
+                            tmpConnDat = connectionsService.GetBuildConnectionDataClass(script.ServerName, runnerProperties.LogToDataBaseName, runnerProperties.IsTransactional);
                         else
-                            tmpConnDat = connectionsService.GetBuildConnectionDataClass(script.ServerName, script.DatabaseTarget);
+                            tmpConnDat = connectionsService.GetBuildConnectionDataClass(script.ServerName, script.DatabaseTarget, runnerProperties.IsTransactional);
+
+                        log.LogInformation($"Recording Commited Script: {row.FileName} to {tmpConnDat.ServerName}:{tmpConnDat.DatabaseName}");
 
                         logCmd.Connection = tmpConnDat.Connection;
                         logCmd.Parameters["@ScriptFileName"].Value = row.FileName;
@@ -245,7 +248,7 @@ namespace SqlSync.SqlBuild.Services
                 }
                 catch (Exception sqlexe)
                 {
-                    log.LogError(sqlexe, $"Unable to log full text value for script {logCmd.Parameters["@ScriptFileName"].Value.ToString()}. Inserting \"Error\" instead");
+                    log.LogError(sqlexe, $"Unable to log full text value for script {logCmd.Parameters["@ScriptFileName"].Value?.ToString()}. Inserting \"Error\" instead");
                     try
                     {
                         logCmd.Parameters["@ScriptText"].Value = "Error";
@@ -256,7 +259,7 @@ namespace SqlSync.SqlBuild.Services
                     }
                     catch (Exception exe)
                     {
-                        log.LogError(exe, $"Unable to log commit for script {logCmd.Parameters["@ScriptFileName"].Value.ToString()}.");
+                        log.LogError(exe, $"Unable to log commit for script {logCmd.Parameters["@ScriptFileName"].Value?.ToString()}.");
                         returnValue = false;
                     }
                 }

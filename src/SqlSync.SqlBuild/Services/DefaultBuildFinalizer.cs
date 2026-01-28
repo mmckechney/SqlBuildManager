@@ -38,6 +38,7 @@ namespace SqlSync.SqlBuild.Services
                 {
                     log.LogInformation($"Committing transaction for {key}");
                     ((BuildConnectData)connectionsService.Connections[key]).Transaction.Commit();
+                    log.LogInformation($"Commit Successful for {key}");
                 }
                 catch (Exception e)
                 {
@@ -148,7 +149,7 @@ namespace SqlSync.SqlBuild.Services
             if (fireSavedEvent)
                 progressReporter.ReportProgress(0, new ScriptRunProjectFileSavedEventArgs(true));
         }
-        public (Build updatedBuild, SqlSyncBuildDataModel updatedModel, BuildResultStatus buildResult) PerformRunScriptFinalization(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, bool buildFailure, Build myBuild)
+        public (Build updatedBuild, SqlSyncBuildDataModel updatedModel, BuildResultStatus buildResult) PerformRunScriptFinalization(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, IBuildFinalizerContext finalizerContext, bool buildFailure, Build myBuild)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
@@ -190,7 +191,7 @@ namespace SqlSync.SqlBuild.Services
                     updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
                     sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData);
                     //TODO: figure out eventing here
-                    //context.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
+                    finalizerContext.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
                 }
                 else
                 {
@@ -198,8 +199,7 @@ namespace SqlSync.SqlBuild.Services
                     {
                         RollbackBuild(connectionsService, context.IsTransactional);
                         myBuild = myBuild with { FinalStatus = BuildItemStatus.TrialRolledBack };
-                        //TODO: figure out eventing here
-                        //context.RaiseBuildSuccessTrialRolledBackEvent(context);
+                        finalizerContext.RaiseBuildSuccessTrialRolledBackEvent(context);
                     }
                     else
                     {
@@ -211,8 +211,7 @@ namespace SqlSync.SqlBuild.Services
 
             if (buildFailure)
             {
-                //TODO: figure out eventing here
-                //context.RaiseBuildErrorRollBackEvent(context);
+                finalizerContext.RaiseBuildErrorRollBackEvent(context);
             }
 
             SaveBuildDataModel(context, true);

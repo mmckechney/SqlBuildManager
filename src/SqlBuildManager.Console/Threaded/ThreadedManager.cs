@@ -111,7 +111,7 @@ namespace SqlBuildManager.Console.Threaded
         }
 
         private readonly IScriptBatcher _scriptBatcher;
-        public ThreadedManager(CommandLineArgs cmd, IScriptBatcher scriptBatcher)
+        public ThreadedManager(CommandLineArgs cmd, IScriptBatcher scriptBatcher = null)
         {
             cmdLine = cmd;
             _scriptBatcher = scriptBatcher ?? new DefaultScriptBatcher();

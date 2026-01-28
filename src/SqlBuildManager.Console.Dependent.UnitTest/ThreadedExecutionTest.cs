@@ -445,7 +445,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
             string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 

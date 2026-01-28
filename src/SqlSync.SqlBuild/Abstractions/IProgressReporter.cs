@@ -6,5 +6,6 @@ namespace SqlSync.SqlBuild
     {
         bool CancellationPending { get; }
         void ReportProgress(int percent, object userState);
+        //void ReportProgress(object userState);
     }
 }

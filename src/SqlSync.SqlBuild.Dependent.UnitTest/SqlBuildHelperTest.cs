@@ -1465,8 +1465,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.isTransactional = false;
-
-            bool actual = target.CommitBuild();
+            
+            bool actual = target.BuildFinalizer.CommitBuild(target.ConnectionsService, target.isTransactional);
             Assert.AreEqual(true, actual);
 
         }
@@ -1481,11 +1481,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            IConnectionsService connectionsService = new DefaultConnectionsService();
-            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0]);
+
+            BuildConnectData connData = target.ConnectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0], target.isTransactional);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
 
-            bool actual = target.CommitBuild();
+            bool actual = target.BuildFinalizer.CommitBuild(target.ConnectionsService, target.isTransactional);
             Assert.AreEqual(false, actual);
 
         }
@@ -1499,13 +1499,12 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Initialization init = GetInitializationObject();
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            IConnectionsService connectionsService = new DefaultConnectionsService();
-            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0]);
+            BuildConnectData connData = target.ConnectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0], target.isTransactional);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
             connData.Connection.Close();
             connData.Connection = null; //Set connection to null to create exception when trying to close.
 
-            bool actual = target.CommitBuild();
+            bool actual = target.BuildFinalizer.CommitBuild(target.ConnectionsService,target.isTransactional);
             Assert.AreEqual(false, actual);
 
         }
@@ -1524,7 +1523,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.isTransactional = false;
 
-            bool actual = target.RollbackBuild();
+            bool actual = target.BuildFinalizer.RollbackBuild(target.ConnectionsService,target.isTransactional);
             Assert.AreEqual(false, actual);
         }
         /// <summary>
@@ -1538,10 +1537,10 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             IConnectionsService connectionsService = new DefaultConnectionsService();
-            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0]);
+            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0], target.isTransactional);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
 
-            bool actual = target.RollbackBuild();
+            bool actual = target.BuildFinalizer.RollbackBuild(target.ConnectionsService, target.isTransactional);
             Assert.AreEqual(true, actual);
 
         }
@@ -1556,12 +1555,12 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             IConnectionsService connectionsService = new DefaultConnectionsService();
-            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0]);
+            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0], target.isTransactional);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
             connData.Connection.Close();
             connData.Connection = null; //Set connection to null to create exception when trying to close.
 
-            bool actual = target.RollbackBuild();
+            bool actual = target.BuildFinalizer.RollbackBuild(target.ConnectionsService, target.isTransactional);
             Assert.AreEqual(true, actual);
 
         }

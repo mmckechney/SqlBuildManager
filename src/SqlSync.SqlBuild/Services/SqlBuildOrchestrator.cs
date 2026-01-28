@@ -42,7 +42,7 @@ namespace SqlSync.SqlBuild.Services
 
             Build buildResultsModel = null;
             int buildRetries = 0;
-            var runner = SqlBuildHelper.SqlBuildRunnerFactory(connectionsService, _helper, null);
+            var runner = SqlBuildHelper.SqlBuildRunnerFactory(connectionsService, _helper,_helper, null);
 
             while (buildRetries <= allowableTimeoutRetries &&
                 (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout))
@@ -103,7 +103,7 @@ namespace SqlSync.SqlBuild.Services
         {
             Build buildResultsModel = null;
             int buildRetries = 0;
-            var runner = SqlBuildHelper.SqlBuildRunnerFactory(connectionsService, _helper, null);
+            var runner = SqlBuildHelper.SqlBuildRunnerFactory(connectionsService, _helper, _helper,null);
 
             while (buildRetries <= allowableTimeoutRetries &&
                 (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout ))

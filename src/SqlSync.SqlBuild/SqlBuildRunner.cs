@@ -29,17 +29,21 @@ namespace SqlSync.SqlBuild
         private readonly ISqlLoggingService _sqlLoggingService;
         private readonly IBuildFinalizer _buildFinalizer;
         private readonly IProgressReporter _progressReporter;
+        private readonly IBuildFinalizerContext _finalizerContext;
+        
 
-
-        public SqlBuildRunner(IConnectionsService connectionsService, ISqlBuildRunnerContext ctx, ISqlCommandExecutor executor = null, ISqlBuildFileHelper fileHelper = null, IBuildFinalizer buildFinalizer = null, ISqlLoggingService sqlLoggingService = null, IProgressReporter progressReporter = null)
+        public SqlBuildRunner(IConnectionsService connectionsService, ISqlBuildRunnerContext ctx, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null, ISqlBuildFileHelper fileHelper = null, IBuildFinalizer buildFinalizer = null, ISqlLoggingService sqlLoggingService = null, IProgressReporter progressReporter = null)
         {
             _ctx = ctx ?? throw new ArgumentNullException(nameof(ctx));
             _executor = executor ?? new SqlCommandExecutor(ctx.Log);
             _fileHelper = fileHelper ?? new DefaultSqlBuildFileHelper();
-            _sqlLoggingService = sqlLoggingService ?? new DefaultSqlLoggingService(connectionsService, progressReporter);
-            _buildFinalizer = buildFinalizer ?? new DefaultBuildFinalizer(sqlLoggingService, progressReporter);
+            _progressReporter = progressReporter ?? new BackgroundWorkerProgressReporter(_ctx.BgWorker);
+            _sqlLoggingService = sqlLoggingService ?? new DefaultSqlLoggingService(connectionsService, _progressReporter);
+            _buildFinalizer = buildFinalizer ?? new DefaultBuildFinalizer(_sqlLoggingService, _progressReporter);
             _connectionsService = connectionsService ?? new DefaultConnectionsService();
-            
+            _finalizerContext = finalizerContext ?? throw new ArgumentNullException(nameof(finalizerContext));
+
+
         }
 
         public virtual BuildModels.Build Run(
@@ -95,7 +99,8 @@ namespace SqlSync.SqlBuild
                     var scriptRunRowId = Guid.NewGuid();
                     try
                     {
-                        cData = _connectionsService.GetBuildConnectionDataClass(serverName, targetDatabase);
+                     
+                        cData =    _connectionsService.GetOrAddBuildConnectionDataClass(_ctx.ConnectionData, serverName, targetDatabase, _ctx.IsTransactional);
                     }
                     catch (Exception e)
                     {
@@ -103,7 +108,7 @@ namespace SqlSync.SqlBuild
                         var currentRunFail = BuildScriptRunFailure(fileName, i + 1, targetDatabase, scriptRunRowId, myBuild.BuildId, e.Message);
                         _ctx.AddScriptRunToHistory(currentRunFail, myBuild);
                         _ctx.PublishScriptLog(true, new ScriptLogEventArgs(overallIndex, "Database connection failed", targetDatabase, fileName, e.Message + "\r\n" + _ctx.SqlInfoMessage));
-                        _ctx.RollbackBuild();
+                        _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);
                         progress.ReportProgress(0, new ScriptRunStatusEventArgs("Build Rolled Back", TimeSpan.Zero));
                         buildFailure = true;
                         break;
@@ -208,7 +213,7 @@ namespace SqlSync.SqlBuild
                 log.LogError("Build failure. Check execution logs for details");
                 if (!isMultiDbRun)
                 {
-                   ( myBuild, buildDataModel, _ ) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
+                   ( myBuild, buildDataModel, _ ) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
                 }
                 else
                 {
@@ -224,7 +229,7 @@ namespace SqlSync.SqlBuild
                 if (isMultiDbRun)
                     myBuild = myBuild with { FinalStatus = BuildItemStatus.Pending};
                 else
-                    (myBuild, buildDataModel, _ ) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
+                    (myBuild, buildDataModel, _ ) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
                 log.LogDebug("Build Successful!");
             }
             return myBuild;
@@ -287,7 +292,7 @@ namespace SqlSync.SqlBuild
                     BuildModels.ScriptRun currentRun = null;
                     try
                     {
-                        cData = _connectionsService.GetBuildConnectionDataClass(serverName, targetDatabase);
+                        cData = _connectionsService.GetBuildConnectionDataClass(serverName, targetDatabase, _ctx.IsTransactional);
                         currentRun = new BuildModels.ScriptRun(
                             FileHash: null,
                             Results: string.Empty,
@@ -403,7 +408,7 @@ namespace SqlSync.SqlBuild
                 }
             }
 
-            (myBuild, buildDataModel, _ ) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, buildFailure, myBuild);
+            (myBuild, buildDataModel, _ ) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild);
             return myBuild;
         }
 
@@ -530,7 +535,7 @@ namespace SqlSync.SqlBuild
                     currentRun = currentRun with { Results = (currentRun.Results ?? string.Empty) + logMsg.ToString() };
                     if (_ctx.IsTransactional)
                     {
-                        _ctx.RollbackBuild();
+                        _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);
                         progress.ReportProgress(0, new ScriptRunStatusEventArgs("Build Rolled Back", TimeSpan.Zero));
                     }
                     else
@@ -543,7 +548,7 @@ namespace SqlSync.SqlBuild
                     currentRun = currentRun with { Results = (currentRun.Results ?? string.Empty) + logMsg.ToString() };
                     if (_ctx.IsTransactional && !invalExe.Message.Contains("no longer usable"))
                     {
-                        _ctx.RollbackBuild();
+                        _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);
                         _ctx.BgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Build Rolled Back", TimeSpan.Zero));
                     }
                     else
@@ -566,7 +571,7 @@ namespace SqlSync.SqlBuild
             {
                 if (_ctx.IsTransactional && !zombiedTransaction)
                 {
-                    _ctx.RollbackBuild();
+                    _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);
                     _ctx.BgWorker.ReportProgress(0, new ScriptRunStatusEventArgs("Build Rolled Back", TimeSpan.Zero));
                 }
                 else
