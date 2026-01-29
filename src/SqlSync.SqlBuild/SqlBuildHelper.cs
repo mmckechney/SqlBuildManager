@@ -40,44 +40,37 @@ namespace SqlSync.SqlBuild
 
         #endregion
 
-        #region Core Build State Fields
+        #region Build State
 
-        internal bool isTransactional = true;
-        internal bool isTrialBuild = false;
-        internal bool runScriptOnly = false;
-        internal List<DatabaseOverride> targetDatabaseOverrides = null;
-        internal BuildModels.SqlSyncBuildDataModel buildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-        internal SqlSyncBuildData buildDataCompat;
-        internal string buildPackageHash = string.Empty;
-
-        #endregion
-
-        #region Build Configuration Fields
-
+        private readonly BuildModels.BuildExecutionState _state = new BuildModels.BuildExecutionState();
         private ConnectionData connData;
-        private string buildType;
-        internal string buildDescription;
-        private double startIndex;
-        internal string projectFileName;
-        private string projectFilePath = string.Empty;
-        internal string buildFileName = string.Empty;
-        internal string scriptLogFileName;
-        internal string externalScriptLogFileName = string.Empty;
-        internal string buildHistoryXmlFile = string.Empty;
-        private string logToDatabaseName = string.Empty;
-        private string buildRequestedBy = string.Empty;
-        internal double[] runItemIndexes = new double[0];
-        internal bool errorOccured;
 
-        #endregion
+        // Legacy compatibility - these delegate to _state
+        internal bool isTransactional { get => _state.IsTransactional; set => _state.IsTransactional = value; }
+        internal bool isTrialBuild { get => _state.IsTrialBuild; set => _state.IsTrialBuild = value; }
+        internal bool runScriptOnly { get => _state.RunScriptOnly; set => _state.RunScriptOnly = value; }
+        internal List<DatabaseOverride> targetDatabaseOverrides { get => _state.TargetDatabaseOverrides; set => _state.TargetDatabaseOverrides = value; }
+        internal BuildModels.SqlSyncBuildDataModel buildDataModel { get => _state.BuildDataModel; set => _state.BuildDataModel = value; }
+        internal string buildPackageHash { get => _state.BuildPackageHash; set => _state.BuildPackageHash = value; }
+        private string buildType { get => _state.BuildType; set => _state.BuildType = value; }
+        internal string buildDescription { get => _state.BuildDescription; set => _state.BuildDescription = value; }
+        private double startIndex { get => _state.StartIndex; set => _state.StartIndex = value; }
+        internal string projectFileName { get => _state.ProjectFileName; set => _state.ProjectFileName = value; }
+        private string projectFilePath { get => _state.ProjectFilePath; set => _state.ProjectFilePath = value; }
+        internal string buildFileName { get => _state.BuildFileName; set => _state.BuildFileName = value; }
+        internal string scriptLogFileName { get => _state.ScriptLogFileName; set => _state.ScriptLogFileName = value; }
+        internal string externalScriptLogFileName { get => _state.ExternalScriptLogFileName; set => _state.ExternalScriptLogFileName = value; }
+        internal string buildHistoryXmlFile { get => _state.BuildHistoryXmlFile; set => _state.BuildHistoryXmlFile = value; }
+        private string logToDatabaseName { get => _state.LogToDatabaseName; set => _state.LogToDatabaseName = value; }
+        private string buildRequestedBy { get => _state.BuildRequestedBy; set => _state.BuildRequestedBy = value; }
+        internal double[] runItemIndexes { get => _state.RunItemIndexes; set => _state.RunItemIndexes = value; }
+        internal bool errorOccured { get => _state.ErrorOccurred; set => _state.ErrorOccurred = value; }
+        private MultiDbData multiDbRunData { get => _state.MultiDbRunData; set => _state.MultiDbRunData = value; }
+        private string sqlInfoMessage { get => _state.SqlInfoMessage; set => _state.SqlInfoMessage = value; }
+        private List<LoggingCommittedScript> committedScripts => _state.CommittedScripts;
 
-        #region Runtime State Fields
-
-        private MultiDbData multiDbRunData;
-        private string sqlInfoMessage = string.Empty;
-        private string lastSqlMessage = string.Empty;
-        private System.Guid currentBuildId = System.Guid.Empty;
-        private List<LoggingCommittedScript> committedScripts = new List<LoggingCommittedScript>();
+        // Expose the state object for services that need direct access
+        internal BuildModels.BuildExecutionState State => _state;
 
         #endregion
 
@@ -100,6 +93,7 @@ namespace SqlSync.SqlBuild
         internal Services.IRunnerFactory RunnerFactory { get; }
         internal Services.IScriptLogWriter ScriptLogWriter { get; }
         internal Services.IBuildHistoryTracker BuildHistoryTracker { get; }
+        internal Services.IDacPacFallbackHandler DacPacFallbackHandler { get; }
 
         #endregion
 
@@ -164,6 +158,7 @@ namespace SqlSync.SqlBuild
             RunnerFactory = runnerFactory ?? new Services.DefaultRunnerFactory();
             ScriptLogWriter = new Services.DefaultScriptLogWriter();
             BuildHistoryTracker = new Services.DefaultBuildHistoryTracker();
+            DacPacFallbackHandler = new Services.DefaultDacPacFallbackHandler();
             BuildPreparationService = new Services.DefaultBuildPreparationService(this);
             ScriptBatcher = new Services.DefaultScriptBatcher();
             TokenReplacementService = new Services.DefaultTokenReplacementService();
@@ -286,84 +281,37 @@ namespace SqlSync.SqlBuild
             var orchestrator = new Services.SqlBuildOrchestrator(this, this, this.RetryPolicy, this, ConnectionsService, SqlLoggingService, RunnerFactory);
             var buildResultsModel = orchestrator.Execute(runData, prep, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
 
-            bool candidateForCustomDacPac = false;
-            switch (buildResultsModel.FinalStatus)
+            // Handle DacPac fallback for failed builds
+            bool candidateForCustomDacPac = DacPacFallbackHandler.IsCandidateForDacPacFallback(buildResultsModel.FinalStatus ?? BuildItemStatus.RolledBack);
+            
+            if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout || 
+                buildResultsModel.FinalStatus == BuildItemStatus.FailedWithCustomDacpac)
             {
-                case BuildItemStatus.Committed:
-                case BuildItemStatus.CommittedWithTimeoutRetries:
-                case BuildItemStatus.AlreadyInSync:
-                case BuildItemStatus.TrialRolledBack:
-                case BuildItemStatus.CommittedWithCustomDacpac:
-                case BuildItemStatus.Pending:
-                    candidateForCustomDacPac = false;
-                    break;
-                case BuildItemStatus.FailedDueToScriptTimeout:
-                case BuildItemStatus.FailedWithCustomDacpac:
-                    candidateForCustomDacPac = false;
-                    log.LogWarning($"Build was not successful. Status is {buildResultsModel.FinalStatus} and Platinum DACPAC name is '{runData.PlatinumDacPacFileName}', and this file exists '{File.Exists(runData.PlatinumDacPacFileName ?? string.Empty)}' ");
-                    break;
-                case BuildItemStatus.RolledBack:
-                case BuildItemStatus.PendingRollBack:
-                case BuildItemStatus.FailedNoTransaction:
-                case BuildItemStatus.RolledBackAfterRetries:
-                    candidateForCustomDacPac = true;
-                    break;
-                default:
-                    log.LogWarning($"Unrecognized Build Item status of {buildResultsModel.FinalStatus}");
-                    candidateForCustomDacPac = true;
-                    break;
+                log.LogWarning($"Build was not successful. Status is {buildResultsModel.FinalStatus} and Platinum DACPAC name is '{runData.PlatinumDacPacFileName}', and this file exists '{File.Exists(runData.PlatinumDacPacFileName ?? string.Empty)}' ");
             }
-            //Do we need to try to update the target using the Platinum Dacpac?
-            if (candidateForCustomDacPac && !string.IsNullOrEmpty(runData.PlatinumDacPacFileName) && File.Exists(runData.PlatinumDacPacFileName) && !(runData.ForceCustomDacpac ?? false))
+
+            if (candidateForCustomDacPac)
             {
-                var database = prep.FilteredScripts[0].Database;
-                string targetDatabase = GetTargetDatabase(database);
-                log.LogWarning($"Custom dacpac required for {serverName} : {targetDatabase}. Generating file.");
-                (var stat, var updatedRunData) = DacPacHelper.UpdateBuildRunDataForDacPacSync(runData,  serverName, targetDatabase, connData.AuthenticationType, connData.UserId, connData.Password, projectFilePath, runData.BuildRevision ?? string.Empty, runData.DefaultScriptTimeout, runData.AllowObjectDelete ?? false, connData.ManagedIdentityClientId);
-
-                if (stat == DacpacDeltasStatus.Success)
+                var dacPacContext = new Services.DacPacFallbackContext
                 {
-                    //var tempRunData = MapToRunDataModel(legacyRunData);
-                    //var updatedRunData = new BuildModels.SqlBuildRunDataModel(
-                    //    buildDataModel: tempRunData.BuildDataModel,
-                    //    buildType: tempRunData.BuildType,
-                    //    server: tempRunData.Server,
-                    //    buildDescription: tempRunData.BuildDescription,
-                    //    startIndex: tempRunData.StartIndex,
-                    //    projectFileName: tempRunData.ProjectFileName,
-                    //    isTrial: tempRunData.IsTrial,
-                    //    runItemIndexes: tempRunData.RunItemIndexes,
-                    //    runScriptOnly: tempRunData.RunScriptOnly,
-                    //    buildFileName: tempRunData.BuildFileName,
-                    //    logToDatabaseName: tempRunData.LogToDatabaseName,
-                    //    isTransactional: tempRunData.IsTransactional,
-                    //    platinumDacPacFileName: string.Empty,
-                    //    targetDatabaseOverrides: tempRunData.TargetDatabaseOverrides,
-                    //    forceCustomDacpac: tempRunData.ForceCustomDacpac,
-                    //    buildRevision: tempRunData.BuildRevision,
-                    //    defaultScriptTimeout: tempRunData.DefaultScriptTimeout,
-                    //    allowObjectDelete: tempRunData.AllowObjectDelete);
-                    log.LogInformation($"Executing custom dacpac on {targetDatabase}");
-                    var dacBuild = ProcessBuild(updatedRunData,serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
-                    var dacFinalStatus = dacBuild.FinalStatus;
-                    if (dacFinalStatus == BuildItemStatus.Committed || dacFinalStatus == BuildItemStatus.CommittedWithTimeoutRetries)
-                    {
-                        buildResultsModel.FinalStatus = BuildItemStatus.CommittedWithCustomDacpac;
-                        if (BuildCommittedEvent != null)
-                            BuildCommittedEvent(this, RunnerReturn.CommittedWithCustomDacpac);
-                    }
-                    else
-                    {
-                        buildResultsModel.FinalStatus = BuildItemStatus.FailedWithCustomDacpac;
-                    }
-                }
-                else if (stat == DacpacDeltasStatus.InSync || stat == DacpacDeltasStatus.OnlyPostDeployment)
-                {
-                    buildResultsModel.FinalStatus = BuildItemStatus.AlreadyInSync;
-                    if (BuildCommittedEvent != null)
-                        BuildCommittedEvent(this, RunnerReturn.DacpacDatabasesInSync);
-                }
+                    RunData = runData,
+                    Prep = prep,
+                    ServerName = serverName,
+                    IsMultiDbRun = isMultiDbRun,
+                    ScriptBatchColl = scriptBatchColl,
+                    AllowableTimeoutRetries = allowableTimeoutRetries,
+                    ConnectionData = connData,
+                    ProjectFilePath = projectFilePath,
+                    ProcessBuildCallback = ProcessBuild,
+                    GetTargetDatabaseCallback = GetTargetDatabase,
+                    RaiseBuildCommittedEvent = rr => BuildCommittedEvent?.Invoke(this, rr)
+                };
 
+                var fallbackResult = DacPacFallbackHandler.TryDacPacFallback(dacPacContext, buildResultsModel);
+                if (fallbackResult.NewStatus.HasValue)
+                {
+                    buildResultsModel.FinalStatus = fallbackResult.NewStatus.Value;
+                }
             }
 
             //If a timeout gets here.. need to decide how to label the rollback
