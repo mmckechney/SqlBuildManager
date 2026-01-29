@@ -1,9 +1,10 @@
-using System;
-using System.IO;
-using System.Reflection;
+using Microsoft.Azure.Amqp.Framing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Models;
+using System;
+using System.IO;
+using System.Reflection;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
@@ -40,14 +41,14 @@ namespace SqlSync.SqlBuild.UnitTest
             addScriptRun.Invoke(helper, new object[] { run, myBuild });
 
             // Assert
-            Assert.IsNotNull(helper.BuildHistoryModel);
-            Assert.AreEqual(1, helper.BuildHistoryModel.ScriptRun.Count);
-            Assert.AreEqual("script.sql", helper.BuildHistoryModel.ScriptRun[0].FileName);
-            Assert.AreEqual(true, helper.BuildHistoryModel.ScriptRun[0].Success);
-            Assert.IsNotNull(helper.BuildHistoryModel);
-            Assert.AreEqual(1, helper.BuildHistoryModel.ScriptRun.Count);
-            Assert.AreEqual("script.sql", helper.BuildHistoryModel.ScriptRun[0].FileName);
-            Assert.AreEqual(true, helper.BuildHistoryModel.ScriptRun[0].Success);
+            Assert.IsNotNull(((ISqlBuildRunnerProperties)helper).BuildHistoryModel);
+            Assert.AreEqual(1, ((ISqlBuildRunnerProperties)helper).BuildHistoryModel.ScriptRun.Count);
+            Assert.AreEqual("script.sql", ((ISqlBuildRunnerProperties)helper).BuildHistoryModel.ScriptRun[0].FileName);
+            Assert.AreEqual(true, ((ISqlBuildRunnerProperties)helper).BuildHistoryModel.ScriptRun[0].Success);
+            Assert.IsNotNull(((ISqlBuildRunnerProperties)helper).BuildHistoryModel);
+            Assert.AreEqual(1, ((ISqlBuildRunnerProperties)helper).BuildHistoryModel.ScriptRun.Count);
+            Assert.AreEqual("script.sql", ((ISqlBuildRunnerProperties)helper).BuildHistoryModel.ScriptRun[0].FileName);
+            Assert.AreEqual(true, ((ISqlBuildRunnerProperties)helper).BuildHistoryModel.ScriptRun[0].Success);
         }
     }
 }

@@ -37,14 +37,16 @@ namespace SqlSync.SqlBuild
         bool ErrorOccured { get; set; }
         string SqlInfoMessage { get; set; }
         int DefaultScriptTimeout { get; }
-        BuildModels.SqlSyncBuildDataModel BuildDataModel { get; }
+        BuildModels.SqlSyncBuildDataModel BuildDataModel { get; set; }
+        BuildModels.SqlSyncBuildDataModel BuildHistoryModel { get; set; }
         MultiDbData MultiDbRunData { get; }
 
         string BuildRequestedBy { get; }
         string BuildDescription { get; }
-        string LogToDataBaseName { get; }
+        string LogToDatabaseName { get; set; }
         string BuildHistoryXmlFile { get; }
         ConnectionData ConnectionData { get; }
+        public List<DatabaseOverride> TargetDatabaseOverrides { get; }
 
         event ScriptLogWriteEventHandler ScriptLogWriteEvent;
         event BuildCommittedEventHandler BuildCommittedEvent;

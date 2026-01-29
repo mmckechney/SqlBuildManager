@@ -5,7 +5,7 @@ namespace SqlSync.SqlBuild.Services
 {
     internal sealed class DefaultTokenReplacementService : ITokenReplacementService
     {
-        public string ReplaceTokens(string script, SqlBuildHelper ctx)
+        public string ReplaceTokens(string script, ISqlBuildRunnerProperties ctx)
         {
             if (ScriptTokens.regBuildDescription.Match(script).Success)
             {
@@ -24,7 +24,7 @@ namespace SqlSync.SqlBuild.Services
             return script;
         }
 
-        public Task<string> ReplaceTokensAsync(string script, SqlBuildHelper ctx, CancellationToken cancellationToken = default)
+        public Task<string> ReplaceTokensAsync(string script, ISqlBuildRunnerProperties ctx, CancellationToken cancellationToken = default)
             => Task.FromResult(ReplaceTokens(script, ctx));
     }
 }

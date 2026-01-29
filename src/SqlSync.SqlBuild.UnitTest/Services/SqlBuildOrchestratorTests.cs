@@ -30,7 +30,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             {
                 SqlBuildHelper.SqlBuildRunnerFactory = (connSvc, ctx, finalizerContext, exec) => new FakeRunner(ctx, queue, () => runnerCalls++);
 
-                var orchestrator = new SqlBuildOrchestrator(helper, MockFactory.CreateMockConnectionsService().Object, MockFactory.CreateMockSqlLoggingService().Object);
+                var orchestrator = new SqlBuildOrchestrator(helper, helper, helper.RetryPolicy,helper, MockFactory.CreateMockConnectionsService().Object, MockFactory.CreateMockSqlLoggingService().Object);
                 var runData = new SqlBuildRunDataModel(
                     buildDataModel: SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
                     buildType: "type",

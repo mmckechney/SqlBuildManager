@@ -228,7 +228,7 @@ namespace SqlSync.SqlBuild.Services
             return script;
         }
 
-        private string RemoveTransactionReferences(string script)
+        public string RemoveTransactionReferences(string script)
         {
             RegexOptions options = RegexOptions.IgnoreCase | RegexOptions.Singleline;
             script = RegexRemoveIfNotInComments(Properties.Resources.RegexTransaction, script, options);
@@ -238,7 +238,7 @@ namespace SqlSync.SqlBuild.Services
             return script;
         }
 
-        private string RegexRemoveIfNotInComments(string regexExpression, string script, RegexOptions options)
+        public string RegexRemoveIfNotInComments(string regexExpression, string script, RegexOptions options)
         {
             Regex regRemoveTag = new Regex(regexExpression, options);
             int startAt = 0;
@@ -257,9 +257,26 @@ namespace SqlSync.SqlBuild.Services
             return script;
         }
 
-        private bool IsInComment(string script, int position)
+        public bool IsInComment(string rawScript, int index)
         {
-            return SqlBuildHelper.IsInComment(script, position);
+            Regex regDoubleDash = new Regex(@"(--.*\n)", RegexOptions.IgnoreCase);
+            Regex regMultiLineComment = new Regex(@"(/\*.+?\*/)", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            MatchCollection comment = regDoubleDash.Matches(rawScript);
+            for (int i = 0; i < comment.Count; i++)
+            {
+                if (index > comment[i].Index && index < comment[i].Index + comment[i].Length)
+                    return true;
+            }
+
+            comment = regMultiLineComment.Matches(rawScript);
+            for (int i = 0; i < comment.Count; i++)
+            {
+                if (index > comment[i].Index && index <= comment[i].Index + comment[i].Length)
+                    return true;
+            }
+            return false;
         }
+
     }
 }

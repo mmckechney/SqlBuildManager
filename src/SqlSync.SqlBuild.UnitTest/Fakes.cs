@@ -80,7 +80,8 @@ namespace SqlSync.SqlBuild.UnitTest
 
         public int DefaultScriptTimeout => 30;
 
-        public SqlSyncBuildDataModel BuildDataModel => SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+        public SqlSyncBuildDataModel BuildDataModel {get => SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(); set => _ = value; }
+        public SqlSyncBuildDataModel BuildHistoryModel { get => SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(); set => _ = value; }
 
         public MultiDbData MultiDbRunData => new MultiDbData();
 
@@ -88,11 +89,12 @@ namespace SqlSync.SqlBuild.UnitTest
 
         public string BuildDescription => "FakeBuildDescription";
 
-        public string LogToDataBaseName => string.Empty;
+        public string LogToDatabaseName { get => string.Empty; set => value = string.Empty; }
 
         public string BuildHistoryXmlFile => "FakeBuildHistory.xml";
 
         public ConnectionData ConnectionData => new();
+        public List<DatabaseOverride> TargetDatabaseOverrides => new();
 
         public event ScriptLogWriteEventHandler ScriptLogWriteEvent;
         public event BuildCommittedEventHandler BuildCommittedEvent;
@@ -133,11 +135,12 @@ namespace SqlSync.SqlBuild.UnitTest
         public bool ErrorOccured { get; set; }
         public string SqlInfoMessage { get; set; } = string.Empty;
         public int DefaultScriptTimeout => 30;
-        public SqlSyncBuildDataModel BuildDataModel => SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+        public SqlSyncBuildDataModel BuildDataModel { get => SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(); set => _ = value; }
+        public SqlSyncBuildDataModel BuildHistoryModel { get => SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(); set => _ = value; }
         public MultiDbData MultiDbRunData => new MultiDbData();
         public string BuildRequestedBy => "FakeUser";
         public string BuildDescription => "FakeBuildDescription";
-        public string LogToDataBaseName => string.Empty;
+        public string LogToDatabaseName { get => string.Empty; set => value = string.Empty; }
         public string BuildHistoryXmlFile => "FakeBuildHistory.xml";
         public ConnectionData ConnectionData => new();
 
@@ -149,6 +152,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void RollbackBuild() { }
         public void SaveBuildDataSet(bool fireSavedEvent) { }
         public void PublishScriptLog(bool isError, ScriptLogEventArgs args) { }
+        public List<DatabaseOverride> TargetDatabaseOverrides => new();
     }
 
     /// <summary>
@@ -193,7 +197,7 @@ namespace SqlSync.SqlBuild.UnitTest
             mock.Setup(x => x.MultiDbRunData).Returns(new MultiDbData());
             mock.Setup(x => x.BuildRequestedBy).Returns("MockUser");
             mock.Setup(x => x.BuildDescription).Returns("Mock Build");
-            mock.Setup(x => x.LogToDataBaseName).Returns(string.Empty);
+            mock.Setup(x => x.LogToDatabaseName).Returns(string.Empty);
             mock.Setup(x => x.BuildHistoryXmlFile).Returns("MockHistory.xml");
             mock.Setup(x => x.ConnectionData).Returns(new ConnectionData());
             mock.Setup(x => x.GetTargetDatabase(It.IsAny<string>())).Returns((string db) => db);

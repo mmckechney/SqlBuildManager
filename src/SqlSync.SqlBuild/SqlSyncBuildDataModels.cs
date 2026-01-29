@@ -252,9 +252,10 @@ namespace SqlSync.SqlBuild.Models
         public IList<DatabaseOverride>? TargetDatabaseOverrides { get; set; } = new List<DatabaseOverride>();
         public bool? ForceCustomDacpac { get; set; }
         public string? BuildRevision { get; set; }
-        public int? DefaultScriptTimeout { get; set; }
+        public int DefaultScriptTimeout { get; set; } = 500;
         public bool? AllowObjectDelete { get; set; }
 
+        public SqlBuildRunDataModel() { }
         public SqlBuildRunDataModel(
             SqlSyncBuildDataModel? buildDataModel,
             string? buildType,
@@ -272,7 +273,7 @@ namespace SqlSync.SqlBuild.Models
             IList<DatabaseOverride>? targetDatabaseOverrides,
             bool? forceCustomDacpac,
             string? buildRevision,
-            int? defaultScriptTimeout,
+            int defaultScriptTimeout,
             bool? allowObjectDelete)
         {
             BuildDataModel = buildDataModel;

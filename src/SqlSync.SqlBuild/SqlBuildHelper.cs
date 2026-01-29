@@ -31,152 +31,70 @@ namespace SqlSync.SqlBuild
     /// </summary>
     public class SqlBuildHelper : ISqlBuildRunnerContext, ISqlBuildRunnerProperties, IBuildFinalizerContext
     {
-        internal static Func<IConnectionsService, ISqlBuildRunnerContext, IBuildFinalizerContext , ISqlCommandExecutor, SqlBuildRunner> SqlBuildRunnerFactory = (connService, ctx, finalizerContext, exec) => new SqlBuildRunner(connService,  ctx, finalizerContext, exec);
+        #region Static Members
+
+        internal static Func<IConnectionsService, ISqlBuildRunnerContext, IBuildFinalizerContext, ISqlCommandExecutor, SqlBuildRunner> SqlBuildRunnerFactory = (connService, ctx, finalizerContext, exec) => new SqlBuildRunner(connService, ctx, finalizerContext, exec);
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        internal bool isTransactional = true;
-        internal List<DatabaseOverride> targetDatabaseOverrides = null;
-        public List<DatabaseOverride> TargetDatabaseOverrides
-        {
-            get { return targetDatabaseOverrides; }
-            set { targetDatabaseOverrides = value; }
-        }
-        /// <summary>
-        /// Indicator for external callers that an error occurred. Can also subscribe to ScriptingErrorEvent
-        /// </summary>
-        public bool ErrorOccured;
-        /// <summary>
-        /// POCO model holding build configuration data
-        /// </summary>
-        internal BuildModels.SqlSyncBuildDataModel buildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-        /// <summary>
-        /// Optional reference to original DataSet for backward compatibility tests
-        /// </summary>
-        internal SqlSyncBuildData buildDataCompat;
+
+        #endregion
+
+        #region Nested Types
 
         internal sealed record BuildPreparationResult(
             IList<BuildModels.Script> FilteredScripts,
             BuildModels.Build Build,
             string BuildPackageHash
         );
-        /// <summary>
-        /// Data collection used to pass connection data
-        /// </summary>
+
+        #endregion
+
+        #region Core Build State Fields
+
+        internal bool isTransactional = true;
+        internal bool isTrialBuild = false;
+        internal bool runScriptOnly = false;
+        internal List<DatabaseOverride> targetDatabaseOverrides = null;
+        internal BuildModels.SqlSyncBuildDataModel buildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+        internal SqlSyncBuildData buildDataCompat;
+        internal string buildPackageHash = string.Empty;
+
+        #endregion
+
+        #region Build Configuration Fields
+
         private ConnectionData connData;
         private string buildType;
-        /// <summary>
-        /// User description of the build
-        /// </summary>
         internal string buildDescription;
-        public string BuildDescription => buildDescription;
-        /// <summary>
-        /// Index where the build should start
-        /// </summary>
         private double startIndex;
-        /// <summary>
-        /// Dictionary containing the BuildConnectData objects with the server/database as key
-        /// </summary>
-        //private Dictionary<string, BuildConnectData> connectDictionary = new Dictionary<string, BuildConnectData>();
-        /// <summary>
-        /// Name of the Sql Build project (sbm) file
-        /// </summary>
         internal string projectFileName;
-        /// <summary>
-        /// Holding string for the last message from Sql server
-        /// </summary>
-        private string lastSqlMessage = string.Empty;
-        /// <summary>
-        /// Path to the Sql Build project (sbm) file
-        /// </summary>
         private string projectFilePath = string.Empty;
-        private MultiDbData multiDbRunData;
-        /// <summary>
-        /// Current run for 
-        /// </summary>
-        private BuildModels.ScriptRun currentRun;
-        /// <summary>
-        /// Flag for determining if this is a trial (rollback)
-        /// </summary>
-        internal bool isTrialBuild = false;
-        /// <summary>
-        /// Name of the file being used to store scripts
-        /// </summary>
-        internal string scriptLogFileName;
-        /// <summary>
-        /// String to hold the Sql event messages
-        /// </summary>
-        private string sqlInfoMessage = string.Empty;
-        /// <summary>
-        /// Index of the current script of the batch
-        /// </summary>
-        private int currentBatchScriptIndex;
-        /// <summary>
-        /// Index of the single script file to run (if single file run)
-        /// </summary>
-        internal double[] runItemIndexes = new double[0];
-        /// <summary>
-        /// Id of the current build
-        /// </summary>
-        private System.Guid currentBuildId = System.Guid.Empty;
-        /// <summary>
-        /// Flag use to set "script only" setting
-        /// </summary>
-        internal bool runScriptOnly = false;
-        /// <summary>
-        /// Name of the build file (.sbm)
-        /// </summary>
         internal string buildFileName = string.Empty;
-        public string BuildFileName => buildFileName;
-        /// <summary>
-        /// Names of scripts selected in the GUI
-        /// </summary>
-        private string[] selectedScriptIds = null;
-        /// <summary>
-        /// Public accessor to get the GUID of the current build
-        /// </summary>
-        public System.Guid CurrentBuildId => currentBuildId;
-
-        /// <summary>
-        /// The hash signature of the build package scripts
-        /// </summary>
-        internal string buildPackageHash = string.Empty;
-        public string BuildPackageHash => buildPackageHash;
-        /// <summary>
-        /// Database to write commits to if an alternate logging database has been specified
-        /// </summary>
-        private string logToDatabaseName = string.Empty;
-        /// <summary>
-        /// Database to write commits to if an alternate logging database has been specified
-        /// </summary>
-        public string LogToDatabaseName
-        {
-            get { return logToDatabaseName; }
-            set { logToDatabaseName = value; }
-        }
-        /// <summary>
-        /// List of the scripts that have been run and will be committed when the build is committed.
-        /// </summary>
-        private List<LoggingCommittedScript> committedScripts = new List<LoggingCommittedScript>();
-        public List<LoggingCommittedScript> CommittedScripts => committedScripts;
-        /// <summary>
-        /// Used by the remote service to record the user that requested the build (vs. the user id used in execution) since they may be different
-        /// </summary>
-        private string buildRequestedBy = string.Empty;
-
+        internal string scriptLogFileName;
+        internal string externalScriptLogFileName = string.Empty;
         internal string buildHistoryXmlFile = string.Empty;
+        private string logToDatabaseName = string.Empty;
+        private string buildRequestedBy = string.Empty;
+        internal double[] runItemIndexes = new double[0];
+        internal bool errorOccured;
+
+        #endregion
+
+        #region Runtime State Fields
+
+        private MultiDbData multiDbRunData;
+        private BuildModels.ScriptRun currentRun;
+        private string sqlInfoMessage = string.Empty;
+        private string lastSqlMessage = string.Empty;
+        private int currentBatchScriptIndex;
+        private System.Guid currentBuildId = System.Guid.Empty;
+        private string[] selectedScriptIds = null;
+        private List<LoggingCommittedScript> committedScripts = new List<LoggingCommittedScript>();
         private BuildModels.SqlSyncBuildDataModel buildHistoryModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-        internal BuildModels.SqlSyncBuildDataModel BuildHistoryModel
-        {
-            get => buildHistoryModel;
-            set => buildHistoryModel = value;
-        }
-        internal BuildModels.SqlSyncBuildDataModel BuildDataModel
-        {
-            get => buildDataModel;
-            set => buildDataModel = value;
-        }
+        #endregion
 
-        // New dependencies (Phase 2 seams)
+        #region Dependency Injection Properties
+
         internal IClock Clock { get; }
         internal IGuidProvider GuidProvider { get; }
         internal IFileSystem FileSystem { get; }
@@ -192,61 +110,18 @@ namespace SqlSync.SqlBuild
         internal Services.IConnectionsService ConnectionsService { get; }
         internal Services.IBuildFinalizer BuildFinalizer { get; }
 
-        private static SqlBuildRunData MapToLegacyRunData(BuildModels.SqlBuildRunDataModel model)
-        {
-            return new SqlBuildRunData
-            {
-                BuildDataModel = model.BuildDataModel,
-                BuildType = model.BuildType ?? string.Empty,
-                Server = model.Server ?? string.Empty,
-                BuildDescription = model.BuildDescription ?? string.Empty,
-                StartIndex = model.StartIndex ?? 0,
-                ProjectFileName = model.ProjectFileName ?? string.Empty,
-                IsTrial = model.IsTrial ?? false,
-                RunItemIndexes = model.RunItemIndexes?.ToArray() ?? Array.Empty<double>(),
-                RunScriptOnly = model.RunScriptOnly ?? false,
-                BuildFileName = model.BuildFileName ?? string.Empty,
-                LogToDatabaseName = model.LogToDatabaseName ?? string.Empty,
-                IsTransactional = model.IsTransactional ?? true,
-                PlatinumDacPacFileName = model.PlatinumDacPacFileName ?? string.Empty,
-                TargetDatabaseOverrides = model.TargetDatabaseOverrides?.ToList(),
-                ForceCustomDacpac = model.ForceCustomDacpac ?? false,
-                BuildRevision = model.BuildRevision ?? string.Empty,
-                DefaultScriptTimeout = model.DefaultScriptTimeout ?? 500,
-                AllowObjectDelete = model.AllowObjectDelete ?? false
-            };
-        }
+        #endregion
 
-        private static BuildModels.SqlBuildRunDataModel MapToRunDataModel(SqlBuildRunData runData)
-        {
-            return new BuildModels.SqlBuildRunDataModel(
-                buildDataModel: runData.BuildDataModel,
-                buildType: runData.BuildType,
-                server: runData.Server,
-                buildDescription: runData.BuildDescription,
-                startIndex: runData.StartIndex,
-                projectFileName: runData.ProjectFileName,
-                isTrial: runData.IsTrial,
-                runItemIndexes: runData.RunItemIndexes,
-                runScriptOnly: runData.RunScriptOnly,
-                buildFileName: runData.BuildFileName,
-                logToDatabaseName: runData.LogToDatabaseName,
-                isTransactional: runData.IsTransactional,
-                platinumDacPacFileName: runData.PlatinumDacPacFileName,
-                targetDatabaseOverrides: runData.TargetDatabaseOverrides,
-                forceCustomDacpac: runData.ForceCustomDacpac,
-                buildRevision: runData.BuildRevision,
-                defaultScriptTimeout: runData.DefaultScriptTimeout,
-                allowObjectDelete: runData.AllowObjectDelete);
-        }
+        #region Events
 
+        public event ScriptLogWriteEventHandler ScriptLogWriteEvent;
+        public event BuildCommittedEventHandler BuildCommittedEvent;
+        public event EventHandler BuildSuccessTrialRolledBackEvent;
+        public event EventHandler BuildErrorRollBackEvent;
 
-        private static BuildModels.Script MapLegacyScriptRowToModel(SqlSyncBuildData.ScriptRow row) => row.ToModel();
+        #endregion
 
-        private static BuildModels.Build MapLegacyBuildRowToModel(SqlSyncBuildData.BuildRow row) => row.ToModel();
-        private void SyncBuildDataModel(SqlSyncBuildData ds) => buildDataModel = ds.ToModel();
-
-        internal string externalScriptLogFileName = string.Empty;
+        #region Constructors
 
         public SqlBuildHelper(
             ConnectionData data,
@@ -281,26 +156,23 @@ namespace SqlSync.SqlBuild
             DatabaseUtility = databaseUtility ?? new Services.DefaultDatabaseUtility(ConnectionsService, SqlLoggingService, ProgressReporter, FileHelper);
             BuildFinalizer = buildFinalizer ?? new Services.DefaultBuildFinalizer(SqlLoggingService, ProgressReporter);
 
-
             if (createScriptRunLogFile)
                 ScriptLogWriteEvent += new ScriptLogWriteEventHandler(SqlBuildHelper_ScriptLogWriteEvent);
 
             if (externalScriptLogFileName != null && externalScriptLogFileName.Length > 0)
                 this.externalScriptLogFileName = externalScriptLogFileName;
-
         }
+
+        #endregion
+
+
+        #region Public Methods
 
         public BuildResultStatus ProcessMultiDbBuild(MultiDbData multiDbRunData, string projectFileName)
         {
             this.projectFileName = projectFileName;
-            return ProcessMultiDbBuild(multiDbRunData); // Call to process the multi-db build
+            return ProcessMultiDbBuild(multiDbRunData);
         }
-        /// <summary>
-        /// Used when the user wants to run the build across multiple databases and/or servers
-        /// </summary>
-        /// <param name="multiDbRunData"></param>
-        /// <param name="bgWorker"></param>
-        /// <param name="e"></param>
         public BuildResultStatus ProcessMultiDbBuild(MultiDbData multiDbRunData)
         {
             this.multiDbRunData = multiDbRunData;
@@ -357,7 +229,7 @@ namespace SqlSync.SqlBuild
             return calculatedStatus;
         }
 
-        public async Task<BuildModels.Build> ProcessBuild(BuildModels.SqlBuildRunDataModel runData, int allowableTimeoutRetries = 3,  string buildRequestedBy = "", ScriptBatchCollection scriptBatchColl = null)
+        public async Task<BuildModels.Build> ProcessBuild(BuildModels.SqlBuildRunDataModel runData, int allowableTimeoutRetries = 3, string buildRequestedBy = "", ScriptBatchCollection scriptBatchColl = null)
         {
             ConnectionsService.Connections.Clear();
             committedScripts.Clear();
@@ -373,7 +245,7 @@ namespace SqlSync.SqlBuild
 
         internal BuildModels.Build ProcessBuild(BuildModels.SqlBuildRunDataModel runData, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, int allowableTimeoutRetries)
         {
-            ErrorOccured = false;
+            errorOccured = false;
             buildDataModel = runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             buildType = runData.BuildType ?? string.Empty;
             buildDescription = runData.BuildDescription ?? string.Empty;
@@ -395,7 +267,7 @@ namespace SqlSync.SqlBuild
                 return prep.Build;
             }
 
-            var orchestrator = new Services.SqlBuildOrchestrator(this, ConnectionsService, SqlLoggingService);
+            var orchestrator = new Services.SqlBuildOrchestrator(this, this, this.RetryPolicy, this,ConnectionsService, SqlLoggingService);
             var buildResultsModel = orchestrator.Execute(runData, prep, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
 
             bool candidateForCustomDacPac = false;
@@ -431,31 +303,30 @@ namespace SqlSync.SqlBuild
                 var database = prep.FilteredScripts[0].Database;
                 string targetDatabase = GetTargetDatabase(database);
                 log.LogWarning($"Custom dacpac required for {serverName} : {targetDatabase}. Generating file.");
-                var legacyRunData = MapToLegacyRunData(runData);
-                var stat = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref legacyRunData, serverName, targetDatabase, connData.AuthenticationType, connData.UserId, connData.Password, projectFilePath, runData.BuildRevision ?? string.Empty, runData.DefaultScriptTimeout ?? 500, runData.AllowObjectDelete ?? false, connData.ManagedIdentityClientId);
+                (var stat, var updatedRunData) = DacPacHelper.UpdateBuildRunDataForDacPacSync(runData,  serverName, targetDatabase, connData.AuthenticationType, connData.UserId, connData.Password, projectFilePath, runData.BuildRevision ?? string.Empty, runData.DefaultScriptTimeout, runData.AllowObjectDelete ?? false, connData.ManagedIdentityClientId);
 
                 if (stat == DacpacDeltasStatus.Success)
                 {
-                    var tempRunData = MapToRunDataModel(legacyRunData);
-                    var updatedRunData = new BuildModels.SqlBuildRunDataModel(
-                        buildDataModel: tempRunData.BuildDataModel,
-                        buildType: tempRunData.BuildType,
-                        server: tempRunData.Server,
-                        buildDescription: tempRunData.BuildDescription,
-                        startIndex: tempRunData.StartIndex,
-                        projectFileName: tempRunData.ProjectFileName,
-                        isTrial: tempRunData.IsTrial,
-                        runItemIndexes: tempRunData.RunItemIndexes,
-                        runScriptOnly: tempRunData.RunScriptOnly,
-                        buildFileName: tempRunData.BuildFileName,
-                        logToDatabaseName: tempRunData.LogToDatabaseName,
-                        isTransactional: tempRunData.IsTransactional,
-                        platinumDacPacFileName: string.Empty,
-                        targetDatabaseOverrides: tempRunData.TargetDatabaseOverrides,
-                        forceCustomDacpac: tempRunData.ForceCustomDacpac,
-                        buildRevision: tempRunData.BuildRevision,
-                        defaultScriptTimeout: tempRunData.DefaultScriptTimeout,
-                        allowObjectDelete: tempRunData.AllowObjectDelete);
+                    //var tempRunData = MapToRunDataModel(legacyRunData);
+                    //var updatedRunData = new BuildModels.SqlBuildRunDataModel(
+                    //    buildDataModel: tempRunData.BuildDataModel,
+                    //    buildType: tempRunData.BuildType,
+                    //    server: tempRunData.Server,
+                    //    buildDescription: tempRunData.BuildDescription,
+                    //    startIndex: tempRunData.StartIndex,
+                    //    projectFileName: tempRunData.ProjectFileName,
+                    //    isTrial: tempRunData.IsTrial,
+                    //    runItemIndexes: tempRunData.RunItemIndexes,
+                    //    runScriptOnly: tempRunData.RunScriptOnly,
+                    //    buildFileName: tempRunData.BuildFileName,
+                    //    logToDatabaseName: tempRunData.LogToDatabaseName,
+                    //    isTransactional: tempRunData.IsTransactional,
+                    //    platinumDacPacFileName: string.Empty,
+                    //    targetDatabaseOverrides: tempRunData.TargetDatabaseOverrides,
+                    //    forceCustomDacpac: tempRunData.ForceCustomDacpac,
+                    //    buildRevision: tempRunData.BuildRevision,
+                    //    defaultScriptTimeout: tempRunData.DefaultScriptTimeout,
+                    //    allowObjectDelete: tempRunData.AllowObjectDelete);
                     log.LogInformation($"Executing custom dacpac on {targetDatabase}");
                     var dacBuild = ProcessBuild(updatedRunData,serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
                     var dacFinalStatus = dacBuild.FinalStatus;
@@ -610,12 +481,30 @@ namespace SqlSync.SqlBuild
             return runner.Run(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
         }
 
-  
-        /// <summary>
-        /// Gets the database to actually execute against based on the set default and any matching override
-        /// </summary>
-        /// <param name="defaultDatabase">The default database set up in the SBM configuration</param>
-        /// <returns>Actual database to execute against</returns>coo
+        public string GetFromResources(string resourceName)
+        {
+            System.Reflection.Assembly assem = GetType().Assembly;
+            using (System.IO.Stream stream = assem.GetManifestResourceStream(resourceName))
+            {
+                try
+                {
+                    using (System.IO.StreamReader reader = new StreamReader(stream))
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new ApplicationException("Error retrieving from Resources. Tried '"
+                        + resourceName + "'\r\n" + e.ToString());
+                }
+            }
+        }
+
+        #endregion
+
+        #region Internal Helper Methods
+
         internal string GetTargetDatabase(string defaultDatabase)
         {
             if (targetDatabaseOverrides != null)
@@ -630,69 +519,14 @@ namespace SqlSync.SqlBuild
             {
                 return defaultDatabase;
             }
-
         }
 
-        public static string RemoveTransactionReferences(string script)
+        internal string PerformScriptTokenReplacement(string script)
         {
-            // Keep this public static helper for backward compatibility
-            RegexOptions options = RegexOptions.IgnoreCase | RegexOptions.Singleline;
-            script = RegexRemoveIfNotInComments(Properties.Resources.RegexTransaction, script, options);
-            script = RegexRemoveIfNotInComments(Properties.Resources.RegexTran, script, options);
-            script = RegexRemoveIfNotInComments(Properties.Resources.RegexCommit, script, options);
-            script = RegexRemoveIfNotInComments(Properties.Resources.RegexTransactionLevel, script, options);
-            return script;
-        }
-        
-        private static string RegexRemoveIfNotInComments(string regexExpression, string script, RegexOptions options)
-        {
-            Regex regRemoveTag = new Regex(regexExpression, options);
-            int startAt = 0;
-            while (regRemoveTag.Match(script, startAt).Success)
-            {
-                Match m = regRemoveTag.Match(script, startAt);
-                if (!IsInComment(script, m.Index))
-                {
-                    script = regRemoveTag.Replace(script, "", 1, m.Index);
-                }
-                else
-                {
-                    startAt = m.Index + m.Length;
-                }
-            }
-            return script;
+            return TokenReplacementService.ReplaceTokens(script, this);
         }
 
-        
-
-        #region ## Events ##
-        public event ScriptLogWriteEventHandler ScriptLogWriteEvent;
-        public event BuildCommittedEventHandler BuildCommittedEvent;
-        public event EventHandler BuildSuccessTrialRolledBackEvent;
-        public event EventHandler BuildErrorRollBackEvent;
-        #endregion
-
-        public static bool IsInComment(string rawScript, int index)
-        {
-            Regex regDoubleDash = new Regex(@"(--.*\n)", RegexOptions.IgnoreCase);
-            Regex regMultiLineComment = new Regex(@"(/\*.+?\*/)", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
-            MatchCollection comment = regDoubleDash.Matches(rawScript);
-            for (int i = 0; i < comment.Count; i++)
-            {
-                if (index > comment[i].Index && index < comment[i].Index + comment[i].Length)
-                    return true;
-            }
-
-            comment = regMultiLineComment.Matches(rawScript);
-            for (int i = 0; i < comment.Count; i++)
-            {
-                if (index > comment[i].Index && index <= comment[i].Index + comment[i].Length)
-                    return true;
-            }
-            return false;
-        }
-
+        private void SyncBuildDataModel(SqlSyncBuildData ds) => buildDataModel = ds.ToModel();
 
         internal void SqlBuildHelper_ScriptLogWriteEvent(object sender, bool isError, ScriptLogEventArgs e)
         {
@@ -756,32 +590,6 @@ namespace SqlSync.SqlBuild
                     log.LogError($"Error copying results file to '{externalScriptLogFileName}': {exe}");
                 }
             }
-
-        }
-
-        public string GetFromResources(string resourceName)
-        {
-            System.Reflection.Assembly assem = GetType().Assembly;
-            using (System.IO.Stream stream = assem.GetManifestResourceStream(resourceName))
-            {
-                try
-                {
-                    using (System.IO.StreamReader reader = new StreamReader(stream))
-                    {
-                        return reader.ReadToEnd();
-                    }
-                }
-                catch (Exception e)
-                {
-                    throw new ApplicationException("Error retrieving from Resources. Tried '"
-                        + resourceName + "'\r\n" + e.ToString());
-                }
-            }
-        }
-
-        internal string PerformScriptTokenReplacement(string script)
-        {
-            return TokenReplacementService.ReplaceTokens(script, this);
         }
 
         //internal void SaveBuildDataModel(bool fireSavedEvent)
@@ -833,27 +641,12 @@ namespace SqlSync.SqlBuild
                     committedScript: buildHistoryModel.CommittedScript,
                     codeReview: buildHistoryModel.CodeReview);
             }
-            // optionally keep dataset for compatibility
-            //if (buildHistoryData != null)
-            //{
-            //    var row = buildHistoryData.ScriptRun.NewScriptRunRow();
-            //    row.Database = run.Database;
-            //    row.RunOrder = run.RunOrder ?? 0;
-            //    row.RunStart = run.RunStart ?? DateTime.MinValue;
-            //    row.FileName = run.FileName;
-            //    row.ScriptRunId = run.ScriptRunId;
-            //    if (run.FileHash != null) row.FileHash = run.FileHash;
-            //    if (run.RunEnd.HasValue) row.RunEnd = run.RunEnd.Value;
-            //    if (run.Success.HasValue) row.Success = run.Success.Value;
-            //    if (run.Results != null) row.Results = run.Results;
-            //    buildHistoryData.ScriptRun.AddScriptRunRow(row);
-            //    buildHistoryData.AcceptChanges();
-            //}
+
         }
 
+        #endregion
 
-
-        #region ISqlBuildRunnerProperties
+        #region Interface Implementations - ISqlBuildRunnerProperties
 
         bool ISqlBuildRunnerProperties.IsTransactional => isTransactional;
         bool ISqlBuildRunnerProperties.IsTrialBuild => isTrialBuild;
@@ -864,18 +657,21 @@ namespace SqlSync.SqlBuild
         string ISqlBuildRunnerProperties.BuildFileName => buildFileName;
         string ISqlBuildRunnerProperties.BuildHistoryXmlFile => buildHistoryXmlFile;
         List<LoggingCommittedScript> ISqlBuildRunnerProperties.CommittedScripts => committedScripts;
-        bool ISqlBuildRunnerProperties.ErrorOccured { get => ErrorOccured; set => ErrorOccured = value; }
+        bool ISqlBuildRunnerProperties.ErrorOccured { get => errorOccured; set => errorOccured = value; }
         string ISqlBuildRunnerProperties.SqlInfoMessage { get => sqlInfoMessage; set => sqlInfoMessage = value; }
         int ISqlBuildRunnerProperties.DefaultScriptTimeout => connData?.ScriptTimeout ?? 30;
-        BuildModels.SqlSyncBuildDataModel ISqlBuildRunnerProperties.BuildDataModel => buildDataModel;
+        BuildModels.SqlSyncBuildDataModel ISqlBuildRunnerProperties.BuildDataModel { get => buildDataModel; set => buildDataModel = value; }
+        BuildModels.SqlSyncBuildDataModel ISqlBuildRunnerProperties.BuildHistoryModel { get => buildHistoryModel; set => buildHistoryModel = value; }
         MultiDbData ISqlBuildRunnerProperties.MultiDbRunData => this.multiDbRunData;
         string ISqlBuildRunnerProperties.BuildRequestedBy => buildRequestedBy;
         string ISqlBuildRunnerProperties.BuildDescription => buildDescription;
-        string ISqlBuildRunnerProperties.LogToDataBaseName => LogToDatabaseName;
+        string ISqlBuildRunnerProperties.LogToDatabaseName { get => logToDatabaseName; set => logToDatabaseName = value; }
         ConnectionData ISqlBuildRunnerProperties.ConnectionData => connData;
+        List<DatabaseOverride> ISqlBuildRunnerProperties.TargetDatabaseOverrides { get => targetDatabaseOverrides; }
+
         #endregion
 
-        #region ISqlBuildRunnerContext
+        #region Interface Implementations - ISqlBuildRunnerContext
         ILogger ISqlBuildRunnerContext.Log => log;
         IProgressReporter ISqlBuildRunnerContext.ProgressReporter => ProgressReporter ?? new DefaultProgressReporter();
         string ISqlBuildRunnerContext.GetTargetDatabase(string defaultDatabase) => GetTargetDatabase(defaultDatabase);
@@ -884,9 +680,10 @@ namespace SqlSync.SqlBuild
         Task<string> ISqlBuildRunnerContext.PerformScriptTokenReplacementAsync(string script, CancellationToken cancellationToken) => TokenReplacementService.ReplaceTokensAsync(script, this, cancellationToken);
         void ISqlBuildRunnerContext.AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild) => AddScriptRunToHistory(run, myBuild);
         void ISqlBuildRunnerContext.PublishScriptLog(bool isError, ScriptLogEventArgs args) => ScriptLogWriteEvent?.Invoke(null, isError, args);
+
         #endregion
 
-        #region IBuildFinalizerContext implementation
+        #region Interface Implementations - IBuildFinalizerContext
         bool IBuildFinalizerContext.IsTransactional => isTransactional;
         bool IBuildFinalizerContext.IsTrialBuild => isTrialBuild;
         bool IBuildFinalizerContext.RunScriptOnly => runScriptOnly;
@@ -895,8 +692,7 @@ namespace SqlSync.SqlBuild
         void IBuildFinalizerContext.RaiseBuildCommittedEvent(object sender, RunnerReturn rr) => BuildCommittedEvent?.Invoke(sender, rr);
         void IBuildFinalizerContext.RaiseBuildSuccessTrialRolledBackEvent(object sender) => BuildSuccessTrialRolledBackEvent?.Invoke(sender, EventArgs.Empty);
         void IBuildFinalizerContext.RaiseBuildErrorRollBackEvent(object sender) => BuildErrorRollBackEvent?.Invoke(sender, EventArgs.Empty);
-        #endregion
 
- 
+        #endregion
     }
 }

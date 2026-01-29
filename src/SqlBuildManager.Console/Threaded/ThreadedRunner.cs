@@ -157,30 +157,30 @@ namespace SqlBuildManager.Console.Threaded
             ConnectionData connData = null;
             BackgroundWorker bg = null;
             DoWorkEventArgs e = null;
-            SqlBuildRunData runData = new SqlBuildRunData();
+            SqlBuildRunDataModel runDataModel = new SqlBuildRunDataModel();
             string targetDatabase = overrides[0].OverrideDbTarget;
             string loggingDirectory = Path.Combine(ThreadedManager.WorkingDirectory, server, targetDatabase);
             try
             {
                 //Start setting properties on the object that contains the run configuration data.
-                runData.BuildType = "Other";
+                runDataModel.BuildType = "Other";
                 if (!string.IsNullOrEmpty(cmdArgs.Description))
-                    runData.BuildDescription = cmdArgs.Description;
+                    runDataModel.BuildDescription = cmdArgs.Description;
                 else
-                    runData.BuildDescription = "Threaded Multi-Database. Run ID:" + ThreadedManager.RunID;
+                    runDataModel.BuildDescription = "Threaded Multi-Database. Run ID:" + ThreadedManager.RunID;
 
-                runData.IsTrial = isTrial;
-                runData.RunScriptOnly = false;
-                runData.TargetDatabaseOverrides = overrides;
-                runData.Server = server;
-                runData.IsTransactional = cmdArgs.Transactional;
+                runDataModel.IsTrial = isTrial;
+                runDataModel.RunScriptOnly = false;
+                runDataModel.TargetDatabaseOverrides = overrides;
+                runDataModel.Server = server;
+                runDataModel.IsTransactional = cmdArgs.Transactional;
                 if (cmdArgs.LogToDatabaseName.Length > 0)
-                    runData.LogToDatabaseName = cmdArgs.LogToDatabaseName;
+                    runDataModel.LogToDatabaseName = cmdArgs.LogToDatabaseName;
 
-                runData.PlatinumDacPacFileName = cmdArgs.DacPacArgs.PlatinumDacpac;
-                runData.BuildRevision = cmdArgs.BuildRevision;
-                runData.DefaultScriptTimeout = cmdArgs.DefaultScriptTimeout;
-                runData.AllowObjectDelete = cmdArgs.AllowObjectDelete;
+                runDataModel.PlatinumDacPacFileName = cmdArgs.DacPacArgs.PlatinumDacpac;
+                runDataModel.BuildRevision = cmdArgs.BuildRevision;
+                runDataModel.DefaultScriptTimeout = cmdArgs.DefaultScriptTimeout;
+                runDataModel.AllowObjectDelete = cmdArgs.AllowObjectDelete;
 
 
                 //Initilize the logging directory for this run
@@ -191,9 +191,9 @@ namespace SqlBuildManager.Console.Threaded
 
                 if (forceCustomDacpac)
                 {
-                    runData.ForceCustomDacpac = true;
+                    runDataModel.ForceCustomDacpac = true;
                     //This will set the BuildData and BuildFileName and ProjectFileName properties on runData
-                    var status = DacPacHelper.UpdateBuildRunDataForDacPacSync(ref runData, server, targetDatabase, authType, username, password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout, cmdArgs.AllowObjectDelete, cmdArgs.IdentityArgs.ClientId);
+                    (var status, runDataModel) = DacPacHelper.UpdateBuildRunDataForDacPacSync(runDataModel, server, targetDatabase, authType, username, password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout, cmdArgs.AllowObjectDelete, cmdArgs.IdentityArgs.ClientId);
                     switch (status)
                     {
                         case DacpacDeltasStatus.Success:
@@ -214,16 +214,16 @@ namespace SqlBuildManager.Console.Threaded
                 }
                 else
                 {
-                    runData.ForceCustomDacpac = false;
+                    runDataModel.ForceCustomDacpac = false;
                     //Get a full copy of the build data to work with (avoid threading sync issues)
                     SqlSyncBuildDataModel cloned = ThreadedManager.BuildDataModel;
                     //Clear out any existing CommittedScript data.. just log what is relevant to this run.
                     cloned.CommittedScript = new List<SqlSync.SqlBuild.Models.CommittedScript>();
 
-                    runData.BuildDataModel = cloned;
-                    runData.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(ThreadedManager.ProjectFileName));
-                    SqlSyncBuildDataXmlSerializer.Save(runData.ProjectFileName, cloned);
-                    runData.BuildFileName = ThreadedManager.BuildZipFileName;
+                    runDataModel.BuildDataModel = cloned;
+                    runDataModel.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(ThreadedManager.ProjectFileName));
+                    SqlSyncBuildDataXmlSerializer.Save(runDataModel.ProjectFileName, cloned);
+                    runDataModel.BuildFileName = ThreadedManager.BuildZipFileName;
                 }
 
 
@@ -273,26 +273,7 @@ namespace SqlBuildManager.Console.Threaded
                     helper.ScriptLogWriteEvent += new ScriptLogWriteEventHandler(helper_ScriptLogWriteEvent);
                 }
 
-               
-                var runDataModel = new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
-                    buildDataModel: runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
-                    buildType: runData.BuildType,
-                    server: runData.Server,
-                    buildDescription: runData.BuildDescription,
-                    startIndex: runData.StartIndex,
-                    projectFileName: runData.ProjectFileName,
-                    isTrial: runData.IsTrial,
-                    runItemIndexes: runData.RunItemIndexes,
-                    runScriptOnly: runData.RunScriptOnly,
-                    buildFileName: runData.BuildFileName,
-                    logToDatabaseName: runData.LogToDatabaseName,
-                    isTransactional: runData.IsTransactional,
-                    platinumDacPacFileName: runData.PlatinumDacPacFileName,
-                    targetDatabaseOverrides: runData.TargetDatabaseOverrides,
-                    forceCustomDacpac: runData.ForceCustomDacpac,
-                    buildRevision: runData.BuildRevision,
-                    defaultScriptTimeout: runData.DefaultScriptTimeout,
-                    allowObjectDelete: runData.AllowObjectDelete);
+                if(runDataModel.BuildDataModel == null) runDataModel.BuildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
                  var result = await helper.ProcessBuild(runDataModel,cmdArgs.TimeoutRetryCount, buildRequestedBy, ThreadedManager.BatchColl);
                 returnValue = (int)result.FinalStatus;

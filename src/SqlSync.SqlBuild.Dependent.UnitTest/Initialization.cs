@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
@@ -411,14 +412,14 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
 
             //Set fields
-            target.BuildDataModel = buildData;
+            ((ISqlBuildRunnerProperties)target).BuildDataModel = buildData;
 
             string logFile = GetTrulyUniqueFile();
             tempFiles.Add(logFile);
             target.scriptLogFileName = logFile;
 
             SqlSyncBuildDataModel buildHist = CreateSqlSyncSqlBuildDataModelObject();
-            target.BuildHistoryModel = buildHist;
+            ((ISqlBuildRunnerProperties)target).BuildHistoryModel = buildHist;
 
             projectFileName = GetTrulyUniqueFile();
             tempFiles.Add(projectFileName);
@@ -433,13 +434,13 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public SqlBuildHelper SetSqlBuildHelperValues(SqlBuildHelper sbh, SqlSyncBuildDataModel buildData)
         {
 
-            sbh.BuildDataModel = buildData;
+            ((ISqlBuildRunnerProperties)sbh).BuildDataModel = buildData;
 
             string logFile = GetTrulyUniqueFile();
             sbh.scriptLogFileName = logFile;
 
             SqlSyncBuildDataModel buildHist = CreateSqlSyncSqlBuildDataModelObject();
-            sbh.BuildHistoryModel = buildHist;
+            ((ISqlBuildRunnerProperties)sbh).BuildHistoryModel = buildHist;
 
             projectFileName = GetTrulyUniqueFile();
             sbh.projectFileName = projectFileName;

@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
@@ -580,7 +581,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             BuildModels.Build actual;
 
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            target.LogToDatabaseName = init.testDatabaseNames[1];
+            ((ISqlBuildRunnerProperties)target).LogToDatabaseName = init.testDatabaseNames[1];
 
             //Get BuildRow...
             Build myBuild = new(); //init.GetRunBuildRow(po);
@@ -593,7 +594,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             int testTableCount = init.GetTestTableRowCount(0);
             Assert.IsTrue(2 == sqlLoggingCount, "Invalid SqlBuild_Logging Count: " + sqlLoggingCount.ToString());
             Assert.IsTrue(1 == testTableCount, "Invalid TransactionTest Count: " + testTableCount.ToString());
-            Assert.AreEqual(init.testDatabaseNames[1], target.LogToDatabaseName);
+            Assert.AreEqual(init.testDatabaseNames[1], ((ISqlBuildRunnerProperties)target).LogToDatabaseName);
 
         }
         #endregion
@@ -967,7 +968,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -988,7 +989,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1008,7 +1009,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             string serverName = init.serverName;
             bool isMultiDbRun = false;
 
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
             Assert.AreEqual(Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1025,7 +1026,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(0, prep.FilteredScripts.Count);
             Assert.AreEqual(Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1052,7 +1053,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             ScriptBatchCollection coll = init.GetScriptBatchCollection();
 
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, coll);
+            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, coll);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1078,7 +1079,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             string serverName = init.serverName;
             bool isMultiDbRun = false;
             target.runItemIndexes = new double[] { 0, 1 };
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(3, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1097,7 +1098,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(0, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1116,7 +1117,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = true;
-            var prep = target.PrepareBuildForRun(target.BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
 
             Assert.AreEqual(0, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
@@ -1242,7 +1243,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             OverrideData.TargetDatabaseOverrides = ovr;
 
             Assert.IsNull(target.targetDatabaseOverrides);
-            Assert.IsNull(target.TargetDatabaseOverrides);
+            Assert.IsNull(((ISqlBuildRunnerProperties)target).TargetDatabaseOverrides);
 
             string actual = target.GetTargetDatabase("default2");
             Assert.AreEqual("override2", actual);
@@ -2404,7 +2405,7 @@ SELECT * FROM TheirTable";
             string script = "This is my script that has no comm or rollback for transaction text";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2422,7 +2423,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2443,7 +2444,7 @@ from the list?";
             string script = String.Format(partial, "BEGIN TRANSACTION");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2461,7 +2462,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2482,7 +2483,7 @@ from the list?";
             string script = String.Format(partial, "BEGIN TRAN");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2500,7 +2501,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2521,7 +2522,7 @@ from the list?";
             string script = String.Format(partial, "Rollback Transaction");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2539,7 +2540,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2560,7 +2561,7 @@ from the list?";
             string script = String.Format(partial, "Rollback Tran");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2578,7 +2579,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2599,7 +2600,7 @@ from the list?";
             string script = String.Format(partial, "COMMIT Transaction");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2617,7 +2618,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2638,7 +2639,7 @@ from the list?";
             string script = String.Format(partial, "COMMIT Tran");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2656,7 +2657,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2677,7 +2678,7 @@ from the list?";
             string script = String.Format(partial, "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2695,7 +2696,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -2733,7 +2734,7 @@ from the list?";
             string script = String.Format(partial, "COMMIT", "BEGIN TRANSACTION", "ROLLBACK TRAN", "COMMIT TRANSACTION", "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
             string expected = String.Format(partial, "", "", "", "", "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 

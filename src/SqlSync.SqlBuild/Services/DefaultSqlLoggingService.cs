@@ -139,7 +139,7 @@ namespace SqlSync.SqlBuild.Services
             bool returnValue = true;
             //If using an alternate database to log the commits to, we need to initiate the connection objects 
             //so that the EnsureLogTablePresence method catches them and creates the tables as needed.
-            if (runnerProperties.LogToDataBaseName.Length > 0 && committedScripts.Count > 0)
+            if (runnerProperties.LogToDatabaseName.Length > 0 && committedScripts.Count > 0)
             {
                 List<string> servers = new List<string>();
                 for (int i = 0; i < committedScripts.Count; i++)
@@ -148,10 +148,10 @@ namespace SqlSync.SqlBuild.Services
 
                 for (int i = 0; i < servers.Count; i++)
                 {
-                    BuildConnectData tmp = connectionsService.GetOrAddBuildConnectionDataClass(runnerProperties.ConnectionData, servers[i], runnerProperties.LogToDataBaseName, runnerProperties.IsTransactional);
+                    BuildConnectData tmp = connectionsService.GetOrAddBuildConnectionDataClass(runnerProperties.ConnectionData, servers[i], runnerProperties.LogToDatabaseName, runnerProperties.IsTransactional);
                 }
             }
-            EnsureLogTablePresence(connectionsService.Connections, runnerProperties.LogToDataBaseName);
+            EnsureLogTablePresence(connectionsService.Connections, runnerProperties.LogToDatabaseName);
 
             //Get date from the server
             DateTime commitDate;
@@ -223,8 +223,8 @@ namespace SqlSync.SqlBuild.Services
                         //progressReporter.ReportProgress(0, new GeneralStatusEventArgs("Recording Commited Script: " + row.FileName));
 
                         BuildConnectData tmpConnDat;
-                        if (runnerProperties.LogToDataBaseName.Length > 0)
-                            tmpConnDat = connectionsService.GetBuildConnectionDataClass(script.ServerName, runnerProperties.LogToDataBaseName, runnerProperties.IsTransactional);
+                        if (runnerProperties.LogToDatabaseName.Length > 0)
+                            tmpConnDat = connectionsService.GetBuildConnectionDataClass(script.ServerName, runnerProperties.LogToDatabaseName, runnerProperties.IsTransactional);
                         else
                             tmpConnDat = connectionsService.GetBuildConnectionDataClass(script.ServerName, script.DatabaseTarget, runnerProperties.IsTransactional);
 

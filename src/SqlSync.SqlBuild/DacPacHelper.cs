@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Dac;
 using SqlSync.Connection;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Services;
 using System;
@@ -296,20 +297,20 @@ namespace SqlSync.SqlBuild
         }
 
 
-        public static DacpacDeltasStatus UpdateBuildRunDataForDacPacSync(ref SqlBuildRunData runData, string targetServerName, string targetDatabase, AuthenticationType authType, string userName, string password, string workingDirectory, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete, string managedIdentityClientId)
+        public static (DacpacDeltasStatus, SqlBuildRunDataModel updatedModel) UpdateBuildRunDataForDacPacSync(SqlBuildRunDataModel runDataModel, string targetServerName, string targetDatabase, AuthenticationType authType, string userName, string password, string workingDirectory, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete, string managedIdentityClientId)
         {
             string tmpDacPacName = Path.Combine(workingDirectory, targetDatabase + ".dacpac");
-            if (!ExtractDacPac(targetDatabase, targetServerName, authType, userName, password, tmpDacPacName, runData.DefaultScriptTimeout, managedIdentityClientId))
+            if (!ExtractDacPac(targetDatabase, targetServerName, authType, userName, password, tmpDacPacName, runDataModel.DefaultScriptTimeout, managedIdentityClientId))
             {
-                return DacpacDeltasStatus.ExtractionFailure;
+                return (DacpacDeltasStatus.ExtractionFailure, runDataModel);
             }
 
             string sbmFileName;
 
-            var stat = CreateSbmFromDacPacDifferences(runData.PlatinumDacPacFileName, tmpDacPacName, false, buildRevision, defaultScriptTimeout, allowObjectDelete, out sbmFileName);
+            var stat = CreateSbmFromDacPacDifferences(runDataModel.PlatinumDacPacFileName, tmpDacPacName, false, buildRevision, defaultScriptTimeout, allowObjectDelete, out sbmFileName);
             if (stat != DacpacDeltasStatus.Success)
             {
-                return stat;
+                return (stat, runDataModel);
             }
 
 
@@ -320,21 +321,21 @@ namespace SqlSync.SqlBuild
             log.LogInformation("Preparing build package for processing");
             if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, false, false, out result))
             {
-                return DacpacDeltasStatus.SbmProcessingFailure;
+                return (DacpacDeltasStatus.SbmProcessingFailure, runDataModel);
             }
 
             Models.SqlSyncBuildDataModel buildModel;
             if (!SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildModel, projectFileName, false))
             {
-                return DacpacDeltasStatus.SbmProcessingFailure;
+                return (DacpacDeltasStatus.SbmProcessingFailure, runDataModel);
             }
 
-            runData.BuildDataModel = buildModel;
-            runData.BuildFileName = sbmFileName;
-            runData.ProjectFileName = projectFileName;
+            runDataModel.BuildDataModel = buildModel;
+            runDataModel.BuildFileName = sbmFileName;
+            runDataModel.ProjectFileName = projectFileName;
 
             log.LogInformation("Build package ready");
-            return DacpacDeltasStatus.Success;
+            return (DacpacDeltasStatus.Success, runDataModel);
         }
 
         public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, AuthenticationType authType, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName, bool batchScripts, bool allowObjectDelete, string managedIdentityClientId)

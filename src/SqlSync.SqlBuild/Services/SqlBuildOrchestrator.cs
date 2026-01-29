@@ -1,24 +1,29 @@
+using Microsoft.Identity.Client;
+using SqlSync.SqlBuild.Models;
 using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using SqlSync.SqlBuild.Models;
 
 namespace SqlSync.SqlBuild.Services
 {
     internal sealed class SqlBuildOrchestrator : ISqlBuildOrchestrator
     {
-        private readonly SqlBuildHelper _helper;
         private readonly IConnectionsService connectionsService;
         private readonly IBuildRetryPolicy _retryPolicy;
         private readonly ISqlLoggingService _sqlLoggingService;
-
-        public SqlBuildOrchestrator(SqlBuildHelper helper, IConnectionsService connectionsService, ISqlLoggingService sqlLoggingService)
+        private readonly ISqlBuildRunnerContext _ctx;
+        private readonly ISqlBuildRunnerProperties _props;
+        private readonly IBuildRetryPolicy retryPolicy;
+        private readonly IBuildFinalizerContext _finalizerCtx;
+        public SqlBuildOrchestrator(ISqlBuildRunnerContext ctx, ISqlBuildRunnerProperties props, IBuildRetryPolicy retryPolicy, IBuildFinalizerContext finalizerCtx, IConnectionsService connectionsService, ISqlLoggingService sqlLoggingService)
         {
-            _helper = helper;
-            _retryPolicy = helper.RetryPolicy;
+            _ctx = ctx;
+            _props = props;
+            _retryPolicy = retryPolicy; 
             this.connectionsService = connectionsService;
             _sqlLoggingService = sqlLoggingService;
+            _finalizerCtx = finalizerCtx;
         }
 
         public Build Execute(
@@ -29,7 +34,7 @@ namespace SqlSync.SqlBuild.Services
             ScriptBatchCollection scriptBatchColl,
             int allowableTimeoutRetries)
         {
-            _helper.ErrorOccured = false;
+            _props.ErrorOccured = false;
 
             if (prep.FilteredScripts == null || prep.FilteredScripts.Count == 0)
             {
@@ -38,16 +43,16 @@ namespace SqlSync.SqlBuild.Services
 
             Build buildResultsModel = null;
             int buildRetries = 0;
-            var runner = SqlBuildHelper.SqlBuildRunnerFactory(connectionsService, _helper,_helper, null);
+            var runner = SqlBuildHelper.SqlBuildRunnerFactory(connectionsService, _ctx, _finalizerCtx, null);
 
             while (buildRetries <= allowableTimeoutRetries &&
                 (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout))
             {
                 if (buildRetries > 0)
                 {
-                    ((ISqlBuildRunnerContext)_helper).PublishScriptLog(false, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
+                    _ctx.PublishScriptLog(false, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
                     connectionsService.ResetConnectionsForRetry();
-                    _helper.CommittedScripts.Clear();
+                    _props.CommittedScripts.Clear();
                 }
 
                 buildResultsModel = runner.Run(prep.FilteredScripts, prep.Build, serverName, isMultiDbRun, scriptBatchColl, runData.BuildDataModel!);
@@ -73,7 +78,7 @@ namespace SqlSync.SqlBuild.Services
             int allowableTimeoutRetries,
             CancellationToken cancellationToken = default)
         {
-            _helper.ErrorOccured = false;
+            _props.ErrorOccured = false;
 
             if (prep.FilteredScripts == null || prep.FilteredScripts.Count == 0)
             {
@@ -94,7 +99,7 @@ namespace SqlSync.SqlBuild.Services
         {
             Build buildResultsModel = null;
             int buildRetries = 0;
-            var runner = SqlBuildHelper.SqlBuildRunnerFactory(connectionsService, _helper, _helper,null);
+            var runner = SqlBuildHelper.SqlBuildRunnerFactory(connectionsService, _ctx, _finalizerCtx, null);
 
             while (buildRetries <= allowableTimeoutRetries &&
                 (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout ))
@@ -103,9 +108,9 @@ namespace SqlSync.SqlBuild.Services
 
                 if (buildRetries > 0)
                 {
-                    ((ISqlBuildRunnerContext)_helper).PublishScriptLog(false, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
+                    _ctx.PublishScriptLog(false, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
                     connectionsService.ResetConnectionsForRetry();
-                    _helper.CommittedScripts.Clear();
+                    _props.CommittedScripts.Clear();
                 }
 
                 buildResultsModel = await runner.RunAsync(prep.FilteredScripts, prep.Build, serverName, isMultiDbRun, scriptBatchColl, runData.BuildDataModel!, cancellationToken).ConfigureAwait(false);

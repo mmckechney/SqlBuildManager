@@ -1,6 +1,7 @@
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace SqlSync.SqlBuild.Services
 {
@@ -12,5 +13,9 @@ namespace SqlSync.SqlBuild.Services
 
         Task<List<string>> ReadBatchFromScriptTextAsync(string scriptContents, bool stripTransaction, bool maintainBatchDelimiter, CancellationToken cancellationToken = default);
         Task<string[]> ReadBatchFromScriptFileAsync(string fileName, bool stripTransaction, bool maintainBatchDelimiter, CancellationToken cancellationToken = default);
+
+        public string RemoveTransactionReferences(string script);
+        public string RegexRemoveIfNotInComments(string regexExpression, string script, RegexOptions options);
+        public bool IsInComment(string script, int position);
     }
 }

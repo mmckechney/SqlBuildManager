@@ -20,7 +20,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 new LoggingCommittedScript(scriptId, "HASH", 1, "text", "tag", "server", "db")
             };
 
-            SqlSyncBuildDataModel ok = helper.BuildFinalizer.RecordCommittedScripts(committed, helper.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
+            SqlSyncBuildDataModel ok = helper.BuildFinalizer.RecordCommittedScripts(committed, ((ISqlBuildRunnerProperties)helper).BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
             Assert.IsNotNull(ok);
             Assert.AreEqual(1, ok.CommittedScript.Count);
