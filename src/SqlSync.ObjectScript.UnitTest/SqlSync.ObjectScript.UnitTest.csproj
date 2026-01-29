@@ -22,6 +22,10 @@
     <Compile Include="AutoScriptingConfigModelTest.cs" />
     <Compile Include="Initialization.cs" />
     <Compile Include="ObjectScriptHelperTest.cs" />
+    <Compile Include="XmlSerializerCompatibilityTest.cs" />
+    <Compile Include="SanitizerExtensionsTest.cs" />
+    <Compile Include="ObjectSyncDataTest.cs" />
+    <Compile Include="BackoutPackageTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlSync.Compare\SqlSync.Compare.csproj" />

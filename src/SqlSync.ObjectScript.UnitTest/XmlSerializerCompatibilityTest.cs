@@ -25,7 +25,7 @@ namespace SqlSync.ObjectScript.UnitTest
             Assert.AreEqual(1, model.AutoScripting.Count);
             Assert.AreEqual(false, model.AutoScripting[0].AllowManualSelection);
             Assert.AreEqual("srv", model.DatabaseScriptConfig[0].ServerName);
-            Assert.AreEqual("C\\scripts", model.DatabaseScriptConfig[0].ScriptToPath.Replace('/', '\\'));
+            Assert.AreEqual("C:\\scripts", model.DatabaseScriptConfig[0].ScriptToPath.Replace('/', '\\'));
             Assert.AreEqual("echo", model.PostScriptingAction[0].Name);
 
             var outDoc = AutoScriptingConfigXmlSerializer.BuildDocument(model);
