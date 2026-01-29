@@ -8,7 +8,7 @@ namespace SqlSync.SqlBuild.Services
         private readonly SqlBuildHelper _helper;
         public DefaultBuildPreparationService(SqlBuildHelper helper) => _helper = helper;
 
-        public SqlBuildHelper.BuildPreparationResult PrepareBuildForRun(SqlSyncBuildDataModel model, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl)
+        public BuildPreparationResult PrepareBuildForRun(SqlSyncBuildDataModel model, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl)
             => _helper.PrepareBuildForRun(model, serverName, isMultiDbRun, scriptBatchColl);
 
         //TODO: Extract this from SqlBuildHelper when refactoring for DI

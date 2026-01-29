@@ -18,10 +18,9 @@ namespace SqlSync.SqlBuild.UnitTest
     public class SqlBuildHelperRunnerFactoryTests
     {
         [TestMethod]
-        public void RunBuildScripts_UsesRunnerFactory()
+        public void RunBuildScripts_UsesInjectedRunnerFactory()
         {
             // Arrange
-            var helper = new SqlBuildHelper(new ConnectionData());
             var expectedBuild = new BuildModels.Build(
                 name: "test",
                 buildType: "type",
@@ -32,7 +31,25 @@ namespace SqlSync.SqlBuild.UnitTest
                 buildId: Guid.NewGuid().ToString(),
                 userId: "user");
 
-            SqlBuildHelper.SqlBuildRunnerFactory = (connSvc, ctx, finalizerContext, exec) => new FakeRunner(expectedBuild);
+            var fakeFactory = new FakeRunnerFactory(expectedBuild);
+            
+            // Use internal constructor to inject the fake factory
+            var helper = new SqlBuildHelper(
+                data: new ConnectionData(),
+                createScriptRunLogFile: false,
+                externalScriptLogFileName: "",
+                isTransactional: true,
+                clock: null,
+                guidProvider: null,
+                fileSystem: null,
+                progressReporter: null,
+                fileHelper: null,
+                retryPolicy: null,
+                legacyAdapter: null,
+                databaseUtility: null,
+                connectionsService: null,
+                buildFinalizer: null,
+                runnerFactory: fakeFactory);
 
             var scripts = new List<BuildModels.Script>();
             var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -43,6 +60,21 @@ namespace SqlSync.SqlBuild.UnitTest
             // Assert
             Assert.AreEqual(expectedBuild.BuildId, result.BuildId);
             Assert.AreEqual(BuildItemStatus.Committed, result.FinalStatus);
+            Assert.IsTrue(fakeFactory.CreateCalled, "Factory.Create should have been called");
+        }
+
+        private sealed class FakeRunnerFactory : IRunnerFactory
+        {
+            private readonly BuildModels.Build _result;
+            public bool CreateCalled { get; private set; }
+
+            public FakeRunnerFactory(BuildModels.Build result) => _result = result;
+
+            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null)
+            {
+                CreateCalled = true;
+                return new FakeRunner(_result);
+            }
         }
 
         private sealed class FakeRunner : SqlBuildRunner

@@ -24,47 +24,58 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             queue.Enqueue(new BuildModels.Build("n", "t", DateTime.UtcNow, null, "srv", BuildItemStatus.FailedDueToScriptTimeout, Guid.NewGuid().ToString(), "u"));
             queue.Enqueue(new BuildModels.Build("n", "t", DateTime.UtcNow, null, "srv", BuildItemStatus.Committed, Guid.NewGuid().ToString(), "u"));
 
-            var originalFactory = SqlBuildHelper.SqlBuildRunnerFactory;
-            try
+            var fakeFactory = new FakeRunnerFactory(ctx => new FakeRunner(ctx, queue, () => runnerCalls++));
+
+            var orchestrator = new SqlBuildOrchestrator(
+                helper, 
+                helper, 
+                helper.RetryPolicy, 
+                helper, 
+                MockFactory.CreateMockConnectionsService().Object, 
+                MockFactory.CreateMockSqlLoggingService().Object,
+                fakeFactory);
+            
+            var runData = new SqlBuildRunDataModel(
+                buildDataModel: SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
+                buildType: "type",
+                server: "srv",
+                buildDescription: "desc",
+                startIndex: 0,
+                projectFileName: "proj",
+                isTrial: false,
+                runItemIndexes: Array.Empty<double>(),
+                runScriptOnly: false,
+                buildFileName: "file",
+                logToDatabaseName: string.Empty,
+                isTransactional: true,
+                platinumDacPacFileName: string.Empty,
+                targetDatabaseOverrides: null,
+                forceCustomDacpac: false,
+                buildRevision: null,
+                defaultScriptTimeout: 30,
+                allowObjectDelete: false);
+
+            var prep = new BuildPreparationResult(
+                FilteredScripts: new List<BuildModels.Script> { new BuildModels.Script("one.sql", 1, null, null, null, null, "1", "db", false, true, null, null, null, null, null) },
+                Build: new BuildModels.Build("n", "t", DateTime.UtcNow, null, "srv", null, Guid.NewGuid().ToString(), "u"),
+                BuildPackageHash: "hash");
+
+            var doa = new DoWorkEventArgs(null);
+            var result = await orchestrator.ExecuteAsync(runData, prep, "srv", false, null, allowableTimeoutRetries: 2, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries, result.FinalStatus);
+            Assert.AreEqual(2, runnerCalls);
+        }
+
+        private sealed class FakeRunnerFactory : IRunnerFactory
+        {
+            private readonly Func<ISqlBuildRunnerContext, SqlBuildRunner> _factory;
+            public FakeRunnerFactory(Func<ISqlBuildRunnerContext, SqlBuildRunner> factory) => _factory = factory;
+
+            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null)
             {
-                SqlBuildHelper.SqlBuildRunnerFactory = (connSvc, ctx, finalizerContext, exec) => new FakeRunner(ctx, queue, () => runnerCalls++);
-
-                var orchestrator = new SqlBuildOrchestrator(helper, helper, helper.RetryPolicy,helper, MockFactory.CreateMockConnectionsService().Object, MockFactory.CreateMockSqlLoggingService().Object);
-                var runData = new SqlBuildRunDataModel(
-                    buildDataModel: SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
-                    buildType: "type",
-                    server: "srv",
-                    buildDescription: "desc",
-                    startIndex: 0,
-                    projectFileName: "proj",
-                    isTrial: false,
-                    runItemIndexes: Array.Empty<double>(),
-                    runScriptOnly: false,
-                    buildFileName: "file",
-                    logToDatabaseName: string.Empty,
-                    isTransactional: true,
-                    platinumDacPacFileName: string.Empty,
-                    targetDatabaseOverrides: null,
-                    forceCustomDacpac: false,
-                    buildRevision: null,
-                    defaultScriptTimeout: 30,
-                    allowObjectDelete: false);
-
-                var prep = new SqlBuildHelper.BuildPreparationResult(
-                    FilteredScripts: new List<BuildModels.Script> { new BuildModels.Script("one.sql", 1, null, null, null, null, "1", "db", false, true, null, null, null, null, null) },
-                    Build: new BuildModels.Build("n", "t", DateTime.UtcNow, null, "srv", null, Guid.NewGuid().ToString(), "u"),
-                    BuildPackageHash: "hash");
-
-                var doa = new DoWorkEventArgs(null);
-                var result = await orchestrator.ExecuteAsync(runData, prep, "srv", false, null, allowableTimeoutRetries: 2, CancellationToken.None);
-
-                Assert.IsNotNull(result);
-                Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries, result.FinalStatus);
-                Assert.AreEqual(2, runnerCalls);
-            }
-            finally
-            {
-                SqlBuildHelper.SqlBuildRunnerFactory = originalFactory;
+                return _factory(context);
             }
         }
 

@@ -9,7 +9,7 @@ namespace SqlSync.SqlBuild.Services
     {
         Build Execute(
             SqlBuildRunDataModel runData,
-            SqlBuildHelper.BuildPreparationResult prep,
+            BuildPreparationResult prep,
             string serverName,
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,
@@ -17,7 +17,7 @@ namespace SqlSync.SqlBuild.Services
 
         Task<Build> ExecuteAsync(
             SqlBuildRunDataModel runData,
-            SqlBuildHelper.BuildPreparationResult prep,
+            BuildPreparationResult prep,
             string serverName,
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,

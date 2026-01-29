@@ -15,76 +15,98 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public async Task ProcessBuild_RetriesOnTimeout_ThenSucceeds()
         {
-            var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
             var statuses = new Queue<BuildItemStatus>(new[]
             {
                 BuildItemStatus.FailedDueToScriptTimeout,
                 BuildItemStatus.Committed
             });
-            var originalFactory = SqlBuildHelper.SqlBuildRunnerFactory;
-            SqlBuildHelper.SqlBuildRunnerFactory = (connSvc, ctx, finalizerCtx, exec) => new TestSqlBuildRunner(ctx, statuses);
-            try
+            
+            var fakeFactory = new TestRunnerFactory(statuses);
+            
+            // Use internal constructor to inject the fake factory
+            var helper = new SqlBuildHelper(
+                data: new ConnectionData("srv", "db"),
+                createScriptRunLogFile: false,
+                externalScriptLogFileName: "",
+                isTransactional: true,
+                clock: null,
+                guidProvider: null,
+                fileSystem: null,
+                progressReporter: null,
+                fileHelper: null,
+                retryPolicy: null,
+                legacyAdapter: null,
+                databaseUtility: null,
+                connectionsService: null,
+                buildFinalizer: null,
+                runnerFactory: fakeFactory);
+
+            var scriptId = "abc";
+            var baseModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var buildDataModel = new BuildModels.SqlSyncBuildDataModel(
+                sqlSyncBuildProject: baseModel.SqlSyncBuildProject,
+                script: new List<BuildModels.Script>
+                {
+                    new BuildModels.Script(
+                        fileName: "file.sql",
+                        buildOrder: 1,
+                        description: null,
+                        rollBackOnError: true,
+                        causesBuildFailure: true,
+                        dateAdded: null,
+                        scriptId: scriptId,
+                        database: "db",
+                        stripTransactionText: false,
+                        allowMultipleRuns: true,
+                        addedBy: null,
+                        scriptTimeOut: 5,
+                        dateModified: null,
+                        modifiedBy: null,
+                        tag: null)
+                },
+                build: baseModel.Build,
+                scriptRun: baseModel.ScriptRun,
+                committedScript: baseModel.CommittedScript,
+                codeReview: baseModel.CodeReview);
+            var runData = new BuildModels.SqlBuildRunDataModel(
+                buildDataModel: buildDataModel,
+                buildType: "type",
+                server: "srv",
+                buildDescription: "desc",
+                startIndex: 0,
+                projectFileName: null,
+                isTrial: false,
+                runItemIndexes: System.Array.Empty<double>(),
+                runScriptOnly: false,
+                buildFileName: "file.sbm",
+                logToDatabaseName: string.Empty,
+                isTransactional: true,
+                platinumDacPacFileName: string.Empty,
+                targetDatabaseOverrides: null,
+                forceCustomDacpac: false,
+                buildRevision: null,
+                defaultScriptTimeout: 5,
+                allowObjectDelete: false);
+
+            var scriptBatchColl = new ScriptBatchCollection();
+            scriptBatchColl.Add(new ScriptBatch("file.sql", new[] { "SELECT 1;" }, scriptId));
+
+            var bgWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
+            var e = new DoWorkEventArgs(null);
+
+            var result = await helper.ProcessBuild(runData, allowableTimeoutRetries: 3, buildRequestedBy: string.Empty, scriptBatchColl: scriptBatchColl);
+
+            Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries, result.FinalStatus);
+        }
+
+        private sealed class TestRunnerFactory : IRunnerFactory
+        {
+            private readonly Queue<BuildItemStatus> _statuses;
+            public TestRunnerFactory(Queue<BuildItemStatus> statuses) => _statuses = statuses;
+
+            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null)
             {
-                var scriptId = "abc";
-                var baseModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-                var buildDataModel = new BuildModels.SqlSyncBuildDataModel(
-                    sqlSyncBuildProject: baseModel.SqlSyncBuildProject,
-                    script: new List<BuildModels.Script>
-                    {
-                        new BuildModels.Script(
-                            fileName: "file.sql",
-                            buildOrder: 1,
-                            description: null,
-                            rollBackOnError: true,
-                            causesBuildFailure: true,
-                            dateAdded: null,
-                            scriptId: scriptId,
-                            database: "db",
-                            stripTransactionText: false,
-                            allowMultipleRuns: true,
-                            addedBy: null,
-                            scriptTimeOut: 5,
-                            dateModified: null,
-                            modifiedBy: null,
-                            tag: null)
-                    },
-                    build: baseModel.Build,
-                    scriptRun: baseModel.ScriptRun,
-                    committedScript: baseModel.CommittedScript,
-                    codeReview: baseModel.CodeReview);
-                var runData = new BuildModels.SqlBuildRunDataModel(
-                    buildDataModel: buildDataModel,
-                    buildType: "type",
-                    server: "srv",
-                    buildDescription: "desc",
-                    startIndex: 0,
-                    projectFileName: null,
-                    isTrial: false,
-                    runItemIndexes: System.Array.Empty<double>(),
-                    runScriptOnly: false,
-                    buildFileName: "file.sbm",
-                    logToDatabaseName: string.Empty,
-                    isTransactional: true,
-                    platinumDacPacFileName: string.Empty,
-                    targetDatabaseOverrides: null,
-                    forceCustomDacpac: false,
-                    buildRevision: null,
-                    defaultScriptTimeout: 5,
-                    allowObjectDelete: false);
-
-                var scriptBatchColl = new ScriptBatchCollection();
-                scriptBatchColl.Add(new ScriptBatch("file.sql", new[] { "SELECT 1;" }, scriptId));
-
-                var bgWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
-                var e = new DoWorkEventArgs(null);
-
-                var result = await helper.ProcessBuild(runData, allowableTimeoutRetries: 3, buildRequestedBy: string.Empty, scriptBatchColl: scriptBatchColl);
-
-                Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries, result.FinalStatus);
-            }
-            finally
-            {
-                SqlBuildHelper.SqlBuildRunnerFactory = originalFactory;
+                return new TestSqlBuildRunner(context, _statuses);
             }
         }
 

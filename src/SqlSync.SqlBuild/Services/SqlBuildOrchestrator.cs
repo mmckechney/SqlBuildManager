@@ -14,7 +14,16 @@ namespace SqlSync.SqlBuild.Services
         private readonly ISqlBuildRunnerContext _ctx;
         private readonly ISqlBuildRunnerProperties _props;
         private readonly IBuildFinalizerContext _finalizerCtx;
-        public SqlBuildOrchestrator(ISqlBuildRunnerContext ctx, ISqlBuildRunnerProperties props, IBuildRetryPolicy retryPolicy, IBuildFinalizerContext finalizerCtx, IConnectionsService connectionsService, ISqlLoggingService sqlLoggingService)
+        private readonly IRunnerFactory _runnerFactory;
+
+        public SqlBuildOrchestrator(
+            ISqlBuildRunnerContext ctx, 
+            ISqlBuildRunnerProperties props, 
+            IBuildRetryPolicy retryPolicy, 
+            IBuildFinalizerContext finalizerCtx, 
+            IConnectionsService connectionsService, 
+            ISqlLoggingService sqlLoggingService,
+            IRunnerFactory runnerFactory = null)
         {
             _ctx = ctx;
             _props = props;
@@ -22,11 +31,12 @@ namespace SqlSync.SqlBuild.Services
             this.connectionsService = connectionsService;
             _sqlLoggingService = sqlLoggingService;
             _finalizerCtx = finalizerCtx;
+            _runnerFactory = runnerFactory ?? new DefaultRunnerFactory();
         }
 
         public Build Execute(
             SqlBuildRunDataModel runData,
-            SqlBuildHelper.BuildPreparationResult prep,
+            BuildPreparationResult prep,
             string serverName,
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,
@@ -41,7 +51,7 @@ namespace SqlSync.SqlBuild.Services
 
             Build buildResultsModel = null;
             int buildRetries = 0;
-            var runner = SqlBuildHelper.SqlBuildRunnerFactory(connectionsService, _ctx, _finalizerCtx, null);
+            var runner = _runnerFactory.Create(connectionsService, _ctx, _finalizerCtx, null);
 
             while (buildRetries <= allowableTimeoutRetries &&
                 (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout))
@@ -69,7 +79,7 @@ namespace SqlSync.SqlBuild.Services
 
         public Task<Build> ExecuteAsync(
             SqlBuildRunDataModel runData,
-            SqlBuildHelper.BuildPreparationResult prep,
+            BuildPreparationResult prep,
             string serverName,
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,
@@ -88,7 +98,7 @@ namespace SqlSync.SqlBuild.Services
 
         private async Task<Build> ExecuteAsyncCore(
             SqlBuildRunDataModel runData,
-            SqlBuildHelper.BuildPreparationResult prep,
+            BuildPreparationResult prep,
             string serverName,
             bool isMultiDbRun,
             ScriptBatchCollection scriptBatchColl,
@@ -97,7 +107,7 @@ namespace SqlSync.SqlBuild.Services
         {
             Build buildResultsModel = null;
             int buildRetries = 0;
-            var runner = SqlBuildHelper.SqlBuildRunnerFactory(connectionsService, _ctx, _finalizerCtx, null);
+            var runner = _runnerFactory.Create(connectionsService, _ctx, _finalizerCtx, null);
 
             while (buildRetries <= allowableTimeoutRetries &&
                 (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout ))

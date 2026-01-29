@@ -34,18 +34,9 @@ namespace SqlSync.SqlBuild
     {
         #region Static Members
 
+        [Obsolete("Use injected IRunnerFactory instead. Will be removed in future version.")]
         internal static Func<IConnectionsService, ISqlBuildRunnerContext, IBuildFinalizerContext, ISqlCommandExecutor, SqlBuildRunner> SqlBuildRunnerFactory = (connService, ctx, finalizerContext, exec) => new SqlBuildRunner(connService, ctx, finalizerContext, exec);
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        #endregion
-
-        #region Nested Types
-
-        internal sealed record BuildPreparationResult(
-            IList<BuildModels.Script> FilteredScripts,
-            BuildModels.Build Build,
-            string BuildPackageHash
-        );
 
         #endregion
 
@@ -87,7 +78,6 @@ namespace SqlSync.SqlBuild
         private string lastSqlMessage = string.Empty;
         private System.Guid currentBuildId = System.Guid.Empty;
         private List<LoggingCommittedScript> committedScripts = new List<LoggingCommittedScript>();
-        private BuildModels.SqlSyncBuildDataModel buildHistoryModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
         #endregion
 
@@ -107,6 +97,9 @@ namespace SqlSync.SqlBuild
         internal Services.IDatabaseUtility DatabaseUtility { get; }
         internal Services.IConnectionsService ConnectionsService { get; }
         internal Services.IBuildFinalizer BuildFinalizer { get; }
+        internal Services.IRunnerFactory RunnerFactory { get; }
+        internal Services.IScriptLogWriter ScriptLogWriter { get; }
+        internal Services.IBuildHistoryTracker BuildHistoryTracker { get; }
 
         #endregion
 
@@ -136,6 +129,28 @@ namespace SqlSync.SqlBuild
             IDatabaseUtility databaseUtility = null,
             IConnectionsService connectionsService = null,
             IBuildFinalizer buildFinalizer = null)
+            : this(data, createScriptRunLogFile, externalScriptLogFileName, isTransactional,
+                   clock, guidProvider, fileSystem, progressReporter, fileHelper, retryPolicy,
+                   legacyAdapter, databaseUtility, connectionsService, buildFinalizer, null)
+        {
+        }
+
+        internal SqlBuildHelper(
+            ConnectionData data,
+            bool createScriptRunLogFile,
+            string externalScriptLogFileName,
+            bool isTransactional,
+            IClock clock,
+            IGuidProvider guidProvider,
+            IFileSystem fileSystem,
+            IProgressReporter progressReporter,
+            ISqlBuildFileHelper fileHelper,
+            IBuildRetryPolicy retryPolicy,
+            ILegacyBuildDataAdapter legacyAdapter,
+            IDatabaseUtility databaseUtility,
+            IConnectionsService connectionsService,
+            IBuildFinalizer buildFinalizer,
+            IRunnerFactory runnerFactory)
         {
             connData = data;
             this.isTransactional = isTransactional;
@@ -146,6 +161,9 @@ namespace SqlSync.SqlBuild
             FileHelper = fileHelper ?? new DefaultSqlBuildFileHelper();
             RetryPolicy = retryPolicy ?? new DefaultBuildRetryPolicy();
             LegacyAdapter = legacyAdapter ?? new DefaultLegacyBuildDataAdapter();
+            RunnerFactory = runnerFactory ?? new Services.DefaultRunnerFactory();
+            ScriptLogWriter = new Services.DefaultScriptLogWriter();
+            BuildHistoryTracker = new Services.DefaultBuildHistoryTracker();
             BuildPreparationService = new Services.DefaultBuildPreparationService(this);
             ScriptBatcher = new Services.DefaultScriptBatcher();
             TokenReplacementService = new Services.DefaultTokenReplacementService();
@@ -265,7 +283,7 @@ namespace SqlSync.SqlBuild
                 return prep.Build;
             }
 
-            var orchestrator = new Services.SqlBuildOrchestrator(this, this, this.RetryPolicy, this,ConnectionsService, SqlLoggingService);
+            var orchestrator = new Services.SqlBuildOrchestrator(this, this, this.RetryPolicy, this, ConnectionsService, SqlLoggingService, RunnerFactory);
             var buildResultsModel = orchestrator.Execute(runData, prep, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
 
             bool candidateForCustomDacPac = false;
@@ -475,7 +493,7 @@ namespace SqlSync.SqlBuild
 
         internal BuildModels.Build RunBuildScripts(IList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel)
         {
-            var runner = SqlBuildRunnerFactory(ConnectionsService, this, this, null);
+            var runner = RunnerFactory.Create(ConnectionsService, this, this, null);
             return runner.Run(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
         }
 
@@ -528,66 +546,14 @@ namespace SqlSync.SqlBuild
 
         internal void SqlBuildHelper_ScriptLogWriteEvent(object sender, bool isError, ScriptLogEventArgs e)
         {
-            if (scriptLogFileName == null)
-                throw new NullReferenceException("Attempting to write to Script Log File, but \"scriptLogFileName\" field value is null");
-
-            if (File.Exists(scriptLogFileName) == false || e.InsertStartTransaction)
+            var context = new Services.ScriptLogWriteContext
             {
-                using (StreamWriter sw = File.AppendText(scriptLogFileName))
-                {
-                    sw.WriteLine("-- Start Time: " + DateTime.Now.ToString() + " --");
-                    if (isTransactional)
-                    {
-                        sw.WriteLine("-- Start Transaction --");
-                        sw.WriteLine("BEGIN TRANSACTION");
-                    }
-                    else
-                    {
-                        sw.WriteLine("-- Executed without a transaction --");
-                    }
-                }
-            }
-
-
-            using (StreamWriter sw = File.AppendText(scriptLogFileName))
-            {
-                sw.WriteLine("/************************************");
-                sw.WriteLine("Script #" + e.ScriptIndex.ToString() + "; Source File: " + e.SourceFile);
-                sw.WriteLine("Server: " + connData.SQLServerName + "; Run On Database:" + e.Database + "  */");
-                if (e.Database.Length > 0)
-                    sw.WriteLine("use " + e.Database + "\r\nGO\r\n");
-                sw.WriteLine(e.SqlScript + "\r\nGO\r\n");
-                sw.WriteLine("/*Script #" + e.ScriptIndex.ToString() + " Result: " + e.Results.Trim() + "  */");
-                sw.Flush();
-                sw.Close();
-            }
-
-            if (e.ScriptIndex == -10000 && externalScriptLogFileName.Length > 0)
-            {
-                using (StreamWriter sw = File.AppendText(scriptLogFileName))
-                {
-                    sw.WriteLine("-- END Time: " + DateTime.Now.ToString() + " --");
-                    sw.Flush();
-                    sw.Close();
-                }
-
-                try
-                {
-                    string tmpPath = Path.GetDirectoryName(externalScriptLogFileName);
-                    if (!Directory.Exists(tmpPath))
-                    {
-                        log.LogInformation($"Creating External Log file directory '{tmpPath}'");
-                        Directory.CreateDirectory(tmpPath);
-                    }
-
-                    File.Copy(scriptLogFileName, externalScriptLogFileName, true);
-                    log.LogInformation($"Copied log file to '{externalScriptLogFileName}'");
-                }
-                catch (Exception exe)
-                {
-                    log.LogError($"Error copying results file to '{externalScriptLogFileName}': {exe}");
-                }
-            }
+                ScriptLogFileName = scriptLogFileName,
+                ExternalScriptLogFileName = externalScriptLogFileName,
+                ServerName = connData?.SQLServerName ?? string.Empty,
+                IsTransactional = isTransactional
+            };
+            ScriptLogWriter.WriteLog(context, isError, e);
         }
 
         //internal void SaveBuildDataModel(bool fireSavedEvent)
@@ -621,25 +587,7 @@ namespace SqlSync.SqlBuild
 
         private void AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild)
         {
-            if (run == null) return;
-            buildHistoryModel = new SqlSyncBuildDataModel(
-                sqlSyncBuildProject: buildHistoryModel.SqlSyncBuildProject,
-                script: buildHistoryModel.Script,
-                build: buildHistoryModel.Build,
-                scriptRun: buildHistoryModel.ScriptRun.Concat(new[] { run }).ToList(),
-                committedScript: buildHistoryModel.CommittedScript,
-                codeReview: buildHistoryModel.CodeReview);
-            if(!buildHistoryModel.Build.Contains(myBuild))
-            {
-                buildHistoryModel = new SqlSyncBuildDataModel(
-                    sqlSyncBuildProject: buildHistoryModel.SqlSyncBuildProject,
-                    script: buildHistoryModel.Script,
-                    build: buildHistoryModel.Build.Concat(new[] { myBuild }).ToList(),
-                    scriptRun: buildHistoryModel.ScriptRun,
-                    committedScript: buildHistoryModel.CommittedScript,
-                    codeReview: buildHistoryModel.CodeReview);
-            }
-
+            BuildHistoryTracker.AddScriptRunToHistory(run, myBuild);
         }
 
         #endregion
@@ -659,7 +607,7 @@ namespace SqlSync.SqlBuild
         string ISqlBuildRunnerProperties.SqlInfoMessage { get => sqlInfoMessage; set => sqlInfoMessage = value; }
         int ISqlBuildRunnerProperties.DefaultScriptTimeout => connData?.ScriptTimeout ?? 30;
         BuildModels.SqlSyncBuildDataModel ISqlBuildRunnerProperties.BuildDataModel { get => buildDataModel; set => buildDataModel = value; }
-        BuildModels.SqlSyncBuildDataModel ISqlBuildRunnerProperties.BuildHistoryModel { get => buildHistoryModel; set => buildHistoryModel = value; }
+        BuildModels.SqlSyncBuildDataModel ISqlBuildRunnerProperties.BuildHistoryModel { get => BuildHistoryTracker.BuildHistoryModel; set { /* Setter is no-op - history is managed by BuildHistoryTracker */ } }
         MultiDbData ISqlBuildRunnerProperties.MultiDbRunData => this.multiDbRunData;
         string ISqlBuildRunnerProperties.BuildRequestedBy => buildRequestedBy;
         string ISqlBuildRunnerProperties.BuildDescription => buildDescription;
