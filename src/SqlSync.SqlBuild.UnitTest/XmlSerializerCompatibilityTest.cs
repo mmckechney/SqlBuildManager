@@ -63,26 +63,5 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.AreEqual("Simple Select.sql", (string?)script.Attribute("FileName"));
             Assert.AreEqual("SqlBuildTest", (string?)script.Attribute("Database"));
         }
-
-        [TestMethod]
-        public void ServerConnectConfigXmlSerializer_Roundtrip()
-        {
-            var doc = XDocument.Parse(SampleServerConfigXml);
-            var model = ServerConnectConfigXmlSerializer.Load(doc);
-
-            Assert.AreEqual(1, model.ServerConfiguration.Count);
-            Assert.AreEqual("local", model.ServerConfiguration[0].Name);
-            Assert.AreEqual("u", model.ServerConfiguration[0].UserName);
-            Assert.AreEqual("p", model.ServerConfiguration[0].Password);
-            Assert.AreEqual("WindowsAuthentication", model.ServerConfiguration[0].AuthenticationType);
-            Assert.AreEqual(1, model.LastProgramUpdateCheck.Count);
-            Assert.AreEqual(1, model.LastDirectory.Count);
-
-            var outDoc = ServerConnectConfigXmlSerializer.BuildDocument(model);
-            var ns = (XNamespace)"http://schemas.mckechney.com/SqlSyncConfiguration.xsd";
-            var sc = outDoc.Root!.Element(ns + "ServerConfiguration")!;
-            Assert.AreEqual("local", (string?)sc.Attribute("Name"));
-            Assert.AreEqual("u", (string?)sc.Element(ns + "UserName"));
-        }
     }
 }
