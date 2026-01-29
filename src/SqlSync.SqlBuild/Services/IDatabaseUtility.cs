@@ -1,5 +1,4 @@
 ﻿using SqlSync.Connection;
-using SqlSync.SqlBuild.Abstractions;
 using SqlSync.SqlBuild.Models;
 using System;
 using System.Collections.Generic;

@@ -1,7 +1,7 @@
 using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 
-namespace SqlSync.SqlBuild.Abstractions.Default
+namespace SqlSync.SqlBuild.Services
 {
     internal sealed class DefaultLegacyBuildDataAdapter : ILegacyBuildDataAdapter
     {

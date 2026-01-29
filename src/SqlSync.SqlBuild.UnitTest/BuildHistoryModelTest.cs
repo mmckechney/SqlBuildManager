@@ -1,8 +1,8 @@
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.Services;
 using System;
 using System.IO;
 using System.Reflection;

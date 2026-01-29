@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace SqlSync.SqlBuild.Abstractions
+namespace SqlSync.SqlBuild.Services
 {
     public interface IProgressReporter
     {

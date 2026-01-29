@@ -1,7 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using SqlSync.Connection;
-using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Services;
 using System.Collections.Generic;
 using System.ComponentModel;

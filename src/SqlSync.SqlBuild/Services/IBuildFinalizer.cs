@@ -1,6 +1,5 @@
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
 using System.Collections.Generic;
 using System.ComponentModel;
 

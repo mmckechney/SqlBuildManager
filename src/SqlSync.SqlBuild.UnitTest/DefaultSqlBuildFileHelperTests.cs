@@ -1,8 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Abstractions;
-using SqlSync.SqlBuild.Abstractions.Default;
-
+using SqlSync.SqlBuild.Services;
 namespace SqlSync.SqlBuild.UnitTest
 {
     [TestClass]

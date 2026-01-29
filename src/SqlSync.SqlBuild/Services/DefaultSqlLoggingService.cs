@@ -2,7 +2,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using SqlSync.Connection;
-using SqlSync.SqlBuild.Abstractions;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.SqlLogging;

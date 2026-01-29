@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlSync.SqlBuild.Abstractions.Default
+namespace SqlSync.SqlBuild.Services
 {
     internal sealed class GuidProvider : IGuidProvider
     {

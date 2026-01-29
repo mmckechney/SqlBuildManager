@@ -10,8 +10,6 @@ using Microsoft.Extensions.Logging;
 using static SqlSync.SqlBuild.SqlBuildHelper;
 using BuildModels = SqlSync.SqlBuild.Models;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
-using SqlSync.SqlBuild.Abstractions;
-using SqlSync.SqlBuild.Abstractions.Default;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
 

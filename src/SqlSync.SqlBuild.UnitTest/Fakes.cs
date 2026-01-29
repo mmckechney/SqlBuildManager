@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using SqlSync.Connection;
-using SqlSync.SqlBuild.Abstractions;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Services;

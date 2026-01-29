@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using SqlSync.Connection;
-using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
 using BuildModels = SqlSync.SqlBuild.Models;

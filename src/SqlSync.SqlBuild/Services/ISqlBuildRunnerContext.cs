@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using SqlSync.Connection;
-using SqlSync.SqlBuild.Abstractions;
 using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
@@ -9,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BuildModels = SqlSync.SqlBuild.Models;
 
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Services
 {
     public interface ISqlBuildRunnerContext : ISqlBuildRunnerProperties
     {
@@ -34,7 +33,7 @@ namespace SqlSync.SqlBuild
         string ProjectFilePath { get; }
         string ProjectFileName { get; }
         string BuildFileName { get; }
-        List<SqlSync.SqlBuild.SqlLogging.CommittedScript> CommittedScripts { get; }
+        List<SqlLogging.CommittedScript> CommittedScripts { get; }
         bool ErrorOccured { get; set; }
         string SqlInfoMessage { get; set; }
         int DefaultScriptTimeout { get; }

@@ -3,6 +3,11 @@
     <TargetFrameworks>net8.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Resources\**" />
+    <EmbeddedResource Remove="Resources\**" />
+    <None Remove="Resources\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -30,8 +35,8 @@
     <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Abstractions\Default\" />
     <Folder Include="CodeTable\" />
-    <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Legacy\ServerConnectConfig.Designer.cs">

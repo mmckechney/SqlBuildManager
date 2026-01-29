@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
 using SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.Services;
 
 namespace SqlSync.SqlBuild.UnitTest
 {

@@ -1,9 +1,7 @@
 using Microsoft.Build.Execution;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.SqlBuild.Abstractions;
 using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

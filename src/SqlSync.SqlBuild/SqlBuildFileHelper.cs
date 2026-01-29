@@ -7,8 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using SqlSync.SqlBuild.Abstractions;
-using SqlSync.SqlBuild.Abstractions.Default;
 using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Utilities;

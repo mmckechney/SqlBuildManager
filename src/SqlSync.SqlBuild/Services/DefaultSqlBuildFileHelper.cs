@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace SqlSync.SqlBuild.Abstractions.Default
+namespace SqlSync.SqlBuild.Services
 {
     public sealed class DefaultSqlBuildFileHelper : ISqlBuildFileHelper
     {

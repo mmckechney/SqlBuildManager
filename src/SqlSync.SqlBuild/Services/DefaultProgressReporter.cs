@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SqlSync.SqlBuild.Status;
 
-namespace SqlSync.SqlBuild.Abstractions.Default
+namespace SqlSync.SqlBuild.Services
 {
     internal class DefaultProgressReporter : IProgressReporter
     {
