@@ -82,12 +82,9 @@ namespace SqlSync.SqlBuild
         #region Runtime State Fields
 
         private MultiDbData multiDbRunData;
-        private BuildModels.ScriptRun currentRun;
         private string sqlInfoMessage = string.Empty;
         private string lastSqlMessage = string.Empty;
-        private int currentBatchScriptIndex;
         private System.Guid currentBuildId = System.Guid.Empty;
-        private string[] selectedScriptIds = null;
         private List<LoggingCommittedScript> committedScripts = new List<LoggingCommittedScript>();
         private BuildModels.SqlSyncBuildDataModel buildHistoryModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 

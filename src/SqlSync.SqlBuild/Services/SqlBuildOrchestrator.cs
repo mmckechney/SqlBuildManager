@@ -1,4 +1,3 @@
-using Microsoft.Identity.Client;
 using SqlSync.SqlBuild.Models;
 using System;
 using System.ComponentModel;
@@ -14,7 +13,6 @@ namespace SqlSync.SqlBuild.Services
         private readonly ISqlLoggingService _sqlLoggingService;
         private readonly ISqlBuildRunnerContext _ctx;
         private readonly ISqlBuildRunnerProperties _props;
-        private readonly IBuildRetryPolicy retryPolicy;
         private readonly IBuildFinalizerContext _finalizerCtx;
         public SqlBuildOrchestrator(ISqlBuildRunnerContext ctx, ISqlBuildRunnerProperties props, IBuildRetryPolicy retryPolicy, IBuildFinalizerContext finalizerCtx, IConnectionsService connectionsService, ISqlLoggingService sqlLoggingService)
         {
