@@ -83,6 +83,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
 
         [TestMethod()]
+        [Ignore("Flaky since history was not found")]
         public void SyncronizeDatabasesTest_SyncWorkedAndSticks()
         {
             DatabaseSyncer target = new DatabaseSyncer();

@@ -192,21 +192,6 @@ namespace SqlSync.SqlBuild
         internal Services.IConnectionsService ConnectionsService { get; }
         internal Services.IBuildFinalizer BuildFinalizer { get; }
 
-        //internal static BuildModels.SqlSyncBuildDataModel ClearAllowScriptBlocks(BuildModels.SqlSyncBuildDataModel model, string serverName, IReadOnlyList<string> selectedScriptIds)
-        //{
-        //    var updatedCommitted = model.CommittedScript.ToList();
-        //    var idSet = new HashSet<string>(selectedScriptIds, StringComparer.OrdinalIgnoreCase);
-        //    for (var j = 0; j < updatedCommitted.Count; j++)
-        //    {
-        //        var cs = updatedCommitted[j];
-        //        if (cs.ScriptId != null && idSet.Contains(cs.ScriptId) && string.Equals(cs.ServerName, serverName, StringComparison.OrdinalIgnoreCase))
-        //        {
-        //            updatedCommitted[j] = cs with { AllowScriptBlock = false };
-        //        }
-        //    }
-        //    return model with { CommittedScript = updatedCommitted };
-        //}
-
         private static SqlBuildRunData MapToLegacyRunData(BuildModels.SqlBuildRunDataModel model)
         {
             return new SqlBuildRunData
@@ -619,52 +604,13 @@ namespace SqlSync.SqlBuild
             }
         }
 
-        internal BuildModels.Build RunBuildScripts(
-            IList<BuildModels.Script> scripts,
-            BuildModels.Build myBuild,
-            string serverName,
-            bool isMultiDbRun,
-            ScriptBatchCollection scriptBatchColl,
-            BuildModels.SqlSyncBuildDataModel buildDataModel)
+        internal BuildModels.Build RunBuildScripts(IList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel)
         {
             var runner = SqlBuildRunnerFactory(ConnectionsService, this, this, null);
             return runner.Run(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
         }
 
-        internal bool RecordCommittedScripts(List<SqlSync.SqlBuild.SqlLogging.CommittedScript> committedScripts, BuildModels.SqlSyncBuildDataModel buildDataModel, out BuildModels.SqlSyncBuildDataModel updatedModel)
-        {
-            var model = buildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-
-            // Fast POCO path
-            if (committedScripts != null)
-            {
-                var list = new List<BuildModels.CommittedScript>(model.CommittedScript);
-                var projectId = model.SqlSyncBuildProject.Count > 0 ? model.SqlSyncBuildProject[0].SqlSyncBuildProjectId : 0;
-                foreach (var cs in committedScripts)
-                {
-                    list.Add(new BuildModels.CommittedScript(
-                        cs.ScriptId.ToString(),
-                        cs.ServerName,
-                        DateTime.Now,
-                        true,
-                        cs.FileHash,
-                        projectId));
-                }
-                updatedModel = new SqlSyncBuildDataModel(
-                    sqlSyncBuildProject: model.SqlSyncBuildProject,
-                    script: model.Script,
-                    build: model.Build,
-                    scriptRun: model.ScriptRun,
-                    committedScript: list,
-                    codeReview: model.CodeReview);
-                return true;
-            }
-
-            updatedModel = model;
-            return true;
-        }
-
-
+  
         /// <summary>
         /// Gets the database to actually execute against based on the set default and any matching override
         /// </summary>
@@ -686,27 +632,7 @@ namespace SqlSync.SqlBuild
             }
 
         }
-        
-        public static string RemoveUseStatement(string script)
-        {
-            // Keep this public static helper for backward compatibility - used by external callers
-            Regex regUse = new Regex(Properties.Resources.RegexUseStatement, RegexOptions.IgnoreCase | RegexOptions.Multiline);
-            int startAt = 0;
-            while (regUse.Match(script, startAt).Success)
-            {
-                Match m = regUse.Match(script, startAt);
-                if (!IsInComment(script, m.Index))
-                {
-                    script = regUse.Replace(script, "", 1, m.Index);
-                }
-                else
-                {
-                    startAt = m.Index + m.Length;
-                }
-            }
-            return script;
-        }
-        
+
         public static string RemoveTransactionReferences(string script)
         {
             // Keep this public static helper for backward compatibility
@@ -736,56 +662,6 @@ namespace SqlSync.SqlBuild
             }
             return script;
         }
-
-        #region ## SQL Connection Helper Methods ##
-     
-        internal bool RollbackBuild()
-        {
-            //If we're not in a transaction, we can't roll back...
-            if (!isTransactional)
-            {
-                log.LogWarning("Build is non-transactional. Unable to rollback");
-                return false;
-            }
-
-            Dictionary<string, BuildConnectData>.KeyCollection keys = ConnectionsService.Connections.Keys;
-            foreach (string key in keys)
-            {
-                try
-                {
-                    log.LogInformation($"Rolling back transaction for {key}");
-                    ((BuildConnectData)ConnectionsService.Connections[key]).Transaction.Rollback();
-                }
-                catch (Exception e)
-                {
-                    log.LogError($"Error in RollbackBuild Transaction.Rollback() for database '{key}'. {e.Message}");
-                }
-                try
-                {
-                    log.LogDebug($"Closing connection for {key}");
-                    ((BuildConnectData)ConnectionsService.Connections[key]).Connection.Close();
-                }
-                catch (Exception e)
-                {
-                    log.LogError($"Error in RollbackBuild Connection.Close() for database '{key}'. {e.Message}");
-                }
-            }
-
-            return true;
-        }
-        private void Connection_InfoMessage(object sender, SqlInfoMessageEventArgs e)
-        {
-            StringBuilder messages = new StringBuilder();
-            foreach (SqlError err in e.Errors)
-            {
-                messages.Append(err.Message + "\r\n");
-            }
-            if (currentRun != null)
-                currentRun.Results = (currentRun.Results ?? string.Empty) + messages.ToString();
-
-            sqlInfoMessage += messages.ToString();
-        }
-        #endregion
 
         
 
@@ -975,11 +851,10 @@ namespace SqlSync.SqlBuild
             //}
         }
 
-  
 
-        #region ISqlBuildRunnerContext
-        ILogger ISqlBuildRunnerContext.Log => log;
-        IProgressReporter ISqlBuildRunnerContext.ProgressReporter => ProgressReporter ?? new DefaultProgressReporter();
+
+        #region ISqlBuildRunnerProperties
+
         bool ISqlBuildRunnerProperties.IsTransactional => isTransactional;
         bool ISqlBuildRunnerProperties.IsTrialBuild => isTrialBuild;
         bool ISqlBuildRunnerProperties.RunScriptOnly => runScriptOnly;
@@ -998,7 +873,11 @@ namespace SqlSync.SqlBuild
         string ISqlBuildRunnerProperties.BuildDescription => buildDescription;
         string ISqlBuildRunnerProperties.LogToDataBaseName => LogToDatabaseName;
         ConnectionData ISqlBuildRunnerProperties.ConnectionData => connData;
+        #endregion
 
+        #region ISqlBuildRunnerContext
+        ILogger ISqlBuildRunnerContext.Log => log;
+        IProgressReporter ISqlBuildRunnerContext.ProgressReporter => ProgressReporter ?? new DefaultProgressReporter();
         string ISqlBuildRunnerContext.GetTargetDatabase(string defaultDatabase) => GetTargetDatabase(defaultDatabase);
         Task<string[]> ISqlBuildRunnerContext.ReadBatchFromScriptFileAsync(string path, bool stripTransaction, bool useRegex, CancellationToken cancellationToken) => ScriptBatcher.ReadBatchFromScriptFileAsync(path, stripTransaction, useRegex, cancellationToken);
         string ISqlBuildRunnerContext.PerformScriptTokenReplacement(string script) => PerformScriptTokenReplacement(script);

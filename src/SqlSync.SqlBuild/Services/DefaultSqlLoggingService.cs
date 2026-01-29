@@ -219,7 +219,7 @@ namespace SqlSync.SqlBuild.Services
                     if (row != null)
                     {
 
-                        
+
                         //progressReporter.ReportProgress(0, new GeneralStatusEventArgs("Recording Commited Script: " + row.FileName));
 
                         BuildConnectData tmpConnDat;
@@ -236,12 +236,15 @@ namespace SqlSync.SqlBuild.Services
                         logCmd.Parameters["@ScriptFileHash"].Value = script.FileHash;
                         logCmd.Parameters["@Sequence"].Value = script.Sequence;
                         logCmd.Parameters["@ScriptText"].Value = script.ScriptText;
-                        logCmd.Parameters["@Tag"].Value = script.Tag;
+                        logCmd.Parameters["@Tag"].Value = script.Tag ?? "";
                         logCmd.Parameters["@TargetDatabase"].Value = script.DatabaseTarget;
                         logCmd.Parameters["@ScriptRunStart"].Value = script.RunStart;
                         logCmd.Parameters["@ScriptRunEnd"].Value = script.RunEnd;
                         if (logCmd.Connection.State == ConnectionState.Closed)
                             logCmd.Connection.Open();
+
+                        if (tmpConnDat.Transaction != null)
+                            logCmd.Transaction = tmpConnDat.Transaction;
 
                         logCmd.ExecuteNonQuery();
                     }
@@ -263,6 +266,11 @@ namespace SqlSync.SqlBuild.Services
                         returnValue = false;
                     }
                 }
+            }
+
+            if (logCmd.Transaction != null)
+            {
+                logCmd.Transaction.Commit();
             }
             return returnValue;
         }

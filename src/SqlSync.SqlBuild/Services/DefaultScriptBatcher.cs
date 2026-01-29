@@ -126,6 +126,8 @@ namespace SqlSync.SqlBuild.Services
             for (int i = 0; i < list.Count; i++)
                 list[i] = RemoveUseStatement(list[i]);
 
+            //Remove anything that is completely empty
+            list = list.Where(l => l.Length > 0).ToList();
             log.LogDebug($"Batched build package into {list.Count.ToString()} scripts");
             return list;
         }

@@ -116,14 +116,8 @@ namespace SqlSync.SqlBuild.Services
                         cs.FileHash,
                         projectId));
                 }
-                var updatedModel = new SqlSyncBuildDataModel(
-                    sqlSyncBuildProject: model.SqlSyncBuildProject,
-                    script: model.Script,
-                    build: model.Build,
-                    scriptRun: model.ScriptRun,
-                    committedScript: list,
-                    codeReview: model.CodeReview);
-                return updatedModel;
+                buildDataModel.CommittedScript = list;
+                return buildDataModel;
             }
 
             return model;

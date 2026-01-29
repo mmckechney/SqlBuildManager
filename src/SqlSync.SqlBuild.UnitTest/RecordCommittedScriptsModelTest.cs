@@ -26,14 +26,14 @@ namespace SqlSync.SqlBuild.UnitTest
             };
 
             // Act
-            var ok = helper.RecordCommittedScripts(committed, model, out var updated);
+            SqlSyncBuildDataModel ok = helper.BuildFinalizer.RecordCommittedScripts(committed, model);
 
             // Assert
-            Assert.IsTrue(ok);
-            Assert.AreEqual(1, updated.CommittedScript.Count);
-            Assert.AreEqual(scriptId.ToString(), updated.CommittedScript[0].ScriptId);
-            Assert.AreEqual("server", updated.CommittedScript[0].ServerName);
-            Assert.AreEqual(hash, updated.CommittedScript[0].ScriptHash);
+            Assert.IsNotNull(ok);
+            Assert.AreEqual(1, ok.CommittedScript.Count);
+            Assert.AreEqual(scriptId.ToString(), ok.CommittedScript[0].ScriptId);
+            Assert.AreEqual("server", ok.CommittedScript[0].ServerName);
+            Assert.AreEqual(hash, ok.CommittedScript[0].ScriptHash);
         }
     }
 }

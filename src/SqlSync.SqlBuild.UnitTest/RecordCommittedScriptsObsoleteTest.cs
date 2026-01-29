@@ -20,13 +20,12 @@ namespace SqlSync.SqlBuild.UnitTest
                 new LoggingCommittedScript(scriptId, "HASH", 1, "text", "tag", "server", "db")
             };
 
-            var ok = helper.RecordCommittedScripts(committed, helper.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(), out var updatedModel);
+            SqlSyncBuildDataModel ok = helper.BuildFinalizer.RecordCommittedScripts(committed, helper.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
-            Assert.IsTrue(ok);
-            Assert.IsNotNull(updatedModel);
-            Assert.AreEqual(1, updatedModel.CommittedScript.Count);
-            Assert.AreEqual(scriptId.ToString(), updatedModel.CommittedScript[0].ScriptId);
-            Assert.AreEqual("server", updatedModel.CommittedScript[0].ServerName);
+            Assert.IsNotNull(ok);
+            Assert.AreEqual(1, ok.CommittedScript.Count);
+            Assert.AreEqual(scriptId.ToString(), ok.CommittedScript[0].ScriptId);
+            Assert.AreEqual("server", ok.CommittedScript[0].ServerName);
         }
     }
 }
