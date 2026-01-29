@@ -40,13 +40,6 @@ param deployAks bool = true
 @description('Number of test databases to create per server')
 param testDbCountPerServer int = 10
 
-@description('Name for SQL Admin account')
-param sqladminname string = 'SqlBuildManagerSqlAdmin'
-
-@description('Value for SQL Admin password')
-@secure()
-param sqladminpassword string 
-
 
 
 var resourceGroupName = '${namePrefix}-rg'
@@ -148,8 +141,6 @@ module databases './Modules/database.bicep' = if(testDbCountPerServer > 0){
     location: location
     subnetNames: join(networkResource.outputs.subnetNames, ',')
     namePrefix: namePrefix
-    sqladminname: sqladminname
-    sqladminpassword: sqladminpassword
     testDbCountPerServer: testDbCountPerServer
   }
 }
@@ -244,16 +235,8 @@ resource eventHubNamespaceResource_eventHubName 'Microsoft.EventHub/namespaces/e
   }
 }
 
-resource namespaceName_eventHubName_batchbuilder 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules@2017-04-01' = {
-  parent: eventHubNamespaceResource_eventHubName
-  name: 'batchbuilder'
-  properties: {
-    rights: [
-      'Listen'
-      'Send'
-    ]
-  }
-}
+// Authorization rules removed - using Managed Identity with RBAC for Event Hub access
+// The identity.bicep module assigns EventHubsDataReceiver and EventHubsDataSender roles
 
 resource serviceBusResource 'Microsoft.ServiceBus/namespaces@2018-01-01-preview' = {
   name: serviceBusNamespaceNameVar
@@ -268,17 +251,8 @@ resource serviceBusResource 'Microsoft.ServiceBus/namespaces@2018-01-01-preview'
   }
 }
 
-resource serviceBusResource_RootManageSharedAccessKey 'Microsoft.ServiceBus/namespaces/AuthorizationRules@2017-04-01' = {
-  parent: serviceBusResource
-  name: 'RootManageSharedAccessKey'
-  properties: {
-    rights: [
-      'Listen'
-      'Manage'
-      'Send'
-    ]
-  }
-}
+// Authorization rules removed - using Managed Identity with RBAC for Service Bus access
+// The identity.bicep module assigns ServiceBusDataOwner role
 
 resource serviceBusResource_topic_sqlbuildmanager 'Microsoft.ServiceBus/namespaces/topics@2018-01-01-preview' = {
   parent: serviceBusResource
@@ -297,17 +271,8 @@ resource serviceBusResource_topic_sqlbuildmanager 'Microsoft.ServiceBus/namespac
   }
 }
 
-resource serviceBusResource_topic_sqlbuildmanager_sbmtopicpolicy 'Microsoft.ServiceBus/namespaces/topics/authorizationRules@2018-01-01-preview' = {
-  parent: serviceBusResource_topic_sqlbuildmanager
-  name: 'sbmtopicpolicy'
-  properties: {
-    rights: [
-      'Manage'
-      'Listen'
-      'Send'
-    ]
-  }
-}
+// Topic authorization rule removed - using Managed Identity with RBAC for Service Bus access
+
 
 
 

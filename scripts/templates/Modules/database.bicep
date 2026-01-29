@@ -1,20 +1,13 @@
 @description('Prefix to prepend to account names')
 param namePrefix string = 'eztmwm'
 
-@description('Name for SQL Admin account')
-param sqladminname string = 'SqlBuildManagerSqlAdmin'
-
-@description('Value for SQL Admin password')
-@secure()
-param sqladminpassword string
-
 @description('Number of test databases to create per server')
 param testDbCountPerServer int = 10
 
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
-@description('Current manchine IP address to allow access to the SQL Server.')
+@description('Current machine IP address to allow access to the SQL Server.')
 param currentIpAddress string
 
 @description('Array of subnet resource ids to allow access to the SQL Server.')
@@ -46,14 +39,12 @@ module identityResource 'identity.bicep' = {
 }
 
 
-// SQL Server 'A' resources
-resource sqlserverAResource 'Microsoft.Sql/servers@2021-11-01' = {
+// SQL Server 'A' resources - Entra ID Only Authentication
+resource sqlserverAResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
   name: '${sqlserverNameVar}-a'
   location: location
   
   properties: {
-    administratorLogin: sqladminname
-    administratorLoginPassword: sqladminpassword
     publicNetworkAccess: 'Enabled'
     restrictOutboundNetworkAccess: 'Disabled'
     minimalTlsVersion: '1.2'
@@ -63,8 +54,8 @@ resource sqlserverAResource 'Microsoft.Sql/servers@2021-11-01' = {
       login: identityNameVar
       sid: identityResource.outputs.clientId
       tenantId: identityResource.outputs.tenantId
-  }
-    
+      azureADOnlyAuthentication: true
+    }
   }
 }
 
@@ -128,13 +119,11 @@ resource sqlserverAResourceDatabase 'Microsoft.Sql/servers/databases@2021-11-01'
 }]
 
 
-// SQL Server 'B' resources
-resource sqlserverBResource 'Microsoft.Sql/servers@2021-11-01' = {
+// SQL Server 'B' resources - Entra ID Only Authentication
+resource sqlserverBResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
   name: '${sqlserverNameVar}-b'
   location: location  
   properties: {
-    administratorLogin: sqladminname
-    administratorLoginPassword: sqladminpassword
     publicNetworkAccess: 'Enabled'
     restrictOutboundNetworkAccess: 'Disabled'
     minimalTlsVersion: '1.2'
@@ -144,6 +133,7 @@ resource sqlserverBResource 'Microsoft.Sql/servers@2021-11-01' = {
       login: identityNameVar
       sid: identityResource.outputs.clientId
       tenantId: identityResource.outputs.tenantId
+      azureADOnlyAuthentication: true
     } 
   } 
 }

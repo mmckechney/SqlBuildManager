@@ -121,22 +121,16 @@ if($shouldDeploy)
 
     $userIdGuid = az ad signed-in-user show -o tsv --query id
     Write-Host "Using User Id GUID: $userIdGuid" -ForegroundColor Green
-    if("" -eq $sqlUserName -or "" -eq $sqlPassword -or $null -eq $sqlUserName -or $null -eq $sqlPassword)
-    {
-        if($testDatabaseCount -ge 0) {
-            Write-Host "SQL Username or Password is empty. Canceling deployment" -ForegroundColor Red
-            Exit
-        }
-    }
 
 
     Write-Host "Deploying Azure resources: Virtual Network, Subnets, Storage Account, Event Hub, Service Bus Topic, Key Vault, Identity and RBAC Assignments" -ForegroundColor Cyan
+    Write-Host "Note: Azure SQL uses Entra ID (Azure AD) only authentication via Managed Identity" -ForegroundColor Cyan
 
     if($deployAks) {Write-Host "Deploying AKS Cluster" -ForegroundColor Cyan} else {Write-Host "Skipping AKS deployment" -ForegroundColor DarkBlue}
     if($deployBatch) {Write-Host "Deploying Batch Account" -ForegroundColor Cyan} else {Write-Host "Skipping Batch deployment" -ForegroundColor DarkBlue}
     if($deployContainerRegistry) {Write-Host "Deploying Container Registry" -ForegroundColor Cyan} else {Write-Host "Skipping Container Registry deployment" -ForegroundColor DarkBlue}
     if($deployContainerAppEnv) {Write-Host "Deploying Container App Env" -ForegroundColor Cyan} else {Write-Host "Skipping Container App Env deployment" -ForegroundColor DarkBlue}
-    if($testDatabaseCount -ge 0) {Write-Host "Deploying $testDatabaseCount Test Databases"  -ForegroundColor Cyan} else {Write-Host  "Skipping Test database deployment" -ForegroundColor DarkBlue}
+    if($testDatabaseCount -ge 0) {Write-Host "Deploying $testDatabaseCount Test Databases (Entra ID auth only)"  -ForegroundColor Cyan} else {Write-Host  "Skipping Test database deployment" -ForegroundColor DarkBlue}
 
 
     $deployStatus = az deployment group create --resource-group $resourceGroupName --template-file azuredeploy_main.bicep `
@@ -144,8 +138,6 @@ if($shouldDeploy)
             namePrefix="$prefix" `
             currentIpAddress=$ipAddress `
             userIdGuid=$userIdGuid `
-            sqladminname=$sqlUserName `
-            sqladminpassword=$sqlPassword `
             deployBatchAccount=$deployBatch `
             deployContainerRegistry=$deployContainerRegistry `
             deployContainerAppEnv=$deployContainerAppEnv `
