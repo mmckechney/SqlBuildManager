@@ -34,26 +34,14 @@
     <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="ServerConnectConfig.Designer.cs">
+    <Compile Update="Legacy\ServerConnectConfig.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>ServerConnectConfig.xsd</DependentUpon>
     </Compile>
-    <Compile Update="SQLSyncBuildProject.Designer.cs">
+    <Compile Update="Legacy\SQLSyncBuildProject.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>SQLSyncBuildProject.xsd</DependentUpon>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="ServerConnectConfig.xsd">
-      <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>ServerConnectConfig.Designer.cs</LastGenOutput>
-    </None>
-    <None Update="SQLSyncBuildProject.xsd">
-      <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>SQLSyncBuildProject.Designer.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
