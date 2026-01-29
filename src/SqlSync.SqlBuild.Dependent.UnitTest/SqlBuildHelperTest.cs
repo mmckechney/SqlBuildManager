@@ -4,6 +4,8 @@ using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
 using SqlSync.SqlBuild; // For ToModel extensions
+using SqlSync.SqlBuild.Abstractions;
+using SqlSync.SqlBuild.Abstractions.Default;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
 using SqlSync.SqlBuild.SqlLogging;

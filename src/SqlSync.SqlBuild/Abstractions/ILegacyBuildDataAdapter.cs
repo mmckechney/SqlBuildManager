@@ -1,7 +1,7 @@
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Abstractions
 {
     public interface ILegacyBuildDataAdapter
     {
-        SqlSyncBuildData ToDataSet(SqlSync.SqlBuild.Models.SqlSyncBuildDataModel model);
+        SqlSync.SqlBuild.Legacy.SqlSyncBuildData ToDataSet(SqlSync.SqlBuild.Models.SqlSyncBuildDataModel model);
     }
 }

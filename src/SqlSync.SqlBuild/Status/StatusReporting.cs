@@ -1,4 +1,5 @@
-﻿using SqlSync.SqlBuild.MultiDb;
+﻿using SqlSync.SqlBuild.Legacy;
+using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;

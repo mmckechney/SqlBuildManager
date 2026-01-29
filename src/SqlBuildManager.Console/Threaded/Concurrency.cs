@@ -4,6 +4,7 @@ using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.MultiDb;
+using SqlSync.SqlBuild.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

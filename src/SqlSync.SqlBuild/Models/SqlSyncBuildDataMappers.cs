@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.Legacy;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Models
 {
     public static class SqlSyncBuildDataMappers
     {

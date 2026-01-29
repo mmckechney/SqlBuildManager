@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlSync.SqlBuild {
+namespace SqlSync.SqlBuild.Models {
     
     [Serializable()]
     [System.ComponentModel.ToolboxItem(true)]

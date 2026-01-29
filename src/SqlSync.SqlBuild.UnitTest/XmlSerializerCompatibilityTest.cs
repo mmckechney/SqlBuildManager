@@ -3,6 +3,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Models;
 
 #nullable enable
 

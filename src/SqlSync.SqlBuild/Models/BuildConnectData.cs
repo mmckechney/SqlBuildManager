@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlSync.SqlBuild {
+namespace SqlSync.SqlBuild.Models {
 
     
     

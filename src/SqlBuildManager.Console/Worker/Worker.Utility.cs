@@ -3,6 +3,7 @@ using Spectre.Console;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
@@ -172,7 +173,7 @@ namespace SqlBuildManager.Console
                 log.LogInformation("Creating Base Build File XML");
                 var buildModel = sqlB.SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
                 var projFile = Path.Combine(workingDir, sqlB.XmlFileNames.MainProjectFile);
-                sqlB.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
+                sqlM.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
                 sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(buildModel, workingDir, sbxFileName, includeHistoryAndLogs: true);
                 var counter = 1.0;
                 foreach (var file in cmdLine.Scripts)
@@ -186,7 +187,7 @@ namespace SqlBuildManager.Console
                 }
                 // Note: AddScriptFileToBuild with saveToZip=true already persists the project file and packages the zip.
                 // Avoid overwriting the .sbx zip with plain XML.
-                sqlB.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
+                sqlM.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
             }
             else
             {
@@ -324,7 +325,7 @@ namespace SqlBuildManager.Console
             foreach (var file in packages)
             {
                 sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFile(file.FullName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
-                var buildModel = sqlB.SqlSyncBuildDataXmlSerializer.Load(projectFileName);
+                var buildModel = sqlM.SqlSyncBuildDataXmlSerializer.Load(projectFileName);
                 List<string[]> contents = new List<string[]>();
                 string dateformat = "yyyy-MM-dd hh:mm:ss";
                 if (!withHash)
@@ -400,7 +401,7 @@ namespace SqlBuildManager.Console
                 log.LogInformation("Creating Base Build File XML");
                 var buildModel = sqlB.SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
                 var projFile = Path.Combine(workingDir, sqlB.XmlFileNames.MainProjectFile);
-                    sqlB.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
+                    sqlM.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
                 sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(buildModel, workingDir, sbxFileName, includeHistoryAndLogs: true);
                 var counter = 1.0;
                 foreach (var file in cmdLine.Scripts)
@@ -412,7 +413,7 @@ namespace SqlBuildManager.Console
                     buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuild(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "");
                     counter++;
                 }
-                    sqlB.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
+                    sqlM.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
 
             }
             else

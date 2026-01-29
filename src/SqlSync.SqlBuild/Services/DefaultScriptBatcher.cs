@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SqlSync.Constants;
+using SqlSync.SqlBuild.Utilities;
 
 namespace SqlSync.SqlBuild.Services
 {

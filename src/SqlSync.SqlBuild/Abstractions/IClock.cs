@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Abstractions
 {
     public interface IClock
     {

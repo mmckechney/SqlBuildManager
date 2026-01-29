@@ -6,13 +6,12 @@ using System.Linq;
 using System.Xml;
 using System.IO.Compression;
 using System.Xml.Linq;
-using SqlSync.SqlBuild.Models;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Identity.Client;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Models
 {
     /// <summary>
     /// POCO-based XML serializer/deserializer for SqlSyncBuildDataModel compatible with legacy SqlSyncBuildData DataSet XML.

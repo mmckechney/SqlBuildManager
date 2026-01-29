@@ -1,6 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlSync.SqlBuild.Abstractions;
+using SqlSync.SqlBuild.Abstractions.Default;
+using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
+using SqlSync.SqlBuild.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;

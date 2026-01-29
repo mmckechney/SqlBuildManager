@@ -1,6 +1,8 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using SqlSync.Connection;
+using SqlSync.SqlBuild.Abstractions;
+using SqlSync.SqlBuild.Abstractions.Default;
 using SqlSync.SqlBuild.Models;
 using System;
 using System.Collections.Generic;

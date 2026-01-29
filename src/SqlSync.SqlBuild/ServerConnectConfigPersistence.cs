@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using SqlSync.SqlBuild.Models;
 
 namespace SqlSync.SqlBuild
 {

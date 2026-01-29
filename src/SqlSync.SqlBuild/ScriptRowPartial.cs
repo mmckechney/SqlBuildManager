@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Legacy
 {
     public partial class SqlSyncBuildData
     {

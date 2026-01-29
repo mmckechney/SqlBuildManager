@@ -5,6 +5,7 @@ using SqlSync.Connection;
 using SqlSync.Constants;
 using SqlSync.DbInformation;
 using SqlSync.ObjectScript.Hash;
+using SqlSync.SqlBuild.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -776,7 +777,7 @@ namespace SqlSync.ObjectScript
             string[] files = new string[fileList.Count];
             fileList.CopyTo(files);
 
-            SqlBuild.ZipHelper.CreateZipPackage(files, data.StartingDirectory, Path.Combine(data.StartingDirectory, sb.ToString()));
+            ZipHelper.CreateZipPackage(files, data.StartingDirectory, Path.Combine(data.StartingDirectory, sb.ToString()));
 
 
         }

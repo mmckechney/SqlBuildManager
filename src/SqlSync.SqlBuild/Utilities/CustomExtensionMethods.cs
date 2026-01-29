@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Utilities
 {
     public static class Extensions
     {

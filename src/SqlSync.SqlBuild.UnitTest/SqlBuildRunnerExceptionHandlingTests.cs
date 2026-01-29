@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;

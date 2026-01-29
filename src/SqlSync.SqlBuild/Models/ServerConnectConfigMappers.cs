@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SqlSync.SqlBuild.Legacy;
 
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Models
 {
     public static class ServerConnectConfigMappers
     {

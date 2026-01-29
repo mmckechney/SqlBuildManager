@@ -7,6 +7,7 @@ using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
+using SqlSync.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -99,7 +100,7 @@ namespace SqlBuildManager.Console
                     return -1;
                 }
 
-                sqlB.SqlBuildRunData sqlBuildRunData = new sqlB.SqlBuildRunData()
+                sqlM.SqlBuildRunData sqlBuildRunData = new sqlM.SqlBuildRunData()
                 {
                     ForceCustomDacpac = false,
                     BuildDataModel = buildModel,

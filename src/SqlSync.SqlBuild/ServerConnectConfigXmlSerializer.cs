@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using SqlSync.SqlBuild.Models;
 
 #nullable enable
 

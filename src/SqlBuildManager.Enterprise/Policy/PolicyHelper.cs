@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Objects;
 using System;

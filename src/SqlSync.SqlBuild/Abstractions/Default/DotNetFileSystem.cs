@@ -2,7 +2,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Abstractions.Default
 {
     internal sealed class DotNetFileSystem : IFileSystem
     {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
-using sqlB = SqlSync.SqlBuild;
+using sqlB = SqlSync.SqlBuild.Utilities;
 namespace SqlBuildManager.Console.CommandLine
 {
 

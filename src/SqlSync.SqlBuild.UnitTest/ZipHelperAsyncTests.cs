@@ -4,6 +4,8 @@ using System.IO.Compression;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Utilities;
+using IOZipFile = System.IO.Compression.ZipFile;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
@@ -19,9 +21,9 @@ namespace SqlSync.SqlBuild.UnitTest
             var filePath = Path.Combine(tmpDir, "file.txt");
             await File.WriteAllTextAsync(filePath, "hello");
 
-            using (var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            using (var zip = IOZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
-                zip.CreateEntryFromFile(filePath, "file.txt", CompressionLevel.Fastest);
+                System.IO.Compression.ZipFileExtensions.CreateEntryFromFile(zip, filePath, "file.txt", CompressionLevel.Fastest);
             }
 
             var outDir = Path.Combine(tmpDir, "out");
@@ -39,7 +41,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var tmpDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(tmpDir);
             var zipPath = Path.Combine(tmpDir, "test.zip");
-            using (var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            using (var zip = IOZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
                 // empty zip
             }
@@ -50,7 +52,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var ok = await ZipHelper.AppendZipPackageAsync(new[] { "file.txt" }, tmpDir, zipPath, keepPathInfo: true);
             Assert.IsTrue(ok);
 
-            using (var zip = ZipFile.Open(zipPath, ZipArchiveMode.Read))
+            using (var zip = IOZipFile.Open(zipPath, ZipArchiveMode.Read))
             {
                 Assert.IsNotNull(zip.GetEntry("file.txt"));
             }

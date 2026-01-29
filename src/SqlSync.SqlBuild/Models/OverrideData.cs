@@ -1,6 +1,6 @@
 ﻿using SqlSync.Connection;
 using System.Collections.Generic;
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Models
 {
     public class OverrideData
     {

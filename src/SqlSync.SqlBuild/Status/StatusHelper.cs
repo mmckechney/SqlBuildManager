@@ -2,6 +2,8 @@
 using SqlSync.Constants;
 using SqlSync.DbInformation;
 using SqlSync.DbInformation.ChangeDates;
+using SqlSync.SqlBuild.Legacy;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;

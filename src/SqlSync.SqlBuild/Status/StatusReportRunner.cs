@@ -1,4 +1,5 @@
 ﻿using SqlSync.Connection;
+using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;

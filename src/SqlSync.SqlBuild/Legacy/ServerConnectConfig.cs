@@ -1,4 +1,4 @@
-﻿namespace SqlSync.SqlBuild
+﻿namespace SqlSync.SqlBuild.Legacy
 {
 
 

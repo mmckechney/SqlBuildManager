@@ -1,8 +1,8 @@
 using System;
-using SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.Legacy;
 #nullable enable
 
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Models
 {
     public class ClearScriptData
     {

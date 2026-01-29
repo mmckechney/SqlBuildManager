@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console;
 using SqlBuildManager.Console.CommandLine;
 using sqlB = SqlSync.SqlBuild;
+using sqlM = SqlSync.SqlBuild.Models;
 
 namespace SqlBuildManager.Console.UnitTest
 {
@@ -31,7 +32,7 @@ namespace SqlBuildManager.Console.UnitTest
             Assert.AreEqual(0, rc);
             Assert.IsTrue(File.Exists(outputSbm));
             // quick check: load as POCO
-            var model = sqlB.SqlSyncBuildDataXmlSerializer.Load(outputSbm);
+            var model = sqlM.SqlSyncBuildDataXmlSerializer.Load(outputSbm);
             Assert.AreEqual(1, model.Script.Count);
             Assert.AreEqual("s1.sql", model.Script[0].FileName);
         }

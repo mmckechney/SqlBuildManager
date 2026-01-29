@@ -7,7 +7,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using SqlSync.SqlBuild.Abstractions;
+using SqlSync.SqlBuild.Abstractions.Default;
+using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.Utilities;
 using System.Threading.Tasks;
 using System.Threading;
 using SqlSync.SqlBuild.Services;
@@ -1010,7 +1014,7 @@ namespace SqlSync.SqlBuild
                 return null;
 
             ArrayList scriptFiles = new ArrayList();
-            foreach (SqlBuild.SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
             {
                 //Find the ".pop" populate scripts
                 if (Path.GetExtension(row.FileName).ToLower() != SqlSync.Constants.DbObjectType.PopulateScript.ToLower())
@@ -1141,7 +1145,7 @@ namespace SqlSync.SqlBuild
             canUpdate = new List<Objects.ObjectUpdates>();
             canNotUpdate = new List<string>();
 
-            foreach (SqlBuild.SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
             {
                 //Find the database objects that can be updated...SP, View, UDF, Trigger
                 if (Path.GetExtension(row.FileName).ToUpper() != SqlSync.Constants.DbObjectType.StoredProcedure &&
@@ -1640,7 +1644,7 @@ namespace SqlSync.SqlBuild
                 view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
                 for (int i = 0; i < view.Count; i++)
                 {
-                    SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow row = (SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow)view[i].Row;
+                    SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)view[i].Row;
                     if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
                         continue;
 
@@ -1688,7 +1692,7 @@ namespace SqlSync.SqlBuild
                 view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
                 for (int i = 0; i < view.Count; i++)
                 {
-                    SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow row = (SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow)view[i].Row;
+                    SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)view[i].Row;
                     if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
                         continue;
 
@@ -1733,7 +1737,7 @@ namespace SqlSync.SqlBuild
                 for (int i = 0; i < view.Count; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow row = (SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow)view[i].Row;
+                    SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)view[i].Row;
                     if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
                         continue;
 
@@ -1777,7 +1781,7 @@ namespace SqlSync.SqlBuild
                 for (int i = 0; i < view.Count; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow row = (SqlSync.SqlBuild.SqlSyncBuildData.ScriptRow)view[i].Row;
+                    SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)view[i].Row;
                     if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
                         continue;
 

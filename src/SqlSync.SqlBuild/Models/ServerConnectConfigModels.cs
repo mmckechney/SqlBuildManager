@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Models
 {
     public sealed record class ServerConfiguration(
         string Name,

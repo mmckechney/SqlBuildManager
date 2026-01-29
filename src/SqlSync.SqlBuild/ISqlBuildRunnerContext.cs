@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SqlSync.Connection;
+using SqlSync.SqlBuild.Abstractions;
 using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;

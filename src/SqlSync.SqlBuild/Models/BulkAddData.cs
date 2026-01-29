@@ -1,6 +1,6 @@
 ﻿using SqlBuildManager.Interfaces.ScriptHandling.Tags;
 using System.Collections.Generic;
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Models
 {
     public class BulkAddData
     {

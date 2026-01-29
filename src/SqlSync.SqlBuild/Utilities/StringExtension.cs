@@ -1,5 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Utilities
 {
     public static class StringExtension
     {

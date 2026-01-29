@@ -2,6 +2,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using SqlSync.Connection;
 using SqlSync.DbInformation;
+using SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data;

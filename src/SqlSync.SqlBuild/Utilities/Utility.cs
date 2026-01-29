@@ -6,8 +6,9 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
-namespace SqlSync.SqlBuild
+namespace SqlSync.SqlBuild.Utilities
 {
     public class UtilityHelper
     {
