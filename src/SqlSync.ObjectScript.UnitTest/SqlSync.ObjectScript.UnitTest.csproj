@@ -28,7 +28,6 @@
     <Compile Include="BackoutPackageTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlSync.Compare\SqlSync.Compare.csproj" />
     <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
     <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj" />
     <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
