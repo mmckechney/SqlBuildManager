@@ -31,7 +31,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CodeTable\" />
-    <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Legacy\ServerConnectConfig.Designer.cs">
