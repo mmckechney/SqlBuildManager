@@ -6,12 +6,11 @@ using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 namespace SqlBuildManager.Console.Threaded
 {
     class ThreadedRunner
@@ -146,17 +145,15 @@ namespace SqlBuildManager.Console.Threaded
         /// <summary>
         /// Performs the database scripts execution against the specified server/ database settings
         /// </summary>
-        /// <param name="serverName">Name of the SQL server to target</param>
-        /// <param name="overrides">List of database override settings to use in execution</param>
-        /// <returns></returns>
-        internal async Task<int> RunDatabaseBuild(ThreadedLogging threadedLog)
+        /// <param name="threadedLog">The logging instance for threaded execution</param>
+        /// <param name="cancellationToken">Cancellation token for async operations</param>
+        /// <returns>Return code indicating success or failure</returns>
+        internal async Task<int> RunDatabaseBuildAsync(ThreadedLogging threadedLog, CancellationToken cancellationToken = default)
         {
             returnValue = (int)RunnerReturn.BuildResultInconclusive;
             this.threadedLog = threadedLog;
             this.jobName = cmdArgs.JobName;
             ConnectionData connData = null;
-            BackgroundWorker bg = null;
-            DoWorkEventArgs e = null;
             SqlBuildRunDataModel runDataModel = new SqlBuildRunDataModel();
             string targetDatabase = overrides[0].OverrideDbTarget;
             string loggingDirectory = Path.Combine(ThreadedManager.WorkingDirectory, server, targetDatabase);
@@ -207,7 +204,7 @@ namespace SqlBuildManager.Console.Threaded
                         default:
                             log.LogError($"Error creating custom dacpac and scripts for {targetDatabase}. No update was performed");
                             returnValue = (int)RunnerReturn.PackageCreationError;
-                            return (int)RunnerReturn.PackageCreationError; ;
+                            return (int)RunnerReturn.PackageCreationError;
 
                     }
 
@@ -237,28 +234,21 @@ namespace SqlBuildManager.Console.Threaded
                 }
                 connData.AuthenticationType = cmdArgs.AuthenticationArgs.AuthenticationType;
                 connData.ManagedIdentityClientId = cmdArgs.IdentityArgs.ClientId;
-
-                //Set the log file name
-                string logFile = Path.Combine(loggingDirectory, "ExecutionLog.log");
-
-                //Create the objects that will handle the event communication back.
-                bg = new BackgroundWorker();
-                //bg.ProgressChanged += Bg_ProgressChanged;
-                bg.WorkerReportsProgress = true;
-                e = new DoWorkEventArgs(null);
             }
             catch (Exception exe)
             {
                 log.LogError(exe, $"Error Initializing run for {TargetTag}");
                 WriteErrorLog(loggingDirectory, exe.ToString());
                 returnValue = (int)ExecutionReturn.RunInitializationError;
-                return (int)ExecutionReturn.RunInitializationError; ;
+                return (int)ExecutionReturn.RunInitializationError;
             }
 
             log.LogDebug("Initializing run for " + TargetTag + ". Starting \"ProcessBuild\"");
 
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                
                 //Initilize the run helper object and kick it off.
                 SqlBuildHelper helper = new SqlBuildHelper(connData, true, string.Empty, cmdArgs.Transactional); //don't need an "external" log for this, it's all external!
                 helper.BuildCommittedEvent += new BuildCommittedEventHandler(helper_BuildCommittedEvent);
@@ -275,17 +265,23 @@ namespace SqlBuildManager.Console.Threaded
 
                 if(runDataModel.BuildDataModel == null) runDataModel.BuildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-                 var result = await helper.ProcessBuild(runDataModel,cmdArgs.TimeoutRetryCount, buildRequestedBy, ThreadedManager.BatchColl);
+                var result = await helper.ProcessBuild(runDataModel, cmdArgs.TimeoutRetryCount, buildRequestedBy, ThreadedManager.BatchColl);
                 returnValue = (int)result.FinalStatus;
 
 
+            }
+            catch (OperationCanceledException)
+            {
+                log.LogWarning($"Build for {TargetTag} was cancelled");
+                returnValue = (int)ExecutionReturn.ProcessBuildError;
+                throw;
             }
             catch (Exception exe)
             {
                 log.LogError("Error Processing run for " + TargetTag, exe);
                 WriteErrorLog(loggingDirectory, exe.ToString());
                 returnValue = (int)ExecutionReturn.ProcessBuildError;
-                return (int)ExecutionReturn.ProcessBuildError; ;
+                return (int)ExecutionReturn.ProcessBuildError;
             }
             finally
             {

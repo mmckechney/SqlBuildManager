@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
@@ -125,7 +125,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
-            actual = target.Execute();
+            actual = target.ExecuteAsync().GetAwaiter().GetResult();
 
             try
             {
@@ -196,7 +196,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
-            actual = target.Execute();
+            actual = target.ExecuteAsync().GetAwaiter().GetResult();
 
             try
             {
@@ -257,7 +257,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
-            actual = target.Execute();
+            actual = target.ExecuteAsync().GetAwaiter().GetResult();
 
             try
             {
@@ -325,7 +325,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
-            actual = target.Execute();
+            actual = target.ExecuteAsync().GetAwaiter().GetResult();
 
             try
             {
@@ -399,7 +399,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
-            actual = target.Execute();
+            actual = target.ExecuteAsync().GetAwaiter().GetResult();
 
             try
             {
@@ -468,7 +468,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
-            actual = target.Execute();
+            actual = target.ExecuteAsync().GetAwaiter().GetResult();
 
             try
             {
@@ -571,7 +571,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 }
 
 
-                actual = target.Execute();
+                actual = target.ExecuteAsync().GetAwaiter().GetResult();
 
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
@@ -667,7 +667,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                     if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
                 }
 
-                actual = target.Execute();
+                actual = target.ExecuteAsync().GetAwaiter().GetResult();
 
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
@@ -759,7 +759,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                     if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
                 }
 
-                actual = target.Execute();
+                actual = target.ExecuteAsync().GetAwaiter().GetResult();
 
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
@@ -835,7 +835,7 @@ localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
 
             int expected = (int)ExecutionReturn.NegativeTimeoutRetryCount;
             int actual;
-            actual = target.Execute();
+            actual = target.ExecuteAsync().GetAwaiter().GetResult();
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
 
 
@@ -892,7 +892,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
-            actual = target.Execute();
+            actual = target.ExecuteAsync().GetAwaiter().GetResult();
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
             try
             {
@@ -970,7 +970,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
             try
             {
-                actual = target.Execute();
+                actual = target.ExecuteAsync().GetAwaiter().GetResult();
                 Assert.AreEqual(expected, actual);
             }
             finally
@@ -1034,7 +1034,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 }
 
 
-                actual = target.Execute();
+                actual = target.ExecuteAsync().GetAwaiter().GetResult();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 if (actual == -600)
                     Assert.Fail("Unable to completed test.");
@@ -1130,7 +1130,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 }
             
 
-                actual = target.Execute();
+                actual = target.ExecuteAsync().GetAwaiter().GetResult();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
@@ -1220,7 +1220,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                     if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
                 }
 
-                actual = target.Execute();
+                actual = target.ExecuteAsync().GetAwaiter().GetResult();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");

@@ -67,7 +67,7 @@ namespace SqlBuildManager.Console.CommandLine
                 };
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConcurrencyOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.RunThreadedExecution);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.RunThreadedExecutionAsync);
                 return cmd;
             }
         }
@@ -89,7 +89,7 @@ namespace SqlBuildManager.Console.CommandLine
                 };
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConcurrencyOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.QueryDatabases);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.QueryDatabasesAsync);
                 return cmd;
             }
         }

@@ -220,7 +220,7 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static int RunThreadedExecution(CommandLineArgs cmdLine, bool unittest = false)
+        internal static async Task<int> RunThreadedExecutionAsync(CommandLineArgs cmdLine, bool unittest = false)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
@@ -247,7 +247,7 @@ namespace SqlBuildManager.Console
             log.LogDebug(cmdLine.ToStringExtension(StringType.Batch));
             log.LogInformation("Running Threaded Execution...");
             ThreadedManager tManager = new ThreadedManager(cmdLine, null);
-            int retVal = tManager.Execute();
+            int retVal = await tManager.ExecuteAsync();
             ExecutionReturn exeResult;
             if (Enum.TryParse<ExecutionReturn>(retVal.ToString(), out exeResult))
             {
@@ -278,8 +278,7 @@ namespace SqlBuildManager.Console
             if (!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
                 log.LogInformation("Writing log files to storage...");
-                var blobTask = StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, cmdLine.RootLoggingPath);
-                blobTask.Wait();
+                await StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, cmdLine.RootLoggingPath);
             }
 
             log.LogDebug("Exiting Threaded Execution");

@@ -58,7 +58,7 @@ namespace SqlBuildManager.Console.ContainerShared
 
                 if (keepGoing)
                 {
-                    result = Worker.RunThreadedExecution(cmdLine);
+                    result = await Worker.RunThreadedExecutionAsync(cmdLine);
                 }
             }
             catch (Exception exe)
@@ -104,7 +104,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 {
                     
                     
-                    result = new ThreadedQuery().QueryDatabases(cmdLine, runId);
+                    result = await new ThreadedQuery().QueryDatabasesAsync(cmdLine, runId);
                     var outputFileName = runId + "_" + cmdLine.OutputFile.Name;
                     
                     //Copy file to storage with unique prefix

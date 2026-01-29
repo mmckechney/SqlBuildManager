@@ -270,7 +270,7 @@ namespace SqlSync.SqlBuild
             targetDatabaseOverrides = runData.TargetDatabaseOverrides?.ToList();
             logToDatabaseName = runData.LogToDatabaseName ?? string.Empty;
 
-            log.LogInformation($"Starting Build Process targeting: {serverName} ");
+            //log.LogInformation($"Starting Build Process targeting: {serverName} ");
 
             var prep = PrepareBuildForRun(buildDataModel, serverName, isMultiDbRun, scriptBatchColl);
             if (prep.FilteredScripts == null || prep.FilteredScripts.Count == 0)
