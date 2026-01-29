@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
-using SqlSync.SqlBuild.Syncronizer;
+using SqlSync.SqlBuild.Synchronizer;
 using System;
 using System.Linq;
 namespace SqlBuildManager.Console

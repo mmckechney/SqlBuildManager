@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
-using SqlSync.SqlBuild.Syncronizer;
+using SqlSync.SqlBuild.Synchronizer;
 using System;
 using System.Linq;
 

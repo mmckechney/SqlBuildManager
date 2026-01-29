@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 
-namespace SqlSync.SqlBuild.Syncronizer
+namespace SqlSync.SqlBuild.Synchronizer
 {
     public class DatabaseSyncer
     {

@@ -5,7 +5,7 @@ using System;
 using System.Data;
 using System.Linq;
 
-namespace SqlSync.SqlBuild.Syncronizer
+namespace SqlSync.SqlBuild.Synchronizer
 {
     public class DatabaseDiffer
     {

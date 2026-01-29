@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
-using SqlSync.SqlBuild.Syncronizer;
+using SqlSync.SqlBuild.Synchronizer;
 using System;
 
 #nullable enable

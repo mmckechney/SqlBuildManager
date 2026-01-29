@@ -2,7 +2,7 @@ using System;
 using System.Xml;
 using System.Xml.Schema;
 
-namespace SqlSync.Validator
+namespace SqlSync.SqlBuild.Validator
 {
     /// <summary>
     /// Summary description for SchemaValidator.
