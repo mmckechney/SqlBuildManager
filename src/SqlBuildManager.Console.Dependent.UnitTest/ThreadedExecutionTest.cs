@@ -103,7 +103,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
-            init.CopyDbConfigFileLongToTestPath();
+            init.CopyDbConfigFile20ToTestPath();
 
             string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
 
@@ -175,7 +175,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
-            init.CopyDbConfigFileLongToTestPath();
+            init.CopyDbConfigFile20ToTestPath();
 
             string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
 
@@ -236,7 +236,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
-            init.CopyDbConfigFileLongToTestPath();
+            init.CopyDbConfigFile100ToTestPath();
 
             string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
 
@@ -304,7 +304,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
-            init.CopyDbConfigFileLongToTestPath();
+            init.CopyDbConfigFile20ToTestPath();
 
             string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
 
@@ -376,7 +376,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
-            init.CopyDbConfigFileLongToTestPath();
+            init.CopyDbConfigFile50ToTestPath();
 
             string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
 

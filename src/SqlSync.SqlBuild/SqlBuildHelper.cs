@@ -209,11 +209,11 @@ namespace SqlSync.SqlBuild
                     runScriptOnly: false,
                     buildFileName: multiDbRunData.BuildFileName,
                     logToDatabaseName: string.Empty,
-                    isTransactional: true,
+                    isTransactional: multiDbRunData.IsTransactional,
                     platinumDacPacFileName: string.Empty,
                     targetDatabaseOverrides: srvData.Overrides,
                     forceCustomDacpac: false,
-                    buildRevision: string.Empty,
+                    buildRevision: multiDbRunData.BuildRevision,
                     defaultScriptTimeout: 500,
                     allowObjectDelete: false);
 

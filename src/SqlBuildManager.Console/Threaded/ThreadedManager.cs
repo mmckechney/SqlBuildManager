@@ -96,16 +96,8 @@ namespace SqlBuildManager.Console.Threaded
             get { return ThreadedManager.batchColl; }
         }
 
-        private static SqlSyncBuildData buildData = null; // Obsolete
         private static SqlSyncBuildDataModel buildDataModel = null;
-        /// <summary>
-        /// The runtime metadata object for the build execution
-        ///// </summary>
-        [Obsolete("Use BuildDataModel for POCO-based execution")]
-        internal static SqlSyncBuildData BuildData
-        {
-            get { return buildData; }
-        }
+
         internal static SqlSyncBuildDataModel BuildDataModel
         {
             get { return buildDataModel; }
@@ -633,7 +625,6 @@ namespace SqlBuildManager.Console.Threaded
             ThreadedManager.rootLoggingPath = string.Empty;
             ThreadedManager.workingDirectory = string.Empty;
             ThreadedManager.batchColl = null;
-            ThreadedManager.buildData = null;
             ThreadedManager.buildDataModel = null;
             ThreadedLogging.TheadedLoggingInitiated = false;
         }

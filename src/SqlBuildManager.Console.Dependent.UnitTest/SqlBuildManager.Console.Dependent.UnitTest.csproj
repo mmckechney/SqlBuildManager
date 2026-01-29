@@ -35,7 +35,6 @@
   <ItemGroup>
     <None Remove="Resources\dbconfig - Copy.cfg" />
     <None Remove="Resources\dbconfig-doubledb.cfg" />
-    <None Remove="Resources\dbconfig-long.cfg" />
     <None Remove="Resources\InsertForThreadedTest_ForceTimeout.sbm" />
     <None Remove="Resources\SimpleSelect_client.sbm" />
     <None Remove="Resources\SimpleSelect_DoubleClient.sbm" />
@@ -43,7 +42,9 @@
     <None Remove="Resources\ThreadedTest_OnePassOneFail.sbm" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\dbconfig-long.cfg" />
+    <EmbeddedResource Include="Resources\dbconfig-20.cfg" />
+    <EmbeddedResource Include="Resources\dbconfig-50.cfg" />
+    <EmbeddedResource Include="Resources\dbconfig-100.cfg" />
     <EmbeddedResource Include="Resources\dbconfig.cfg" />
     <EmbeddedResource Include="Resources\InsertForThreadedTest.sbm" />
     <EmbeddedResource Include="Resources\InsertForThreadedTest_ForceTimeout.sbm" />
