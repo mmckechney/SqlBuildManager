@@ -99,7 +99,7 @@ namespace SqlBuildManager.Console.Threaded
                     if (cmdLine.RunningAsContainer)
                     {
                         log.LogInformation($"No messages found in Service Bus Topic. Waiting {QueuePollDelayMs / 1000} seconds to check again...");
-                        var msg = new LogMsg() { RunId = ThreadedManager.RunID, Message = $"Waiting for additional Service Bus messages on {Environment.MachineName}", LogType = LogType.Message };
+                        var msg = new LogMsg() { RunId = this.runId, Message = $"Waiting for additional Service Bus messages on {Environment.MachineName}", LogType = LogType.Message };
                         threadLogger.WriteToLog(msg);
                         if (messagesSinceLastLoop)
                         {

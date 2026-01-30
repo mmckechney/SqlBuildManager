@@ -106,9 +106,11 @@ namespace SqlBuildManager.Console.Threaded
         private string buildRequestedBy = string.Empty;
         private ThreadedLogging threadedLog = null;
         private string jobName = string.Empty;
+        private readonly BuildExecutionContext _context;
 
-        public ThreadedRunner(string serverName, List<DatabaseOverride> overrides, CommandLineArgs cmdArgs, string buildRequestedBy, bool forceCustomDacpac)
+        public ThreadedRunner(string serverName, List<DatabaseOverride> overrides, CommandLineArgs cmdArgs, string buildRequestedBy, bool forceCustomDacpac, BuildExecutionContext context = null)
         {
+            _context = context ?? new BuildExecutionContext();
             if (serverName.StartsWith("#"))
             {
                 this.server = overrides[0].Server;
@@ -156,7 +158,7 @@ namespace SqlBuildManager.Console.Threaded
             ConnectionData connData = null;
             SqlBuildRunDataModel runDataModel = new SqlBuildRunDataModel();
             string targetDatabase = overrides[0].OverrideDbTarget;
-            string loggingDirectory = Path.Combine(ThreadedManager.WorkingDirectory, server, targetDatabase);
+            string loggingDirectory = Path.Combine(_context.WorkingDirectory, server, targetDatabase);
             try
             {
                 //Start setting properties on the object that contains the run configuration data.
@@ -164,7 +166,7 @@ namespace SqlBuildManager.Console.Threaded
                 if (!string.IsNullOrEmpty(cmdArgs.Description))
                     runDataModel.BuildDescription = cmdArgs.Description;
                 else
-                    runDataModel.BuildDescription = "Threaded Multi-Database. Run ID:" + ThreadedManager.RunID;
+                    runDataModel.BuildDescription = "Threaded Multi-Database. Run ID:" + _context.RunId;
 
                 runDataModel.IsTrial = isTrial;
                 runDataModel.RunScriptOnly = false;
@@ -213,14 +215,14 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     runDataModel.ForceCustomDacpac = false;
                     //Get a full copy of the build data to work with (avoid threading sync issues)
-                    SqlSyncBuildDataModel cloned = ThreadedManager.BuildDataModel;
+                    SqlSyncBuildDataModel cloned = _context.BuildDataModel;
                     //Clear out any existing CommittedScript data.. just log what is relevant to this run.
                     cloned.CommittedScript = new List<SqlSync.SqlBuild.Models.CommittedScript>();
 
                     runDataModel.BuildDataModel = cloned;
-                    runDataModel.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(ThreadedManager.ProjectFileName));
+                    runDataModel.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(_context.ProjectFileName));
                     SqlSyncBuildDataXmlSerializer.Save(runDataModel.ProjectFileName, cloned);
-                    runDataModel.BuildFileName = ThreadedManager.BuildZipFileName;
+                    runDataModel.BuildFileName = _context.BuildZipFileName;
                 }
 
 
@@ -265,7 +267,7 @@ namespace SqlBuildManager.Console.Threaded
 
                 if(runDataModel.BuildDataModel == null) runDataModel.BuildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-                var result = await helper.ProcessBuild(runDataModel, cmdArgs.TimeoutRetryCount, buildRequestedBy, ThreadedManager.BatchColl);
+                var result = await helper.ProcessBuild(runDataModel, cmdArgs.TimeoutRetryCount, buildRequestedBy, _context.BatchCollection);
                 returnValue = (int)result.FinalStatus;
 
 

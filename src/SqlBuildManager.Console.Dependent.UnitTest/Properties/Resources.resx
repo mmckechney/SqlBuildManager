@@ -121,6 +121,9 @@
   <data name="dbconfig" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\dbconfig.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="dbconfig-10" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\dbconfig-10.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="dbconfig-20" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\dbconfig-20.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>

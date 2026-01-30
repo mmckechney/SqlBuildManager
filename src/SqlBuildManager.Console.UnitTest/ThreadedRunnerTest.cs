@@ -214,5 +214,39 @@ namespace SqlBuildManager.Console.UnitTest
             // Assert
             Assert.IsFalse(runner.IsTransactional);
         }
+
+        [TestMethod]
+        public void ThreadedRunner_AcceptsCustomContext()
+        {
+            // Arrange
+            var overrides = CreateSingleOverride("TestServer", "DefaultDb", "OverrideDb");
+            var cmdArgs = CreateMinimalCmdArgs();
+            var context = new BuildExecutionContext
+            {
+                ProjectFileName = "custom.xml",
+                BuildZipFileName = "custom.sbm",
+                WorkingDirectory = @"C:\custom\working"
+            };
+
+            // Act
+            var runner = new ThreadedRunner("TestServer", overrides, cmdArgs, "testuser", false, context);
+
+            // Assert - runner should be created without error
+            Assert.AreEqual("TestServer", runner.Server);
+        }
+
+        [TestMethod]
+        public void ThreadedRunner_DefaultsToNewContextWhenNotProvided()
+        {
+            // Arrange
+            var overrides = CreateSingleOverride("TestServer", "DefaultDb", "OverrideDb");
+            var cmdArgs = CreateMinimalCmdArgs();
+
+            // Act - no context provided
+            var runner = new ThreadedRunner("TestServer", overrides, cmdArgs, "testuser", false);
+
+            // Assert - should work fine
+            Assert.IsNotNull(runner.Server);
+        }
     }
 }

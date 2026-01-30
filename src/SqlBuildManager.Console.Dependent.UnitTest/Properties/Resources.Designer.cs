@@ -73,6 +73,16 @@ namespace SqlBuildManager.Console.Dependent.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        public static byte[] dbconfig_10 {
+            get {
+                object obj = ResourceManager.GetObject("dbconfig-10", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         public static byte[] dbconfig_100 {
             get {
                 object obj = ResourceManager.GetObject("dbconfig-100", resourceCulture);

@@ -62,6 +62,10 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         {
             File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_50);
         }
+        public void CopyDbConfigFile10ToTestPath()
+        {
+            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_50);
+        }
         public void CopyDoubleDbConfigFileToTestPath()
         {
             File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_doubledb);
