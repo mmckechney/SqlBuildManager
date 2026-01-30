@@ -14,7 +14,6 @@ $aciName = $prefix + "aci"
 $containerAppEnvName = $prefix + "containerappenv"
 $logAnalyticsWorkspace = $prefix + "loganalytics"
 $containerRegistryName = $prefix + "containerregistry"
-$keyVaultName =  $prefix + "keyvault"
 
 $identityName = $prefix + "identity"
 $userAssignedIdentity = $identityName

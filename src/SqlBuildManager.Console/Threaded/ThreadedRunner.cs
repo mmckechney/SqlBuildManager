@@ -27,7 +27,7 @@ namespace SqlBuildManager.Console.Threaded
             set { defaultDatabaseName = value; }
         }
         private CommandLineArgs cmdArgs;
-        private int returnValue;
+        private RunnerReturn returnValue;
 
         private string targetTag = string.Empty;
         private string TargetTag
@@ -47,7 +47,7 @@ namespace SqlBuildManager.Console.Threaded
 
 
         }
-        public int ReturnValue
+        public RunnerReturn ReturnValue
         {
             get { return returnValue; }
         }
@@ -150,9 +150,9 @@ namespace SqlBuildManager.Console.Threaded
         /// <param name="threadedLog">The logging instance for threaded execution</param>
         /// <param name="cancellationToken">Cancellation token for async operations</param>
         /// <returns>Return code indicating success or failure</returns>
-        internal async Task<int> RunDatabaseBuildAsync(ThreadedLogging threadedLog, CancellationToken cancellationToken = default)
+        internal async Task<RunnerReturn> RunDatabaseBuildAsync(ThreadedLogging threadedLog, CancellationToken cancellationToken = default)
         {
-            returnValue = (int)RunnerReturn.BuildResultInconclusive;
+            returnValue = RunnerReturn.BuildResultInconclusive;
             this.threadedLog = threadedLog;
             this.jobName = cmdArgs.JobName;
             ConnectionData connData = null;
@@ -201,12 +201,12 @@ namespace SqlBuildManager.Console.Threaded
                         case DacpacDeltasStatus.InSync:
                         case DacpacDeltasStatus.OnlyPostDeployment:
                             log.LogInformation($"Target database {targetDatabase} is already in sync with {cmdArgs.DacPacArgs.PlatinumDacpac}. Nothing to do!");
-                            returnValue = (int)RunnerReturn.DacpacDatabasesInSync;
+                            returnValue = RunnerReturn.DacpacDatabasesInSync;
                             break;
                         default:
                             log.LogError($"Error creating custom dacpac and scripts for {targetDatabase}. No update was performed");
-                            returnValue = (int)RunnerReturn.PackageCreationError;
-                            return (int)RunnerReturn.PackageCreationError;
+                            returnValue = RunnerReturn.PackageCreationError;
+                            return RunnerReturn.PackageCreationError;
 
                     }
 
@@ -241,8 +241,8 @@ namespace SqlBuildManager.Console.Threaded
             {
                 log.LogError(exe, $"Error Initializing run for {TargetTag}");
                 WriteErrorLog(loggingDirectory, exe.ToString());
-                returnValue = (int)ExecutionReturn.RunInitializationError;
-                return (int)ExecutionReturn.RunInitializationError;
+                returnValue = ExecutionReturn.RunInitializationError.ToRunnerReturn();
+                return ExecutionReturn.RunInitializationError.ToRunnerReturn();
             }
 
             log.LogDebug("Initializing run for " + TargetTag + ". Starting \"ProcessBuild\"");
@@ -268,22 +268,22 @@ namespace SqlBuildManager.Console.Threaded
                 if(runDataModel.BuildDataModel == null) runDataModel.BuildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
                 var result = await helper.ProcessBuild(runDataModel, cmdArgs.TimeoutRetryCount, buildRequestedBy, _context.BatchCollection);
-                returnValue = (int)result.FinalStatus;
+                returnValue = result.FinalStatus.Value.ToRunnerReturn();
 
 
             }
             catch (OperationCanceledException)
             {
                 log.LogWarning($"Build for {TargetTag} was cancelled");
-                returnValue = (int)ExecutionReturn.ProcessBuildError;
+                returnValue = ExecutionReturn.ProcessBuildError.ToRunnerReturn();
                 throw;
             }
             catch (Exception exe)
             {
                 log.LogError("Error Processing run for " + TargetTag, exe);
                 WriteErrorLog(loggingDirectory, exe.ToString());
-                returnValue = (int)ExecutionReturn.ProcessBuildError;
-                return (int)ExecutionReturn.ProcessBuildError;
+                returnValue = ExecutionReturn.ProcessBuildError.ToRunnerReturn();
+                return ExecutionReturn.ProcessBuildError.ToRunnerReturn();
             }
             finally
             {
@@ -302,7 +302,7 @@ namespace SqlBuildManager.Console.Threaded
                     threadedLog.WriteToLog(lm);
                 }
             }
-            return 0;
+            return RunnerReturn.BuildCommitted;
 
         }
 
@@ -381,7 +381,7 @@ namespace SqlBuildManager.Console.Threaded
         void helper_BuildSuccessTrialRolledBackEvent(object sender, EventArgs e)
         {
             log.LogDebug(TargetTag + " BuildSuccessTrialRolledBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.SuccessWithTrialRolledBack));
-            returnValue = (int)RunnerReturn.SuccessWithTrialRolledBack;
+            returnValue = RunnerReturn.SuccessWithTrialRolledBack;
         }
 
         void helper_BuildErrorRollBackEvent(object sender, EventArgs e)
@@ -389,19 +389,19 @@ namespace SqlBuildManager.Console.Threaded
             if (IsTransactional)
             {
                 log.LogDebug(TargetTag + " BuildErrorRollBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.RolledBack));
-                returnValue = (int)RunnerReturn.RolledBack;
+                returnValue = RunnerReturn.RolledBack;
             }
             else
             {
                 log.LogDebug(TargetTag + " BuildErrorRollBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.BuildErrorNonTransactional));
-                returnValue = (int)RunnerReturn.BuildErrorNonTransactional;
+                returnValue = RunnerReturn.BuildErrorNonTransactional;
             }
         }
 
         void helper_BuildCommittedEvent(object sender, RunnerReturn returnValue)
         {
             log.LogDebug(TargetTag + " BuildCommittedEvent status: " + Enum.GetName(typeof(RunnerReturn), returnValue));
-            this.returnValue = (int)returnValue;
+            this.returnValue = returnValue;
         }
 
         private void WriteErrorLog(string loggingDirectory, string message)

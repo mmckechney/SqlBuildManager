@@ -282,7 +282,7 @@ namespace SqlSync.SqlBuild
             var buildResultsModel = orchestrator.Execute(runData, prep, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
 
             // Handle DacPac fallback for failed builds
-            bool candidateForCustomDacPac = DacPacFallbackHandler.IsCandidateForDacPacFallback(buildResultsModel.FinalStatus ?? BuildItemStatus.RolledBack);
+            bool candidateForCustomDacPac = DacPacFallbackHandler.IsCandidateForDacPacFallback(buildResultsModel.FinalStatus ?? BuildItemStatus.Unknown);
             
             if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout || 
                 buildResultsModel.FinalStatus == BuildItemStatus.FailedWithCustomDacpac)
@@ -381,7 +381,7 @@ namespace SqlSync.SqlBuild
                     buildStart: DateTime.Now,
                     buildEnd: null,
                     serverName: serverName,
-                    finalStatus: null,
+                    finalStatus: BuildItemStatus.Unknown,
                     buildId: Guid.NewGuid().ToString(),
                     userId: Environment.UserName);
 

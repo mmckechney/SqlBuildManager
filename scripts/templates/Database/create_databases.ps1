@@ -25,5 +25,11 @@ $subnetNames += (az network vnet subnet list --vnet-name $vnet --resource-group 
 $subnetNames = $subnetNames -join "," 
 Write-Host "Using Subnet Ids: $subnetNames" -ForegroundColor Green
 Write-Host "Deploying SQL Servers, Elastic Pool, Firewall Settings and Databases" -ForegroundColor DarkGreen
+Write-Host "Note: SQL Servers use Entra ID (Azure AD) only authentication" -ForegroundColor Cyan
 az deployment group create --resource-group $resourceGroupName --template-file "$scriptDir/../Modules/database.bicep" --parameters namePrefix="$prefix" testDbCountPerServer="$testDatabaseCount"  currentIpAddress=$ipAddress subnetNames=$subnetNames -o table
 
+######################################################
+# Grant Managed Identity permissions to SQL databases
+######################################################
+Write-Host "Granting Managed Identity permissions to SQL databases..." -ForegroundColor Cyan
+.$scriptDir/grant_identity_permissions.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $path

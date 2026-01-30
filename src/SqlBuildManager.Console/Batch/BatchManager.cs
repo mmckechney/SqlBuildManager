@@ -3,6 +3,8 @@ using Azure.ResourceManager;
 using azB = Azure.ResourceManager.Batch;
 using Azure.ResourceManager.Batch.Models;
 using Azure.ResourceManager.Models;
+using Azure.Storage;
+using Azure.Storage.Blobs;
 using Microsoft.Azure.Batch;
 using Microsoft.Azure.Batch.Auth;
 using Microsoft.Azure.Batch.Common;
@@ -64,6 +66,33 @@ namespace SqlBuildManager.Console.Batch
          this.queryFile = queryFile;
          this.outputFile = outputFile;
          batchType = BatchType.Query;
+      }
+
+      /// <summary>
+      /// Creates a BatchClient using either Managed Identity (preferred) or shared key credentials (fallback)
+      /// </summary>
+      /// <param name="cmdLine">Command line arguments containing batch connection info</param>
+      /// <returns>Configured BatchClient instance</returns>
+      private static BatchClient GetBatchClient(CommandLineArgs cmdLine)
+      {
+         if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey))
+         {
+            // Legacy: Use shared key if provided
+            log.LogDebug("Creating BatchClient with shared key credentials");
+            var cred = new BatchSharedKeyCredentials(
+                cmdLine.ConnectionArgs.BatchAccountUrl,
+                cmdLine.ConnectionArgs.BatchAccountName,
+                cmdLine.ConnectionArgs.BatchAccountKey);
+            return BatchClient.Open(cred);
+         }
+         else
+         {
+            // Use Managed Identity via Azure.Identity
+            log.LogInformation("Creating BatchClient with Managed Identity (token credentials)");
+            Func<Task<string>> tokenProvider = async () => await AadHelper.GetBatchTokenString();
+            var cred = new BatchTokenCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, tokenProvider);
+            return BatchClient.Open(cred);
+         }
       }
 
       public async Task<(int retval, string readOnlySas)> StartBatch(bool stream = false, bool unittest = false)
@@ -156,16 +185,28 @@ namespace SqlBuildManager.Console.Batch
             Stopwatch timer = new Stopwatch();
             timer.Start();
 
-            //Get storage ready
-            var storageSvcClient = StorageManager.CreateStorageClient(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
-            var storageCreds = StorageManager.GetStorageSharedKeyCredential(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
-            string containerSasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, false);
+            //Get storage ready - use Managed Identity if no storage key provided
+            BlobServiceClient storageSvcClient;
+            StorageSharedKeyCredential storageCreds = null;
+            string containerSasToken;
+
+            if (cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity)
+            {
+               log.LogDebug($"Generating SAS URL with Managed Identity for container '{storageContainerName}'");
+               storageSvcClient = new BlobServiceClient(new Uri($"https://{cmdLine.ConnectionArgs.StorageAccountName}.blob.core.windows.net"), Aad.AadHelper.TokenCredential);
+               containerSasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, null, storageContainerName, false);
+            }
+            else
+            {
+               storageSvcClient = StorageManager.CreateStorageClient(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
+               storageCreds = StorageManager.GetStorageSharedKeyCredential(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
+               containerSasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, false);
+            }
             log.LogDebug($"Output write SAS token: {containerSasToken}");
 
 
-            // Get a Batch client using account creds, and create the pool
-            BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, cmdLine.ConnectionArgs.BatchAccountName, cmdLine.ConnectionArgs.BatchAccountKey);
-            batchClient = BatchClient.Open(cred);
+            // Get a Batch client using account creds or Managed Identity
+            batchClient = GetBatchClient(cmdLine);
 
             // Create a Batch pool, VM configuration, Windows Server image
             bool success = await CreateBatchPool(cmdLine, poolId);
@@ -437,7 +478,8 @@ namespace SqlBuildManager.Console.Batch
             }
 
 
-
+            // Generate read-only SAS URL for log access - use MI if no key provided
+            log.LogDebug($"Generating SAS URL with Managed Identity for container '{storageContainerName}'");
             readOnlySasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, true);
             log.LogInformation($"The consolidated log files can be found in the Azure storage account '{cmdLine.ConnectionArgs.StorageAccountName}' in blob container '{storageContainerName}'");
             log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
@@ -865,9 +907,8 @@ namespace SqlBuildManager.Console.Batch
 
          log.LogInformation("Creating Batch pool nodes ");
 
-         // Get a Batch client using account creds, and create the pool
-         BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, cmdLine.ConnectionArgs.BatchAccountName, cmdLine.ConnectionArgs.BatchAccountKey);
-         var batchClient = BatchClient.Open(cred);
+         // Get a Batch client using account creds or Managed Identity
+         var batchClient = GetBatchClient(cmdLine);
 
          // Create a Batch pool, VM configuration, Windows Server image
          // bool success = CreateBatchPoolLegacy(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount, cmdLine.BatchArgs.BatchVmSize, cmdLine.BatchArgs.BatchPoolOs);
@@ -987,9 +1028,8 @@ namespace SqlBuildManager.Console.Batch
          bool isPolling = false;
          try
          {
-            // Get a Batch client using account creds, and create the pool
-            BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, cmdLine.ConnectionArgs.BatchAccountName, cmdLine.ConnectionArgs.BatchAccountKey);
-            var batchClient = BatchClient.Open(cred);
+            // Get a Batch client using account creds or Managed Identity
+            var batchClient = GetBatchClient(cmdLine);
 
 
             log.LogInformation($"Deleting batch pool {PoolName} from Batch account {cmdLine.ConnectionArgs.BatchAccountName}");

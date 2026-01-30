@@ -20,9 +20,11 @@ namespace SqlBuildManager.Interfaces.Console
         [Description("Committed - With Custom Dacpac")]
         CommittedWithCustomDacpac = 87599,
         [Description("Package Creation Error")]
-        PackageCreationError = 87600
-    }
+        PackageCreationError = 87600,
+        [Description("Process Build Error")]
+        ProcessBuildError = -300
 
+    }
 
     [DataContract()]
     public enum ExecutionReturn

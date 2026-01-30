@@ -25,6 +25,9 @@ param currentIpAddress string
 @description('The UserId GUID for the current user')
 param userIdGuid string 
 
+@description('The login name (email) of the current user for SQL admin')
+param userLoginName string = ''
+
 @description('Whether or not to deploy the Batch Account')
 param deployBatchAccount bool = true
 
@@ -40,13 +43,6 @@ param deployAks bool = true
 @description('Number of test databases to create per server')
 param testDbCountPerServer int = 10
 
-@description('Name for SQL Admin account')
-param sqladminname string = 'SqlBuildManagerSqlAdmin'
-
-@description('Value for SQL Admin password')
-@secure()
-param sqladminpassword string 
-
 
 
 var resourceGroupName = '${namePrefix}-rg'
@@ -55,7 +51,6 @@ var storageAccountNameVar = '${namePrefix}storage'
 var containerAppEnvNameVar = '${namePrefix}containerappenv'
 var logAnalyticsWorkspaceVar = '${namePrefix}loganalytics'
 var containerRegistryNameVar = '${namePrefix}containerregistry'
-var keyVaultNameVar = '${namePrefix}keyvault'
 var identityNameVar = '${namePrefix}identity'
 var eventHubNamespaceNameVar = '${namePrefix}eventhubnamespace'
 var eventHubNameVar = '${namePrefix}eventhub'
@@ -96,26 +91,11 @@ module identityResource './Modules/identity.bicep' = {
   }
 }
 
-module userIdentityResource './Modules/useridentity.bicep' = if(userIdGuid != null){
+module userIdentityResource './Modules/useridentity.bicep' = if(userIdGuid != ''){
   name: 'userIdentityResource'
   scope: resourceGroup(resourceGroupName)
   params: {
     userIdGuid: userIdGuid
-  }
-}
-
-module keyVaultResource './Modules/keyvault.bicep' = {
-  name: 'keyVaultResource'
-  scope: resourceGroup(resourceGroupName)
-  params: {
-    keyvaultName: keyVaultNameVar
-    location: location
-    identityClientId: identityResource.outputs.clientId
-    currentIpAddress: currentIpAddress
-    subNet1Id: networkResource.outputs.aksSubnetId
-    subNet2Id: networkResource.outputs.containerAppSubnetId
-    subNet3Id: networkResource.outputs.aciSubnetId
-    subNet4Id: networkResource.outputs.batchSubnetId
   }
 }
 
@@ -140,7 +120,7 @@ module containerAppEnv './Modules/containerappenv.bicep' = if(deployContainerApp
   }
 }
 
-module databases './Modules/database.bicep' = if(testDbCountPerServer > 0){
+module databases './Modules/database.bicep' = if(testDbCountPerServer > 0 && userIdGuid != '' && userLoginName != ''){
   name: 'databases'
   scope: resourceGroup(resourceGroupName)
   params: { 
@@ -148,9 +128,9 @@ module databases './Modules/database.bicep' = if(testDbCountPerServer > 0){
     location: location
     subnetNames: join(networkResource.outputs.subnetNames, ',')
     namePrefix: namePrefix
-    sqladminname: sqladminname
-    sqladminpassword: sqladminpassword
     testDbCountPerServer: testDbCountPerServer
+    sqlAdminObjectId: userIdGuid
+    sqlAdminLogin: userLoginName
   }
 }
 
@@ -244,16 +224,8 @@ resource eventHubNamespaceResource_eventHubName 'Microsoft.EventHub/namespaces/e
   }
 }
 
-resource namespaceName_eventHubName_batchbuilder 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules@2017-04-01' = {
-  parent: eventHubNamespaceResource_eventHubName
-  name: 'batchbuilder'
-  properties: {
-    rights: [
-      'Listen'
-      'Send'
-    ]
-  }
-}
+// Authorization rules removed - using Managed Identity with RBAC for Event Hub access
+// The identity.bicep module assigns EventHubsDataReceiver and EventHubsDataSender roles
 
 resource serviceBusResource 'Microsoft.ServiceBus/namespaces@2018-01-01-preview' = {
   name: serviceBusNamespaceNameVar
@@ -268,17 +240,8 @@ resource serviceBusResource 'Microsoft.ServiceBus/namespaces@2018-01-01-preview'
   }
 }
 
-resource serviceBusResource_RootManageSharedAccessKey 'Microsoft.ServiceBus/namespaces/AuthorizationRules@2017-04-01' = {
-  parent: serviceBusResource
-  name: 'RootManageSharedAccessKey'
-  properties: {
-    rights: [
-      'Listen'
-      'Manage'
-      'Send'
-    ]
-  }
-}
+// Authorization rules removed - using Managed Identity with RBAC for Service Bus access
+// The identity.bicep module assigns ServiceBusDataOwner role
 
 resource serviceBusResource_topic_sqlbuildmanager 'Microsoft.ServiceBus/namespaces/topics@2018-01-01-preview' = {
   parent: serviceBusResource
@@ -297,17 +260,8 @@ resource serviceBusResource_topic_sqlbuildmanager 'Microsoft.ServiceBus/namespac
   }
 }
 
-resource serviceBusResource_topic_sqlbuildmanager_sbmtopicpolicy 'Microsoft.ServiceBus/namespaces/topics/authorizationRules@2018-01-01-preview' = {
-  parent: serviceBusResource_topic_sqlbuildmanager
-  name: 'sbmtopicpolicy'
-  properties: {
-    rights: [
-      'Manage'
-      'Listen'
-      'Send'
-    ]
-  }
-}
+// Topic authorization rule removed - using Managed Identity with RBAC for Service Bus access
+
 
 
 

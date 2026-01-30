@@ -87,6 +87,10 @@ namespace SqlSync.Connection
                     builder.IntegratedSecurity = true;
                     builder.TrustServerCertificate = true;
                     break;
+                case AuthenticationType.AzureADDefault:
+                    builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault;
+                    builder.TrustServerCertificate = true;
+                    break;
                 case AuthenticationType.AzureADPassword:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryPassword;
                     builder.UserID = uid;
@@ -168,6 +172,12 @@ namespace SqlSync.Connection
             }
             catch (Exception exe)
             {
+                //if(exe.Message.ToUpper().Contains("ManagedIdentityCredential authentication unavailable".ToUpper()))
+                //{
+                //    connData.AuthenticationType = AuthenticationType.AzureADIntegrated;
+                //    connData.ManagedIdentityClientId = "";
+                //    return TestDatabaseConnection(connData);
+                //}
                 log.LogWarning(exe, "TestConnection failed");
                 return false;
             }

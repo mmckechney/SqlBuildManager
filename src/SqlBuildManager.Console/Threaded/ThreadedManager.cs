@@ -432,10 +432,10 @@ namespace SqlBuildManager.Console.Threaded
 
             }
         }
-        private async Task<int> ProcessThreadedBuildAsync(ThreadedRunner runner, CancellationToken cancellationToken = default)
+        private async Task<RunnerReturn> ProcessThreadedBuildAsync(ThreadedRunner runner, CancellationToken cancellationToken = default)
         {
             var msg = new LogMsg();
-            int returnVal = -9000000;
+            var returnVal = RunnerReturn.BuildResultInconclusive;
             try
             {
 
@@ -449,14 +449,15 @@ namespace SqlBuildManager.Console.Threaded
                 //Run the scripts!!
                 await runner.RunDatabaseBuildAsync(threadedLog, cancellationToken);
 
-                msg.Message = ((RunnerReturn)runner.ReturnValue).GetDescription();
-                returnVal = runner.ReturnValue;
+                msg.Message = runner.ReturnValue.GetDescription();
+                returnVal =  runner.ReturnValue;
+                log.LogDebug($"RunnerReturn value for {runner.Server}:{runner.TargetDatabases} =>  {returnVal}");
                 switch (returnVal)
                 {
-                    case (int)RunnerReturn.BuildCommitted:
-                    case (int)RunnerReturn.DacpacDatabasesInSync:
-                    case (int)RunnerReturn.CommittedWithCustomDacpac:
-                    case (int)RunnerReturn.SuccessWithTrialRolledBack:
+                    case RunnerReturn.BuildCommitted:
+                    case RunnerReturn.DacpacDatabasesInSync:
+                    case RunnerReturn.CommittedWithCustomDacpac:
+                    case RunnerReturn.SuccessWithTrialRolledBack:
                         msg.LogType = LogType.Commit;
                         threadedLog.WriteToLog(msg);
                         msg.LogType = LogType.SuccessDatabases;
@@ -465,8 +466,8 @@ namespace SqlBuildManager.Console.Threaded
                         returnVal = 0;
                         break;
 
-                    case (int)RunnerReturn.RolledBack:
-                    case (int)RunnerReturn.BuildErrorNonTransactional:
+                    case RunnerReturn.RolledBack:
+                    case RunnerReturn.BuildErrorNonTransactional:
                     default:
                         msg.LogType = LogType.Error;
                         threadedLog.WriteToLog(msg);

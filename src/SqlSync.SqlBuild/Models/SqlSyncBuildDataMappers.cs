@@ -69,7 +69,7 @@ namespace SqlSync.SqlBuild.Models
                 buildStart: row.IsBuildStartNull() ? null : row.BuildStart,
                 buildEnd: row.IsBuildEndNull() ? null : row.BuildEnd,
                 serverName: row.IsServerNameNull() ? null : row.ServerName,
-                finalStatus: row.IsFinalStatusNull() ? null : Enum.TryParse<BuildItemStatus>(row.FinalStatus, out var finalStatus) ? finalStatus : null,
+                finalStatus: row.IsFinalStatusNull() ? BuildItemStatus.Unknown : Enum.TryParse<BuildItemStatus>(row.FinalStatus, out var finalStatus) ? finalStatus : BuildItemStatus.Unknown,
                 buildId: row.IsBuildIdNull() ? null : row.BuildId,
                 userId: row.IsUserIdNull() ? null : row.UserId);
         }
@@ -171,7 +171,7 @@ namespace SqlSync.SqlBuild.Models
                 if (b.BuildStart.HasValue) row.BuildStart = b.BuildStart.Value;
                 if (b.BuildEnd.HasValue) row.BuildEnd = b.BuildEnd.Value;
                 if (b.ServerName is not null) row.ServerName = b.ServerName;
-                if (b.FinalStatus is not null) row.FinalStatus = b.FinalStatus.ToString();
+                row.FinalStatus = b.FinalStatus.ToString();
                 if (b.BuildId is not null) row.BuildId = b.BuildId;
                 if (b.UserId is not null) row.UserId = b.UserId;
                 ds.Build.AddBuildRow(row);
