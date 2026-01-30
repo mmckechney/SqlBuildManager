@@ -38,10 +38,10 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-kv.json")]
-        [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")]
-        [DataRow("TestConfig/settingsfile-k8s-sec-mi.json")]
-        [DataRow("TestConfig/settingsfile-k8s-sec.json")]
+        // [DataRow("TestConfig/settingsfile-k8s-kv.json")] // Old: requires Key Vault
+        // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
+        [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
+        // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
         [DataTestMethod]
         public void Kubernetes_Run_Queue_SBMSource_Success(string settingsFile)
         {
@@ -100,10 +100,10 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-kv.json")]
-        [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")]
-        [DataRow("TestConfig/settingsfile-k8s-sec-mi.json")]
-        [DataRow("TestConfig/settingsfile-k8s-sec.json")]
+        // [DataRow("TestConfig/settingsfile-k8s-kv.json")] // Old: requires Key Vault
+        // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
+        [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
+        // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
         [DataTestMethod]
         public void Kubernetes_Run_LongRunning_Queue_SBMSource_Success(string settingsFile)
         {
@@ -165,10 +165,10 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-kv.json")]
-        [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")]
-        [DataRow("TestConfig/settingsfile-k8s-sec-mi.json")]
-        [DataRow("TestConfig/settingsfile-k8s-sec.json")]
+        // [DataRow("TestConfig/settingsfile-k8s-kv.json")] // Old: requires Key Vault
+        // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
+        [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
+        // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
         [DataTestMethod]
         public void Kubernetes_Query_Queue_SBMSource_Success(string settingsFile)
         {
@@ -239,10 +239,10 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-kv.json")]
-        [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")]
-        [DataRow("TestConfig/settingsfile-k8s-sec-mi.json")]
-        [DataRow("TestConfig/settingsfile-k8s-sec.json")]
+        // [DataRow("TestConfig/settingsfile-k8s-kv.json")] // Old: requires Key Vault
+        // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
+        [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
+        // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
         [DataTestMethod]
         public void Kubernetes_Run_Queue_SBMSource_BadTarget_Fail(string settingsFile)
         {
@@ -304,10 +304,10 @@ namespace SqlBuildManager.Console.ExternalTest
         }
 
 
-        [DataRow("TestConfig/settingsfile-k8s-kv.json")]
-        [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")]
-        [DataRow("TestConfig/settingsfile-k8s-sec-mi.json")]
-        [DataRow("TestConfig/settingsfile-k8s-sec.json")]
+        // [DataRow("TestConfig/settingsfile-k8s-kv.json")] // Old: requires Key Vault
+        // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
+        [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
+        // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
         [DataTestMethod]
         public void Kubernetes_Run_Queue_DoubleDbConfig_SBMSource_Success(string settingsFile)
         {
@@ -364,14 +364,14 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.Count, 5)]
-        [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.Server, 5)]
-        [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.MaxPerServer, 5)]
-        [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.Tag, 5)]
-        [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.MaxPerTag, 5)]
-        [DataRow("TestConfig/settingsfile-k8s-kv-mi.json", ConcurrencyType.MaxPerTag, 5)]
-        [DataRow("TestConfig/settingsfile-k8s-sec-mi.json", ConcurrencyType.MaxPerTag, 3)]
-        [DataRow("TestConfig/settingsfile-k8s-sec.json", ConcurrencyType.MaxPerServer, 5)]
+        // [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.Count, 5)]
+        // [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.Server, 5)]
+        // [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.MaxPerServer, 5)]
+        // [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.Tag, 5)]
+        // [DataRow("TestConfig/settingsfile-k8s-kv.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-mi-only.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-mi-only.json", ConcurrencyType.MaxPerTag, 3)]
+        // [DataRow("TestConfig/settingsfile-k8s-sec.json", ConcurrencyType.MaxPerServer, 5)]
         [DataTestMethod]
         public void Kubernetes_Run_Queue_Concurrency_SBMSource_Success(string settingsFile, ConcurrencyType concurType, int concurrencyCount)
         {
@@ -434,8 +434,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        //Can't run local unit tests with MI or KeyVault since an SBM package needs to be created  :-)
-        [DataRow("TestConfig/settingsfile-k8s-sec.json")]
+        [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
         [DataTestMethod]
         public void Kubernetes_Run_Queue_DacpacSource_ForceApplyCustom_Success(string settingsFile)
         {
@@ -524,9 +523,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        //Can't run local unit tests with MI since an SBM package needs to be created  :-)
-        [DataRow("TestConfig/settingsfile-k8s-kv.json")]
-        [DataRow("TestConfig/settingsfile-k8s-sec.json")]
+        [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
         [DataTestMethod]
         public async Task Kubernetes_Yaml_Queue_DacpacSource_Success(string settingsFile)
         {
@@ -664,9 +661,7 @@ namespace SqlBuildManager.Console.ExternalTest
         }
 
 
-        //Can't run local unit tests with MI since an SBM package needs to be created  :-)
-        [DataRow("TestConfig/settingsfile-k8s-kv.json")]
-        [DataRow("TestConfig/settingsfile-k8s-sec.json")]
+        [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
         [DataTestMethod]
         public async Task Kubernetes_Yaml_Queue_DacpacSource_ForceApplyCustom_Success(string settingsFile)
         {
@@ -814,3 +809,5 @@ namespace SqlBuildManager.Console.ExternalTest
         }
     }
 }
+
+

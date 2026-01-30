@@ -143,6 +143,24 @@ namespace SqlBuildManager.Console.ContainerShared
                 log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.AllowObjectDelete}");
             }
 
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.EventHubConnectionString);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.EventHubConnection = tmp;
+            }
+            else
+            {
+                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.EventHubConnectionString}");
+            }
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.ServiceBusTopicConnectionString);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.ServiceBusTopicConnection = tmp;
+            }
+            else
+            {
+                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.ServiceBusTopicConnectionString}");
+            }
 
             //If KeyVault is provided, these will get read from KeyVault Secrets
             if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
@@ -156,24 +174,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 {
                     log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.StorageAccountKey}");
                 }
-                tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.EventHubConnectionString);
-                if (!string.IsNullOrWhiteSpace(tmp))
-                {
-                    cmdLine.EventHubConnection = tmp;
-                }
-                else
-                {
-                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.EventHubConnectionString}");
-                }
-                tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.ServiceBusTopicConnectionString);
-                if (!string.IsNullOrWhiteSpace(tmp))
-                {
-                    cmdLine.ServiceBusTopicConnection = tmp;
-                }
-                else
-                {
-                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.ServiceBusTopicConnectionString}");
-                }
+              
 
                 tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.UserName);
                 if (!string.IsNullOrWhiteSpace(tmp))

@@ -505,6 +505,7 @@ namespace SqlBuildManager.Console.Threaded
 
                 msg.Message = ((RunnerReturn)runner.ReturnValue).GetDescription();
                 returnVal = runner.ReturnValue;
+                log.LogDebug($"RunnerReturn value for {runner.Server}:{runner.TargetDatabases} =>  {returnVal}");
                 switch (returnVal)
                 {
                     case (int)RunnerReturn.BuildCommitted:

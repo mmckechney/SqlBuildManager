@@ -13,6 +13,12 @@ param currentIpAddress string
 @description('Array of subnet resource ids to allow access to the SQL Server.')
 param subnetNames string
 
+@description('Object ID (GUID) of the Entra ID user or group to set as SQL admin')
+param sqlAdminObjectId string
+
+@description('Login name (email or display name) of the Entra ID admin')
+param sqlAdminLogin string
+
 var resourceGroupNameVar = '${namePrefix}-rg'
 var sqlserverNameVar = '${namePrefix}sql'
 var sqlpoolNameVar = '${namePrefix}pool'
@@ -50,14 +56,17 @@ resource sqlserverAResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
     minimalTlsVersion: '1.2'
     administrators: {
       administratorType: 'ActiveDirectory'
-      principalType: 'Application'
-      login: identityNameVar
-      sid: identityResource.outputs.clientId
-      tenantId: identityResource.outputs.tenantId
+      principalType: 'User'
+      login: sqlAdminLogin
+      sid: sqlAdminObjectId
+      tenantId: subscription().tenantId
       azureADOnlyAuthentication: true
     }
   }
 }
+
+// Output managed identity name for reference (used by grant_identity_permissions.ps1)
+output identityName string = identityNameVar
 
 resource sqlserverAFirewallRule 'Microsoft.Sql/servers/firewallRules@2021-11-01' = if(currentIpAddress != '') {
   parent: sqlserverAResource
@@ -129,10 +138,10 @@ resource sqlserverBResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
     minimalTlsVersion: '1.2'
     administrators: {
       administratorType: 'ActiveDirectory'
-      principalType: 'Application'
-      login: identityNameVar
-      sid: identityResource.outputs.clientId
-      tenantId: identityResource.outputs.tenantId
+      principalType: 'User'
+      login: sqlAdminLogin
+      sid: sqlAdminObjectId
+      tenantId: subscription().tenantId
       azureADOnlyAuthentication: true
     } 
   } 

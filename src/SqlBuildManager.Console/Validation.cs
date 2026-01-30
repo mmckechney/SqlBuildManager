@@ -357,7 +357,8 @@ namespace SqlBuildManager.Console
                 messages.Add("--batchaccountname is required in command line or --settingsfile Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey))
+            // BatchAccountKey is not required when using Managed Identity
+            if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey) && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity)
             {
                 messages.Add("--batchaccountkey is required in command line or --settingsfile Json");
                 returnVal = -888;
@@ -422,7 +423,8 @@ namespace SqlBuildManager.Console
                 messages.Add("--batchaccountname is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey))
+            // BatchAccountKey is not required when using Managed Identity
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey) && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity)
             {
                 messages.Add("--batchaccountkey is required in command line or --settingsfile  Json");
                 returnVal = -888;
@@ -451,7 +453,8 @@ namespace SqlBuildManager.Console
                 messages.Add("--batchaccountname is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
-            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey))
+            // BatchAccountKey is not required when using Managed Identity
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey) && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity)
             {
                 messages.Add("--batchaccountkey is required in command line or --settingsfile  Json");
                 returnVal = -888;

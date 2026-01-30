@@ -15,7 +15,9 @@ namespace SqlSync.Connection
         [Description("Managed Identity")]
         ManagedIdentity,
         [Description("Azure AD Interactive")]
-        AzureADInteractive
+        AzureADInteractive,
+        [Description("Azure AD Default")]
+        AzureADDefault
     }
 }
 

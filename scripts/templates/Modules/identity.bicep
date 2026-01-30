@@ -9,16 +9,6 @@ resource identityResource 'Microsoft.ManagedIdentity/userAssignedIdentities@2023
  
 }
 
-resource keyVaultSecretsUser 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(resourceGroupName, 'KeyVaultSecretsUser', identityName)
-  properties: {
-    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
-    principalId: identityResource.properties.principalId
-    principalType: 'ServicePrincipal'
-
-  }
-}
-
 resource storageBlobDataContributor 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
   name: guid(resourceGroupName, 'storageBlobDataContributor', identityName)
   properties: {

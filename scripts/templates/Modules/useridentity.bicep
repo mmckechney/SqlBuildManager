@@ -1,28 +1,6 @@
 param userIdGuid string
 param resourceGroupName string = resourceGroup().name
 
-resource keyVaultSecretsUser 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(resourceGroupName, 'KeyVaultSecretsUser', userIdGuid)
-  properties: {
-    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
-    principalId: userIdGuid
-    principalType: 'User'
-
-
-  }
-}
-
-resource keyVaultSecretsOfficer 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(resourceGroupName, 'keyVaultSecretsOfficer', userIdGuid)
-  properties: {
-    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')
-    principalId: userIdGuid
-    principalType: 'User'
-
-
-  }
-}
-
 resource storageBlobDataContributor 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
   name: guid(resourceGroupName, 'storageBlobDataContributor', userIdGuid)
   properties: {

@@ -4,8 +4,12 @@ param
     [string] $prefix
 )
 
-. ./../prefix_resource_names.ps1 -prefix $prefix
-. ./../key_file_names.ps1 -prefix $prefix -path $path
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$prefixScript = Join-Path $scriptDir "..\prefix_resource_names.ps1"
+. $prefixScript -prefix $prefix
+
+$keyFileScript = Join-Path $scriptDir "..\key_file_names.ps1"
+. $keyFileScript -prefix $prefix -path $path
 
 Write-Host "Create Database override files for sql servers in resource group '$resourceGroupName'"  -ForegroundColor Cyan
 $path = Resolve-Path $path

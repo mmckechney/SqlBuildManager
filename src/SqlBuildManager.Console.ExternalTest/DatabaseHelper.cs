@@ -1,11 +1,13 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
+using SqlSync.Connection;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
 
 using System.IO;
+using static SqlBuildManager.Console.CommandLine.CommandLineArgs;
 
 namespace SqlBuildManager.Console.ExternalTest
 {
@@ -50,10 +52,14 @@ namespace SqlBuildManager.Console.ExternalTest
             string randomColumnName = "R" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10);
             string createTable = $"CREATE TABLE {randomTableName} ( {randomColumnName} VARCHAR(10) ) ";
 
+            //var connStr = new SqlConnectionStringBuilder()
+            //{
+            //    UserID = cmdLine.AuthenticationArgs.UserName,
+            //    Password = cmdLine.AuthenticationArgs.Password,
+            //};
             var connStr = new SqlConnectionStringBuilder()
             {
-                UserID = cmdLine.AuthenticationArgs.UserName,
-                Password = cmdLine.AuthenticationArgs.Password,
+                Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault,
             };
 
             foreach (var line in overrideLines)
@@ -89,8 +95,9 @@ namespace SqlBuildManager.Console.ExternalTest
 
             var args = new string[]{
                 "dacpac",
-                "--username", cmdLine.AuthenticationArgs.UserName,
-                "--password", cmdLine.AuthenticationArgs.Password,
+                "--authtype" , AuthenticationType.AzureADDefault.ToString(),
+                //"--username", cmdLine.AuthenticationArgs.UserName,
+                //"--password", cmdLine.AuthenticationArgs.Password,
                 "--dacpacname", fullname,
                 "--database", database,
                 "--server", server };

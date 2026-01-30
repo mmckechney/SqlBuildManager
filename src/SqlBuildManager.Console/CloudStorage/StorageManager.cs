@@ -167,9 +167,57 @@ namespace SqlBuildManager.Console.CloudStorage
         }
         internal static string GetOutputContainerSasUrl(string storageAccountName, string storageAccountKey, string outputContainerName, bool forRead)
         {
-            var cred = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
-            return GetOutputContainerSasUrl(storageAccountName, outputContainerName, cred, forRead);
+            if (string.IsNullOrWhiteSpace(storageAccountKey))
+            {
+                // Use Managed Identity with User Delegation Key
+                return GetOutputContainerSasUrlWithManagedIdentity(storageAccountName, outputContainerName, forRead)
+                    .GetAwaiter().GetResult();
+            }
+            else
+            {
+                // Legacy: Use storage key
+                var cred = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
+                return GetOutputContainerSasUrl(storageAccountName, outputContainerName, cred, forRead);
+            }
         }
+
+        /// <summary>
+        /// Generates a SAS URL using User Delegation Key (Managed Identity) instead of storage account key
+        /// </summary>
+        private static async Task<string> GetOutputContainerSasUrlWithManagedIdentity(string storageAccountName, string outputContainerName, bool forRead)
+        {
+            log.LogDebug($"Generating SAS URL with Managed Identity for container '{outputContainerName}'");
+            
+            var serviceClient = new BlobServiceClient(
+                new Uri($"https://{storageAccountName}.blob.core.windows.net"),
+                Aad.AadHelper.TokenCredential);
+
+            // Get user delegation key
+            var startsOn = DateTimeOffset.UtcNow.AddHours(-1);
+            var expiresOn = forRead ? DateTimeOffset.UtcNow.AddHours(7) : DateTimeOffset.UtcNow.AddHours(4);
+            var userDelegationKey = await serviceClient.GetUserDelegationKeyAsync(startsOn, expiresOn);
+
+            var container = serviceClient.GetBlobContainerClient(outputContainerName);
+            await container.CreateIfNotExistsAsync();
+
+            BlobSasBuilder sasBuilder;
+            if (!forRead)
+            {
+                var permissions = BlobSasPermissions.Add | BlobSasPermissions.Create | BlobSasPermissions.Write | BlobSasPermissions.Read | BlobSasPermissions.List;
+                sasBuilder = new BlobSasBuilder(permissions, expiresOn);
+            }
+            else
+            {
+                var permissions = BlobSasPermissions.Read | BlobSasPermissions.List;
+                sasBuilder = new BlobSasBuilder(permissions, expiresOn);
+            }
+            sasBuilder.StartsOn = startsOn;
+            sasBuilder.BlobContainerName = outputContainerName;
+
+            var sasToken = sasBuilder.ToSasQueryParameters(userDelegationKey.Value, storageAccountName);
+            return $"https://{storageAccountName}.blob.core.windows.net/{outputContainerName}?{sasToken}";
+        }
+
         private static string GetOutputContainerSasUrl(string storageAccountName, string outputContainerName, StorageSharedKeyCredential storageCreds, bool forRead)
         {
             log.LogDebug($"Ensuring presence of output blob container '{outputContainerName}'");
@@ -352,24 +400,65 @@ namespace SqlBuildManager.Console.CloudStorage
             log.LogInformation($"Uploading file {filePath} to container [{containerName}]...");
 
             string blobName = Path.GetFileName(filePath);
+            BlockBlobClient blobData;
+            
+            if (storageCreds != null)
+            {
+                // Legacy: Use storage key
+                blobData = new BlockBlobClient(new Uri($"https://{storageAcctName}.blob.core.windows.net/{containerName}/{blobName}"), storageCreds);
+            }
+            else
+            {
+                // Use Managed Identity
+                blobData = new BlockBlobClient(new Uri($"https://{storageAcctName}.blob.core.windows.net/{containerName}/{blobName}"), Aad.AadHelper.TokenCredential);
+            }
 
-            // BlobContainerClient container = new BlobContainerClient(new Uri($"https://{storageAcctName}.blob.core.windows.net storage/{containerName}"), storageCreds);  //SvcClient.GetBlobContainerClient(containerName);
-            BlockBlobClient blobData = new BlockBlobClient(new Uri($"https://{storageAcctName}.blob.core.windows.net/{containerName}/{blobName}"), storageCreds);   //container.GetBlockBlobClient(blobName);
             using (var fs = new FileStream(filePath, FileMode.Open))
             {
                 blobData.Upload(fs);
             }
-            // Set the expiry time and permissions for the blob shared access signature. In this case, no start time is specified,
-            // so the shared access signature becomes valid immediately
-            var sasPermissions = new BlobSasBuilder(BlobSasPermissions.Read, new DateTimeOffset(DateTime.UtcNow, new TimeSpan(0, 0, 0)));
-            sasPermissions.BlobName = blobName;
-            sasPermissions.BlobContainerName = containerName;
-            sasPermissions.StartsOn = DateTime.UtcNow.AddHours(-1);
-            sasPermissions.ExpiresOn = DateTime.UtcNow.AddHours(3);
-            // Construct the SAS URL for blob
-            blobData.GenerateSasUri(sasPermissions);
-            string blobSasUri = blobData.GenerateSasUri(sasPermissions).ToString();
 
+            // Generate SAS URL
+            if (storageCreds != null)
+            {
+                // Legacy: Use storage key for SAS
+                var sasPermissions = new BlobSasBuilder(BlobSasPermissions.Read, new DateTimeOffset(DateTime.UtcNow, new TimeSpan(0, 0, 0)));
+                sasPermissions.BlobName = blobName;
+                sasPermissions.BlobContainerName = containerName;
+                sasPermissions.StartsOn = DateTime.UtcNow.AddHours(-1);
+                sasPermissions.ExpiresOn = DateTime.UtcNow.AddHours(3);
+                string blobSasUri = blobData.GenerateSasUri(sasPermissions).ToString();
+                return ResourceFile.FromUrl(blobSasUri, blobName, null);
+            }
+            else
+            {
+                // Use Managed Identity with User Delegation Key
+                return GetResourceFileWithUserDelegationKey(storageAcctName, containerName, blobName).GetAwaiter().GetResult();
+            }
+        }
+
+        /// <summary>
+        /// Creates a ResourceFile with SAS URL using User Delegation Key (Managed Identity)
+        /// </summary>
+        private static async Task<ResourceFile> GetResourceFileWithUserDelegationKey(string storageAcctName, string containerName, string blobName)
+        {
+            var serviceClient = new BlobServiceClient(
+                new Uri($"https://{storageAcctName}.blob.core.windows.net"),
+                Aad.AadHelper.TokenCredential);
+
+            var startsOn = DateTimeOffset.UtcNow.AddHours(-1);
+            var expiresOn = DateTimeOffset.UtcNow.AddHours(3);
+            var userDelegationKey = await serviceClient.GetUserDelegationKeyAsync(startsOn, expiresOn);
+
+            var sasBuilder = new BlobSasBuilder(BlobSasPermissions.Read, expiresOn)
+            {
+                BlobContainerName = containerName,
+                BlobName = blobName,
+                StartsOn = startsOn
+            };
+
+            var sasToken = sasBuilder.ToSasQueryParameters(userDelegationKey.Value, storageAcctName);
+            string blobSasUri = $"https://{storageAcctName}.blob.core.windows.net/{containerName}/{blobName}?{sasToken}";
             return ResourceFile.FromUrl(blobSasUri, blobName, null);
         }
         internal static bool CombineQueryOutputfiles(BlobServiceClient storageSvcClient, string storageContainerName, string outputFile)

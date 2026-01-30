@@ -199,13 +199,6 @@ else
 #############################################################
 $sbmExe = (Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\$targetFramework\sbm.exe").Path
 
-##########################
-# Add Secrets to Key Vault
-##########################
-$scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-.$scriptDir/KeyVault/add_secrets_to_keyvault_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
-
-
 #########################
 # Database override files
 #########################
@@ -213,6 +206,12 @@ if($testDatabaseCount -gt 0)
 {
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
     .$scriptDir/Database/create_database_override_files.ps1 -prefix $prefix -path $outputPath -resourceGroupName $resourceGroupName
+
+    ######################################################
+    # Grant Managed Identity permissions to SQL databases
+    ######################################################
+    Write-Host "Granting Managed Identity permissions to SQL databases..." -ForegroundColor Cyan
+    .$scriptDir/Database/grant_identity_permissions.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath
 }
 
 

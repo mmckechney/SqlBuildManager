@@ -23,6 +23,7 @@ namespace SqlBuildManager.Interfaces.Console
         PackageCreationError = 87600
     }
 
+    p
 
     [DataContract()]
     public enum ExecutionReturn
