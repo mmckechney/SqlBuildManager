@@ -42,6 +42,7 @@
     <None Remove="Resources\ThreadedTest_OnePassOneFail.sbm" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\dbconfig-10.cfg" />
     <EmbeddedResource Include="Resources\dbconfig-20.cfg" />
     <EmbeddedResource Include="Resources\dbconfig-50.cfg" />
     <EmbeddedResource Include="Resources\dbconfig-100.cfg" />

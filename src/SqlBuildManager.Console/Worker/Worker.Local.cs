@@ -220,7 +220,12 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static int RunThreadedExecution(CommandLineArgs cmdLine, bool unittest = false)
+        internal static Task<int> RunThreadedExecutionAsync(CommandLineArgs cmdLine, bool unittest)
+        {
+            return RunThreadedExecutionAsync(cmdLine, unittest, null);
+        }
+
+        internal static async Task<int> RunThreadedExecutionAsync(CommandLineArgs cmdLine, bool unittest, BuildExecutionContext context)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
@@ -246,8 +251,8 @@ namespace SqlBuildManager.Console
             log.LogDebug(cmdLine.ToStringExtension(StringType.Basic));
             log.LogDebug(cmdLine.ToStringExtension(StringType.Batch));
             log.LogInformation("Running Threaded Execution...");
-            ThreadedManager tManager = new ThreadedManager(cmdLine, null);
-            int retVal = tManager.Execute();
+            ThreadedManager tManager = new ThreadedManager(cmdLine, null, context);
+            int retVal = await tManager.ExecuteAsync();
             ExecutionReturn exeResult;
             if (Enum.TryParse<ExecutionReturn>(retVal.ToString(), out exeResult))
             {
@@ -278,8 +283,7 @@ namespace SqlBuildManager.Console
             if (!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
                 log.LogInformation("Writing log files to storage...");
-                var blobTask = StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, cmdLine.RootLoggingPath);
-                blobTask.Wait();
+                await StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, cmdLine.RootLoggingPath);
             }
 
             log.LogDebug("Exiting Threaded Execution");
