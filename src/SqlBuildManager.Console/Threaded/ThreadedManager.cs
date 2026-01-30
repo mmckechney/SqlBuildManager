@@ -40,54 +40,9 @@ namespace SqlBuildManager.Console.Threaded
         private QueueManager qManager = null;
         private int queueReturnValue = 0;
         
-        // Static context for backward compatibility - bridges to current instance
-        private static BuildExecutionContext _staticContext = new BuildExecutionContext();
-        
-        /// <summary>
-        /// Path and file name to the XML metadata configuration project file (SqlSyncBuildProject.xml)
-        /// </summary>
-        [Obsolete("Use Context.ProjectFileName instead. Static access will be removed.")]
-        internal static string ProjectFileName => _staticContext.ProjectFileName;
-        
         string projectFilePath = string.Empty;
 
         private string buildRequestedBy = string.Empty;
-
-        /// <summary>
-        /// The name of the zipped build file (.sbm)
-        /// </summary>
-        [Obsolete("Use Context.BuildZipFileName instead. Static access will be removed.")]
-        internal static string BuildZipFileName => _staticContext.BuildZipFileName;
-        
-        [Obsolete("Use Context.PlatinumDacPacFileName instead. Static access will be removed.")]
-        internal static string PlatinumDacPacFileName => _staticContext.PlatinumDacPacFileName;
-
-        /// <summary>
-        /// The root folder where the logging should start
-        /// </summary>
-        [Obsolete("Use Context.RootLoggingPath instead. Static access will be removed.")]
-        internal static string RootLoggingPath => _staticContext.RootLoggingPath;
-
-        /// <summary>
-        /// The working directory for extracted build files
-        /// </summary>
-        [Obsolete("Use Context.WorkingDirectory instead. Static access will be removed.")]
-        internal static string WorkingDirectory => _staticContext.WorkingDirectory;
-
-        /// <summary>
-        /// Unique identifier for the run. 
-        /// </summary>
-        [Obsolete("Use Context.RunId instead. Static access will be removed.")]
-        public static string RunID => _staticContext.RunId;
-
-        /// <summary>
-        /// The pre-batched set of scripts to be run
-        /// </summary>
-        [Obsolete("Use Context.BatchCollection instead. Static access will be removed.")]
-        internal static ScriptBatchCollection BatchColl => _staticContext.BatchCollection;
-
-        [Obsolete("Use Context.BuildDataModel instead. Static access will be removed.")]
-        internal static SqlSyncBuildDataModel BuildDataModel => _staticContext.BuildDataModel;
 
         private readonly IScriptBatcher _scriptBatcher;
         public ThreadedManager(CommandLineArgs cmd, IScriptBatcher scriptBatcher = null, BuildExecutionContext context = null)
@@ -95,8 +50,6 @@ namespace SqlBuildManager.Console.Threaded
             cmdLine = cmd;
             _scriptBatcher = scriptBatcher ?? new DefaultScriptBatcher();
             _context = context ?? new BuildExecutionContext();
-            // Sync instance context to static for backward compatibility
-            _staticContext = _context;
         }
 
         /// <summary>

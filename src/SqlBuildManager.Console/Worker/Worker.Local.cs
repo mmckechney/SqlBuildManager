@@ -220,7 +220,12 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static async Task<int> RunThreadedExecutionAsync(CommandLineArgs cmdLine, bool unittest = false)
+        internal static Task<int> RunThreadedExecutionAsync(CommandLineArgs cmdLine, bool unittest)
+        {
+            return RunThreadedExecutionAsync(cmdLine, unittest, null);
+        }
+
+        internal static async Task<int> RunThreadedExecutionAsync(CommandLineArgs cmdLine, bool unittest, BuildExecutionContext context)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
@@ -246,7 +251,7 @@ namespace SqlBuildManager.Console
             log.LogDebug(cmdLine.ToStringExtension(StringType.Basic));
             log.LogDebug(cmdLine.ToStringExtension(StringType.Batch));
             log.LogInformation("Running Threaded Execution...");
-            ThreadedManager tManager = new ThreadedManager(cmdLine, null);
+            ThreadedManager tManager = new ThreadedManager(cmdLine, null, context);
             int retVal = await tManager.ExecuteAsync();
             ExecutionReturn exeResult;
             if (Enum.TryParse<ExecutionReturn>(retVal.ToString(), out exeResult))

@@ -18,7 +18,8 @@ namespace SqlBuildManager.Console.ContainerShared
         internal static async Task<int> GenericContainerWorker_RunQueueBuild(CommandLineArgs cmdLine)
         {
             int result = 1;
-            var runId = ThreadedManager.RunID;
+            var context = new BuildExecutionContext();
+            var runId = context.RunId;
             var threadLogger = new ThreadedLogging(cmdLine, runId);
             try
             {
@@ -58,7 +59,7 @@ namespace SqlBuildManager.Console.ContainerShared
 
                 if (keepGoing)
                 {
-                    result = await Worker.RunThreadedExecutionAsync(cmdLine);
+                    result = await Worker.RunThreadedExecutionAsync(cmdLine, false, context);
                 }
             }
             catch (Exception exe)
@@ -79,7 +80,8 @@ namespace SqlBuildManager.Console.ContainerShared
         internal static async Task<int> GenericContainerWorker_RunQueueQuery(CommandLineArgs cmdLine)
         {
             int result = 1;
-           var runId = ThreadedManager.RunID;
+            var context = new BuildExecutionContext();
+            var runId = context.RunId;
             var threadLogger = new ThreadedLogging(cmdLine, runId);
 
             try
