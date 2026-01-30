@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Threaded;
+using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using System.Collections.Generic;
 
@@ -183,7 +184,7 @@ namespace SqlBuildManager.Console.UnitTest
             var runner = new ThreadedRunner("TestServer", overrides, cmdArgs, "testuser", false);
 
             // Assert
-            Assert.AreEqual(0, runner.ReturnValue);
+            Assert.AreEqual(RunnerReturn.BuildCommitted, runner.ReturnValue);
         }
 
         [TestMethod]
