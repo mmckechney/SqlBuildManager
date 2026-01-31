@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Utilities;
 using System.Threading.Tasks;
@@ -518,12 +517,11 @@ namespace SqlSync.SqlBuild
                 File.Copy(sbxBuildControlFileName, mainProjectFileFullPath, true);
 
                 //Validate that all of the script files are present...
-                var buildData = model.ToDataSet();
-                foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+                foreach (var script in model.Script)
                 {
-                    if (!File.Exists(Path.Combine(path, row.FileName)))
+                    if (!string.IsNullOrEmpty(script.FileName) && !File.Exists(Path.Combine(path, script.FileName)))
                     {
-                        log.LogError($"A script file configured in the SBX file was not found: '{Path.Combine(path + row.FileName)}'. Unable to create SBM package.");
+                        log.LogError($"A script file configured in the SBX file was not found: '{Path.Combine(path + script.FileName)}'. Unable to create SBM package.");
                         return false;
                     }
                 }
@@ -615,13 +613,12 @@ namespace SqlSync.SqlBuild
 
                 File.Copy(sbxBuildControlFileName, mainProjectFileFullPath, true);
 
-                var buildData = model.ToDataSet();
-                foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+                foreach (var script in model.Script)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    if (!File.Exists(Path.Combine(path, row.FileName)))
+                    if (!string.IsNullOrEmpty(script.FileName) && !File.Exists(Path.Combine(path, script.FileName)))
                     {
-                        log.LogError($"A script file configured in the SBX file was not found: '{Path.Combine(path + row.FileName)}'. Unable to create SBM package.");
+                        log.LogError($"A script file configured in the SBX file was not found: '{Path.Combine(path + script.FileName)}'. Unable to create SBM package.");
                         return false;
                     }
                 }

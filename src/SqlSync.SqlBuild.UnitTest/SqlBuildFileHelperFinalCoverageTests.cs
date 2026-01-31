@@ -279,20 +279,6 @@ namespace SqlSync.SqlBuild.UnitTest
         #region CreateShellSqlSyncBuildDataModel Tests
 
         [TestMethod]
-        public void CreateShellSqlSyncBuildDataModel_ToDataSet_CreatesValidObject()
-        {
-            // Act
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var result = model.ToDataSet();
-
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(result.Script);
-            Assert.IsNotNull(result.Build);
-            Assert.AreEqual(1, result.SqlSyncBuildProject.Count);
-        }
-
-        [TestMethod]
         public void CreateShellSqlSyncBuildDataModel_CreatesValidModel()
         {
             // Act

@@ -1,5 +1,4 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
@@ -90,48 +89,6 @@ namespace SqlSync.SqlBuild.UnitTest
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             Assert.AreEqual(false, model.SqlSyncBuildProject[0].ScriptTagRequired);
-        }
-
-        #endregion
-
-        #region ToDataSet Conversion Tests
-
-        [TestMethod]
-        public void ToDataSet_ReturnsNonNullDataSet()
-        {
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var data = model.ToDataSet();
-
-            Assert.IsNotNull(data);
-        }
-
-        [TestMethod]
-        public void ToDataSet_HasOneProjectRow()
-        {
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var data = model.ToDataSet();
-
-            Assert.AreEqual(1, data.SqlSyncBuildProject.Rows.Count);
-        }
-
-        [TestMethod]
-        public void ToDataSet_HasZeroScriptsRowsWhenEmpty()
-        {
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var data = model.ToDataSet();
-
-            // Shell model has empty Script collection, so Scripts table should also be empty
-            Assert.AreEqual(0, data.Scripts.Rows.Count);
-        }
-
-        [TestMethod]
-        public void ToDataSet_HasZeroBuildsRowsWhenEmpty()
-        {
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var data = model.ToDataSet();
-
-            // Shell model has empty Build collection, so Builds table should also be empty
-            Assert.AreEqual(0, data.Builds.Rows.Count);
         }
 
         #endregion
@@ -1039,44 +996,6 @@ namespace SqlSync.SqlBuild.UnitTest
             var result = SqlBuildFileHelper.PackageProjectFileIntoZip(model, Path.GetTempPath(), "test.sbm", false);
 
             Assert.IsFalse(result);
-        }
-
-        #endregion
-
-        #region Model to DataSet Conversion Consistency
-
-        [TestMethod]
-        public void CreateShellSqlSyncBuildDataModel_ConvertToDataSet_HasExpectedStructure()
-        {
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var dataSet = model.ToDataSet();
-
-            Assert.IsNotNull(dataSet);
-            Assert.IsNotNull(dataSet.SqlSyncBuildProject);
-            Assert.IsNotNull(dataSet.Script);
-            Assert.IsNotNull(dataSet.Build);
-            Assert.IsNotNull(dataSet.ScriptRun);
-        }
-
-        [TestMethod]
-        public void AddScriptFileToBuild_ConvertToDataSet_PreservesScriptData()
-        {
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var scriptId = Guid.NewGuid();
-
-            model = SqlBuildFileHelper.AddScriptFileToBuild(
-                model, "test.xml", "myscript.sql", 5, "Description", true, true,
-                "TestDb", false, "", false, true, "tester", 60, scriptId, "mytag");
-
-            var dataSet = model.ToDataSet();
-
-            Assert.AreEqual(1, dataSet.Script.Rows.Count);
-            var row = (SqlSyncBuildData.ScriptRow)dataSet.Script.Rows[0];
-            Assert.AreEqual("myscript.sql", row.FileName);
-            Assert.AreEqual(5.0, row.BuildOrder);
-            Assert.AreEqual("TestDb", row.Database);
-            Assert.AreEqual("Description", row.Description);
-            Assert.AreEqual(scriptId.ToString(), row.ScriptId);
         }
 
         #endregion

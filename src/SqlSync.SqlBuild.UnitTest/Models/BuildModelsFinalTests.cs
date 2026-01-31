@@ -1,6 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -325,22 +324,6 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual(1, model.ScriptRun.Count);
             Assert.AreEqual(1, model.CommittedScript.Count);
             Assert.AreEqual(1, model.CodeReview.Count);
-        }
-
-        [TestMethod]
-        public void SqlSyncBuildDataModel_ToDataSet_CreatesDataSet()
-        {
-            // Arrange
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-
-            // Act
-#pragma warning disable CS0618
-            var dataSet = model.ToDataSet();
-#pragma warning restore CS0618
-
-            // Assert
-            Assert.IsNotNull(dataSet);
-            Assert.IsInstanceOfType(dataSet, typeof(SqlSyncBuildData));
         }
 
         #endregion

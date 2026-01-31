@@ -235,37 +235,6 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.AreEqual(1, model.SqlSyncBuildProject.Count);
         }
 
-        [TestMethod]
-        public void SqlSyncBuildDataModel_ToDataSet_CreatesValidDataSet()
-        {
-            // Arrange
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-
-            // Act
-            var dataSet = model.ToDataSet();
-
-            // Assert
-            Assert.IsNotNull(dataSet);
-            Assert.IsNotNull(dataSet.SqlSyncBuildProject);
-            Assert.IsNotNull(dataSet.Script);
-        }
-
-        [TestMethod]
-        public void SqlSyncBuildDataModel_FromDataSet_CreatesValidModel()
-        {
-            // Arrange
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var dataSet = model.ToDataSet();
-
-            // Act
-            var convertedModel = dataSet.ToModel();
-
-            // Assert
-            Assert.IsNotNull(convertedModel);
-            Assert.IsNotNull(convertedModel.SqlSyncBuildProject);
-            Assert.AreEqual(1, convertedModel.SqlSyncBuildProject.Count);
-        }
-
         #endregion
 
         #region SqlSyncBuildProject Tests

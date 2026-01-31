@@ -5,7 +5,6 @@ using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Services;
