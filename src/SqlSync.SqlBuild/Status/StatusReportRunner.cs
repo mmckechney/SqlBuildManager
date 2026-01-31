@@ -1,5 +1,5 @@
 ﻿using SqlSync.Connection;
-using SqlSync.SqlBuild.Legacy;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ namespace SqlSync.SqlBuild.Status
 {
     class StatusReportRunner
     {
-        SqlSyncBuildData buildData;
+        SqlSyncBuildDataModel buildDataModel;
         string serverName;
 
         public string ServerName
@@ -33,9 +33,9 @@ namespace SqlSync.SqlBuild.Status
         }
 
         private IDatabaseUtility dbUtil { get; }
-        public StatusReportRunner(IDatabaseUtility dbUtil, SqlSyncBuildData buildData, string serverName, List<DatabaseOverride> dbOverrides, string projectFilePath)
+        public StatusReportRunner(IDatabaseUtility dbUtil, SqlSyncBuildDataModel buildDataModel, string serverName, List<DatabaseOverride> dbOverrides, string projectFilePath)
         {
-            this.buildData = buildData;
+            this.buildDataModel = buildDataModel;
             this.serverName = serverName;
             this.dbOverrides = dbOverrides;
             this.projectFilePath = projectFilePath;
@@ -47,9 +47,9 @@ namespace SqlSync.SqlBuild.Status
             DateTime serverChangeDate;
             Connection.ConnectionData connData;
             string databaseName;
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (Script script in buildDataModel.Script)
             {
-                databaseName = ConnectionHelper.GetTargetDatabase(row.Database, dbOverrides);
+                databaseName = ConnectionHelper.GetTargetDatabase(script.Database ?? string.Empty, dbOverrides);
 
                 if (baseDatabase == null)
                     baseDatabase = databaseName;
@@ -57,8 +57,8 @@ namespace SqlSync.SqlBuild.Status
                 ScriptStatusData dat = new ScriptStatusData();
                 connData = new SqlSync.Connection.ConnectionData(serverName, databaseName);
 
-                ScriptStatusType stat = StatusHelper.DetermineScriptRunStatus(dbUtil, row, connData, projectFilePath, true, dbOverrides, out commitDate, out serverChangeDate);
-                dat.Fill(row);
+                ScriptStatusType stat = StatusHelper.DetermineScriptRunStatus(dbUtil, script, connData, projectFilePath, true, dbOverrides, out commitDate, out serverChangeDate);
+                dat.Fill(script);
                 dat.DatabaseName = databaseName;
                 dat.ServerName = serverName;
                 dat.ServerChangeDate = serverChangeDate;

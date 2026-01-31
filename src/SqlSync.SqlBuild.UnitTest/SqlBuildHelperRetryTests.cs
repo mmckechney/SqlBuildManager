@@ -35,7 +35,6 @@ namespace SqlSync.SqlBuild.UnitTest
                 progressReporter: null,
                 fileHelper: null,
                 retryPolicy: null,
-                legacyAdapter: null,
                 databaseUtility: null,
                 connectionsService: null,
                 buildFinalizer: null,

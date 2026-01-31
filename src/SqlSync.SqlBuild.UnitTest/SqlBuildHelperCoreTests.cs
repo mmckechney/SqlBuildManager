@@ -33,7 +33,6 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.IsNotNull(helper.ProgressReporter);
             Assert.IsNotNull(helper.FileHelper);
             Assert.IsNotNull(helper.RetryPolicy);
-            Assert.IsNotNull(helper.LegacyAdapter);
             Assert.IsNotNull(helper.RunnerFactory);
             Assert.IsNotNull(helper.ScriptLogWriter);
             Assert.IsNotNull(helper.BuildHistoryTracker);
@@ -882,7 +881,6 @@ namespace SqlSync.SqlBuild.UnitTest
                 progressReporter: null,
                 fileHelper: null,
                 retryPolicy: null,
-                legacyAdapter: null,
                 databaseUtility: null,
                 connectionsService: null,
                 buildFinalizer: null,
@@ -1040,18 +1038,6 @@ namespace SqlSync.SqlBuild.UnitTest
                 databaseUtility: mockUtility.Object);
 
             Assert.AreSame(mockUtility.Object, helper.DatabaseUtility);
-        }
-
-        [TestMethod]
-        public void Constructor_WithCustomLegacyAdapter_UsesInjectedAdapter()
-        {
-            var mockAdapter = new Mock<ILegacyBuildDataAdapter>();
-            var helper = new SqlBuildHelper(
-                data: new ConnectionData("srv", "db"),
-                createScriptRunLogFile: false,
-                legacyAdapter: mockAdapter.Object);
-
-            Assert.AreSame(mockAdapter.Object, helper.LegacyAdapter);
         }
 
         [TestMethod]

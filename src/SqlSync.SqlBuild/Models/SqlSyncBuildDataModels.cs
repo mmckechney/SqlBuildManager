@@ -38,6 +38,19 @@ namespace SqlSync.SqlBuild.Models
         public string? ModifiedBy { get; set; }
         public string? Tag { get; set; }
 
+        // Runtime properties (not serialized)
+        [System.Xml.Serialization.XmlIgnore]
+        public ScriptStatusType ScriptRunStatus { get; set; } = ScriptStatusType.Unknown;
+
+        [System.Xml.Serialization.XmlIgnore]
+        public DateTime LastCommitDate { get; set; }
+
+        [System.Xml.Serialization.XmlIgnore]
+        public DateTime ServerChangeDate { get; set; }
+
+        [System.Xml.Serialization.XmlIgnore]
+        public ScriptStatusType PolicyCheckState { get; set; } = ScriptStatusType.PolicyNotRun;
+
         public Script() { }
         public Script(
             string? fileName,

@@ -4,7 +4,6 @@ using Polly;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.Constants;
-using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Services;
@@ -82,7 +81,6 @@ namespace SqlSync.SqlBuild
         internal IProgressReporter ProgressReporter { get; private set; }
         internal ISqlBuildFileHelper FileHelper { get; }
         internal IBuildRetryPolicy RetryPolicy { get; }
-        internal ILegacyBuildDataAdapter LegacyAdapter { get; }
         internal Services.IBuildPreparationService BuildPreparationService { get; }
         internal Services.IScriptBatcher ScriptBatcher { get; }
         internal Services.ITokenReplacementService TokenReplacementService { get; }
@@ -119,13 +117,12 @@ namespace SqlSync.SqlBuild
             IProgressReporter progressReporter = null,
             ISqlBuildFileHelper fileHelper = null,
             IBuildRetryPolicy retryPolicy = null,
-            ILegacyBuildDataAdapter legacyAdapter = null,
             IDatabaseUtility databaseUtility = null,
             IConnectionsService connectionsService = null,
             IBuildFinalizer buildFinalizer = null)
             : this(data, createScriptRunLogFile, externalScriptLogFileName, isTransactional,
                    clock, guidProvider, fileSystem, progressReporter, fileHelper, retryPolicy,
-                   legacyAdapter, databaseUtility, connectionsService, buildFinalizer, null)
+                   databaseUtility, connectionsService, buildFinalizer, null)
         {
         }
 
@@ -140,7 +137,6 @@ namespace SqlSync.SqlBuild
             IProgressReporter progressReporter,
             ISqlBuildFileHelper fileHelper,
             IBuildRetryPolicy retryPolicy,
-            ILegacyBuildDataAdapter legacyAdapter,
             IDatabaseUtility databaseUtility,
             IConnectionsService connectionsService,
             IBuildFinalizer buildFinalizer,
@@ -154,7 +150,6 @@ namespace SqlSync.SqlBuild
             ProgressReporter = progressReporter ?? new DefaultProgressReporter();
             FileHelper = fileHelper ?? new DefaultSqlBuildFileHelper();
             RetryPolicy = retryPolicy ?? new DefaultBuildRetryPolicy();
-            LegacyAdapter = legacyAdapter ?? new DefaultLegacyBuildDataAdapter();
             RunnerFactory = runnerFactory ?? new Services.DefaultRunnerFactory();
             ScriptLogWriter = new Services.DefaultScriptLogWriter();
             BuildHistoryTracker = new Services.DefaultBuildHistoryTracker();
@@ -335,7 +330,6 @@ namespace SqlSync.SqlBuild
 
             }
 
-            SyncBuildDataModel(buildDataModel.ToDataSet());
             return buildResultsModel;
         }
 
@@ -489,8 +483,6 @@ namespace SqlSync.SqlBuild
         {
             return TokenReplacementService.ReplaceTokens(script, this);
         }
-
-        private void SyncBuildDataModel(SqlSyncBuildData ds) => buildDataModel = ds.ToModel();
 
         internal void SqlBuildHelper_ScriptLogWriteEvent(object sender, bool isError, ScriptLogEventArgs e)
         {

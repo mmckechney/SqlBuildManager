@@ -1,10 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.SqlBuild.Legacy;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Services;
 using SqlSync.SqlBuild.Status;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
 
@@ -26,13 +27,19 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             // Arrange
             var dbUtilMock = new Mock<IDatabaseUtility>();
-            var buildData = new SqlSyncBuildData();
+            var buildDataModel = new SqlSyncBuildDataModel(
+                new List<SqlSyncBuildProject>(),
+                new List<Script>(),
+                new List<Build>(),
+                new List<ScriptRun>(),
+                new List<CommittedScript>(),
+                new List<CodeReview>());
             var multiDbData = new MultiDbData();
             string projectFilePath = @"C:\Test\Project";
             string buildZipFileName = "build.sbm";
 
             // Act
-            var reporting = new StatusReporting(dbUtilMock.Object, buildData, multiDbData, projectFilePath, buildZipFileName);
+            var reporting = new StatusReporting(dbUtilMock.Object, buildDataModel, multiDbData, projectFilePath, buildZipFileName);
 
             // Assert
             Assert.IsNotNull(reporting);
