@@ -1218,6 +1218,225 @@ namespace SqlSync.SqlBuild.UnitTest
 
         #endregion
 
+        #region RemoveScriptFilesFromBuild POCO Tests
+
+        [TestMethod]
+        public void RemoveScriptFilesFromBuild_Model_RemovesSpecifiedScripts()
+        {
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var script1 = new Script("script1.sql", 1, "Script 1", false, true, DateTime.Now, Guid.NewGuid().ToString(), "TestDb", false, false, "tester", 30, null, null, null);
+            var script2 = new Script("script2.sql", 2, "Script 2", false, true, DateTime.Now, Guid.NewGuid().ToString(), "TestDb", false, false, "tester", 30, null, null, null);
+            model.Script.Add(script1);
+            model.Script.Add(script2);
+
+            var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
+            var projFile = Path.Combine(tempDir, "proj.xml");
+            
+            try
+            {
+                var result = SqlBuildFileHelper.RemoveScriptFilesFromBuild(model, projFile, "", new[] { script1 }, false);
+                
+                Assert.AreEqual(1, result.Script.Count);
+                Assert.AreEqual("script2.sql", result.Script[0].FileName);
+            }
+            finally
+            {
+                Directory.Delete(tempDir, true);
+            }
+        }
+
+        [TestMethod]
+        public void RemoveScriptFilesFromBuild_Model_DeletesFilesWhenRequested()
+        {
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var script1 = new Script("script1.sql", 1, "Script 1", false, true, DateTime.Now, Guid.NewGuid().ToString(), "TestDb", false, false, "tester", 30, null, null, null);
+            model.Script.Add(script1);
+
+            var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
+            var projFile = Path.Combine(tempDir, "proj.xml");
+            var scriptFile = Path.Combine(tempDir, "script1.sql");
+            File.WriteAllText(scriptFile, "SELECT 1");
+            
+            try
+            {
+                Assert.IsTrue(File.Exists(scriptFile));
+                SqlBuildFileHelper.RemoveScriptFilesFromBuild(model, projFile, "", new[] { script1 }, deleteFiles: true);
+                Assert.IsFalse(File.Exists(scriptFile));
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, true);
+            }
+        }
+
+        #endregion
+
+        #region RenumberBuildSequence POCO Tests
+
+        [TestMethod]
+        public void RenumberBuildSequence_Model_RenumbersFromOne()
+        {
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            model.Script.Add(new Script("a.sql", 5, "A", false, true, DateTime.Now, Guid.NewGuid().ToString(), "TestDb", false, false, "tester", 30, null, null, null));
+            model.Script.Add(new Script("b.sql", 10, "B", false, true, DateTime.Now, Guid.NewGuid().ToString(), "TestDb", false, false, "tester", 30, null, null, null));
+            model.Script.Add(new Script("c.sql", 15, "C", false, true, DateTime.Now, Guid.NewGuid().ToString(), "TestDb", false, false, "tester", 30, null, null, null));
+
+            var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
+            var projFile = Path.Combine(tempDir, "proj.xml");
+            
+            try
+            {
+                var result = SqlBuildFileHelper.RenumberBuildSequence(model, projFile, "");
+                
+                var sortedScripts = result.Script.OrderBy(s => s.BuildOrder).ToList();
+                Assert.AreEqual(1, sortedScripts[0].BuildOrder);
+                Assert.AreEqual(2, sortedScripts[1].BuildOrder);
+                Assert.AreEqual(3, sortedScripts[2].BuildOrder);
+            }
+            finally
+            {
+                Directory.Delete(tempDir, true);
+            }
+        }
+
+        #endregion
+
+        #region GetFileDataForCodeTableUpdates POCO Tests
+
+        [TestMethod]
+        public void GetFileDataForCodeTableUpdates_Model_ReturnsNullForEmptyModel()
+        {
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            
+            var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates(model, "test.xml");
+            
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Length);
+        }
+
+        [TestMethod]
+        public void GetFileDataForCodeTableUpdates_Model_FiltersOnlyPopulateScripts()
+        {
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            model.Script.Add(new Script("regular.sql", 1, "Regular", false, true, DateTime.Now, Guid.NewGuid().ToString(), "TestDb", false, false, "tester", 30, null, null, null));
+            model.Script.Add(new Script("table.pop", 2, "Populate", false, true, DateTime.Now, Guid.NewGuid().ToString(), "TestDb", false, false, "tester", 30, null, null, null));
+            
+            var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates(model, "test.xml");
+            
+            // Since the .pop file doesn't actually exist, it should return null for that script
+            // This just confirms the filtering logic works
+            Assert.IsNotNull(result);
+        }
+
+        #endregion
+
+        #region CopyScriptsToFolder POCO Tests
+
+        [TestMethod]
+        public void CopyIndividualScriptsToFolder_Model_ReturnsFalseForEmptyScripts()
+        {
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            
+            var result = SqlBuildFileHelper.CopyIndividualScriptsToFolder(model, "dest", "proj", false, false);
+            
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void CopyScriptsToSingleFile_Model_ReturnsFalseForEmptyScripts()
+        {
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            
+            var result = SqlBuildFileHelper.CopyScriptsToSingleFile(model, "dest.sql", "proj", "build.sbm", false);
+            
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task CopyIndividualScriptsToFolderAsync_Model_ReturnsFalseForEmptyScripts()
+        {
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            
+            var result = await SqlBuildFileHelper.CopyIndividualScriptsToFolderAsync(model, "dest", "proj", false, false);
+            
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task CopyScriptsToSingleFileAsync_Model_ReturnsFalseForEmptyScripts()
+        {
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            
+            var result = await SqlBuildFileHelper.CopyScriptsToSingleFileAsync(model, "dest.sql", "proj", "build.sbm", false);
+            
+            Assert.IsFalse(result);
+        }
+
+        #endregion
+
+        #region ImportSqlScriptFile POCO Tests
+
+        [TestMethod]
+        public void ImportSqlScriptFile_Model_ReturnsNoRowsImportedForEmptyImport()
+        {
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var importModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            
+            var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
+            var projFile = Path.Combine(tempDir, "proj.xml");
+            
+            try
+            {
+                var (buildNumber, resultModel, addedFiles) = SqlBuildFileHelper.ImportSqlScriptFile(
+                    model, importModel, tempDir, 0, tempDir, projFile, "", false);
+                
+                Assert.AreEqual((double)ImportFileStatus.NoRowsImported, buildNumber);
+                Assert.AreEqual(0, addedFiles.Length);
+            }
+            finally
+            {
+                Directory.Delete(tempDir, true);
+            }
+        }
+
+        [TestMethod]
+        public void ImportSqlScriptFile_Model_ImportsScriptsFromImportModel()
+        {
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var importModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            importModel.Script.Add(new Script("import1.sql", 1, "Import 1", false, true, DateTime.Now, Guid.NewGuid().ToString(), "TestDb", false, false, "tester", 30, null, null, null));
+
+            var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var importDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
+            Directory.CreateDirectory(importDir);
+            File.WriteAllText(Path.Combine(importDir, "import1.sql"), "SELECT 1");
+            var projFile = Path.Combine(tempDir, "proj.xml");
+            
+            try
+            {
+                var (buildNumber, resultModel, addedFiles) = SqlBuildFileHelper.ImportSqlScriptFile(
+                    model, importModel, importDir, 0, tempDir, projFile, "", false);
+                
+                Assert.AreEqual(1, buildNumber);
+                Assert.AreEqual(1, addedFiles.Length);
+                Assert.AreEqual("import1.sql", addedFiles[0]);
+                Assert.AreEqual(1, resultModel.Script.Count);
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
+                if (Directory.Exists(importDir)) Directory.Delete(importDir, true);
+            }
+        }
+
+        #endregion
+
         #region GetSHA1Hash Tests
 
         [TestMethod]

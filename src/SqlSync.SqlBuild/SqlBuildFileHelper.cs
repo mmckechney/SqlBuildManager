@@ -796,7 +796,7 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region .: Add / Remove scripts from build :.
-        [Obsolete("Use POCO-based script removal methods")]
+        [Obsolete("Use RemoveScriptFilesFromBuild(SqlSyncBuildDataModel, ...) for POCO")]
         public static bool RemoveScriptFilesFromBuild(ref SqlSyncBuildData buildData, string projFileName, string buildZipFileName, SqlSyncBuildData.ScriptRow[] rows, bool deleteFiles)
         {
             string fileName;
@@ -944,7 +944,7 @@ namespace SqlSync.SqlBuild
             }
             return registry;
         }
-        [Obsolete("Use POCO-based default script methods")]
+        [Obsolete("Use AddDefaultScriptToBuild(SqlSyncBuildDataModel, ...) for POCO")]
         public static DefaultScriptCopyStatus AddDefaultScriptToBuild(ref SqlSyncBuildData buildData, DefaultScripts.DefaultScript defaultScript, DefaultScriptCopyAction copyAction, string projFileName, string buildZipFileName)
         {
             DefaultScriptCopyStatus status = DefaultScriptCopyStatus.Success;
@@ -1006,10 +1006,105 @@ namespace SqlSync.SqlBuild
 
             return status;
         }
-        #endregion 
+
+        /// <summary>
+        /// Remove script files from the build using POCO model
+        /// </summary>
+        public static SqlSyncBuildDataModel RemoveScriptFilesFromBuild(SqlSyncBuildDataModel model, string projFileName, string buildZipFileName, IEnumerable<Script> scriptsToRemove, bool deleteFiles)
+        {
+            var scriptsToRemoveIds = scriptsToRemove.Select(s => s.ScriptId).ToHashSet();
+            
+            foreach (var script in scriptsToRemove)
+            {
+                try
+                {
+                    if (deleteFiles)
+                    {
+                        var fileName = Path.Combine(Path.GetDirectoryName(projFileName) ?? "", script.FileName);
+                        if (File.Exists(fileName))
+                            File.Delete(fileName);
+                    }
+                }
+                catch (IOException ioExe)
+                {
+                    log.LogError(ioExe, $"Unable to delete file {script.FileName}");
+                }
+                catch (Exception e)
+                {
+                    log.LogError(e, $"Unable to remove file {script.FileName}");
+                    throw;
+                }
+            }
+
+            model.Script = model.Script.Where(s => !scriptsToRemoveIds.Contains(s.ScriptId)).ToList();
+            SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFileName, buildZipFileName);
+            return model;
+        }
+
+        /// <summary>
+        /// Add a default script to the build using POCO model
+        /// </summary>
+        public static (DefaultScriptCopyStatus status, SqlSyncBuildDataModel model) AddDefaultScriptToBuild(SqlSyncBuildDataModel model, DefaultScripts.DefaultScript defaultScript, DefaultScriptCopyAction copyAction, string projFileName, string buildZipFileName)
+        {
+            DefaultScriptCopyStatus status = DefaultScriptCopyStatus.Success;
+            string defaultScriptPath = Path.GetDirectoryName(SqlBuildFileHelper.DefaultScriptXmlFile) ?? "";
+            string fullScriptPath = Path.Combine(defaultScriptPath, defaultScript.ScriptName);
+            
+            if (!File.Exists(fullScriptPath))
+                return (DefaultScriptCopyStatus.DefaultNotFound, model);
+
+            string newLocalFile = Path.Combine(Path.GetDirectoryName(projFileName) ?? "", defaultScript.ScriptName);
+
+            if (File.Exists(newLocalFile))
+            {
+                bool isReadOnly = ((new FileInfo(newLocalFile).Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly);
+                if ((DefaultScriptCopyAction.OverwriteExisting == copyAction) && !isReadOnly)
+                {
+                    File.Copy(fullScriptPath, newLocalFile, true);
+                }
+                else if ((File.ReadAllText(newLocalFile) != File.ReadAllText(fullScriptPath)) &&
+                                (copyAction != DefaultScriptCopyAction.LeaveExisting))
+                {
+                    if (isReadOnly)
+                        status = DefaultScriptCopyStatus.PreexistingDifferentReadOnly;
+                    else
+                        return (DefaultScriptCopyStatus.PreexistingDifferent, model);
+                }
+                else if (isReadOnly)
+                {
+                    status = DefaultScriptCopyStatus.PreexistingReadOnly;
+                }
+            }
+            else
+            {
+                File.Copy(fullScriptPath, newLocalFile, true);
+            }
+
+            model = AddScriptFileToBuild(
+                model,
+                projFileName,
+                defaultScript.ScriptName,
+                defaultScript.BuildOrder,
+                defaultScript.Description,
+                defaultScript.RollBackScript,
+                defaultScript.RollBackBuild,
+                defaultScript.DatabaseName,
+                defaultScript.StripTransactions,
+                buildZipFileName,
+                saveToZip: false,
+                allowMultipleRuns: defaultScript.AllowMultipleRuns,
+                addedBy: System.Environment.UserName,
+                scriptTimeOut: defaultScript.ScriptTimeout,
+                scriptId: Guid.Empty,
+                tag: defaultScript.ScriptTag);
+
+            SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFileName, buildZipFileName);
+            return (status, model);
+        }
+        #endregion
 
         #region .: Object/ Populate Script Update settings :.
-        [Obsolete("Use POCO-based code table update methods")]
+        [Obsolete("Use GetFileDataForCodeTableUpdates(SqlSyncBuildDataModel, ...) for POCO")]
         public static SqlBuild.CodeTable.ScriptUpdates[] GetFileDataForCodeTableUpdates(ref SqlSyncBuildData buildData, string projFileName)
         {
             if (buildData == null)
@@ -1076,6 +1171,29 @@ namespace SqlSync.SqlBuild
                 sr.Close();
             }
             return codeTableUpdate;
+        }
+
+        /// <summary>
+        /// Get file data for code table updates using POCO model
+        /// </summary>
+        public static SqlBuild.CodeTable.ScriptUpdates[]? GetFileDataForCodeTableUpdates(SqlSyncBuildDataModel model, string projFileName)
+        {
+            if (model?.Script == null)
+                return null;
+
+            var scriptFiles = new List<SqlBuild.CodeTable.ScriptUpdates>();
+            foreach (var script in model.Script)
+            {
+                // Find the ".pop" populate scripts
+                if (!Path.GetExtension(script.FileName).Equals(SqlSync.Constants.DbObjectType.PopulateScript, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var obj = GetFileDataForCodeTableUpdates(script.FileName, projFileName);
+                if (obj != null)
+                    scriptFiles.Add(obj);
+            }
+
+            return scriptFiles.ToArray();
         }
 
         [Obsolete("Use GetFileDataForObjectUpdates(SqlSyncBuildDataModel, ...) for POCO")]
@@ -1465,12 +1583,12 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region .: Renumbering/ Resorting :.
-        [Obsolete("Use POCO-based build renumbering methods")]
+        [Obsolete("Use RenumberBuildSequence(SqlSyncBuildDataModel, ...) for POCO")]
         public static bool RenumberBuildSequence(ref SqlSyncBuildData buildData, string projectFileName, string buildZipFileName)
         {
             return RenumberBuildSequence(ref buildData, projectFileName, buildZipFileName, (int)ResequenceIgnore.StartNumber);
         }
-        [Obsolete("Use POCO-based build renumbering methods")]
+        [Obsolete("Use RenumberBuildSequence(SqlSyncBuildDataModel, ...) for POCO")]
         internal static bool RenumberBuildSequence(ref SqlSyncBuildData buildData, string projectFileName, string buildZipFileName, int renumberIgnoreStart)
         {
             try
@@ -1497,7 +1615,7 @@ namespace SqlSync.SqlBuild
             }
 
         }
-        [Obsolete("Use POCO-based build resorting methods")]
+        [Obsolete("Use ResortBuildByFileType(SqlSyncBuildDataModel, ...) for POCO")]
         public static bool ResortBuildByFileType(ref SqlSyncBuildData buildData, string projectFileName, string buildZipFileName)
         {
 
@@ -1552,6 +1670,88 @@ namespace SqlSync.SqlBuild
             RenumberBuildSequence(ref buildData, projectFileName, buildZipFileName, 19999);
             RenumberBuildSequence(ref buildData, projectFileName, buildZipFileName);
             return true;
+        }
+
+        /// <summary>
+        /// Renumber the build sequence using POCO model
+        /// </summary>
+        public static SqlSyncBuildDataModel RenumberBuildSequence(SqlSyncBuildDataModel model, string projectFileName, string buildZipFileName)
+        {
+            return RenumberBuildSequence(model, projectFileName, buildZipFileName, (int)ResequenceIgnore.StartNumber);
+        }
+
+        /// <summary>
+        /// Renumber the build sequence using POCO model with a custom ignore start number
+        /// </summary>
+        internal static SqlSyncBuildDataModel RenumberBuildSequence(SqlSyncBuildDataModel model, string projectFileName, string buildZipFileName, int renumberIgnoreStart)
+        {
+            try
+            {
+                var scriptsToRenumber = model.Script
+                    .Where(s => s.BuildOrder < renumberIgnoreStart)
+                    .OrderBy(s => s.BuildOrder)
+                    .ToList();
+
+                for (int i = 0; i < scriptsToRenumber.Count; i++)
+                {
+                    scriptsToRenumber[i].BuildOrder = i + 1;
+                }
+
+                SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projectFileName, buildZipFileName);
+                return model;
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, "Error renumbering build sequence");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Resort the build by file type using POCO model
+        /// </summary>
+        public static SqlSyncBuildDataModel ResortBuildByFileType(SqlSyncBuildDataModel model, string projectFileName, string buildZipFileName)
+        {
+            // First move out the "reserve" items (renumber starting at 20000)
+            int reservedIndex = 20000;
+            var reservedScripts = model.Script
+                .Where(s => s.BuildOrder >= (int)ResequenceIgnore.StartNumber)
+                .OrderBy(s => s.BuildOrder)
+                .ToList();
+            
+            foreach (var script in reservedScripts)
+                script.BuildOrder = reservedIndex++;
+
+            // Renumber the standard items by file extension
+            for (int i = 0; i < ResortBuildType.SortOrder.Length; i++)
+            {
+                string extension = "." + ResortBuildType.SortOrder[i];
+                var matchingScripts = model.Script
+                    .Where(s => s.FileName.EndsWith(extension, StringComparison.OrdinalIgnoreCase) && s.BuildOrder < 20000)
+                    .OrderBy(s => s.BuildOrder)
+                    .ToList();
+
+                for (int j = 0; j < matchingScripts.Count; j++)
+                    matchingScripts[j].BuildOrder = (1000 * (i + 1)) + j;
+            }
+
+            // Take any of the remaining items (files with extensions not in SortOrder)
+            int leftOverStart = 19000;
+            var knownExtensions = ResortBuildType.SortOrder.Select(e => "." + e).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var leftOverScripts = model.Script
+                .Where(s => !knownExtensions.Any(ext => s.FileName.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) && s.BuildOrder < 20000)
+                .OrderBy(s => s.BuildOrder)
+                .ToList();
+            
+            foreach (var script in leftOverScripts)
+                script.BuildOrder = leftOverStart++;
+
+            SaveSqlBuildProjectFile(model, projectFileName, buildZipFileName);
+
+            // Renumber twice as the legacy code did
+            model = RenumberBuildSequence(model, projectFileName, buildZipFileName, 19999);
+            model = RenumberBuildSequence(model, projectFileName, buildZipFileName);
+            return model;
         }
         #endregion
 
@@ -1638,7 +1838,7 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region .: Copying scripts out to plain files :.
-        [Obsolete("Use POCO-based script copy methods")]
+        [Obsolete("Use CopyIndividualScriptsToFolder(SqlSyncBuildDataModel, ...) for POCO")]
         public static bool CopyIndividualScriptsToFolder(ref SqlSyncBuildData buildData, string destinationFolder, string projectFilePath, bool includeUSE, bool includeSequence)
         {
             if (buildData.Script == null || buildData.Script.Count == 0)
@@ -1687,7 +1887,7 @@ namespace SqlSync.SqlBuild
                 return false;
             }
         }
-        [Obsolete("Use POCO-based script copy methods")]
+        [Obsolete("Use CopyScriptsToSingleFile(SqlSyncBuildDataModel, ...) for POCO")]
         public static bool CopyScriptsToSingleFile(ref SqlSyncBuildData buildData, string destinationFile, string projectFilePath, string buildFileName, bool includeUSE)
         {
             if (buildData.Script == null || buildData.Script.Count == 0)
@@ -1732,7 +1932,7 @@ namespace SqlSync.SqlBuild
             }
         }
 
-        [Obsolete("Use POCO-based script copy methods")]
+        [Obsolete("Use CopyIndividualScriptsToFolderAsync(SqlSyncBuildDataModel, ...) for POCO")]
         public static async Task<(bool success, SqlSyncBuildData buildData)> CopyIndividualScriptsToFolderAsync(SqlSyncBuildData buildData, string destinationFolder, string projectFilePath, bool includeUSE, bool includeSequence, CancellationToken cancellationToken = default)
         {
             if (buildData.Script == null || buildData.Script.Count == 0)
@@ -1777,7 +1977,7 @@ namespace SqlSync.SqlBuild
             }
         }
 
-        [Obsolete("Use POCO-based script copy methods")]
+        [Obsolete("Use CopyScriptsToSingleFileAsync(SqlSyncBuildDataModel, ...) for POCO")]
         public static async Task<(bool success, SqlSyncBuildData buildData)> CopyScriptsToSingleFileAsync(SqlSyncBuildData buildData, string destinationFile, string projectFilePath, string buildFileName, bool includeUSE, CancellationToken cancellationToken = default)
         {
             if (buildData.Script == null || buildData.Script.Count == 0)
@@ -1815,9 +2015,187 @@ namespace SqlSync.SqlBuild
                 return (false, buildData);
             }
         }
+
+        /// <summary>
+        /// Copy scripts to individual files using POCO model
+        /// </summary>
+        public static bool CopyIndividualScriptsToFolder(SqlSyncBuildDataModel model, string destinationFolder, string projectFilePath, bool includeUSE, bool includeSequence)
+        {
+            if (model.Script == null || model.Script.Count == 0)
+                return false;
+
+            StringBuilder sb = new StringBuilder();
+            string[] batch;
+            string fileName = string.Empty;
+
+            try
+            {
+                var sortedScripts = model.Script.OrderBy(s => s.BuildOrder).ToList();
+                for (int i = 0; i < sortedScripts.Count; i++)
+                {
+                    var script = sortedScripts[i];
+                    if (!File.Exists(Path.Combine(projectFilePath, script.FileName)))
+                        continue;
+
+                    if (includeUSE)
+                        sb.Append("USE " + script.Database + "\r\nGO\r\n");
+
+                    batch = scriptBatcher.ReadBatchFromScriptFile(Path.Combine(projectFilePath, script.FileName), script.StripTransactionText ?? false, true);
+                    for (int j = 0; j < batch.Length; j++)
+                        sb.Append(batch[j] + "\r\n");
+
+                    if (includeSequence)
+                        fileName = Path.Combine(destinationFolder, (i + 1).ToString().PadLeft(3, '0') + " " + script.FileName);
+                    else
+                        fileName = Path.Combine(destinationFolder, script.FileName);
+
+                    using (StreamWriter sw = File.CreateText(fileName))
+                    {
+                        sw.WriteLine(sb.ToString());
+                        sw.Flush();
+                    }
+                    sb.Length = 0;
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, $"Unable to export script {fileName} to destination folder {destinationFolder}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Copy scripts to a single file using POCO model
+        /// </summary>
+        public static bool CopyScriptsToSingleFile(SqlSyncBuildDataModel model, string destinationFile, string projectFilePath, string buildFileName, bool includeUSE)
+        {
+            if (model.Script == null || model.Script.Count == 0)
+                return false;
+
+            StringBuilder sb = new StringBuilder();
+            string[] batch;
+
+            try
+            {
+                sb.Append("-- Scripts Consolidated from: " + Path.GetFileName(buildFileName) + "\r\n");
+                var sortedScripts = model.Script.OrderBy(s => s.BuildOrder).ToList();
+                for (int i = 0; i < sortedScripts.Count; i++)
+                {
+                    var script = sortedScripts[i];
+                    if (!File.Exists(Path.Combine(projectFilePath, script.FileName)))
+                        continue;
+
+                    sb.Append("\r\n-- Source File: " + script.FileName + "\r\n");
+                    if (includeUSE)
+                        sb.Append("USE " + script.Database + "\r\nGO\r\n");
+                    batch = scriptBatcher.ReadBatchFromScriptFile(Path.Combine(projectFilePath, script.FileName), script.StripTransactionText ?? false, true);
+                    for (int j = 0; j < batch.Length; j++)
+                        sb.Append(batch[j] + "\r\n");
+                }
+
+                using (StreamWriter sw = File.CreateText(destinationFile))
+                {
+                    sw.WriteLine(sb.ToString());
+                    sw.Flush();
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, $"Unable to copy scripts to {destinationFile}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Copy scripts to individual files using POCO model (async)
+        /// </summary>
+        public static async Task<bool> CopyIndividualScriptsToFolderAsync(SqlSyncBuildDataModel model, string destinationFolder, string projectFilePath, bool includeUSE, bool includeSequence, CancellationToken cancellationToken = default)
+        {
+            if (model.Script == null || model.Script.Count == 0)
+                return false;
+
+            StringBuilder sb = new StringBuilder();
+            string[] batch;
+            string fileName = string.Empty;
+
+            try
+            {
+                var sortedScripts = model.Script.OrderBy(s => s.BuildOrder).ToList();
+                for (int i = 0; i < sortedScripts.Count; i++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var script = sortedScripts[i];
+                    if (!File.Exists(Path.Combine(projectFilePath, script.FileName)))
+                        continue;
+
+                    if (includeUSE)
+                        sb.Append("USE " + script.Database + "\r\nGO\r\n");
+
+                    batch = await scriptBatcher.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, script.FileName), script.StripTransactionText ?? false, true, cancellationToken).ConfigureAwait(false);
+                    for (int j = 0; j < batch.Length; j++)
+                        sb.Append(batch[j] + "\r\n");
+
+                    if (includeSequence)
+                        fileName = Path.Combine(destinationFolder, (i + 1).ToString().PadLeft(3, '0') + " " + script.FileName);
+                    else
+                        fileName = Path.Combine(destinationFolder, script.FileName);
+
+                    await File.WriteAllTextAsync(fileName, sb.ToString(), cancellationToken).ConfigureAwait(false);
+                    sb.Length = 0;
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, $"Unable to export script {fileName} to destination folder {destinationFolder}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Copy scripts to a single file using POCO model (async)
+        /// </summary>
+        public static async Task<bool> CopyScriptsToSingleFileAsync(SqlSyncBuildDataModel model, string destinationFile, string projectFilePath, string buildFileName, bool includeUSE, CancellationToken cancellationToken = default)
+        {
+            if (model.Script == null || model.Script.Count == 0)
+                return false;
+
+            StringBuilder sb = new StringBuilder();
+            string[] batch;
+
+            try
+            {
+                sb.Append("-- Scripts Consolidated from: " + Path.GetFileName(buildFileName) + "\r\n");
+                var sortedScripts = model.Script.OrderBy(s => s.BuildOrder).ToList();
+                for (int i = 0; i < sortedScripts.Count; i++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var script = sortedScripts[i];
+                    if (!File.Exists(Path.Combine(projectFilePath, script.FileName)))
+                        continue;
+
+                    sb.Append("\r\n-- Source File: " + script.FileName + "\r\n");
+                    if (includeUSE)
+                        sb.Append("USE " + script.Database + "\r\nGO\r\n");
+                    batch = await scriptBatcher.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, script.FileName), script.StripTransactionText ?? false, true, cancellationToken).ConfigureAwait(false);
+                    for (int j = 0; j < batch.Length; j++)
+                        sb.Append(batch[j] + "\r\n");
+                }
+
+                await File.WriteAllTextAsync(destinationFile, sb.ToString(), cancellationToken).ConfigureAwait(false);
+                return true;
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, $"Unable to copy scripts to {destinationFile}");
+                return false;
+            }
+        }
         #endregion
 
-        [Obsolete("Use POCO-based import methods")]
+        [Obsolete("Use ImportSqlScriptFile(SqlSyncBuildDataModel, ...) for POCO")]
         public static double ImportSqlScriptFile(ref SqlSyncBuildData buildData, SqlSyncBuildData importData, string importWorkingDirectory, double lastBuildNumber, string projectFilePath, string projectFileName, string buildZipFileName, bool cleanUp, out string[] addedFileNames)
         {
             bool haveImportedRows = false;
@@ -1892,6 +2270,91 @@ namespace SqlSync.SqlBuild
 
             addedFileNames = new string[0];
             return -1;
+        }
+
+        /// <summary>
+        /// Import scripts from another build file using POCO model
+        /// </summary>
+        public static (double buildNumber, SqlSyncBuildDataModel model, string[] addedFileNames) ImportSqlScriptFile(
+            SqlSyncBuildDataModel model, 
+            SqlSyncBuildDataModel importModel, 
+            string importWorkingDirectory, 
+            double lastBuildNumber, 
+            string projectFilePath, 
+            string projectFileName, 
+            string buildZipFileName, 
+            bool cleanUp)
+        {
+            var addedFileNames = new List<string>();
+            double startBuildNumber = lastBuildNumber + 1;
+            
+            try
+            {
+                var sortedImportScripts = importModel.Script?.OrderBy(s => s.BuildOrder).ToList() ?? new List<Script>();
+                
+                if (sortedImportScripts.Count == 0)
+                    return ((double)ImportFileStatus.NoRowsImported, model, Array.Empty<string>());
+
+                int increment = 0;
+                foreach (var importScript in sortedImportScripts)
+                {
+                    var newScript = new Script(
+                        importScript.FileName,
+                        startBuildNumber + increment,
+                        importScript.Description,
+                        importScript.RollBackOnError,
+                        importScript.CausesBuildFailure,
+                        importScript.DateAdded,
+                        string.IsNullOrEmpty(importScript.ScriptId) ? Guid.NewGuid().ToString() : importScript.ScriptId,
+                        importScript.Database,
+                        importScript.StripTransactionText,
+                        importScript.AllowMultipleRuns,
+                        importScript.AddedBy,
+                        importScript.ScriptTimeOut,
+                        importScript.DateModified,
+                        importScript.ModifiedBy,
+                        importScript.Tag);
+                    
+                    addedFileNames.Add(importScript.FileName ?? "");
+                    model.Script.Add(newScript);
+                    
+                    var destPath = Path.Combine(projectFilePath, importScript.FileName);
+                    if (File.Exists(destPath))
+                        File.Delete(destPath);
+                    
+                    try
+                    {
+                        File.Copy(Path.Combine(importWorkingDirectory, importScript.FileName), destPath);
+                    }
+                    catch (Exception)
+                    {
+                        Thread.Sleep(200);
+                        File.Copy(Path.Combine(importWorkingDirectory, importScript.FileName), destPath);
+                    }
+                    increment++;
+                }
+
+                SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projectFileName, buildZipFileName);
+
+                if (cleanUp)
+                {
+                    try
+                    {
+                        var files = Directory.GetFiles(importWorkingDirectory);
+                        foreach (var file in files)
+                            File.Delete(file);
+                        Directory.Delete(importWorkingDirectory);
+                    }
+                    catch { }
+                }
+
+                return (startBuildNumber, model, addedFileNames.ToArray());
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, "Error importing script file");
+                return (-1, model, Array.Empty<string>());
+            }
         }
 
 
