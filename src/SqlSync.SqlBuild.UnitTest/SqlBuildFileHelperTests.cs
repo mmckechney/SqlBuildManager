@@ -94,46 +94,44 @@ namespace SqlSync.SqlBuild.UnitTest
 
         #endregion
 
-        #region CreateShellSqlSyncBuildDataObject Tests (Legacy DataSet)
+        #region ToDataSet Conversion Tests
 
         [TestMethod]
-        public void CreateShellSqlSyncBuildDataObject_ReturnsNonNullDataSet()
+        public void ToDataSet_ReturnsNonNullDataSet()
         {
-#pragma warning disable CS0618
-            var data = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var data = model.ToDataSet();
 
             Assert.IsNotNull(data);
         }
 
         [TestMethod]
-        public void CreateShellSqlSyncBuildDataObject_HasOneProjectRow()
+        public void ToDataSet_HasOneProjectRow()
         {
-#pragma warning disable CS0618
-            var data = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var data = model.ToDataSet();
 
             Assert.AreEqual(1, data.SqlSyncBuildProject.Rows.Count);
         }
 
         [TestMethod]
-        public void CreateShellSqlSyncBuildDataObject_HasOneScriptsRow()
+        public void ToDataSet_HasZeroScriptsRowsWhenEmpty()
         {
-#pragma warning disable CS0618
-            var data = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var data = model.ToDataSet();
 
-            Assert.AreEqual(1, data.Scripts.Rows.Count);
+            // Shell model has empty Script collection, so Scripts table should also be empty
+            Assert.AreEqual(0, data.Scripts.Rows.Count);
         }
 
         [TestMethod]
-        public void CreateShellSqlSyncBuildDataObject_HasOneBuildsRow()
+        public void ToDataSet_HasZeroBuildsRowsWhenEmpty()
         {
-#pragma warning disable CS0618
-            var data = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var data = model.ToDataSet();
 
-            Assert.AreEqual(1, data.Builds.Rows.Count);
+            // Shell model has empty Build collection, so Builds table should also be empty
+            Assert.AreEqual(0, data.Builds.Rows.Count);
         }
 
         #endregion

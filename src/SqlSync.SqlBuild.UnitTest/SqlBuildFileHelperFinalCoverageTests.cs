@@ -1,5 +1,4 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
@@ -277,15 +276,14 @@ namespace SqlSync.SqlBuild.UnitTest
 
         #endregion
 
-        #region CreateShellSqlSyncBuildDataObject Tests
+        #region CreateShellSqlSyncBuildDataModel Tests
 
         [TestMethod]
-        public void CreateShellSqlSyncBuildDataObject_CreatesValidObject()
+        public void CreateShellSqlSyncBuildDataModel_ToDataSet_CreatesValidObject()
         {
             // Act
-#pragma warning disable CS0618
-            var result = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var result = model.ToDataSet();
 
             // Assert
             Assert.IsNotNull(result);
@@ -541,7 +539,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void CalculateBuildPackageSHA1SignatureFromPath_WithNullData_ReturnsError()
         {
             // Act
-            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(_testDir, (SqlSyncBuildData)null);
+            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(_testDir, (SqlSyncBuildDataModel)null);
 
             // Assert
             Assert.AreEqual("Error calculating hash", result);
@@ -551,12 +549,10 @@ namespace SqlSync.SqlBuild.UnitTest
         public void CalculateBuildPackageSHA1SignatureFromPath_WithNullPath_ReturnsError()
         {
             // Arrange
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(null, buildData);
+            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(null, model);
 
             // Assert
             Assert.AreEqual("Error calculating hash", result);
@@ -566,12 +562,10 @@ namespace SqlSync.SqlBuild.UnitTest
         public void CalculateBuildPackageSHA1SignatureFromPath_WithEmptyPath_ReturnsError()
         {
             // Arrange
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(string.Empty, buildData);
+            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(string.Empty, model);
 
             // Assert
             Assert.AreEqual("Error calculating hash", result);
@@ -619,14 +613,12 @@ namespace SqlSync.SqlBuild.UnitTest
         public void CopyIndividualScriptsToFolder_WithEmptyScripts_ReturnsFalse()
         {
             // Arrange
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string destFolder = Path.Combine(_testDir, "dest");
             Directory.CreateDirectory(destFolder);
 
             // Act
-            var result = SqlBuildFileHelper.CopyIndividualScriptsToFolder(ref buildData, destFolder, _testDir, false, false);
+            var result = SqlBuildFileHelper.CopyIndividualScriptsToFolder(model, destFolder, _testDir, false, false);
 
             // Assert
             Assert.IsFalse(result);
@@ -636,12 +628,12 @@ namespace SqlSync.SqlBuild.UnitTest
         public void CopyIndividualScriptsToFolder_WithNullScripts_ReturnsFalse()
         {
             // Arrange
-            var buildData = new SqlSyncBuildData();
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string destFolder = Path.Combine(_testDir, "dest");
             Directory.CreateDirectory(destFolder);
 
             // Act
-            var result = SqlBuildFileHelper.CopyIndividualScriptsToFolder(ref buildData, destFolder, _testDir, false, false);
+            var result = SqlBuildFileHelper.CopyIndividualScriptsToFolder(model, destFolder, _testDir, false, false);
 
             // Assert
             Assert.IsFalse(result);
@@ -655,13 +647,11 @@ namespace SqlSync.SqlBuild.UnitTest
         public void CopyScriptsToSingleFile_WithEmptyScripts_ReturnsFalse()
         {
             // Arrange
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string destFile = Path.Combine(_testDir, "output.sql");
 
             // Act
-            var result = SqlBuildFileHelper.CopyScriptsToSingleFile(ref buildData, destFile, _testDir, "test.sbm", false);
+            var result = SqlBuildFileHelper.CopyScriptsToSingleFile(model, destFile, _testDir, "test.sbm", false);
 
             // Assert
             Assert.IsFalse(result);
@@ -700,15 +690,13 @@ namespace SqlSync.SqlBuild.UnitTest
         public async Task CopyIndividualScriptsToFolderAsync_WithEmptyScripts_ReturnsFalse()
         {
             // Arrange
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string destFolder = Path.Combine(_testDir, "dest");
             Directory.CreateDirectory(destFolder);
 
             // Act
-            var (success, _) = await SqlBuildFileHelper.CopyIndividualScriptsToFolderAsync(
-                buildData, destFolder, _testDir, false, false, CancellationToken.None);
+            var success = await SqlBuildFileHelper.CopyIndividualScriptsToFolderAsync(
+                model, destFolder, _testDir, false, false, CancellationToken.None);
 
             // Assert
             Assert.IsFalse(success);
@@ -718,14 +706,12 @@ namespace SqlSync.SqlBuild.UnitTest
         public async Task CopyScriptsToSingleFileAsync_WithEmptyScripts_ReturnsFalse()
         {
             // Arrange
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string destFile = Path.Combine(_testDir, "output.sql");
 
             // Act
-            var (success, _) = await SqlBuildFileHelper.CopyScriptsToSingleFileAsync(
-                buildData, destFile, _testDir, "test.sbm", false, CancellationToken.None);
+            var success = await SqlBuildFileHelper.CopyScriptsToSingleFileAsync(
+                model, destFile, _testDir, "test.sbm", false, CancellationToken.None);
 
             // Assert
             Assert.IsFalse(success);

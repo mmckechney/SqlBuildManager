@@ -1,6 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild.CodeTable;
-using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Objects;
 using System;
@@ -23,9 +22,9 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void GetFileDataForCodeTableUpdates_WithNullBuildData_ReturnsNull()
         {
-            SqlSyncBuildData buildData = null;
+            SqlSyncBuildDataModel model = null;
 
-            var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates(ref buildData, "test.xml");
+            var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates(model, "test.xml");
 
             Assert.IsNull(result);
         }
@@ -33,11 +32,9 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void GetFileDataForCodeTableUpdates_WithNoPopScripts_ReturnsEmptyArray()
         {
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates(ref buildData, "test.xml");
+            var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates(model, "test.xml");
 
             Assert.IsNotNull(result);
             Assert.AreEqual(0, result.Length);
@@ -50,13 +47,11 @@ namespace SqlSync.SqlBuild.UnitTest
             Directory.CreateDirectory(tempDir);
             try
             {
-#pragma warning disable CS0618
-                var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-                SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, Path.Combine(tempDir, "test.xml"),
-                    "nonexistent.POP", 1, "Test", true, true, "TestDb", false, "", false, true, "user", 30, "");
-#pragma warning restore CS0618
+                var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+                model = SqlBuildFileHelper.AddScriptFileToBuild(model, Path.Combine(tempDir, "test.xml"),
+                    "nonexistent.POP", 1, "Test", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
-                var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates(ref buildData, Path.Combine(tempDir, "test.xml"));
+                var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates(model, Path.Combine(tempDir, "test.xml"));
 
                 Assert.IsNotNull(result);
                 // File doesn't exist so it should be skipped
@@ -120,9 +115,9 @@ INSERT INTO TestTable VALUES (1, 'Test');";
         [TestMethod]
         public void GetFileDataForObjectUpdates_WithNullBuildData_ReturnsNull()
         {
-            SqlSyncBuildData buildData = null;
+            SqlSyncBuildDataModel model = null;
 
-            var result = SqlBuildFileHelper.GetFileDataForObjectUpdates(ref buildData, "test.xml");
+            var result = SqlBuildFileHelper.GetFileDataForObjectUpdates(model, "test.xml");
 
             Assert.IsNull(result);
         }
@@ -140,11 +135,9 @@ INSERT INTO TestTable VALUES (1, 'Test');";
         [TestMethod]
         public void GetFileDataForObjectUpdates_WithNonObjectScripts_ReturnsEmptyCanUpdate()
         {
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            SqlBuildFileHelper.GetFileDataForObjectUpdates(ref buildData, "test.xml",
+            SqlBuildFileHelper.GetFileDataForObjectUpdates(model, "test.xml",
                 out List<ObjectUpdates> canUpdate, out List<string> canNotUpdate);
 
             Assert.IsNotNull(canUpdate);
@@ -603,9 +596,9 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         [TestMethod]
         public void CalculateBuildPackageSHA1SignatureFromPath_WithNullBuildData_ReturnsError()
         {
-            SqlSyncBuildData buildData = null;
+            SqlSyncBuildDataModel model = null;
 
-            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(@"C:\Temp", buildData);
+            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(@"C:\Temp", model);
 
             Assert.AreEqual("Error calculating hash", result);
         }
@@ -613,11 +606,9 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         [TestMethod]
         public void CalculateBuildPackageSHA1SignatureFromPath_WithEmptyPath_ReturnsError()
         {
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(string.Empty, buildData);
+            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(string.Empty, model);
 
             Assert.AreEqual("Error calculating hash", result);
         }

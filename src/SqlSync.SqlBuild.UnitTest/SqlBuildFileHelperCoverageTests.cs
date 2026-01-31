@@ -1,5 +1,4 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
@@ -674,26 +673,26 @@ namespace SqlSync.SqlBuild.UnitTest
         #region RenumberBuildSequence Tests
 
         [TestMethod]
-        public void RenumberBuildSequence_ValidBuildData_ReturnsTrue()
+        public void RenumberBuildSequence_ValidBuildData_ReturnsNotNull()
         {
             // Arrange
-            var buildData = new SqlSyncBuildData();
-            buildData.SqlSyncBuildProject.AddSqlSyncBuildProjectRow("TestProject", false);
-            buildData.Scripts.AddScriptsRow((SqlSyncBuildData.SqlSyncBuildProjectRow)buildData.SqlSyncBuildProject.Rows[0]);
-            var scriptsRow = (SqlSyncBuildData.ScriptsRow)buildData.Scripts.Rows[0];
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            model = SqlBuildFileHelper.AddScriptFileToBuild(model, Path.Combine(_testDirectory, "test.xml"),
+                "script1.sql", 5, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
+            model = SqlBuildFileHelper.AddScriptFileToBuild(model, Path.Combine(_testDirectory, "test.xml"),
+                "script2.sql", 3, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
-            buildData.Script.AddScriptRow("script1.sql", 5, "desc", true, true, DateTime.Now, Guid.NewGuid().ToString(), "TestDb", false, true, "user", 30, DateTime.MinValue, "", scriptsRow, "");
-            buildData.Script.AddScriptRow("script2.sql", 3, "desc", true, true, DateTime.Now, Guid.NewGuid().ToString(), "TestDb", false, true, "user", 30, DateTime.MinValue, "", scriptsRow, "");
-            buildData.AcceptChanges();
+            File.WriteAllText(Path.Combine(_testDirectory, "script1.sql"), "SELECT 1");
+            File.WriteAllText(Path.Combine(_testDirectory, "script2.sql"), "SELECT 2");
 
             string projFileName = Path.Combine(_testDirectory, XmlFileNames.MainProjectFile);
             string zipFileName = Path.Combine(_testDirectory, "test.sbm");
 
             // Act
-            bool result = SqlBuildFileHelper.RenumberBuildSequence(ref buildData, projFileName, zipFileName);
+            var result = SqlBuildFileHelper.RenumberBuildSequence(model, projFileName, zipFileName);
 
             // Assert
-            Assert.IsTrue(result);
+            Assert.IsNotNull(result);
         }
 
         #endregion
@@ -767,10 +766,10 @@ namespace SqlSync.SqlBuild.UnitTest
         public void GetFileDataForCodeTableUpdates_NullBuildData_ReturnsNull()
         {
             // Arrange
-            SqlSyncBuildData buildData = null;
+            SqlSyncBuildDataModel model = null;
 
             // Act
-            var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates(ref buildData, _testDirectory);
+            var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates(model, _testDirectory);
 
             // Assert
             Assert.IsNull(result);
@@ -822,10 +821,10 @@ INSERT INTO TestTable VALUES (1, 'test');");
         public void GetFileDataForObjectUpdates_NullBuildData_ReturnsNull()
         {
             // Arrange
-            SqlSyncBuildData buildData = null;
+            SqlSyncBuildDataModel model = null;
 
             // Act
-            var result = SqlBuildFileHelper.GetFileDataForObjectUpdates(ref buildData, _testDirectory);
+            var result = SqlBuildFileHelper.GetFileDataForObjectUpdates(model, _testDirectory);
 
             // Assert
             Assert.IsNull(result);

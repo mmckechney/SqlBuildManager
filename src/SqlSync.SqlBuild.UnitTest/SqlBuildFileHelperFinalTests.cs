@@ -1,5 +1,4 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
@@ -46,17 +45,15 @@ namespace SqlSync.SqlBuild.UnitTest
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
             string zipFileName = Path.Combine(_testDir, "test.sbm");
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Add scripts with non-sequential build orders
-            SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projFileName, "script1.sql", 5.0,
-                "Script 1", true, true, "TestDb", false, "", false, true, "user", 30, "");
-            SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projFileName, "script2.sql", 10.0,
-                "Script 2", true, true, "TestDb", false, "", false, true, "user", 30, "");
-            SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projFileName, "script3.sql", 15.0,
-                "Script 3", true, true, "TestDb", false, "", false, true, "user", 30, "");
-#pragma warning restore CS0618
+            model = SqlBuildFileHelper.AddScriptFileToBuild(model, projFileName, "script1.sql", 5.0,
+                "Script 1", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
+            model = SqlBuildFileHelper.AddScriptFileToBuild(model, projFileName, "script2.sql", 10.0,
+                "Script 2", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
+            model = SqlBuildFileHelper.AddScriptFileToBuild(model, projFileName, "script3.sql", 15.0,
+                "Script 3", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             // Create dummy script files
             File.WriteAllText(Path.Combine(_testDir, "script1.sql"), "SELECT 1");
@@ -64,31 +61,29 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllText(Path.Combine(_testDir, "script3.sql"), "SELECT 3");
 
             // Act
-            bool result = SqlBuildFileHelper.RenumberBuildSequence(ref buildData, projFileName, zipFileName);
+            var result = SqlBuildFileHelper.RenumberBuildSequence(model, projFileName, zipFileName);
 
             // Assert
-            Assert.IsTrue(result);
-            var scriptRows = buildData.Script.OrderBy(r => r.BuildOrder).ToList();
-            Assert.AreEqual(1.0, scriptRows[0].BuildOrder);
-            Assert.AreEqual(2.0, scriptRows[1].BuildOrder);
-            Assert.AreEqual(3.0, scriptRows[2].BuildOrder);
+            Assert.IsNotNull(result);
+            var scripts = result.Script.OrderBy(r => r.BuildOrder).ToList();
+            Assert.AreEqual(1.0, scripts[0].BuildOrder);
+            Assert.AreEqual(2.0, scripts[1].BuildOrder);
+            Assert.AreEqual(3.0, scripts[2].BuildOrder);
         }
 
         [TestMethod]
-        public void RenumberBuildSequence_WithEmptyBuildData_ReturnsTrue()
+        public void RenumberBuildSequence_WithEmptyBuildData_ReturnsModel()
         {
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
             string zipFileName = Path.Combine(_testDir, "test.sbm");
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            bool result = SqlBuildFileHelper.RenumberBuildSequence(ref buildData, projFileName, zipFileName);
+            var result = SqlBuildFileHelper.RenumberBuildSequence(model, projFileName, zipFileName);
 
             // Assert
-            Assert.IsTrue(result);
+            Assert.IsNotNull(result);
         }
 
         [TestMethod]
@@ -97,20 +92,18 @@ namespace SqlSync.SqlBuild.UnitTest
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
             string zipFileName = Path.Combine(_testDir, "test.sbm");
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projFileName, "script1.sql", 100.0,
-                "Script 1", true, true, "TestDb", false, "", false, true, "user", 30, "");
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            model = SqlBuildFileHelper.AddScriptFileToBuild(model, projFileName, "script1.sql", 100.0,
+                "Script 1", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             File.WriteAllText(Path.Combine(_testDir, "script1.sql"), "SELECT 1");
 
             // Act
-            bool result = SqlBuildFileHelper.RenumberBuildSequence(ref buildData, projFileName, zipFileName);
+            var result = SqlBuildFileHelper.RenumberBuildSequence(model, projFileName, zipFileName);
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.AreEqual(1.0, buildData.Script[0].BuildOrder);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1.0, result.Script[0].BuildOrder);
         }
 
         #endregion
@@ -123,17 +116,15 @@ namespace SqlSync.SqlBuild.UnitTest
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
             string zipFileName = Path.Combine(_testDir, "test.sbm");
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Add scripts with various file types in random order
-            SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projFileName, "test.sql", 1.0,
-                "SQL", true, true, "TestDb", false, "", false, true, "user", 30, "");
-            SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projFileName, "test.PRC", 2.0,
-                "Proc", true, true, "TestDb", false, "", false, true, "user", 30, "");
-            SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projFileName, "test.TAB", 3.0,
-                "Table", true, true, "TestDb", false, "", false, true, "user", 30, "");
-#pragma warning restore CS0618
+            model = SqlBuildFileHelper.AddScriptFileToBuild(model, projFileName, "test.sql", 1.0,
+                "SQL", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
+            model = SqlBuildFileHelper.AddScriptFileToBuild(model, projFileName, "test.PRC", 2.0,
+                "Proc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
+            model = SqlBuildFileHelper.AddScriptFileToBuild(model, projFileName, "test.TAB", 3.0,
+                "Table", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             // Create dummy script files
             File.WriteAllText(Path.Combine(_testDir, "test.sql"), "SELECT 1");
@@ -141,29 +132,27 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllText(Path.Combine(_testDir, "test.TAB"), "CREATE TABLE dbo.Test (Id INT)");
 
             // Act
-            bool result = SqlBuildFileHelper.ResortBuildByFileType(ref buildData, projFileName, zipFileName);
+            var result = SqlBuildFileHelper.ResortBuildByFileType(model, projFileName, zipFileName);
 
             // Assert
-            Assert.IsTrue(result);
+            Assert.IsNotNull(result);
             // After sorting, scripts should be reordered based on file type
-            Assert.AreEqual(3, buildData.Script.Count);
+            Assert.AreEqual(3, result.Script.Count);
         }
 
         [TestMethod]
-        public void ResortBuildByFileType_WithEmptyBuildData_ReturnsTrue()
+        public void ResortBuildByFileType_WithEmptyBuildData_ReturnsModel()
         {
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
             string zipFileName = Path.Combine(_testDir, "test.sbm");
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            bool result = SqlBuildFileHelper.ResortBuildByFileType(ref buildData, projFileName, zipFileName);
+            var result = SqlBuildFileHelper.ResortBuildByFileType(model, projFileName, zipFileName);
 
             // Assert
-            Assert.IsTrue(result);
+            Assert.IsNotNull(result);
         }
 
         #endregion
@@ -171,32 +160,30 @@ namespace SqlSync.SqlBuild.UnitTest
         #region RemoveScriptFilesFromBuild Tests
 
         [TestMethod]
-        public void RemoveScriptFilesFromBuild_WithValidRows_RemovesFromDataSet()
+        public void RemoveScriptFilesFromBuild_WithValidRows_RemovesFromModel()
         {
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
             string zipFileName = Path.Combine(_testDir, "test.sbm");
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projFileName, "script1.sql", 1.0,
-                "Script 1", true, true, "TestDb", false, "", false, true, "user", 30, "");
-            SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projFileName, "script2.sql", 2.0,
-                "Script 2", true, true, "TestDb", false, "", false, true, "user", 30, "");
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            model = SqlBuildFileHelper.AddScriptFileToBuild(model, projFileName, "script1.sql", 1.0,
+                "Script 1", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
+            model = SqlBuildFileHelper.AddScriptFileToBuild(model, projFileName, "script2.sql", 2.0,
+                "Script 2", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             File.WriteAllText(Path.Combine(_testDir, "script1.sql"), "SELECT 1");
             File.WriteAllText(Path.Combine(_testDir, "script2.sql"), "SELECT 2");
 
-            var rowsToRemove = new SqlSyncBuildData.ScriptRow[] { buildData.Script[0] };
+            var scriptsToRemove = new[] { model.Script[0] };
 
             // Act
-            bool result = SqlBuildFileHelper.RemoveScriptFilesFromBuild(
-                ref buildData, projFileName, zipFileName, rowsToRemove, false);
+            var result = SqlBuildFileHelper.RemoveScriptFilesFromBuild(
+                model, projFileName, zipFileName, scriptsToRemove, false);
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.AreEqual(1, buildData.Script.Count);
-            Assert.AreEqual("script2.sql", buildData.Script[0].FileName);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Script.Count);
+            Assert.AreEqual("script2.sql", result.Script[0].FileName);
         }
 
         [TestMethod]
@@ -205,67 +192,62 @@ namespace SqlSync.SqlBuild.UnitTest
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
             string zipFileName = Path.Combine(_testDir, "test.sbm");
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projFileName, "script1.sql", 1.0,
-                "Script 1", true, true, "TestDb", false, "", false, true, "user", 30, "");
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            model = SqlBuildFileHelper.AddScriptFileToBuild(model, projFileName, "script1.sql", 1.0,
+                "Script 1", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             string scriptFile = Path.Combine(_testDir, "script1.sql");
             File.WriteAllText(scriptFile, "SELECT 1");
             Assert.IsTrue(File.Exists(scriptFile));
 
-            var rowsToRemove = new SqlSyncBuildData.ScriptRow[] { buildData.Script[0] };
+            var scriptsToRemove = new[] { model.Script[0] };
 
             // Act
-            bool result = SqlBuildFileHelper.RemoveScriptFilesFromBuild(
-                ref buildData, projFileName, zipFileName, rowsToRemove, deleteFiles: true);
+            var result = SqlBuildFileHelper.RemoveScriptFilesFromBuild(
+                model, projFileName, zipFileName, scriptsToRemove, deleteFiles: true);
 
             // Assert
-            Assert.IsTrue(result);
+            Assert.IsNotNull(result);
             Assert.IsFalse(File.Exists(scriptFile));
         }
 
         [TestMethod]
-        public void RemoveScriptFilesFromBuild_WithEmptyArray_ReturnsTrue()
+        public void RemoveScriptFilesFromBuild_WithEmptyArray_ReturnsModel()
         {
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
             string zipFileName = Path.Combine(_testDir, "test.sbm");
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            SqlBuildFileHelper.AddScriptFileToBuild(ref buildData, projFileName, "script1.sql", 1.0,
-                "Script 1", true, true, "TestDb", false, "", false, true, "user", 30, "");
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            model = SqlBuildFileHelper.AddScriptFileToBuild(model, projFileName, "script1.sql", 1.0,
+                "Script 1", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             File.WriteAllText(Path.Combine(_testDir, "script1.sql"), "SELECT 1");
 
-            var emptyRows = new SqlSyncBuildData.ScriptRow[0];
+            var emptyRows = Array.Empty<Script>();
 
             // Act
-            bool result = SqlBuildFileHelper.RemoveScriptFilesFromBuild(
-                ref buildData, projFileName, zipFileName, emptyRows, false);
+            var result = SqlBuildFileHelper.RemoveScriptFilesFromBuild(
+                model, projFileName, zipFileName, emptyRows, false);
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.AreEqual(1, buildData.Script.Count); // Original still there
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Script.Count); // Original still there
         }
 
         #endregion
 
-        #region AddScriptFileToBuild (Legacy DataSet version) Tests
+        #region AddScriptFileToBuild (Model version) Tests
 
         [TestMethod]
-        public void AddScriptFileToBuild_LegacyVersion_AddsScriptToDataSet()
+        public void AddScriptFileToBuild_Model_AddsScriptToModel()
         {
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            SqlBuildFileHelper.AddScriptFileToBuild(
-                ref buildData,
+            var result = SqlBuildFileHelper.AddScriptFileToBuild(
+                model,
                 projFileName,
                 "test.sql",
                 1.0,
@@ -279,12 +261,12 @@ namespace SqlSync.SqlBuild.UnitTest
                 allowMultipleRuns: true,
                 addedBy: "TestUser",
                 scriptTimeOut: 60,
+                scriptId: Guid.NewGuid(),
                 tag: "TestTag");
-#pragma warning restore CS0618
 
             // Assert
-            Assert.AreEqual(1, buildData.Script.Count);
-            var script = buildData.Script[0];
+            Assert.AreEqual(1, result.Script.Count);
+            var script = result.Script[0];
             Assert.AreEqual("test.sql", script.FileName);
             Assert.AreEqual(1.0, script.BuildOrder);
             Assert.AreEqual("Test Description", script.Description);
@@ -296,32 +278,30 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void AddScriptFileToBuild_LegacyVersionWithGuid_UsesProvidedGuid()
+        public void AddScriptFileToBuild_ModelWithGuid_UsesProvidedGuid()
         {
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
             var expectedGuid = Guid.NewGuid();
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            SqlBuildFileHelper.AddScriptFileToBuild(
-                ref buildData,
+            var result = SqlBuildFileHelper.AddScriptFileToBuild(
+                model,
                 projFileName,
                 "test.sql",
                 1.0,
                 "Test",
                 true, true, "TestDb", false, "", false, true, "user", 30,
                 expectedGuid, "");
-#pragma warning restore CS0618
 
             // Assert
-            Assert.AreEqual(expectedGuid.ToString(), buildData.Script[0].ScriptId);
+            Assert.AreEqual(expectedGuid.ToString(), result.Script[0].ScriptId);
         }
 
         #endregion
 
-        #region AddScriptFileToBuild (Model version) Tests
+        #region AddScriptFileToBuild (Model version with all properties) Tests
 
         [TestMethod]
         public void AddScriptFileToBuild_Model_CreatesNewScriptWithAllProperties()
@@ -408,7 +388,7 @@ namespace SqlSync.SqlBuild.UnitTest
             // Act - This is an internal method, but we can test via reflection or trust the public API
             // For now, we'll test indirectly through the public CalculateBuildPackageSHA1SignatureFromPath
             // which eventually calls this method
-            var hash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(_testDir, (SqlSyncBuildData)null);
+            var hash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(_testDir, (SqlSyncBuildDataModel)null);
 
             // Assert
             Assert.AreEqual("Error calculating hash", hash);
@@ -460,66 +440,6 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.IsNotNull(result);
             Assert.AreEqual(0, result.Length);
             Assert.IsNotNull(cleanedData);
-        }
-
-        [TestMethod]
-        public void CleanProjectFileForRemoteExecution_LegacyVersion_WithNonExistentFile_ReturnsEmptyArray()
-        {
-            // Arrange
-            string nonExistentFile = Path.Combine(_testDir, "nonexistent.sbm");
-
-            // Act
-#pragma warning disable CS0618
-            var result = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(
-                nonExistentFile, out SqlSyncBuildData cleanedData);
-#pragma warning restore CS0618
-
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(0, result.Length);
-            Assert.IsNotNull(cleanedData);
-        }
-
-        #endregion
-
-        #region ConvertLegacyProjectHistory Tests
-
-        [TestMethod]
-        public void ConvertLegacyProjectHistory_WithNoBuildHistory_DoesNothing()
-        {
-            // Arrange
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
-            string zipFileName = Path.Combine(_testDir, "test.sbm");
-
-            // Act - Should complete without error
-            SqlBuildFileHelper.ConvertLegacyProjectHistory(ref buildData, _testDir, zipFileName);
-
-            // Assert - No exception means success
-            Assert.IsNotNull(buildData);
-        }
-
-        [TestMethod]
-        public void ConvertLegacyProjectHistory_WithExistingHistoryFile_DoesNotOverwrite()
-        {
-            // Arrange
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
-
-            // Create an existing history file
-            string historyFile = Path.Combine(_testDir, XmlFileNames.HistoryFile);
-            File.WriteAllText(historyFile, "<BuildHistory/>");
-
-            string zipFileName = Path.Combine(_testDir, "test.sbm");
-
-            // Act
-            SqlBuildFileHelper.ConvertLegacyProjectHistory(ref buildData, _testDir, zipFileName);
-
-            // Assert - History file should not be modified
-            Assert.IsTrue(File.Exists(historyFile));
-            Assert.AreEqual("<BuildHistory/>", File.ReadAllText(historyFile));
         }
 
         #endregion
@@ -638,28 +558,6 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void PackageProjectFileIntoZip_LegacyVersion_CreatesZipFile()
-        {
-            // Arrange
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
-            string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
-            buildData.WriteXml(projFileName);
-
-            string zipFile = Path.Combine(_testDir, "legacy.sbm");
-
-            // Act
-#pragma warning disable CS0618
-            bool result = SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, _testDir, zipFile, false);
-#pragma warning restore CS0618
-
-            // Assert
-            Assert.IsTrue(result);
-            Assert.IsTrue(File.Exists(zipFile));
-        }
-
-        [TestMethod]
         public async Task PackageProjectFileIntoZipAsync_WithValidModel_CreatesZipFile()
         {
             // Arrange
@@ -692,26 +590,6 @@ namespace SqlSync.SqlBuild.UnitTest
 
             // Act
             SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFileName, zipFileName, false);
-
-            // Assert
-            Assert.IsTrue(File.Exists(projFileName));
-            Assert.IsTrue(File.Exists(zipFileName));
-        }
-
-        [TestMethod]
-        public void SaveSqlBuildProjectFile_Legacy_SavesXmlAndCreatesZip()
-        {
-            // Arrange
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
-            string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
-            string zipFileName = Path.Combine(_testDir, "legacy.sbm");
-
-            // Act
-#pragma warning disable CS0618
-            SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projFileName, zipFileName, false);
-#pragma warning restore CS0618
 
             // Assert
             Assert.IsTrue(File.Exists(projFileName));
@@ -903,9 +781,8 @@ namespace SqlSync.SqlBuild.UnitTest
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
             string zipFileName = Path.Combine(_testDir, "main.sbm");
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var importData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var importModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Add scripts to import data
             string importDir = Path.Combine(_testDir, "import");
@@ -913,21 +790,20 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllText(Path.Combine(importDir, "import1.sql"), "SELECT 1");
             File.WriteAllText(Path.Combine(importDir, "import2.sql"), "SELECT 2");
 
-            SqlBuildFileHelper.AddScriptFileToBuild(ref importData, Path.Combine(importDir, "import.xml"),
-                "import1.sql", 1.0, "Import 1", true, true, "TestDb", false, "", false, true, "user", 30, "");
-            SqlBuildFileHelper.AddScriptFileToBuild(ref importData, Path.Combine(importDir, "import.xml"),
-                "import2.sql", 2.0, "Import 2", true, true, "TestDb", false, "", false, true, "user", 30, "");
-#pragma warning restore CS0618
+            importModel = SqlBuildFileHelper.AddScriptFileToBuild(importModel, Path.Combine(importDir, "import.xml"),
+                "import1.sql", 1.0, "Import 1", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
+            importModel = SqlBuildFileHelper.AddScriptFileToBuild(importModel, Path.Combine(importDir, "import.xml"),
+                "import2.sql", 2.0, "Import 2", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             // Act
-            double result = SqlBuildFileHelper.ImportSqlScriptFile(
-                ref buildData, importData, importDir, 0,
-                _testDir, projFileName, zipFileName, false, out string[] addedFileNames);
+            var (result, updatedModel, addedFileNames) = SqlBuildFileHelper.ImportSqlScriptFile(
+                model, importModel, importDir, 0,
+                _testDir, projFileName, zipFileName, false);
 
             // Assert
             Assert.AreEqual(1.0, result); // Start build number
             Assert.AreEqual(2, addedFileNames.Length);
-            Assert.AreEqual(2, buildData.Script.Count);
+            Assert.AreEqual(2, updatedModel.Script.Count);
         }
 
         [TestMethod]
@@ -936,15 +812,13 @@ namespace SqlSync.SqlBuild.UnitTest
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
             string zipFileName = Path.Combine(_testDir, "main.sbm");
-#pragma warning disable CS0618
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var importData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var importModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            double result = SqlBuildFileHelper.ImportSqlScriptFile(
-                ref buildData, importData, _testDir, 0,
-                _testDir, projFileName, zipFileName, false, out string[] addedFileNames);
+            var (result, _, addedFileNames) = SqlBuildFileHelper.ImportSqlScriptFile(
+                model, importModel, _testDir, 0,
+                _testDir, projFileName, zipFileName, false);
 
             // Assert
             Assert.AreEqual((double)ImportFileStatus.NoRowsImported, result);
@@ -1088,27 +962,6 @@ CREATE PROCEDURE dbo.Proc1 AS SELECT 1");
             // Assert
             Assert.IsNotNull(loadedModel);
             Assert.AreEqual(1, loadedModel.SqlSyncBuildProject.Count);
-        }
-
-        [TestMethod]
-        public void LoadSqlBuildProjectFile_Legacy_WithValidFile_LoadsCorrectly()
-        {
-            // Arrange
-#pragma warning disable CS0618
-            var originalData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-#pragma warning restore CS0618
-            string projFileName = Path.Combine(_testDir, "legacy.xml");
-            originalData.WriteXml(projFileName);
-
-            // Act
-#pragma warning disable CS0618
-            bool result = SqlBuildFileHelper.LoadSqlBuildProjectFile(
-                out SqlSyncBuildData loadedData, projFileName, false);
-#pragma warning restore CS0618
-
-            // Assert
-            Assert.IsTrue(result);
-            Assert.IsNotNull(loadedData);
         }
 
         #endregion

@@ -130,19 +130,6 @@ namespace SqlSync.SqlBuild
             }
         }
 
-        [Obsolete("Use LoadSqlBuildProjectFile(out SqlSyncBuildDataModel, ...) for POCO")] 
-        public static bool LoadSqlBuildProjectFile(out SqlSyncBuildData buildData, string projFileName, bool validateSchema)
-        {
-            #pragma warning disable CS0618
-            if (LoadSqlBuildProjectFile(out SqlSyncBuildDataModel model, projFileName, validateSchema))
-            {
-                buildData = model.ToDataSet();
-                return true;
-            }
-            buildData = CreateShellSqlSyncBuildDataObject();
-            return false;
-            #pragma warning restore CS0618
-        }
 
         public static bool LoadSqlBuildProjectFile(out SqlSyncBuildDataModel model, string projFileName, bool validateSchema)
         {
@@ -214,55 +201,6 @@ namespace SqlSync.SqlBuild
             return ovr.ToString();
         }
 
-        [Obsolete("Use PackageProjectFileIntoZip(SqlSyncBuildDataModel, ...) for POCO")] 
-        public static bool PackageProjectFileIntoZip(SqlSyncBuildData projData, string projFilePath, string zipFileName)
-        {
-            return PackageProjectFileIntoZip(projData, projFilePath, zipFileName, true);
-        }
-        [Obsolete("Use PackageProjectFileIntoZip(SqlSyncBuildDataModel, ...) for POCO")] 
-        public static bool PackageProjectFileIntoZip(SqlSyncBuildData projData, string projFilePath, string zipFileName, bool includeHistoryAndLogs)
-        {
-            if (String.IsNullOrEmpty(zipFileName))
-                return true;
-
-            ArrayList alFiles = new ArrayList();
-            //Write the latest to the project dataset file
-
-            if (projData != null)
-                projData.WriteXml(Path.Combine(projFilePath, XmlFileNames.MainProjectFile));
-            else
-                return false;
-
-            //Get the file list from the dataset
-            for (int i = 0; i < projData.Script.Rows.Count; i++)
-                alFiles.Add(((SqlSyncBuildData.ScriptRow)projData.Script.Rows[i]).FileName);
-
-            //Add the project file 
-            alFiles.Add(XmlFileNames.MainProjectFile);
-
-
-            if (includeHistoryAndLogs)
-            {
-                //Add the history file
-                if (File.Exists(Path.Combine(projFilePath, XmlFileNames.HistoryFile)))
-                {
-                    alFiles.Add(XmlFileNames.HistoryFile);
-                }
-
-                //Add any log files
-                string[] logFiles = Directory.GetFiles(projFilePath, "*.log");
-                for (int j = 0; j < logFiles.Length; j++)
-                    alFiles.Add(Path.GetFileName(logFiles[j]));
-            }
-
-            //Put all files into a string array
-            string[] fileList = new string[alFiles.Count];
-            alFiles.CopyTo(fileList);
-
-            //Create the Zip file
-            bool val = ZipHelper.CreateZipPackage(fileList, projFilePath, zipFileName);
-            return val;
-        }
 
         public static bool PackageProjectFileIntoZip(SqlSyncBuildDataModel model, string projFilePath, string zipFileName, bool includeHistoryAndLogs)
         {
@@ -388,82 +326,7 @@ namespace SqlSync.SqlBuild
                 }
             }
         }
-        /// <summary>
-        /// Minimize the size of the package by cleaing out the logs and the code review items..
-        /// </summary>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
-        [Obsolete("Use CleanProjectFileForRemoteExecution(string, out SqlSyncBuildDataModel) for POCO")] 
-        public static byte[] CleanProjectFileForRemoteExecution(string fileName, out SqlSyncBuildData cleanedBuildData)
-        {
-            cleanedBuildData = new SqlSyncBuildData();
-            if (!File.Exists(fileName))
-                return new byte[0];
 
-            string tmpDir = string.Empty;
-            try
-            {
-                tmpDir = Path.Combine(Path.GetDirectoryName(fileName), Guid.NewGuid().ToString());
-                Directory.CreateDirectory(tmpDir);
-
-                string tmpZipShortName = "~" + Path.GetFileName(fileName);
-                string tmpProjectFileName = Path.Combine(tmpDir, XmlFileNames.MainProjectFile);
-
-                string tmpZipFullName = Path.Combine(tmpDir, tmpZipShortName);
-                File.Copy(fileName, tmpZipFullName);
-
-                string result;
-                if (ExtractSqlBuildZipFile(tmpZipFullName, ref tmpDir, ref tmpDir, ref tmpProjectFileName, false, false, out result))
-                {
-                    LoadSqlBuildProjectFile(out cleanedBuildData, tmpProjectFileName, false);
-                    cleanedBuildData.CodeReview.Rows.Clear();
-                    cleanedBuildData.ScriptRun.Rows.Clear();
-                    cleanedBuildData.Build.Rows.Clear();
-                    //buildData.Builds.Rows.Clear();
-                    cleanedBuildData.AcceptChanges();
-                    cleanedBuildData.WriteXml(tmpProjectFileName);
-
-                    if (PackageProjectFileIntoZip(cleanedBuildData, tmpDir, tmpZipFullName, false))
-                    {
-                        return File.ReadAllBytes(tmpZipFullName);
-                    }
-                }
-
-                //can't clean for some reason, so just get the raw file...
-                return File.ReadAllBytes(fileName);
-            }
-            catch
-            {
-                return File.ReadAllBytes(fileName);
-            }
-            finally
-            {
-                if (Directory.Exists(tmpDir))
-                {
-                    Directory.Delete(tmpDir, true);
-                }
-            }
-        }
-        [Obsolete("Use CreateShellSqlSyncBuildDataModel for POCO")] 
-        public static SqlSyncBuildData CreateShellSqlSyncBuildDataObject()
-        {
-            SqlSyncBuildData newData = new SqlSyncBuildData();
-            //Create new project row if needed 
-            if (newData.SqlSyncBuildProject.Rows.Count == 0)
-            {
-                newData.SqlSyncBuildProject.AddSqlSyncBuildProjectRow("", false);
-            }
-            //Create the new script row if needed
-            if (newData.Scripts.Rows.Count == 0)
-            {
-                newData.Scripts.AddScriptsRow((SqlSyncBuildData.SqlSyncBuildProjectRow)newData.SqlSyncBuildProject.Rows[0]);
-            }
-            if (newData.Builds.Rows.Count == 0)
-            {
-                newData.Builds.AddBuildsRow((SqlSyncBuildData.SqlSyncBuildProjectRow)newData.SqlSyncBuildProject.Rows[0]);
-            }
-            return newData;
-        }
 
         public static SqlSyncBuildDataModel CreateShellSqlSyncBuildDataModel()
         {
@@ -477,12 +340,6 @@ namespace SqlSync.SqlBuild
         }
 
 
-        [Obsolete("Use SaveSqlBuildProjectFile(SqlSyncBuildDataModel, ...) for POCO")] 
-        public static void SaveSqlBuildProjectFile(ref SqlSyncBuildData buildData, string projFileName, string buildZipFileName, bool includeHistoryAndLogs = true)
-        {
-            buildData.WriteXml(projFileName);
-            PackageProjectFileIntoZip(buildData, Path.GetDirectoryName(projFileName), buildZipFileName, includeHistoryAndLogs);
-        }
 
         public static void SaveSqlBuildProjectFile(SqlSyncBuildDataModel model, string projFileName, string buildZipFileName, bool includeHistoryAndLogs = true)
         {
@@ -796,95 +653,8 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region .: Add / Remove scripts from build :.
-        [Obsolete("Use RemoveScriptFilesFromBuild(SqlSyncBuildDataModel, ...) for POCO")]
-        public static bool RemoveScriptFilesFromBuild(ref SqlSyncBuildData buildData, string projFileName, string buildZipFileName, SqlSyncBuildData.ScriptRow[] rows, bool deleteFiles)
-        {
-            string fileName;
-            buildData.ScriptRun.AcceptChanges();
-            for (int i = 0; i < rows.Length; i++)
-            {
-                try
-                {
-                    fileName = Path.Combine(Path.GetDirectoryName(projFileName), rows[i].FileName);
-                    buildData.Script.RemoveScriptRow(rows[i]);
-                    if (deleteFiles)
-                        File.Delete(fileName);
 
-                }
-                catch (IOException ioExe)
-                {
-                    log.LogError(ioExe, $"Unable to delete file {rows[i].FileName}");
-                    string message = String.Format("Unable to delete file {0}. Error message: {1}", rows[i].FileName, ioExe.Message);
-                }
-                catch (IndexOutOfRangeException iExe)
-                {
-                    log.LogError(iExe, $"Unable to delete file at index {i.ToString()}");
-                    string message = String.Format("Unable to delete file at index {0}. Error message: {1}", i.ToString(), iExe.Message);
-                    return false;
-                }
-                catch (Exception e)
-                {
-                    log.LogError(e, $"Unable to remove file file {rows[i].FileName}");
-                    string message = String.Format("Unable to delete file {0}. Error message: {1}", rows[i].FileName, e.Message);
-                    return false;
-                }
-            }
 
-            buildData.Script.AcceptChanges();
-            var model = buildData.ToModel();
-            SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFileName, buildZipFileName);
-            buildData = model.ToDataSet();
-            return true;
-
-        }
-        [Obsolete("Use AddScriptFileToBuild(SqlSyncBuildDataModel, ...) for POCO")] 
-        public static void AddScriptFileToBuild(ref SqlSyncBuildData buildData, string projFileName, string fileName, double buildOrder, string description, bool rollBackScript, bool rollBackBuild, string databaseName, bool stripTransactions, string buildZipFileName, bool saveToZip, bool allowMultipleRuns, string addedBy, int scriptTimeOut, System.Guid scriptId, string tag)
-        {
-            //Create new project row if needed 
-            if (buildData.SqlSyncBuildProject.Rows.Count == 0)
-                buildData.SqlSyncBuildProject.AddSqlSyncBuildProjectRow("", false);
-            //Create the new script row if needed
-            if (buildData.Scripts.Rows.Count == 0)
-                buildData.Scripts.AddScriptsRow((SqlSyncBuildData.SqlSyncBuildProjectRow)buildData.SqlSyncBuildProject.Rows[0]);
-
-            SqlSyncBuildData.ScriptsRow row = (SqlSyncBuildData.ScriptsRow)buildData.Scripts.Rows[0];
-
-            DateTime now = DateTime.Now;
-            //Add the new script file
-            buildData.Script.AddScriptRow(
-                fileName,
-                buildOrder,
-                description,
-                rollBackScript,
-                rollBackBuild,
-                now,
-                scriptId.ToString(),
-                databaseName,
-                stripTransactions,
-                allowMultipleRuns,
-                addedBy,
-                scriptTimeOut,
-                DateTime.MinValue,
-                "",
-                row,
-                tag);
-            buildData.Script.AcceptChanges();
-
-            //Save the changes
-            if (saveToZip)
-            {
-                var model = buildData.ToModel();
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFileName, buildZipFileName);
-                buildData = model.ToDataSet();
-            }
-        }
-        [Obsolete("Use AddScriptFileToBuild(SqlSyncBuildDataModel, ...) for POCO")]
-        public static void AddScriptFileToBuild(ref SqlSyncBuildData buildData, string projFileName, string fileName, double buildOrder, string description, bool rollBackScript, bool rollBackBuild, string databaseName, bool stripTransactions, string buildZipFileName, bool saveToZip, bool allowMultipleRuns, string addedBy, int scriptTimeOut, string tag)
-        {
-    #pragma warning disable CS0618
-            AddScriptFileToBuild(ref buildData, projFileName, fileName, buildOrder, description, rollBackScript, rollBackBuild, databaseName, stripTransactions, buildZipFileName, saveToZip, allowMultipleRuns, addedBy, scriptTimeOut, System.Guid.NewGuid(), tag);
-    #pragma warning restore CS0618
-        }
 
         public static SqlSyncBuildDataModel AddScriptFileToBuild(SqlSyncBuildDataModel model, string projFileName, string fileName, double buildOrder, string description, bool rollBackScript, bool rollBackBuild, string databaseName, bool stripTransactions, string buildZipFileName, bool saveToZip, bool allowMultipleRuns, string addedBy, int scriptTimeOut, Guid scriptId, string tag)
         {
@@ -943,68 +713,6 @@ namespace SqlSync.SqlBuild
                 sr.Close();
             }
             return registry;
-        }
-        [Obsolete("Use AddDefaultScriptToBuild(SqlSyncBuildDataModel, ...) for POCO")]
-        public static DefaultScriptCopyStatus AddDefaultScriptToBuild(ref SqlSyncBuildData buildData, DefaultScripts.DefaultScript defaultScript, DefaultScriptCopyAction copyAction, string projFileName, string buildZipFileName)
-        {
-            DefaultScriptCopyStatus status = DefaultScriptCopyStatus.Success;
-            string executablePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string defaultScriptPath = Path.GetDirectoryName(SqlBuildFileHelper.DefaultScriptXmlFile);
-
-            string fullScriptPath = Path.Combine(defaultScriptPath, defaultScript.ScriptName);
-            if (File.Exists(fullScriptPath) == false)
-                return DefaultScriptCopyStatus.DefaultNotFound;
-
-            string newLocalFile = Path.Combine(Path.GetDirectoryName(projFileName), defaultScript.ScriptName);
-
-            if (File.Exists(newLocalFile))
-            {
-                bool isReadOnly = ((new FileInfo(newLocalFile).Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly);
-                if ((DefaultScriptCopyAction.OverwriteExisting == copyAction) && !isReadOnly)
-                {
-                    File.Copy(fullScriptPath, newLocalFile, true);
-                }
-                else if ((File.ReadAllText(newLocalFile) != File.ReadAllText(fullScriptPath)) &&
-                                (copyAction != DefaultScriptCopyAction.LeaveExisting))
-                {
-                    if (isReadOnly)
-                        status = DefaultScriptCopyStatus.PreexistingDifferentReadOnly;
-                    else
-                        return DefaultScriptCopyStatus.PreexistingDifferent;
-                }
-                else if (isReadOnly)
-                {
-                    status = DefaultScriptCopyStatus.PreexistingReadOnly;
-                }
-            }
-            else
-            {
-                File.Copy(fullScriptPath, newLocalFile, true);
-            }
-
-            var model = buildData.ToModel();
-            model = AddScriptFileToBuild(
-                model,
-                projFileName,
-                defaultScript.ScriptName,
-                defaultScript.BuildOrder,
-                defaultScript.Description,
-                defaultScript.RollBackScript,
-                defaultScript.RollBackBuild,
-                defaultScript.DatabaseName,
-                defaultScript.StripTransactions,
-                buildZipFileName,
-                saveToZip: false,
-                allowMultipleRuns: defaultScript.AllowMultipleRuns,
-                addedBy: System.Environment.UserName,
-                scriptTimeOut: defaultScript.ScriptTimeout,
-                scriptId: Guid.Empty,
-                tag: defaultScript.ScriptTag);
-
-            SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFileName, buildZipFileName);
-            buildData = model.ToDataSet();
-
-            return status;
         }
 
         /// <summary>
@@ -1104,28 +812,7 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region .: Object/ Populate Script Update settings :.
-        [Obsolete("Use GetFileDataForCodeTableUpdates(SqlSyncBuildDataModel, ...) for POCO")]
-        public static SqlBuild.CodeTable.ScriptUpdates[] GetFileDataForCodeTableUpdates(ref SqlSyncBuildData buildData, string projFileName)
-        {
-            if (buildData == null)
-                return null;
 
-            ArrayList scriptFiles = new ArrayList();
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
-            {
-                //Find the ".pop" populate scripts
-                if (Path.GetExtension(row.FileName).ToLower() != SqlSync.Constants.DbObjectType.PopulateScript.ToLower())
-                    continue;
-
-                SqlBuild.CodeTable.ScriptUpdates obj = GetFileDataForCodeTableUpdates(row.FileName, projFileName);
-                if (obj != null)
-                    scriptFiles.Add(obj);
-            }
-
-            SqlBuild.CodeTable.ScriptUpdates[] updates = new SqlSync.SqlBuild.CodeTable.ScriptUpdates[scriptFiles.Count];
-            scriptFiles.CopyTo(updates);
-            return updates;
-        }
         public static SqlBuild.CodeTable.ScriptUpdates GetFileDataForCodeTableUpdates(string baseFileName, string projFileName)
         {
             string line = string.Empty;
@@ -1196,18 +883,6 @@ namespace SqlSync.SqlBuild
             return scriptFiles.ToArray();
         }
 
-        [Obsolete("Use GetFileDataForObjectUpdates(SqlSyncBuildDataModel, ...) for POCO")]
-        public static SqlBuild.Objects.ObjectUpdates[] GetFileDataForObjectUpdates(ref SqlSyncBuildData buildData, string projFileName)
-        {
-            List<SqlBuild.Objects.ObjectUpdates> canUpdate;
-            List<string> canNotUpdate;
-
-            GetFileDataForObjectUpdates(ref buildData, projFileName, out canUpdate, out canNotUpdate);
-            if (canUpdate != null)
-                return canUpdate.ToArray();
-            else
-                return null;
-        }
 
         public static SqlBuild.Objects.ObjectUpdates[]? GetFileDataForObjectUpdates(SqlSyncBuildDataModel model, string projFileName)
         {
@@ -1254,40 +929,7 @@ namespace SqlSync.SqlBuild
                 }
             }
         }
-        [Obsolete("Use GetFileDataForObjectUpdates(SqlSyncBuildDataModel, ...) for POCO")]
-        public static void GetFileDataForObjectUpdates(ref SqlSyncBuildData buildData, string projFileName, out List<SqlBuild.Objects.ObjectUpdates> canUpdate, out List<string> canNotUpdate)
-        {
-            if (buildData == null)
-            {
-                canUpdate = null;
-                canNotUpdate = null;
-                return;
-            }
 
-            canUpdate = new List<Objects.ObjectUpdates>();
-            canNotUpdate = new List<string>();
-
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
-            {
-                //Find the database objects that can be updated...SP, View, UDF, Trigger
-                if (Path.GetExtension(row.FileName).ToUpper() != SqlSync.Constants.DbObjectType.StoredProcedure &&
-                    Path.GetExtension(row.FileName).ToUpper() != SqlSync.Constants.DbObjectType.View &&
-                    Path.GetExtension(row.FileName).ToUpper() != SqlSync.Constants.DbObjectType.UserDefinedFunction &&
-                    Path.GetExtension(row.FileName).ToUpper() != SqlSync.Constants.DbObjectType.Trigger)
-                {
-                    canNotUpdate.Add(row.FileName);
-                }
-                else
-                {
-                    SqlBuild.Objects.ObjectUpdates obj = GetFileDataForObjectUpdates(row.FileName, projFileName);
-                    if (obj != null)
-                    {
-                        canUpdate.Add(obj);
-                    }
-                }
-            }
-
-        }
         public static SqlBuild.Objects.ObjectUpdates GetFileDataForObjectUpdates(string baseFilename, string projFileName)
         {
             string line = string.Empty;
@@ -1407,8 +1049,7 @@ namespace SqlSync.SqlBuild
 
             if (model != null)
             {
-                var buildData = model.ToDataSet();
-                string hash = CalculateBuildPackageSHA1SignatureFromPath(projectFilePath, buildData);
+                string hash = CalculateBuildPackageSHA1SignatureFromPath(projectFilePath, model);
                 if (extension == ".sbm")
                     CleanUpAndDeleteWorkingDirectory(projectFilePath);
 
@@ -1427,44 +1068,28 @@ namespace SqlSync.SqlBuild
         /// <summary>
         /// Calculated the SHA1 hash of the script package. Takes the build order into account 
         /// </summary>
-        /// <param name="projectFileExtractionPath">Path where all of the script files are to be founw</param>
-        /// <param name="buildData">The SqlSyncBuildData build config data the contains the script names and build order</param>
-        /// <returns></returns>
-        [Obsolete("Use CalculateBuildPackageSHA1SignatureFromPath(string, SqlSyncBuildDataModel) for POCO")]
-        public static string CalculateBuildPackageSHA1SignatureFromPath(string projectFileExtractionPath, SqlSyncBuildData buildData)
+
+        public static string CalculateBuildPackageSHA1SignatureFromPath(string projectFileExtractionPath, SqlSyncBuildDataModel model)
         {
-
-            if (buildData != null && !string.IsNullOrEmpty((projectFileExtractionPath)))
+            if (model != null && !string.IsNullOrEmpty(projectFileExtractionPath))
             {
-
-                IEnumerable<SqlSyncBuildData.ScriptRow> row = from x in buildData.Script.AsEnumerable()
-                                                              orderby x.BuildOrder ascending
-                                                              select x;
-
-
+                var scripts = model.Script.OrderBy(s => s.BuildOrder);
 
                 StringBuilder sb = new StringBuilder();
                 string fileHash, textHash;
-                foreach (SqlSyncBuildData.ScriptRow r in row)
+                foreach (var script in scripts)
                 {
-                    GetSHA1Hash(Path.Combine(projectFileExtractionPath, r.FileName), out fileHash, out textHash, r.StripTransactionText);
+                    GetSHA1Hash(Path.Combine(projectFileExtractionPath, script.FileName), out fileHash, out textHash, script.StripTransactionText ?? false);
                     sb.AppendLine(textHash);
                 }
 
                 string strHashData = GetSHA1Hash(sb.ToString());
                 return strHashData;
-
             }
             else
             {
                 return "Error calculating hash";
             }
-
-        }
-
-        public static string CalculateBuildPackageSHA1SignatureFromPath(string projectFileExtractionPath, SqlSyncBuildDataModel model)
-        {
-            return CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, model.ToDataSet());
         }
 
         /// <summary>
@@ -1583,94 +1208,7 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region .: Renumbering/ Resorting :.
-        [Obsolete("Use RenumberBuildSequence(SqlSyncBuildDataModel, ...) for POCO")]
-        public static bool RenumberBuildSequence(ref SqlSyncBuildData buildData, string projectFileName, string buildZipFileName)
-        {
-            return RenumberBuildSequence(ref buildData, projectFileName, buildZipFileName, (int)ResequenceIgnore.StartNumber);
-        }
-        [Obsolete("Use RenumberBuildSequence(SqlSyncBuildDataModel, ...) for POCO")]
-        internal static bool RenumberBuildSequence(ref SqlSyncBuildData buildData, string projectFileName, string buildZipFileName, int renumberIgnoreStart)
-        {
-            try
-            {
-                buildData.Script.AcceptChanges();
-                DataView view = buildData.Script.DefaultView;
-                view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
-                view.RowFilter = buildData.Script.BuildOrderColumn.ColumnName + " < " + renumberIgnoreStart.ToString();
-                view.RowStateFilter = DataViewRowState.OriginalRows;
-                for (int i = 0; i < view.Count; i++)
-                {
-                    ((SqlSyncBuildData.ScriptRow)view[i].Row).BuildOrder = i + 1;
-                }
-                view.Table.AcceptChanges();
-                var model = buildData.ToModel();
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projectFileName, buildZipFileName);
-                buildData = model.ToDataSet();
-                return true;
-            }
-            catch (Exception e)
-            {
-                string error = e.ToString();
-                return false;
-            }
 
-        }
-        [Obsolete("Use ResortBuildByFileType(SqlSyncBuildDataModel, ...) for POCO")]
-        public static bool ResortBuildByFileType(ref SqlSyncBuildData buildData, string projectFileName, string buildZipFileName)
-        {
-
-            // first move out the "reserve" items (renumber starting at 20000)
-            buildData.Script.AcceptChanges();
-            int reservedIndex = 20000;
-            DataView reserved = buildData.Script.DefaultView;
-            reserved.RowFilter = buildData.Script.BuildOrderColumn.ColumnName + " >= " + ((int)ResequenceIgnore.StartNumber).ToString();
-            reserved.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
-            reserved.RowStateFilter = DataViewRowState.OriginalRows;
-            for (int i = 0; i < reserved.Count; i++)
-                ((SqlSyncBuildData.ScriptRow)reserved[i].Row).BuildOrder = reservedIndex++;
-            reserved.Table.AcceptChanges();
-            buildData.AcceptChanges();
-
-            //renumber the standard items
-            string generalFilter = buildData.Script.FileNameColumn.ColumnName + " LIKE '%{0}' AND " + buildData.Script.BuildOrderColumn.ColumnName + "< 20000";
-            string notLikeFilter = " " + buildData.Script.FileNameColumn.ColumnName + " NOT LIKE '%{0}' AND";
-            System.Text.StringBuilder sbNotLike = new System.Text.StringBuilder();
-            for (int i = 0; i < ResortBuildType.SortOrder.Length; i++)
-            {
-                string extension = "." + ResortBuildType.SortOrder[i];
-                sbNotLike.Append(string.Format(notLikeFilter, extension));
-
-                DataView general = buildData.Script.DefaultView;
-                general.RowFilter = string.Format(generalFilter, extension);
-                general.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
-                general.RowStateFilter = DataViewRowState.OriginalRows;
-
-                for (int j = 0; j < general.Count; j++)
-                    ((SqlSyncBuildData.ScriptRow)general[j].Row).BuildOrder = (1000 * (i + 1)) + j;
-
-                general.Table.AcceptChanges();
-            }
-
-
-            //Take any of the remaining items
-            sbNotLike.Length = sbNotLike.Length - 3;
-            int leftOverStart = 19000;
-            DataView leftOver = buildData.Script.DefaultView;
-            leftOver.RowFilter = sbNotLike.ToString();
-            leftOver.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
-            leftOver.RowStateFilter = DataViewRowState.OriginalRows;
-            for (int i = 0; i < leftOver.Count; i++)
-                ((SqlSyncBuildData.ScriptRow)leftOver[i].Row).BuildOrder = leftOverStart++;
-
-            buildData.Script.AcceptChanges();
-            var model = buildData.ToModel();
-            SaveSqlBuildProjectFile(model, projectFileName, buildZipFileName);
-            buildData = model.ToDataSet();
-
-            RenumberBuildSequence(ref buildData, projectFileName, buildZipFileName, 19999);
-            RenumberBuildSequence(ref buildData, projectFileName, buildZipFileName);
-            return true;
-        }
 
         /// <summary>
         /// Renumber the build sequence using POCO model
@@ -1766,49 +1304,7 @@ namespace SqlSync.SqlBuild
         }
 
         #region .: Updating from Legacy code :.
-        [Obsolete("Legacy project history conversion - use POCO-based methods")]
-        public static void ConvertLegacyProjectHistory(ref SqlSyncBuildData buildData, string projFilePath, string zipFileName)
-        {
-            if (buildData.Builds.Count == 0 || buildData.Build.Count == 0)
-                return;
 
-            string buildHistoryXmlFileName = Path.Combine(projFilePath, XmlFileNames.HistoryFile);
-            if (File.Exists(buildHistoryXmlFileName))
-                return;
-
-            //Save project file as the history file
-            buildData.WriteXml(buildHistoryXmlFileName);
-
-            //Load up as new data object
-            SqlSyncBuildData buildHistData = new SqlSyncBuildData();
-            buildHistData.ReadXml(buildHistoryXmlFileName);
-
-            //Remove the committed scripts element
-            for (int i = 0; i < buildHistData.CommittedScript.Count; i++)
-            {
-                buildHistData.CommittedScript[i].Delete();
-                buildHistData.AcceptChanges();
-            }
-
-            //remove the build data element
-            for (int i = 0; i < buildHistData.Scripts.Count; i++)
-            {
-                buildHistData.Scripts[i].Delete();
-                buildHistData.AcceptChanges();
-            }
-            buildHistData.WriteXml(buildHistoryXmlFileName);
-
-            for (int i = 0; i < buildData.Builds.Count; i++)
-            {
-                buildData.Builds[i].Delete();
-                buildData.AcceptChanges();
-            }
-
-            var model = buildData.ToModel();
-            PackageProjectFileIntoZip(model, projFilePath, zipFileName, includeHistoryAndLogs: true);
-
-
-        }
         public static bool UpdateObsoleteXmlNamespace(string fileName)
         {
             log.LogDebug($"Updating XmlNamespace from legacy file '{fileName}'");
@@ -1838,183 +1334,8 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region .: Copying scripts out to plain files :.
-        [Obsolete("Use CopyIndividualScriptsToFolder(SqlSyncBuildDataModel, ...) for POCO")]
-        public static bool CopyIndividualScriptsToFolder(ref SqlSyncBuildData buildData, string destinationFolder, string projectFilePath, bool includeUSE, bool includeSequence)
-        {
-            if (buildData.Script == null || buildData.Script.Count == 0)
-                return false;
-
-            StringBuilder sb = new StringBuilder();
-            string[] batch;
-            string fileName = string.Empty;
-
-            try
-            {
-                DataView view = buildData.Script.DefaultView;
-                view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
-                for (int i = 0; i < view.Count; i++)
-                {
-                    SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)view[i].Row;
-                    if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
-                        continue;
-
-                    if (includeUSE)
-                        sb.Append("USE " + row.Database + "\r\nGO\r\n");
-
-                    batch = scriptBatcher.ReadBatchFromScriptFile(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true);
-                    for (int j = 0; j < batch.Length; j++)
-                        sb.Append(batch[j] + "\r\n");
-
-                    if (includeSequence)
-                        fileName = Path.Combine(destinationFolder, (i + 1).ToString().PadLeft(3, '0') + " " + row.FileName);
-                    else
-                        fileName = Path.Combine(destinationFolder, row.FileName);
 
 
-                    using (StreamWriter sw = File.CreateText(fileName))
-                    {
-                        sw.WriteLine(sb.ToString());
-                        sw.Flush();
-                        sw.Close();
-                    }
-                    sb.Length = 0;
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                log.LogError(e, $"Unable to export script {fileName} to destination folder {destinationFolder}");
-                return false;
-            }
-        }
-        [Obsolete("Use CopyScriptsToSingleFile(SqlSyncBuildDataModel, ...) for POCO")]
-        public static bool CopyScriptsToSingleFile(ref SqlSyncBuildData buildData, string destinationFile, string projectFilePath, string buildFileName, bool includeUSE)
-        {
-            if (buildData.Script == null || buildData.Script.Count == 0)
-                return false;
-
-            StringBuilder sb = new StringBuilder();
-            string[] batch;
-
-            try
-            {
-                sb.Append("-- Scripts Consolidated from: " + Path.GetFileName(buildFileName) + "\r\n");
-                DataView view = buildData.Script.DefaultView;
-                view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
-                for (int i = 0; i < view.Count; i++)
-                {
-                    SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)view[i].Row;
-                    if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
-                        continue;
-
-                    sb.Append("\r\n-- Source File: " + row.FileName + "\r\n");
-                    if (includeUSE)
-                        sb.Append("USE " + row.Database + "\r\nGO\r\n");
-                    batch = scriptBatcher.ReadBatchFromScriptFile(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true);
-                    for (int j = 0; j < batch.Length; j++)
-                        sb.Append(batch[j] + "\r\n");
-                }
-
-
-                using (StreamWriter sw = File.CreateText(destinationFile))
-                {
-                    sw.WriteLine(sb.ToString());
-                    sw.Flush();
-                    sw.Close();
-                }
-                sb.Length = 0;
-                return true;
-            }
-            catch (Exception e)
-            {
-                string debug = e.ToString();
-                return false;
-            }
-        }
-
-        [Obsolete("Use CopyIndividualScriptsToFolderAsync(SqlSyncBuildDataModel, ...) for POCO")]
-        public static async Task<(bool success, SqlSyncBuildData buildData)> CopyIndividualScriptsToFolderAsync(SqlSyncBuildData buildData, string destinationFolder, string projectFilePath, bool includeUSE, bool includeSequence, CancellationToken cancellationToken = default)
-        {
-            if (buildData.Script == null || buildData.Script.Count == 0)
-                return (false, buildData);
-
-            StringBuilder sb = new StringBuilder();
-            string[] batch;
-            string fileName = string.Empty;
-
-            try
-            {
-                DataView view = buildData.Script.DefaultView;
-                view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
-                for (int i = 0; i < view.Count; i++)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)view[i].Row;
-                    if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
-                        continue;
-
-                    if (includeUSE)
-                        sb.Append("USE " + row.Database + "\r\nGO\r\n");
-
-                    batch = await scriptBatcher.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true, cancellationToken).ConfigureAwait(false);
-                    for (int j = 0; j < batch.Length; j++)
-                        sb.Append(batch[j] + "\r\n");
-
-                    if (includeSequence)
-                        fileName = Path.Combine(destinationFolder, (i + 1).ToString().PadLeft(3, '0') + " " + row.FileName);
-                    else
-                        fileName = Path.Combine(destinationFolder, row.FileName);
-
-                    await File.WriteAllTextAsync(fileName, sb.ToString(), cancellationToken).ConfigureAwait(false);
-                    sb.Length = 0;
-                }
-                return (true, buildData);
-            }
-            catch (Exception e)
-            {
-                log.LogError(e, $"Unable to export script {fileName} to destination folder {destinationFolder}");
-                return (false, buildData);
-            }
-        }
-
-        [Obsolete("Use CopyScriptsToSingleFileAsync(SqlSyncBuildDataModel, ...) for POCO")]
-        public static async Task<(bool success, SqlSyncBuildData buildData)> CopyScriptsToSingleFileAsync(SqlSyncBuildData buildData, string destinationFile, string projectFilePath, string buildFileName, bool includeUSE, CancellationToken cancellationToken = default)
-        {
-            if (buildData.Script == null || buildData.Script.Count == 0)
-                return (false, buildData);
-
-            StringBuilder sb = new StringBuilder();
-            string[] batch;
-
-            try
-            {
-                sb.Append("-- Scripts Consolidated from: " + Path.GetFileName(buildFileName) + "\r\n");
-                DataView view = buildData.Script.DefaultView;
-                view.Sort = buildData.Script.BuildOrderColumn.ColumnName + " ASC";
-                for (int i = 0; i < view.Count; i++)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)view[i].Row;
-                    if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
-                        continue;
-
-                    sb.Append("\r\n-- Source File: " + row.FileName + "\r\n");
-                    if (includeUSE)
-                        sb.Append("USE " + row.Database + "\r\nGO\r\n");
-                    batch = await scriptBatcher.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, row.FileName), row.StripTransactionText, true, cancellationToken).ConfigureAwait(false);
-                    for (int j = 0; j < batch.Length; j++)
-                        sb.Append(batch[j] + "\r\n");
-                }
-
-                await File.WriteAllTextAsync(destinationFile, sb.ToString(), cancellationToken).ConfigureAwait(false);
-                sb.Length = 0;
-                return (true, buildData);
-            }
-            catch (Exception)
-            {
-                return (false, buildData);
-            }
-        }
 
         /// <summary>
         /// Copy scripts to individual files using POCO model
@@ -2195,89 +1516,12 @@ namespace SqlSync.SqlBuild
         }
         #endregion
 
-        [Obsolete("Use ImportSqlScriptFile(SqlSyncBuildDataModel, ...) for POCO")]
-        public static double ImportSqlScriptFile(ref SqlSyncBuildData buildData, SqlSyncBuildData importData, string importWorkingDirectory, double lastBuildNumber, string projectFilePath, string projectFileName, string buildZipFileName, bool cleanUp, out string[] addedFileNames)
-        {
-            bool haveImportedRows = false;
-            double startBuildNumber = lastBuildNumber + 1;
-            ArrayList list = new ArrayList();
-            try
-            {
-                importData.AcceptChanges();
-                int increment = 0;
-                DataView importView = importData.Script.DefaultView;
-                importView.Sort = "BuildOrder  ASC";
-                importView.RowStateFilter = DataViewRowState.OriginalRows;
-
-                if (importView.Count > 0)
-                    haveImportedRows = true;
-
-                for (int i = 0; i < importView.Count; i++)
-                {
-                    SqlSyncBuildData.ScriptRow row = (SqlSyncBuildData.ScriptRow)importView[i].Row;
-
-                    row.BuildOrder = startBuildNumber + increment;
-                    list.Add(row.FileName);
-                    buildData.Script.ImportRow(row);
-                    if (File.Exists(Path.Combine(projectFilePath, row.FileName)))
-                        File.Delete(Path.Combine(projectFilePath, row.FileName));
-                    try
-                    {
-                        File.Copy(Path.Combine(importWorkingDirectory, row.FileName), Path.Combine(projectFilePath, row.FileName));
-                    }
-                    catch (Exception)
-                    {
-                        System.Threading.Thread.Sleep(200);
-                        File.Copy(Path.Combine(importWorkingDirectory, row.FileName), Path.Combine(projectFilePath, row.FileName));
-                    }
-                    increment++;
-                }
-
-                buildData.AcceptChanges();
-                var model = buildData.ToModel();
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projectFileName, buildZipFileName);
-                buildData = model.ToDataSet();
-                addedFileNames = new string[list.Count];
-                list.CopyTo(addedFileNames);
-                if (cleanUp)
-                {
-                    try
-                    {
-                        string[] files = Directory.GetFiles(importWorkingDirectory);
-                        for (int i = 0; i < files.Length; i++)
-                            File.Delete(files[i]);
-
-                        Directory.Delete(importWorkingDirectory);
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                if (haveImportedRows)
-                    return startBuildNumber;
-                else
-                    return (double)ImportFileStatus.NoRowsImported;
-
-            }
-            catch (Exception e)
-            {
-                string error = e.ToString();
-                buildData.RejectChanges();
-            }
-
-
-
-            addedFileNames = new string[0];
-            return -1;
-        }
-
         /// <summary>
         /// Import scripts from another build file using POCO model
         /// </summary>
         public static (double buildNumber, SqlSyncBuildDataModel model, string[] addedFileNames) ImportSqlScriptFile(
             SqlSyncBuildDataModel model, 
-            SqlSyncBuildDataModel importModel, 
+            SqlSyncBuildDataModel importModel,
             string importWorkingDirectory, 
             double lastBuildNumber, 
             string projectFilePath, 
