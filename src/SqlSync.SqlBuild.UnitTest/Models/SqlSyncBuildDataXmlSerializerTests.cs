@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace SqlSync.SqlBuild.UnitTest.Models
@@ -200,7 +201,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
         #region Save Tests
 
         [TestMethod]
-        public void Save_ToFile_CreatesValidXml()
+        public async Task Save_ToFile_CreatesValidXml()
         {
             // Arrange
             var tempFile = Path.GetTempFileName();
@@ -209,7 +210,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                 var model = CreateTestModel();
 
                 // Act
-                SqlSyncBuildDataXmlSerializer.Save(tempFile, model);
+                await SqlSyncBuildDataXmlSerializer.SaveAsync(tempFile, model);
 
                 // Assert
                 Assert.IsTrue(File.Exists(tempFile));
@@ -302,7 +303,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
         #region Round-Trip Tests
 
         [TestMethod]
-        public void RoundTrip_SaveAndLoad_PreservesData()
+        public async Task RoundTrip_SaveAndLoad_PreservesData()
         {
             // Arrange
             var tempFile = Path.GetTempFileName();
@@ -311,7 +312,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                 var originalModel = CreateTestModel();
 
                 // Act
-                SqlSyncBuildDataXmlSerializer.Save(tempFile, originalModel);
+                await SqlSyncBuildDataXmlSerializer.SaveAsync(tempFile, originalModel);
                 var loadedModel = SqlSyncBuildDataXmlSerializer.Load(tempFile);
 
                 // Assert
@@ -334,7 +335,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
         }
 
         [TestMethod]
-        public void RoundTrip_EmptyModel_PreservesStructure()
+        public async Task RoundTrip_EmptyModel_PreservesStructure()
         {
             // Arrange
             var tempFile = Path.GetTempFileName();
@@ -348,7 +349,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                     committedScript: new List<CommittedScript>());
 
                 // Act
-                SqlSyncBuildDataXmlSerializer.Save(tempFile, emptyModel);
+                await SqlSyncBuildDataXmlSerializer.SaveAsync(tempFile, emptyModel);
                 var loadedModel = SqlSyncBuildDataXmlSerializer.Load(tempFile);
 
                 // Assert
@@ -424,7 +425,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
         }
 
         [TestMethod]
-        public void Save_WithSpecialCharactersInDescription_EscapesCorrectly()
+        public async Task Save_WithSpecialCharactersInDescription_EscapesCorrectly()
         {
             // Arrange
             var tempFile = Path.GetTempFileName();
@@ -456,7 +457,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                     committedScript: new List<CommittedScript>());
 
                 // Act
-                SqlSyncBuildDataXmlSerializer.Save(tempFile, model);
+                await SqlSyncBuildDataXmlSerializer.SaveAsync(tempFile, model);
                 var loadedModel = SqlSyncBuildDataXmlSerializer.Load(tempFile);
 
                 // Assert

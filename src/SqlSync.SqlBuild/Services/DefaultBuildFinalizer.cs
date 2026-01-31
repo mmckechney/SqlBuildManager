@@ -123,7 +123,7 @@ namespace SqlSync.SqlBuild.Services
             return model;
         }
 
-        public void SaveBuildDataModel(ISqlBuildRunnerProperties context, bool fireSavedEvent)
+        public async Task SaveBuildDataModel(ISqlBuildRunnerProperties context, bool fireSavedEvent)
         {
             log.LogInformation("Saving Build File Updates");
 
@@ -134,7 +134,7 @@ namespace SqlSync.SqlBuild.Services
                 throw new ArgumentException(message);
             }
 
-            SqlBuildFileHelper.SaveSqlBuildProjectFile(context.BuildDataModel, context.ProjectFileName, context.BuildFileName, includeHistoryAndLogs: true);
+            await SqlBuildFileHelper.SaveSqlBuildProjectFileAsync(context.BuildDataModel, context.ProjectFileName, context.BuildFileName, includeHistoryAndLogs: true).ConfigureAwait(false);
 
 
             if (context.BuildHistoryXmlFile == null || context.BuildHistoryXmlFile.Length == 0)
@@ -144,7 +144,7 @@ namespace SqlSync.SqlBuild.Services
                 throw new ArgumentException(message);
             }
 
-            SqlSyncBuildDataXmlSerializer.Save(context.BuildHistoryXmlFile, context.BuildDataModel);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(context.BuildHistoryXmlFile, context.BuildDataModel).ConfigureAwait(false);
 
             log.LogInformation("Build Data saved successfully.");
         }
@@ -215,7 +215,7 @@ namespace SqlSync.SqlBuild.Services
                 finalizerContext.RaiseBuildErrorRollBackEvent(context);
             }
 
-            SaveBuildDataModel(context, true);
+            await SaveBuildDataModel(context, true);
 
             if (buildFailure)
             {

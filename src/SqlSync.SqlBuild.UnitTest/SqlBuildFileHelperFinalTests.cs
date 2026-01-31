@@ -445,12 +445,12 @@ namespace SqlSync.SqlBuild.UnitTest
         #region ExtractSqlBuildZipFile Tests
 
         [TestMethod]
-        public void ExtractSqlBuildZipFile_WithValidZip_ExtractsSuccessfully()
+        public async Task ExtractSqlBuildZipFile_WithValidZip_ExtractsSuccessfully()
         {
             // Arrange - Create a valid SBM file
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
-            SqlSyncBuildDataXmlSerializer.Save(projFileName, model);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model);
             File.WriteAllText(Path.Combine(_testDir, "script.sql"), "SELECT 1");
 
             string sbmFile = Path.Combine(_testDir, "test.sbm");
@@ -493,12 +493,12 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void ExtractSqlBuildZipFile_WithOverwriteOption_OverwritesFiles()
+        public async Task ExtractSqlBuildZipFile_WithOverwriteOption_OverwritesFiles()
         {
             // Arrange - Create a valid SBM file
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
-            SqlSyncBuildDataXmlSerializer.Save(projFileName, model);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model);
 
             string sbmFile = Path.Combine(_testDir, "test.sbm");
             SqlBuildFileHelper.PackageProjectFileIntoZip(model, _testDir, sbmFile, false);
@@ -538,12 +538,12 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void PackageProjectFileIntoZip_WithValidModel_CreatesZipFile()
+        public async Task PackageProjectFileIntoZip_WithValidModel_CreatesZipFile()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
-            SqlSyncBuildDataXmlSerializer.Save(projFileName, model);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model);
 
             string zipFile = Path.Combine(_testDir, "output.sbm");
 
@@ -561,7 +561,7 @@ namespace SqlSync.SqlBuild.UnitTest
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
-            SqlSyncBuildDataXmlSerializer.Save(projFileName, model);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model);
 
             string zipFile = Path.Combine(_testDir, "async.sbm");
 
@@ -708,7 +708,7 @@ namespace SqlSync.SqlBuild.UnitTest
         #region InferOverridesFromPackage Tests
 
         [TestMethod]
-        public void InferOverridesFromPackage_WithValidSbmAndSuppliedDb_ReturnsOverrides()
+        public async Task InferOverridesFromPackage_WithValidSbmAndSuppliedDb_ReturnsOverrides()
         {
             // Arrange - Create a package with a script targeting a database
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -717,7 +717,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 model, projFileName, "test.sql", 1.0, "Test", true, true,
                 "SourceDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
-            SqlSyncBuildDataXmlSerializer.Save(projFileName, model);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model);
             File.WriteAllText(Path.Combine(_testDir, "test.sql"), "SELECT 1");
 
             string sbmFile = Path.Combine(_testDir, "override.sbm");
@@ -732,7 +732,7 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void InferOverridesFromPackage_WithValidSbmAndNoSuppliedDb_ReturnsSameAsOverride()
+        public async Task InferOverridesFromPackage_WithValidSbmAndNoSuppliedDb_ReturnsSameAsOverride()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -741,7 +741,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 model, projFileName, "test.sql", 1.0, "Test", true, true,
                 "SourceDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
-            SqlSyncBuildDataXmlSerializer.Save(projFileName, model);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model);
             File.WriteAllText(Path.Combine(_testDir, "test.sql"), "SELECT 1");
 
             string sbmFile = Path.Combine(_testDir, "override2.sbm");
@@ -929,12 +929,12 @@ CREATE PROCEDURE dbo.Proc1 AS SELECT 1");
         #region LoadSqlBuildProjectFile Tests
 
         [TestMethod]
-        public void LoadSqlBuildProjectFile_Model_WithValidFile_LoadsCorrectly()
+        public async Task LoadSqlBuildProjectFile_Model_WithValidFile_LoadsCorrectly()
         {
             // Arrange
             var originalModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string projFileName = Path.Combine(_testDir, "valid.xml");
-            SqlSyncBuildDataXmlSerializer.Save(projFileName, originalModel);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, originalModel);
 
             // Act
             bool result = SqlBuildFileHelper.LoadSqlBuildProjectFile(
@@ -947,12 +947,12 @@ CREATE PROCEDURE dbo.Proc1 AS SELECT 1");
         }
 
         [TestMethod]
-        public void LoadSqlBuildProjectModel_WithValidFile_ReturnsModel()
+        public async Task LoadSqlBuildProjectModel_WithValidFile_ReturnsModel()
         {
             // Arrange
             var originalModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string projFileName = Path.Combine(_testDir, "model.xml");
-            SqlSyncBuildDataXmlSerializer.Save(projFileName, originalModel);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, originalModel);
 
             // Act
             var loadedModel = SqlBuildFileHelper.LoadSqlBuildProjectModel(projFileName, false);

@@ -221,7 +221,7 @@ namespace SqlBuildManager.Console.Threaded
 
                     runDataModel.BuildDataModel = cloned;
                     runDataModel.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(_context.ProjectFileName));
-                    SqlSyncBuildDataXmlSerializer.Save(runDataModel.ProjectFileName, cloned);
+                    await SqlSyncBuildDataXmlSerializer.SaveAsync(runDataModel.ProjectFileName, cloned);
                     runDataModel.BuildFileName = _context.BuildZipFileName;
                 }
 

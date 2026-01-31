@@ -8,6 +8,7 @@ using System.IO.Compression;
 using System.Xml.Linq;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Identity.Client;
+using System.Threading.Tasks;
 
 #nullable enable
 
@@ -203,15 +204,18 @@ namespace SqlSync.SqlBuild.Models
                 sqlSyncBuildProjectId: projectId);
         }
 
-        public static void Save(string path, SqlSyncBuildDataModel model)
+        public static async Task SaveAsync(string path, SqlSyncBuildDataModel model)
         {
-            var doc = BuildDocument(model);
-            using var writer = XmlWriter.Create(path, new XmlWriterSettings
+            await Task.Run(() =>
             {
-                Indent = true,
-                Encoding = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true),
+                var doc = BuildDocument(model);
+                using var writer = XmlWriter.Create(path, new XmlWriterSettings
+                {
+                    Indent = true,
+                    Encoding = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true),
+                });
+                doc.Save(writer);
             });
-            doc.Save(writer);
         }
 
         public static XDocument BuildDocument(SqlSyncBuildDataModel model)

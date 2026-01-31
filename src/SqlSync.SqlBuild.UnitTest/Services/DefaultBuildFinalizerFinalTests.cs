@@ -51,7 +51,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void SaveBuildDataModel_WithNullProjectFileName_ThrowsArgumentException()
+        public async Task SaveBuildDataModel_WithNullProjectFileName_ThrowsArgumentException()
         {
             // Arrange
             var mockContext = new Mock<ISqlBuildRunnerProperties>();
@@ -59,12 +59,12 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
             // Act
-            _finalizer.SaveBuildDataModel(mockContext.Object, true);
+            await _finalizer.SaveBuildDataModel(mockContext.Object, true);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void SaveBuildDataModel_WithEmptyProjectFileName_ThrowsArgumentException()
+        public async Task SaveBuildDataModel_WithEmptyProjectFileName_ThrowsArgumentException()
         {
             // Arrange
             var mockContext = new Mock<ISqlBuildRunnerProperties>();
@@ -72,12 +72,12 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
             // Act
-            _finalizer.SaveBuildDataModel(mockContext.Object, true);
+            await _finalizer.SaveBuildDataModel(mockContext.Object, true);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void SaveBuildDataModel_WithNullBuildHistoryXmlFile_ThrowsArgumentException()
+        public async Task SaveBuildDataModel_WithNullBuildHistoryXmlFile_ThrowsArgumentException()
         {
             // Arrange
             string projFileName = Path.Combine(_testDir, "test.xml");
@@ -90,12 +90,12 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
             // Act
-            _finalizer.SaveBuildDataModel(mockContext.Object, true);
+            await _finalizer.SaveBuildDataModel(mockContext.Object, true);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void SaveBuildDataModel_WithEmptyBuildHistoryXmlFile_ThrowsArgumentException()
+        public async Task SaveBuildDataModel_WithEmptyBuildHistoryXmlFile_ThrowsArgumentException()
         {
             // Arrange
             string projFileName = Path.Combine(_testDir, "test.xml");
@@ -108,7 +108,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
             // Act
-            _finalizer.SaveBuildDataModel(mockContext.Object, true);
+            await _finalizer.SaveBuildDataModel(mockContext.Object, true);
         }
 
         #endregion

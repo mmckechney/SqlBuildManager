@@ -141,7 +141,7 @@ namespace SqlSync.SqlBuild
             {
                 log.LogInformation($"LoadSqlBuildProjectFile: unable to find projectFile at {projFileName}. Creating shell.");
                 model = CreateShellSqlSyncBuildDataModel();
-                SqlSyncBuildDataXmlSerializer.Save(projFileName, model);
+                SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model).GetAwaiter().GetResult();
                 return false;
             }
         }
@@ -212,7 +212,7 @@ namespace SqlSync.SqlBuild
             ArrayList alFiles = new ArrayList();
 
             // Write the latest project file
-            SqlSyncBuildDataXmlSerializer.Save(Path.Combine(projFilePath, XmlFileNames.MainProjectFile), model);
+            SqlSyncBuildDataXmlSerializer.SaveAsync(Path.Combine(projFilePath, XmlFileNames.MainProjectFile), model).GetAwaiter().GetResult();
 
             // Get the file list from the model
             for (int i = 0; i < model.Script.Count; i++)
@@ -252,7 +252,7 @@ namespace SqlSync.SqlBuild
                 return false;
 
             ArrayList alFiles = new ArrayList();
-            SqlSyncBuildDataXmlSerializer.Save(Path.Combine(projFilePath, XmlFileNames.MainProjectFile), model);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(Path.Combine(projFilePath, XmlFileNames.MainProjectFile), model);
 
             for (int i = 0; i < model.Script.Count; i++)
                 alFiles.Add(model.Script[i].FileName);
@@ -301,7 +301,7 @@ namespace SqlSync.SqlBuild
                     LoadSqlBuildProjectFile(out cleanedBuildData, tmpProjectFileName, false);
                     cleanedBuildData.ScriptRun = new List<ScriptRun>();
                     cleanedBuildData.Build = new List<Build>();
-                    SqlSyncBuildDataXmlSerializer.Save(tmpProjectFileName, cleanedBuildData);
+                    SqlSyncBuildDataXmlSerializer.SaveAsync(tmpProjectFileName, cleanedBuildData).GetAwaiter().GetResult();
 
                     if (PackageProjectFileIntoZip(cleanedBuildData, tmpDir, tmpZipFullName, includeHistoryAndLogs: false))
                     {
@@ -340,13 +340,13 @@ namespace SqlSync.SqlBuild
 
         public static void SaveSqlBuildProjectFile(SqlSyncBuildDataModel model, string projFileName, string buildZipFileName, bool includeHistoryAndLogs = true)
         {
-            SqlSyncBuildDataXmlSerializer.Save(projFileName, model);
+            SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model).GetAwaiter().GetResult();
             PackageProjectFileIntoZip(model, Path.GetDirectoryName(projFileName), buildZipFileName, includeHistoryAndLogs);
         }
 
         public static async Task SaveSqlBuildProjectFileAsync(SqlSyncBuildDataModel model, string projFileName, string buildZipFileName, bool includeHistoryAndLogs = true, CancellationToken cancellationToken = default)
         {
-            SqlSyncBuildDataXmlSerializer.Save(projFileName, model);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model).ConfigureAwait(false);
             await PackageProjectFileIntoZipAsync(model, Path.GetDirectoryName(projFileName), buildZipFileName, includeHistoryAndLogs, cancellationToken).ConfigureAwait(false);
         }
 

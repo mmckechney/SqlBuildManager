@@ -173,7 +173,7 @@ namespace SqlBuildManager.Console
                 log.LogInformation("Creating Base Build File XML");
                 var buildModel = sqlB.SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
                 var projFile = Path.Combine(workingDir, sqlB.XmlFileNames.MainProjectFile);
-                sqlM.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
+                sqlM.SqlSyncBuildDataXmlSerializer.SaveAsync(projFile, buildModel).GetAwaiter().GetResult();
                 sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(buildModel, workingDir, sbxFileName, includeHistoryAndLogs: true);
                 var counter = 1.0;
                 foreach (var file in cmdLine.Scripts)
@@ -187,7 +187,7 @@ namespace SqlBuildManager.Console
                 }
                 // Note: AddScriptFileToBuild with saveToZip=true already persists the project file and packages the zip.
                 // Avoid overwriting the .sbx zip with plain XML.
-                sqlM.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
+                sqlM.SqlSyncBuildDataXmlSerializer.SaveAsync(projFile, buildModel).GetAwaiter().GetResult();
             }
             else
             {
@@ -401,7 +401,7 @@ namespace SqlBuildManager.Console
                 log.LogInformation("Creating Base Build File XML");
                 var buildModel = sqlB.SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
                 var projFile = Path.Combine(workingDir, sqlB.XmlFileNames.MainProjectFile);
-                    sqlM.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
+                sqlM.SqlSyncBuildDataXmlSerializer.SaveAsync(projFile, buildModel).GetAwaiter().GetResult();
                 sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(buildModel, workingDir, sbxFileName, includeHistoryAndLogs: true);
                 var counter = 1.0;
                 foreach (var file in cmdLine.Scripts)
@@ -413,7 +413,7 @@ namespace SqlBuildManager.Console
                     buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuild(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "");
                     counter++;
                 }
-                    sqlM.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
+                sqlM.SqlSyncBuildDataXmlSerializer.SaveAsync(projFile, buildModel).GetAwaiter().GetResult();
 
             }
             else

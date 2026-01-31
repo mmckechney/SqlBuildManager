@@ -84,12 +84,12 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void LoadSqlBuildProjectFile_ExistingValidFile_ReturnsTrue()
+        public async Task LoadSqlBuildProjectFile_ExistingValidFile_ReturnsTrue()
         {
             // Arrange
             string projFileName = Path.Combine(_testDirectory, "Valid.xml");
             var shellModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            SqlSyncBuildDataXmlSerializer.Save(projFileName, shellModel);
+            SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, shellModel);
 
             // Act
             bool result = SqlBuildFileHelper.LoadSqlBuildProjectFile(out SqlSyncBuildDataModel model, projFileName, false);

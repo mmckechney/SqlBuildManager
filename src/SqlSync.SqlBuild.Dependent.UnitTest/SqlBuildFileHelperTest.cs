@@ -5,6 +5,7 @@ using SqlSync.SqlBuild.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 #nullable enable
 namespace SqlSync.SqlBuild.Dependent.UnitTest
@@ -688,7 +689,7 @@ END
         ///A test for CleanProjectFileForRemoteExecution
         ///</summary>
         [TestMethod()]
-        public void CleanProjectFileForRemoteExecutionTest_CleanOutBuildRowsTest()
+        public async Task CleanProjectFileForRemoteExecutionTest_CleanOutBuildRowsTest()
         {
             Initialization init = GetInitializationObject();
 
@@ -709,7 +710,7 @@ END
 
             string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
-            SqlSyncBuildDataXmlSerializer.Save(projectFileName, buildData);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(projectFileName, buildData);
             SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
 
             byte[] expected = File.ReadAllBytes(zipFileName);
@@ -729,7 +730,7 @@ END
         ///A test for CleanProjectFileForRemoteExecution
         ///</summary>
         [TestMethod()]
-        public void CleanProjectFileForRemoteExecutionTest_CleanOutScriptRunRowsTest()
+        public async Task CleanProjectFileForRemoteExecutionTest_CleanOutScriptRunRowsTest()
         {
             Initialization init = GetInitializationObject();
 
@@ -750,7 +751,7 @@ END
 
             string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
-            SqlSyncBuildDataXmlSerializer.Save(projectFileName, buildData);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(projectFileName, buildData);
             SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
 
             byte[] expected = File.ReadAllBytes(zipFileName);
