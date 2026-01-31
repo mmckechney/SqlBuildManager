@@ -362,7 +362,7 @@ namespace SqlSync.SqlBuild
                 log.LogDebug($"[PrepareBuildForRunModel] projectFilePath='{projectFilePath}'");
 
                
-                scriptLogFileName = Path.Combine(projectFilePath, $"LogFile-{DateTime.Now:yyyy-MM-dd at HH_mm_ss}.log");
+                scriptLogFileName = Path.Combine(projectFilePath, $"LogFile-{DateTime.Now:yyyy-MM-dd HH_mm_ss}.log");
                 log.LogInformation($"Creating Script Log File: {scriptLogFileName}");
 
                 

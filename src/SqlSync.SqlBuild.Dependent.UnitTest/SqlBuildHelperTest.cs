@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using BuildModels = SqlSync.SqlBuild.Models;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
@@ -1771,7 +1772,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void LogTableExistsTest()
+        public async Task LogTableExistsTest()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
@@ -1779,19 +1780,19 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             IProgressReporter progressReporter = new NullProgressReporter();
             IConnectionsService connectionsService = new DefaultConnectionsService();
             ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
-            bool actual = sqlLoggingService.LogTableExists(conn);
+            bool actual = await sqlLoggingService.LogTableExists(conn);
             Assert.AreEqual(true, actual);
 
             //Invalidate the connection - should return false
             init.connData.DatabaseName = "invalidDBName";
             conn = ConnectionHelper.GetConnection(init.connData);
-            actual = sqlLoggingService.LogTableExists(conn);
+            actual = await sqlLoggingService.LogTableExists(conn);
             Assert.AreEqual(false, actual);
 
             //Change to master db - should not have the table
             init.connData.DatabaseName = "master";
             conn = ConnectionHelper.GetConnection(init.connData);
-            actual = sqlLoggingService.LogTableExists(conn);
+            actual = await sqlLoggingService.LogTableExists(conn);
             Assert.AreEqual(false, actual);
         }
 

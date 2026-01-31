@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using MoreLinq.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
@@ -110,6 +111,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[] {
+                "--loglevel","debug",
                 "threaded", "run",
                 "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
@@ -311,6 +313,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[] {
+                "--loglevel", "debug",
                 "threaded", "run",
                 "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,

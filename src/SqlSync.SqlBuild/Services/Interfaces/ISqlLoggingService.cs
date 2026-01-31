@@ -4,13 +4,14 @@ using SqlSync.Connection;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SqlSync.SqlBuild.Services
 {
     public interface ISqlLoggingService
     {
-        string EnsureLogTablePresence(Dictionary<string, BuildConnectData> connectDictionary, string logToDatabaseName);
-        bool LogCommittedScriptsToDatabase(List<SqlSync.SqlBuild.SqlLogging.CommittedScript> committedScripts, ISqlBuildRunnerProperties runnerProperties, MultiDbData multiDbRunData);
-        bool LogTableExists(SqlConnection conn);
+        Task<string> EnsureLogTablePresence(Dictionary<string, BuildConnectData> connectDictionary, string logToDatabaseName);
+        Task<bool> LogCommittedScriptsToDatabase(List<SqlSync.SqlBuild.SqlLogging.CommittedScript> committedScripts, ISqlBuildRunnerProperties runnerProperties, MultiDbData multiDbRunData);
+        Task<bool> LogTableExists(SqlConnection conn);
     }
 }

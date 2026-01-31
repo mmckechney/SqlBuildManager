@@ -11,6 +11,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using sqlLog = SqlSync.SqlBuild.SqlLogging;
 
 namespace SqlSync.SqlBuild.Services
@@ -31,14 +32,27 @@ namespace SqlSync.SqlBuild.Services
         /// <summary>
         /// Ensures that the SqlBuild_Logging table exists and that it is setup properly. Self-heals if it is not. 
         /// </summary>
-        public string EnsureLogTablePresence(Dictionary<string, BuildConnectData> connectDictionary, string logToDatabaseName)
+        public async Task<string> EnsureLogTablePresence(Dictionary<string, BuildConnectData> connectDictionary, string logToDatabaseName)
         {
+
+            var unconfirmedLogTable = connectionsService.Connections.Where(c => c.Value.HasLoggingTable == false).ToDictionary();
+
+            if(unconfirmedLogTable.Count == 0)
+            {
+                return "";
+            }
             //Self healing: add the table if needed
             sqlInfoMessage = string.Empty;
             SqlCommand createTableCmd = new SqlCommand(Properties.Resources.LoggingTable);
-            Dictionary<string, BuildConnectData>.KeyCollection keys = connectDictionary.Keys;
+            SqlCommand createCommitIndex = new SqlCommand(Properties.Resources.LoggingTableCommitCheckIndex);
+            Dictionary<string, BuildConnectData>.KeyCollection keys = unconfirmedLogTable.Keys;
             foreach (string key in keys)
             {
+                if(await LogTableExists(((BuildConnectData)connectDictionary[key]).Connection))
+                {
+                    ((BuildConnectData)connectDictionary[key]).HasLoggingTable = true;
+                    continue;
+                }
                 try
                 {
 
@@ -55,25 +69,10 @@ namespace SqlSync.SqlBuild.Services
                     if (((BuildConnectData)connectDictionary[key]).Transaction != null)
                         createTableCmd.Transaction = ((BuildConnectData)connectDictionary[key]).Transaction;
 
-                    createTableCmd.ExecuteNonQuery();
+                    await createTableCmd.ExecuteNonQueryAsync();
                     log.LogDebug($"EnsureLogTablePresence Table Sql Messages for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}:\r\n{sqlInfoMessage}");
-                }
-                catch (Exception e)
-                {
-                    log.LogError(e, $"Error ensuring log table presence for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}");
-                }
-                finally
-                {
-                    createTableCmd.Connection.InfoMessage -= new SqlInfoMessageEventHandler(Connection_InfoMessage);
-                }
-            }
-            //SqlCommand createCommitIndex = new SqlCommand(GetFromResources("SqlSync.SqlBuild.SqlLogging.LoggingTableCommitCheckIndex.sql"));
-            SqlCommand createCommitIndex = new SqlCommand(Properties.Resources.LoggingTableCommitCheckIndex);
-            foreach (string key in keys)
-            {
-                sqlInfoMessage = string.Empty;
-                try
-                {
+
+                    //Ensure the indexes are there
                     createCommitIndex.Connection = ((BuildConnectData)connectDictionary[key]).Connection;
                     createCommitIndex.Connection.InfoMessage += new SqlInfoMessageEventHandler(Connection_InfoMessage);
 
@@ -88,18 +87,23 @@ namespace SqlSync.SqlBuild.Services
                     if (((BuildConnectData)connectDictionary[key]).Transaction != null)
                         createCommitIndex.Transaction = ((BuildConnectData)connectDictionary[key]).Transaction;
 
-                    createCommitIndex.ExecuteNonQuery();
-                    log.LogDebug($"EnsureLogTablePresence Index Sql Messages for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}:\r\n{sqlInfoMessage}");
+                    await createCommitIndex.ExecuteNonQueryAsync();
+                    log.LogDebug($"EnsureLogTablePresence Index Sql Messages for {createCommitIndex.Connection.DataSource}.{createCommitIndex.Connection.Database}:\r\n{sqlInfoMessage}");
 
+                    //If we made it this far, the logging table exists. Set it to true so it doesn't go through here again.
+                    ((BuildConnectData)connectDictionary[key]).HasLoggingTable = true;
                 }
                 catch (Exception e)
                 {
-                    log.LogError(e, $"Error ensuring log table commit check index for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}");
-                }finally
+                    log.LogError(e, $"Error ensuring log table presence/indexes for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}");
+                }
+                finally
                 {
+                    createTableCmd.Connection.InfoMessage -= new SqlInfoMessageEventHandler(Connection_InfoMessage);
                     createCommitIndex.Connection.InfoMessage -= new SqlInfoMessageEventHandler(Connection_InfoMessage);
                 }
             }
+            
             log.LogDebug($"sqlInfoMessage value: {sqlInfoMessage}");
             log.LogDebug("Exiting EnsureLogPresence method");
             return sqlInfoMessage;
@@ -109,7 +113,7 @@ namespace SqlSync.SqlBuild.Services
         /// </summary>
         /// <param name="conn">Connection object to the target database</param>
         /// <returns></returns>
-        public bool LogTableExists(SqlConnection conn)
+        public async Task<bool> LogTableExists(SqlConnection conn)
         {
             try
             {
@@ -117,7 +121,7 @@ namespace SqlSync.SqlBuild.Services
                 if (cmd.Connection.State == ConnectionState.Closed)
                     cmd.Connection.Open();
 
-                object result = cmd.ExecuteScalar();
+                object result = await cmd.ExecuteScalarAsync();
                 if (result == null || result == System.DBNull.Value)
                     return false;
                 else
@@ -134,7 +138,7 @@ namespace SqlSync.SqlBuild.Services
         /// <param name="committedScripts">List of CommittedScript objects</param>
         /// <param name="multiDbRunData">The MultiDbRun data for the run</param>
         /// <returns>True if the commit was successful</returns>
-        public bool LogCommittedScriptsToDatabase(List<sqlLog.CommittedScript> committedScripts, ISqlBuildRunnerProperties runnerProperties, MultiDbData multiDbRunData)
+        public async Task<bool> LogCommittedScriptsToDatabase(List<sqlLog.CommittedScript> committedScripts, ISqlBuildRunnerProperties runnerProperties, MultiDbData multiDbRunData)
         {
             bool returnValue = true;
             //If using an alternate database to log the commits to, we need to initiate the connection objects 
@@ -151,7 +155,8 @@ namespace SqlSync.SqlBuild.Services
                     BuildConnectData tmp = connectionsService.GetOrAddBuildConnectionDataClass(runnerProperties.ConnectionData, servers[i], runnerProperties.LogToDatabaseName, runnerProperties.IsTransactional);
                 }
             }
-            EnsureLogTablePresence(connectionsService.Connections, runnerProperties.LogToDatabaseName);
+
+           await EnsureLogTablePresence(connectionsService.Connections, runnerProperties.LogToDatabaseName);
 
             //Get date from the server
             DateTime commitDate;
@@ -246,7 +251,7 @@ namespace SqlSync.SqlBuild.Services
                         if (tmpConnDat.Transaction != null)
                             logCmd.Transaction = tmpConnDat.Transaction;
 
-                        logCmd.ExecuteNonQuery();
+                        await logCmd.ExecuteNonQueryAsync();
                     }
                 }
                 catch (Exception sqlexe)
@@ -258,7 +263,7 @@ namespace SqlSync.SqlBuild.Services
                         if (logCmd.Connection.State == ConnectionState.Closed)
                             logCmd.Connection.Open();
 
-                        logCmd.ExecuteNonQuery();
+                        await logCmd.ExecuteNonQueryAsync();
                     }
                     catch (Exception exe)
                     {

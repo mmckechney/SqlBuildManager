@@ -4,6 +4,7 @@ using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SqlSync.SqlBuild.UnitTest.Services
 {
@@ -60,7 +61,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         #region EnsureLogTablePresence Tests
 
         [TestMethod]
-        public void EnsureLogTablePresence_WithMultipleEmptyConnections_ReturnsEmptyMessage()
+        public async Task EnsureLogTablePresence_WithMultipleEmptyConnections_ReturnsEmptyMessage()
         {
             // Arrange
             var service = new DefaultSqlLoggingService(
@@ -70,7 +71,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var connections = new Dictionary<string, BuildConnectData>();
 
             // Act
-            var result = service.EnsureLogTablePresence(connections, string.Empty);
+            var result = await service.EnsureLogTablePresence(connections, string.Empty);
 
             // Assert
             Assert.IsNotNull(result);
@@ -78,7 +79,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void EnsureLogTablePresence_WithSpecificLogDb_FiltersConnections()
+        public async Task EnsureLogTablePresence_WithSpecificLogDb_FiltersConnections()
         {
             // Arrange
             var service = new DefaultSqlLoggingService(
@@ -88,14 +89,14 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var connections = new Dictionary<string, BuildConnectData>();
 
             // Act - pass specific database name
-            var result = service.EnsureLogTablePresence(connections, "SpecificLogDatabase");
+            var result = await service.EnsureLogTablePresence(connections, "SpecificLogDatabase");
 
             // Assert
             Assert.IsNotNull(result);
         }
 
         [TestMethod]
-        public void EnsureLogTablePresence_EmptyDictionaryWithLogDbName_ReturnsEmptyMessage()
+        public async Task EnsureLogTablePresence_EmptyDictionaryWithLogDbName_ReturnsEmptyMessage()
         {
             // Arrange
             var service = new DefaultSqlLoggingService(
@@ -105,7 +106,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var connections = new Dictionary<string, BuildConnectData>();
 
             // Act
-            var result = service.EnsureLogTablePresence(connections, "TestLogDb");
+            var result = await service.EnsureLogTablePresence(connections, "TestLogDb");
 
             // Assert
             Assert.AreEqual(string.Empty, result);
@@ -116,7 +117,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         #region LogCommittedScriptsToDatabase Tests - Empty/Edge Cases
 
         [TestMethod]
-        public void LogCommittedScriptsToDatabase_EmptyCommittedScripts_ReturnsTrue()
+        public async Task LogCommittedScriptsToDatabase_EmptyCommittedScripts_ReturnsTrue()
         {
             // Arrange
             var service = new DefaultSqlLoggingService(
@@ -138,7 +139,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var multiDbData = new SqlSync.SqlBuild.MultiDb.MultiDbData();
 
             // Act - empty scripts list should just set up connections and return
-            bool result = service.LogCommittedScriptsToDatabase(
+            bool result = await service.LogCommittedScriptsToDatabase(
                 committedScripts,
                 mockRunnerProperties.Object,
                 multiDbData);
@@ -152,7 +153,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         #region Additional Edge Case Tests
 
         [TestMethod]
-        public void EnsureLogTablePresence_ConnectionsWithDifferentDatabases_ProcessesAll()
+        public async Task EnsureLogTablePresence_ConnectionsWithDifferentDatabases_ProcessesAll()
         {
             // Arrange
             var service = new DefaultSqlLoggingService(
@@ -162,7 +163,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var connections = new Dictionary<string, BuildConnectData>();
 
             // Act
-            var result = service.EnsureLogTablePresence(connections, string.Empty);
+            var result = await service.EnsureLogTablePresence(connections, string.Empty);
 
             // Assert
             Assert.IsNotNull(result);

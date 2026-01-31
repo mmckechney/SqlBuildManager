@@ -6,6 +6,7 @@ using SqlSync.Connection;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SqlSync.SqlBuild.UnitTest.Services
 {
@@ -280,7 +281,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void EnsureLogTablePresence_WithEmptyDictionary_ReturnsEmptyString()
+        public async Task EnsureLogTablePresence_WithEmptyDictionary_ReturnsEmptyString()
         {
             // Arrange
             var mockConnectionsService = new Mock<IConnectionsService>();
@@ -293,7 +294,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var emptyConnections = new Dictionary<string, BuildConnectData>();
 
             // Act
-            var result = service.EnsureLogTablePresence(emptyConnections, string.Empty);
+            var result = await service.EnsureLogTablePresence(emptyConnections, string.Empty);
 
             // Assert
             Assert.AreEqual(string.Empty, result);
