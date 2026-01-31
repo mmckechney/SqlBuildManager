@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
 
 namespace SqlSync.SqlBuild.Services
@@ -147,7 +148,7 @@ namespace SqlSync.SqlBuild.Services
 
             log.LogInformation("Build Data saved successfully.");
         }
-        public (Build updatedBuild, SqlSyncBuildDataModel updatedModel, BuildResultStatus buildResult) PerformRunScriptFinalization(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, IBuildFinalizerContext finalizerContext, bool buildFailure, Build myBuild)
+        public async Task<(Build updatedBuild, SqlSyncBuildDataModel updatedModel, BuildResultStatus buildResult)> PerformRunScriptFinalizationAsync(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, IBuildFinalizerContext finalizerContext, bool buildFailure, Build myBuild)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
@@ -172,7 +173,7 @@ namespace SqlSync.SqlBuild.Services
                 if (!context.IsTransactional)
                 {
                     updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
-                    sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData);
+                    await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
                 }
             }
             else
@@ -189,8 +190,7 @@ namespace SqlSync.SqlBuild.Services
 
                     myBuild.FinalStatus = BuildItemStatus.Committed;
                     updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
-                    //TODO: make this method async
-                    sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).GetAwaiter().GetResult();
+                    await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
                     finalizerContext.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
                 }
                 else

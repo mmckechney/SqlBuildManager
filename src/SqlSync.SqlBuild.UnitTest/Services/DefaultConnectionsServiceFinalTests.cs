@@ -287,6 +287,9 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var mockConnectionsService = new Mock<IConnectionsService>();
             var mockProgressReporter = new Mock<IProgressReporter>();
             
+            // Set up Connections property to return an empty dictionary
+            mockConnectionsService.Setup(x => x.Connections).Returns(new Dictionary<string, BuildConnectData>());
+            
             // Create instance using internal constructor
             var serviceType = typeof(DefaultConnectionsService).Assembly.GetType("SqlSync.SqlBuild.Services.DefaultSqlLoggingService");
             var service = Activator.CreateInstance(serviceType, mockConnectionsService.Object, mockProgressReporter.Object) as ISqlLoggingService;

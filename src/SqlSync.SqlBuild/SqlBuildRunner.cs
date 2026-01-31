@@ -137,13 +137,6 @@ namespace SqlSync.SqlBuild
                     var start = DateTime.Now;
                     for (int x = 0; x < batchScripts.Length; x++)
                     {
-                        //if (bgWorker.CancellationPending)
-                        //{
-                        //    log.LogInformation("Encountered cancellation pending directive. Breaking out of build");
-                        //    workEventArgs.Cancel = true;
-                        //    break;
-                        //}
-
                         batchScripts[x] = _ctx.PerformScriptTokenReplacement(batchScripts[x]);
                         overallIndex++;
 
@@ -172,11 +165,6 @@ namespace SqlSync.SqlBuild
                         if (rollBackOnError && currentRun.Success == false) break;
                     }
 
-                    //if (workEventArgs.Cancel)
-                    //{
-                    //        progress.ReportProgress(0, new ScriptRunStatusEventArgs("Build Cancelled", TimeSpan.Zero));
-                    //    buildFailure = true;
-                    //}else
                     if (currentRun.Success == true)
                     {
                         var span = DateTime.Now - currentRun.RunStart!.Value;
@@ -213,7 +201,7 @@ namespace SqlSync.SqlBuild
                 log.LogError("Build failure. Check execution logs for details");
                 if (!isMultiDbRun)
                 {
-                    (myBuild, buildDataModel, _) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
+                    (myBuild, buildDataModel, _) = _buildFinalizer.PerformRunScriptFinalizationAsync(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild).GetAwaiter().GetResult();
                 }
                 else
                 {
@@ -229,7 +217,7 @@ namespace SqlSync.SqlBuild
                 if (isMultiDbRun)
                     myBuild.FinalStatus = BuildItemStatus.Pending;
                 else
-                    (myBuild, buildDataModel, _) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
+                    (myBuild, buildDataModel, _) = _buildFinalizer.PerformRunScriptFinalizationAsync(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild).GetAwaiter().GetResult();
                 log.LogDebug("Build Successful!");
             }
             return myBuild;
@@ -409,7 +397,7 @@ namespace SqlSync.SqlBuild
                 }
             }
 
-            (myBuild, buildDataModel, _) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild);
+            (myBuild, buildDataModel, _) = await _buildFinalizer.PerformRunScriptFinalizationAsync(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild).ConfigureAwait(false);
             return myBuild;
         }
 

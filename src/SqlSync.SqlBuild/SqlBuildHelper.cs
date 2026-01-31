@@ -218,13 +218,13 @@ namespace SqlSync.SqlBuild
 
                 if (buildResult.FinalStatus == BuildItemStatus.PendingRollBack || buildResult.FinalStatus == BuildItemStatus.FailedNoTransaction)
                 {
-                    (buildResult, buildDataModel, tmpStatus) = BuildFinalizer.PerformRunScriptFinalization(this, ConnectionsService,this, true, buildResult);
+                    (buildResult, buildDataModel, tmpStatus) = BuildFinalizer.PerformRunScriptFinalizationAsync(this, ConnectionsService,this, true, buildResult).GetAwaiter().GetResult();
                     finalizedBuildStatus.Add(tmpStatus);
                     buildResults.Add(buildResult);
                 }
                 else
                 {
-                    (buildResult, buildDataModel, tmpStatus) = BuildFinalizer.PerformRunScriptFinalization(this, ConnectionsService, this, false, buildResult);
+                    (buildResult, buildDataModel, tmpStatus) = BuildFinalizer.PerformRunScriptFinalizationAsync(this, ConnectionsService, this, false, buildResult).GetAwaiter().GetResult();
                     finalizedBuildStatus.Add(tmpStatus);
                     buildResults.Add(buildResult);
                 }

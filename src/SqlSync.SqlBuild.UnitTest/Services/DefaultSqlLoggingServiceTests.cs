@@ -70,16 +70,20 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public async Task EnsureLogTablePresence_WithNullDictionary_ThrowsNullReferenceException()
+        public async Task EnsureLogTablePresence_WithNullDictionary_StillSucceedsIfConnectionsEmpty()
         {
             // Arrange
+            // Note: With the caching optimization, we now check connectionsService.Connections first
+            // If that returns an empty dictionary, the null parameter is never accessed
             var service = new DefaultSqlLoggingService(
                 _mockConnectionsService.Object,
                 _mockProgressReporter.Object);
 
-            // Act & Assert
-            Assert.ThrowsException<NullReferenceException>(async () => 
-                await service.EnsureLogTablePresence(null, string.Empty));
+            // Act - no exception expected now since we check Connections first
+            var result = await service.EnsureLogTablePresence(null, string.Empty);
+
+            // Assert - should return empty string since there are no unconfirmed connections
+            Assert.AreEqual(string.Empty, result);
         }
 
         [TestMethod]

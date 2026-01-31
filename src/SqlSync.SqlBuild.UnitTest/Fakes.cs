@@ -229,13 +229,13 @@ namespace SqlSync.SqlBuild.UnitTest
         public static Mock<IBuildFinalizer> CreateMockBuildFinalizer()
         {
             var mock = new Mock<IBuildFinalizer>();
-            mock.Setup(x => x.PerformRunScriptFinalization(
+            mock.Setup(x => x.PerformRunScriptFinalizationAsync(
                     It.IsAny<ISqlBuildRunnerProperties>(),
                     It.IsAny<IConnectionsService>(),
                     It.IsAny<IBuildFinalizerContext>(),
                     It.IsAny<bool>(),
                     It.IsAny<Build>()))
-                .Returns((ISqlBuildRunnerProperties ctx, IConnectionsService conn, IBuildFinalizerContext finalizerContext, bool buildFailure, Build b) =>
+                .ReturnsAsync((ISqlBuildRunnerProperties ctx, IConnectionsService conn, IBuildFinalizerContext finalizerContext, bool buildFailure, Build b) =>
                 {
                     // Mimic the real DefaultBuildFinalizer behavior
                     Build finalBuild;
