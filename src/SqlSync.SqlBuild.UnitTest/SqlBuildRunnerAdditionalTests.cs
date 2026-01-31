@@ -102,8 +102,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 committedScript: new List<BuildModels.CommittedScript>
                 {
                     new BuildModels.CommittedScript(scriptId, serverName: null, committedDate: null, allowScriptBlock: null, scriptHash: null, sqlSyncBuildProjectId: null)
-                },
-                codeReview: model.CodeReview);
+                });
 
             // Act
             var result = runner.ShouldSkipDueToCommittedScripts(scriptId, model);
@@ -157,8 +156,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 committedScript: new List<BuildModels.CommittedScript>
                 {
                     new BuildModels.CommittedScript(scriptId.ToUpper(), serverName: null, committedDate: null, allowScriptBlock: null, scriptHash: null, sqlSyncBuildProjectId: null)
-                },
-                codeReview: model.CodeReview);
+                });
 
             // Act
             var result = runner.ShouldSkipDueToCommittedScripts(scriptId.ToLower(), model);
@@ -348,8 +346,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 committedScript: new List<BuildModels.CommittedScript>
                 {
                     new BuildModels.CommittedScript(scriptId, null, null, null, null, null)
-                },
-                codeReview: baseModel.CodeReview);
+                });
 
             var scripts = new List<BuildModels.Script>
             {

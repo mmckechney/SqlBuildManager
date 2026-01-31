@@ -28,17 +28,6 @@ namespace SqlSync.SqlBuild.UnitTest.Models
     </Builds>
     <CommittedScript ScriptId=""11111111-1111-1111-1111-111111111111"" ServerName=""PROD-SQL"" CommittedDate=""2024-01-20T08:02:00Z"" AllowScriptBlock=""true"" ScriptHash=""HASH123"" />
   </SqlSyncBuildProject>
-  <CodeReview>
-    <CodeReviewId>33333333-3333-3333-3333-333333333333</CodeReviewId>
-    <ScriptId>11111111-1111-1111-1111-111111111111</ScriptId>
-    <ReviewDate>2024-01-18T14:00:00Z</ReviewDate>
-    <ReviewBy>reviewer</ReviewBy>
-    <ReviewStatus>1</ReviewStatus>
-    <Comment>Approved</Comment>
-    <ReviewNumber>CR-001</ReviewNumber>
-    <CheckSum>CHECKSUM456</CheckSum>
-    <ValidationKey>VALKEY789</ValidationKey>
-  </CodeReview>
 </SqlSyncBuildData>";
 
         #region Load Tests
@@ -149,28 +138,6 @@ namespace SqlSync.SqlBuild.UnitTest.Models
         }
 
         [TestMethod]
-        public void Load_FromXDocument_ParsesCodeReviews()
-        {
-            // Arrange
-            var doc = XDocument.Parse(SampleBuildProjectXml);
-
-            // Act
-            var model = SqlSyncBuildDataXmlSerializer.Load(doc);
-
-            // Assert
-            Assert.AreEqual(1, model.CodeReview.Count);
-            var cr = model.CodeReview[0];
-            Assert.AreEqual(Guid.Parse("33333333-3333-3333-3333-333333333333"), cr.CodeReviewId);
-            Assert.AreEqual("11111111-1111-1111-1111-111111111111", cr.ScriptId);
-            Assert.AreEqual("reviewer", cr.ReviewBy);
-            Assert.AreEqual((short)1, cr.ReviewStatus);
-            Assert.AreEqual("Approved", cr.Comment);
-            Assert.AreEqual("CR-001", cr.ReviewNumber);
-            Assert.AreEqual("CHECKSUM456", cr.CheckSum);
-            Assert.AreEqual("VALKEY789", cr.ValidationKey);
-        }
-
-        [TestMethod]
         public void Load_FromFile_ParsesCorrectly()
         {
             // Arrange
@@ -226,7 +193,6 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual(0, model.Build.Count);
             Assert.AreEqual(0, model.ScriptRun.Count);
             Assert.AreEqual(0, model.CommittedScript.Count);
-            Assert.AreEqual(0, model.CodeReview.Count);
         }
 
         #endregion
@@ -331,21 +297,6 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual(1, scriptRuns.Count);
         }
 
-        [TestMethod]
-        public void BuildDocument_IncludesCodeReviews()
-        {
-            // Arrange
-            var model = CreateTestModel();
-
-            // Act
-            var doc = SqlSyncBuildDataXmlSerializer.BuildDocument(model);
-
-            // Assert
-            var ns = (XNamespace)"http://schemas.mckechney.com/SqlSyncBuildProject.xsd";
-            var codeReviews = doc.Root.Elements(ns + "CodeReview").ToList();
-            Assert.AreEqual(1, codeReviews.Count);
-        }
-
         #endregion
 
         #region Round-Trip Tests
@@ -369,7 +320,6 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                 Assert.AreEqual(originalModel.Build.Count, loadedModel.Build.Count);
                 Assert.AreEqual(originalModel.ScriptRun.Count, loadedModel.ScriptRun.Count);
                 Assert.AreEqual(originalModel.CommittedScript.Count, loadedModel.CommittedScript.Count);
-                Assert.AreEqual(originalModel.CodeReview.Count, loadedModel.CodeReview.Count);
 
                 // Verify data integrity
                 Assert.AreEqual(originalModel.SqlSyncBuildProject[0].ProjectName, loadedModel.SqlSyncBuildProject[0].ProjectName);
@@ -395,8 +345,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                     script: new List<Script>(),
                     build: new List<Build>(),
                     scriptRun: new List<ScriptRun>(),
-                    committedScript: new List<CommittedScript>(),
-                    codeReview: new List<CodeReview>());
+                    committedScript: new List<CommittedScript>());
 
                 // Act
                 SqlSyncBuildDataXmlSerializer.Save(tempFile, emptyModel);
@@ -504,8 +453,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                     },
                     build: new List<Build>(),
                     scriptRun: new List<ScriptRun>(),
-                    committedScript: new List<CommittedScript>(),
-                    codeReview: new List<CodeReview>());
+                    committedScript: new List<CommittedScript>());
 
                 // Act
                 SqlSyncBuildDataXmlSerializer.Save(tempFile, model);
@@ -529,7 +477,6 @@ namespace SqlSync.SqlBuild.UnitTest.Models
         {
             var scriptId = Guid.NewGuid().ToString();
             var buildId = Guid.NewGuid().ToString();
-            var codeReviewId = Guid.NewGuid();
 
             return new SqlSyncBuildDataModel(
                 sqlSyncBuildProject: new List<SqlSyncBuildProject>
@@ -590,19 +537,6 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                         allowScriptBlock: true,
                         scriptHash: "HASH123",
                         sqlSyncBuildProjectId: 0)
-                },
-                codeReview: new List<CodeReview>
-                {
-                    new CodeReview(
-                        codeReviewId: codeReviewId,
-                        scriptId: scriptId,
-                        reviewDate: DateTime.UtcNow.AddDays(-1),
-                        reviewBy: "reviewer",
-                        reviewStatus: 1,
-                        comment: "Approved",
-                        reviewNumber: "CR-001",
-                        checkSum: "CHECKSUM",
-                        validationKey: "KEY")
                 });
         }
 

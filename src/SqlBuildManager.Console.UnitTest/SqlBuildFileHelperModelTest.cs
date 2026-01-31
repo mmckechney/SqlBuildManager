@@ -37,8 +37,7 @@ namespace SqlBuildManager.Console.UnitTest
                     script: model.Script,
                     build: model.Build,
                     scriptRun: model.ScriptRun,
-                    committedScript: model.CommittedScript,
-                    codeReview: model.CodeReview);
+                    committedScript: model.CommittedScript);
                 SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFile, zipFile, includeHistoryAndLogs: false);
                 SqlBuildFileHelper.LoadSqlBuildProjectFile(out SqlSyncBuildDataModel loaded, projFile, validateSchema: false);
                 Assert.AreEqual("Proj1", loaded.SqlSyncBuildProject[0].ProjectName);

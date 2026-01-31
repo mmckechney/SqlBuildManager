@@ -71,8 +71,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 script: scripts,
                 build: baseModel.Build,
                 scriptRun: baseModel.ScriptRun,
-                committedScript: baseModel.CommittedScript,
-                codeReview: baseModel.CodeReview);
+                committedScript: baseModel.CommittedScript);
 
             var result = runner.Run(scripts, myBuild, "srv", isMultiDbRun: false, scriptBatchColl: new ScriptBatchCollection { new ScriptBatch("file.sql", new[] { "SELECT 1;" }, "abc") }, buildDataModel: model);
 

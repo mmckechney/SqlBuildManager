@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -68,8 +68,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                     script: buildDataModel.Script,
                     build: builds,
                     scriptRun: buildDataModel.ScriptRun,
-                    committedScript: buildDataModel.CommittedScript,
-                    codeReview: buildDataModel.CodeReview);
+                    committedScript: buildDataModel.CommittedScript);
             }
             return sbh.RunBuildScripts(scripts, myBuildModel, serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
         }
@@ -281,8 +280,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 script: buildDataModel.Script,
                 build: buildDataModel.Build,
                 scriptRun: buildDataModel.ScriptRun,
-                committedScript: csList,
-                codeReview: buildDataModel.CodeReview);
+                committedScript: csList);
             actual = sbh.RunBuildScripts(scripts, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);

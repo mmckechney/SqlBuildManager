@@ -65,8 +65,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 },
                 build: baseModel.Build,
                 scriptRun: baseModel.ScriptRun,
-                committedScript: baseModel.CommittedScript,
-                codeReview: baseModel.CodeReview);
+                committedScript: baseModel.CommittedScript);
             var runData = new BuildModels.SqlBuildRunDataModel(
                 buildDataModel: buildDataModel,
                 buildType: "type",

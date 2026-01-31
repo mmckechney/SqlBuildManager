@@ -324,69 +324,6 @@ namespace SqlSync.SqlBuild.UnitTest.Models
 
         #endregion
 
-        #region CodeReview Tests
-
-        [TestMethod]
-        public void CodeReview_Constructor_SetsAllProperties()
-        {
-            // Arrange
-            var codeReviewId = Guid.NewGuid();
-            var scriptId = Guid.NewGuid().ToString();
-            var reviewDate = DateTime.UtcNow;
-
-            // Act
-            var codeReview = new CodeReview(
-                codeReviewId: codeReviewId,
-                scriptId: scriptId,
-                reviewDate: reviewDate,
-                reviewBy: "reviewer",
-                reviewStatus: 1,
-                comment: "Approved",
-                reviewNumber: "CR-001",
-                checkSum: "CHECKSUM123",
-                validationKey: "KEY456");
-
-            // Assert
-            Assert.AreEqual(codeReviewId, codeReview.CodeReviewId);
-            Assert.AreEqual(scriptId, codeReview.ScriptId);
-            Assert.AreEqual(reviewDate, codeReview.ReviewDate);
-            Assert.AreEqual("reviewer", codeReview.ReviewBy);
-            Assert.AreEqual((short)1, codeReview.ReviewStatus);
-            Assert.AreEqual("Approved", codeReview.Comment);
-            Assert.AreEqual("CR-001", codeReview.ReviewNumber);
-            Assert.AreEqual("CHECKSUM123", codeReview.CheckSum);
-            Assert.AreEqual("KEY456", codeReview.ValidationKey);
-        }
-
-        [TestMethod]
-        public void CodeReview_Constructor_WithNulls_SetsNullValues()
-        {
-            // Act
-            var codeReview = new CodeReview(
-                codeReviewId: null,
-                scriptId: null,
-                reviewDate: null,
-                reviewBy: null,
-                reviewStatus: null,
-                comment: null,
-                reviewNumber: null,
-                checkSum: null,
-                validationKey: null);
-
-            // Assert
-            Assert.IsNull(codeReview.CodeReviewId);
-            Assert.IsNull(codeReview.ScriptId);
-            Assert.IsNull(codeReview.ReviewDate);
-            Assert.IsNull(codeReview.ReviewBy);
-            Assert.IsNull(codeReview.ReviewStatus);
-            Assert.IsNull(codeReview.Comment);
-            Assert.IsNull(codeReview.ReviewNumber);
-            Assert.IsNull(codeReview.CheckSum);
-            Assert.IsNull(codeReview.ValidationKey);
-        }
-
-        #endregion
-
         #region SqlSyncBuildDataModel Tests
 
         [TestMethod]
@@ -398,7 +335,6 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             var builds = new List<Build> { new Build { Name = "Build1" } };
             var scriptRuns = new List<ScriptRun> { new ScriptRun { FileName = "test.sql" } };
             var committedScripts = new List<CommittedScript> { new CommittedScript { ScriptId = "id1" } };
-            var codeReviews = new List<CodeReview> { new CodeReview(Guid.NewGuid(), "id1", DateTime.UtcNow, "user", 1, "OK", "1", "chk", "key") };
 
             // Act
             var model = new SqlSyncBuildDataModel(
@@ -406,8 +342,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                 script: scripts,
                 build: builds,
                 scriptRun: scriptRuns,
-                committedScript: committedScripts,
-                codeReview: codeReviews);
+                committedScript: committedScripts);
 
             // Assert
             Assert.AreEqual(1, model.SqlSyncBuildProject.Count);
@@ -415,7 +350,6 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual(1, model.Build.Count);
             Assert.AreEqual(1, model.ScriptRun.Count);
             Assert.AreEqual(1, model.CommittedScript.Count);
-            Assert.AreEqual(1, model.CodeReview.Count);
         }
 
         [TestMethod]
@@ -427,8 +361,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript>(),
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript>());
 
             // Assert
             Assert.AreEqual(0, model.SqlSyncBuildProject.Count);
@@ -436,7 +369,6 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual(0, model.Build.Count);
             Assert.AreEqual(0, model.ScriptRun.Count);
             Assert.AreEqual(0, model.CommittedScript.Count);
-            Assert.AreEqual(0, model.CodeReview.Count);
         }
 
         [TestMethod]
@@ -448,8 +380,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript>(),
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript>());
 
             // Act
             model.Script.Add(new Script { FileName = "new.sql" });

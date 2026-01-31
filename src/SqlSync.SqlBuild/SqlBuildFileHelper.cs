@@ -299,7 +299,6 @@ namespace SqlSync.SqlBuild
                 if (ExtractSqlBuildZipFile(tmpZipFullName, ref tmpDir, ref tmpDir, ref tmpProjectFileName, false, false, out result))
                 {
                     LoadSqlBuildProjectFile(out cleanedBuildData, tmpProjectFileName, false);
-                    cleanedBuildData.CodeReview = new List<CodeReview>();
                     cleanedBuildData.ScriptRun = new List<ScriptRun>();
                     cleanedBuildData.Build = new List<Build>();
                     SqlSyncBuildDataXmlSerializer.Save(tmpProjectFileName, cleanedBuildData);
@@ -334,8 +333,7 @@ namespace SqlSync.SqlBuild
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript>(),
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript>());
         }
 
 
@@ -678,8 +676,7 @@ namespace SqlSync.SqlBuild
                 script: updatedScripts,
                 build: model.Build,
                 scriptRun: model.ScriptRun,
-                committedScript: model.CommittedScript,
-                codeReview: model.CodeReview);
+                committedScript: model.CommittedScript);
             if (saveToZip)
             {
                 SaveSqlBuildProjectFile(updatedModel, projFileName, buildZipFileName);

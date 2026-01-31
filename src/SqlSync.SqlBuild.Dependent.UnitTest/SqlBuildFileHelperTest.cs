@@ -611,7 +611,6 @@ END
             // Validate the shell model was returned
             Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
             Assert.IsTrue(cleanedBuildData.Build.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Count == 0);
 
 
         }
@@ -645,7 +644,6 @@ END
 
             Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
             Assert.IsTrue(cleanedBuildData.Build.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Count == 0);
             Assert.AreEqual(buildData.Script.Count, cleanedBuildData.Script.Count);
 
         }
@@ -665,18 +663,6 @@ END
             foreach (Script row in buildData.Script)
                 row.FileName = Path.GetFileName(row.FileName);
 
-            //Add in code review rows
-            buildData.CodeReview.Add(new CodeReview(
-                Guid.NewGuid(),
-                "EWEWEWEWEW",
-                DateTime.Now,
-                "Reviewer",
-                1,
-                "Comment",
-                "12345",
-                "AABBCCDD",
-                "EEFFGGHHII"));
-
 
 
             string zipFileName = init.GetTrulyUniqueFile();
@@ -694,7 +680,6 @@ END
 
             Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
             Assert.IsTrue(cleanedBuildData.Build.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Count == 0);
             Assert.AreEqual(buildData.Script.Count, cleanedBuildData.Script.Count);
 
         }
@@ -735,7 +720,6 @@ END
 
             Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
             Assert.IsTrue(cleanedBuildData.Build.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Count == 0);
             Assert.AreEqual(buildData.Script.Count, cleanedBuildData.Script.Count);
 
 
@@ -778,7 +762,6 @@ END
 
             Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
             Assert.IsTrue(cleanedBuildData.Build.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Count == 0);
             Assert.AreEqual(buildData.Script.Count, cleanedBuildData.Script.Count);
 
         }

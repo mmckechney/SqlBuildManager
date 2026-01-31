@@ -312,10 +312,9 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             var builds = new List<Build> { new Build("Build1", null, null, null, null, null, null, null) };
             var runs = new List<ScriptRun> { new ScriptRun(null, null, null, null, null, null, null, null, null, null) };
             var committed = new List<CommittedScript> { new CommittedScript("id", null, null, null, null, null) };
-            var reviews = new List<CodeReview> { new CodeReview(Guid.NewGuid(), "SCRIPT-001", null, null, null, null, null, null, null) };
 
             // Act
-            var model = new SqlSyncBuildDataModel(projects, scripts, builds, runs, committed, reviews);
+            var model = new SqlSyncBuildDataModel(projects, scripts, builds, runs, committed);
 
             // Assert
             Assert.AreEqual(1, model.SqlSyncBuildProject.Count);
@@ -323,40 +322,6 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual(1, model.Build.Count);
             Assert.AreEqual(1, model.ScriptRun.Count);
             Assert.AreEqual(1, model.CommittedScript.Count);
-            Assert.AreEqual(1, model.CodeReview.Count);
-        }
-
-        #endregion
-
-        #region CodeReview Tests
-
-        [TestMethod]
-        public void CodeReview_Constructor_SetsAllProperties()
-        {
-            // Arrange
-            var reviewDate = new DateTime(2023, 6, 15);
-            var reviewId = Guid.NewGuid();
-
-            // Act
-            var review = new CodeReview(
-                codeReviewId: reviewId,
-                scriptId: "SCRIPT-001",
-                reviewDate: reviewDate,
-                reviewBy: "reviewer",
-                reviewStatus: 1,
-                comment: "Looks good",
-                reviewNumber: "1",
-                checkSum: "CHECKSUM",
-                validationKey: "KEY");
-
-            // Assert
-            Assert.AreEqual(reviewId, review.CodeReviewId);
-            Assert.AreEqual("SCRIPT-001", review.ScriptId);
-            Assert.AreEqual("reviewer", review.ReviewBy);
-            Assert.AreEqual(reviewDate, review.ReviewDate);
-            Assert.AreEqual("Looks good", review.Comment);
-            Assert.AreEqual((short)1, review.ReviewStatus);
-            Assert.AreEqual("1", review.ReviewNumber);
         }
 
         #endregion

@@ -94,8 +94,7 @@ namespace SqlSync.SqlBuild.UnitTest
                     new CommittedScript("script-1", null, null, null, null, null),
                     new CommittedScript("script-2", null, null, null, null, null),
                     new CommittedScript("script-3", null, null, null, null, null)
-                },
-                new List<CodeReview>());
+                });
 
             var result = runner.ShouldSkipDueToCommittedScripts("script-2", model);
 
@@ -116,8 +115,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 new List<CommittedScript>
                 {
                     new CommittedScript("script-1", null, null, null, null, null)
-                },
-                new List<CodeReview>());
+                });
 
             var result = runner.ShouldSkipDueToCommittedScripts("", model);
 

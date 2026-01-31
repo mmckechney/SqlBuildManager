@@ -67,15 +67,6 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void CreateShellSqlSyncBuildDataModel_HasEmptyCodeReviewCollection()
-        {
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-
-            Assert.IsNotNull(model.CodeReview);
-            Assert.AreEqual(0, model.CodeReview.Count);
-        }
-
-        [TestMethod]
         public void CreateShellSqlSyncBuildDataModel_ProjectHasEmptyName()
         {
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();

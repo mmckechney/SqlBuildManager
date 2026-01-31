@@ -33,8 +33,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 script: model.Script,
                 build: model.Build,
                 scriptRun: model.ScriptRun,
-                committedScript: model.CommittedScript,
-                codeReview: model.CodeReview);
+                committedScript: model.CommittedScript);
 
             var tmpDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tmpDir);

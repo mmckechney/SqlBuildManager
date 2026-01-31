@@ -307,8 +307,7 @@ namespace SqlSync.ObjectScript
                 script: scripts,
                 build: buildModel.Build,
                 scriptRun: buildModel.ScriptRun,
-                committedScript: buildModel.CommittedScript,
-                codeReview: buildModel.CodeReview);
+                committedScript: buildModel.CommittedScript);
             SqlBuildFileHelper.SaveSqlBuildProjectFile(buildModel, projectFileName, destinationBuildZipFileName);
 
 

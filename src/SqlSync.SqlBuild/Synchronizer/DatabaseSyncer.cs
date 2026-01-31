@@ -140,8 +140,7 @@ namespace SqlSync.SqlBuild.Synchronizer
                     script: updatedScripts,
                     build: buildModel.Build,
                     scriptRun: buildModel.ScriptRun,
-                    committedScript: buildModel.CommittedScript,
-                    codeReview: buildModel.CodeReview);
+                    committedScript: buildModel.CommittedScript);
 
                 List<DatabaseOverride> lstOverride = new List<DatabaseOverride>();
                 lstOverride.Add(new DatabaseOverride()

@@ -186,41 +186,6 @@ namespace SqlSync.SqlBuild.Models
         }
     }
 
-    public sealed class CodeReview
-    {
-        public Guid? CodeReviewId { get; set; }
-        public string? ScriptId { get; set; }
-        public DateTime? ReviewDate { get; set; }
-        public string? ReviewBy { get; set; }
-        public short? ReviewStatus { get; set; }
-        public string? Comment { get; set; }
-        public string? ReviewNumber { get; set; }
-        public string? CheckSum { get; set; }
-        public string? ValidationKey { get; set; }
-
-        public CodeReview(
-            Guid? codeReviewId,
-            string? scriptId,
-            DateTime? reviewDate,
-            string? reviewBy,
-            short? reviewStatus,
-            string? comment,
-            string? reviewNumber,
-            string? checkSum,
-            string? validationKey)
-        {
-            CodeReviewId = codeReviewId;
-            ScriptId = scriptId;
-            ReviewDate = reviewDate;
-            ReviewBy = reviewBy;
-            ReviewStatus = reviewStatus;
-            Comment = comment;
-            ReviewNumber = reviewNumber;
-            CheckSum = checkSum;
-            ValidationKey = validationKey;
-        }
-    }
-
     public sealed class SqlSyncBuildDataModel
     {
         public IList<SqlSyncBuildProject> SqlSyncBuildProject { get; set; } = new List<SqlSyncBuildProject>();
@@ -228,22 +193,19 @@ namespace SqlSync.SqlBuild.Models
         public IList<Build> Build { get; set; } = new List<Build>();
         public IList<ScriptRun> ScriptRun { get; set; } = new List<ScriptRun>();
         public IList<CommittedScript> CommittedScript { get; set; } = new List<CommittedScript>();
-        public IList<CodeReview> CodeReview { get; set; } = new List<CodeReview>();
 
         public SqlSyncBuildDataModel(
             IList<SqlSyncBuildProject> sqlSyncBuildProject,
             IList<Script> script,
             IList<Build> build,
             IList<ScriptRun> scriptRun,
-            IList<CommittedScript> committedScript,
-            IList<CodeReview> codeReview)
+            IList<CommittedScript> committedScript)
         {
             SqlSyncBuildProject = sqlSyncBuildProject;
             Script = script;
             Build = build;
             ScriptRun = scriptRun;
             CommittedScript = committedScript;
-            CodeReview = codeReview;
         }
     }
 

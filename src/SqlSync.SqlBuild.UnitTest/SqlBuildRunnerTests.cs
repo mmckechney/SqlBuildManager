@@ -34,8 +34,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 committedScript: new List<BuildModels.CommittedScript>
                 {
                     new BuildModels.CommittedScript(ScriptId, serverName: null, committedDate: null, allowScriptBlock: null, scriptHash: null, sqlSyncBuildProjectId: null)
-                },
-                codeReview: model.CodeReview);
+                });
 
             var result = runner.ShouldSkipDueToCommittedScripts(ScriptId, model);
 

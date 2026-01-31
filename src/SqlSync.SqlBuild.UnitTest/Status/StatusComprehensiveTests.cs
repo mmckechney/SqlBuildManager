@@ -438,8 +438,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             new List<Script>(),
             new List<Build>(),
             new List<ScriptRun>(),
-            new List<CommittedScript>(),
-            new List<CodeReview>());
+            new List<CommittedScript>());
 
         [TestMethod]
         public void StatusReporting_Constructor_WithValidParameters_CreatesInstance()

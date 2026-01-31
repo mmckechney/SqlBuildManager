@@ -32,8 +32,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 new List<Script>(),
                 new List<Build>(),
                 new List<ScriptRun>(),
-                new List<CommittedScript>(),
-                new List<CodeReview>());
+                new List<CommittedScript>());
             var multiDbData = new MultiDbData();
             string projectFilePath = @"C:\Test\Project";
             string buildZipFileName = "build.sbm";

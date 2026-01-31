@@ -358,8 +358,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 new List<Script> { existingScript },
                 new List<Build>(),
                 new List<ScriptRun>(),
-                new List<CommittedScript>(),
-                new List<CodeReview>());
+                new List<CommittedScript>());
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
 
             // Act
@@ -410,8 +409,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 updatedScripts,
                 model.Build,
                 model.ScriptRun,
-                model.CommittedScript,
-                model.CodeReview);
+                model.CommittedScript);
 
             // Act
             var hash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(_testDir, model);
@@ -879,7 +877,7 @@ CREATE PROCEDURE dbo.Proc1 AS SELECT 1");
                 false, true, "user", 30, DateTime.MinValue, "", ""));
             model = new SqlSyncBuildDataModel(
                 model.SqlSyncBuildProject, scripts, model.Build,
-                model.ScriptRun, model.CommittedScript, model.CodeReview);
+                model.ScriptRun, model.CommittedScript);
 
             string projFileName = Path.Combine(_testDir, "project.xml");
 

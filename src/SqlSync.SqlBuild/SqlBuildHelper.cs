@@ -387,8 +387,7 @@ namespace SqlSync.SqlBuild
                     script: buildDataModelParam.Script,
                     build: builds,
                     scriptRun: buildDataModelParam.ScriptRun,
-                    committedScript: buildDataModelParam.CommittedScript,
-                    codeReview: buildDataModelParam.CodeReview);
+                    committedScript: buildDataModelParam.CommittedScript);
 
                 log.LogInformation("Reading Scripting configuration");
                 var scripts = buildDataModelParam.Script ?? Array.Empty<BuildModels.Script>();

@@ -100,8 +100,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript> { committedScript },
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript> { committedScript });
 
             // Act
             var result = utility.ClearAllowScriptBlocks(model, "TestServer", new List<string> { scriptId });
@@ -136,8 +135,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript> { committedScript },
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript> { committedScript });
 
             // Act
             var result = utility.ClearAllowScriptBlocks(model, "TestServer", new List<string> { scriptId });
@@ -173,8 +171,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript> { committedScript },
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript> { committedScript });
 
             // Act
             var result = utility.ClearAllowScriptBlocks(model, "TestServer", new List<string> { differentScriptId });
@@ -209,8 +206,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript> { committedScript },
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript> { committedScript });
 
             // Act
             var result = utility.ClearAllowScriptBlocks(model, "TestServer", new List<string> { scriptId });
@@ -244,8 +240,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript> { committedScript },
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript> { committedScript });
 
             // Act
             var result = utility.ClearAllowScriptBlocks(model, "testserver", new List<string> { scriptId });
@@ -281,8 +276,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: committedScripts,
-                codeReview: new List<CodeReview>());
+                committedScript: committedScripts);
 
             // Act - only clear scriptId1
             var result = utility.ClearAllowScriptBlocks(model, "TestServer", new List<string> { scriptId1 });
@@ -312,8 +306,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 script: new List<Script> { script },
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript>(),
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript>());
 
             // Act
             var result = utility.ClearAllowScriptBlocks(model, "TestServer", new List<string>());
@@ -624,8 +617,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript> { committedScript },
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript> { committedScript });
 
             // Act - should not throw
             var result = utility.ClearAllowScriptBlocks(model, "TestServer", new List<string> { Guid.NewGuid().ToString() });
@@ -661,8 +653,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript> { committedScript },
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript> { committedScript });
 
             // Act
             var result = utility.ClearAllowScriptBlocks(model, "TestServer", new List<string> { scriptId });
@@ -705,8 +696,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: committedScripts,
-                codeReview: new List<CodeReview>());
+                committedScript: committedScripts);
 
             // Act
             var result = utility.ClearAllowScriptBlocks(model, "TestServer", scriptIdsToClean);

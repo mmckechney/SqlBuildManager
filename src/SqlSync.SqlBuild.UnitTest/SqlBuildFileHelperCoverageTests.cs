@@ -898,7 +898,7 @@ CREATE PROCEDURE dbo.TestProc AS SELECT 1;");
                 new Script("test.sql", 1, "desc", true, true, DateTime.Now, Guid.NewGuid().ToString(), "TestDb", false, true, "user", 30, DateTime.MinValue, "", ""),
                 new Script("test.txt", 2, "desc", true, true, DateTime.Now, Guid.NewGuid().ToString(), "TestDb", false, true, "user", 30, DateTime.MinValue, "", "")
             };
-            model = new SqlSyncBuildDataModel(model.SqlSyncBuildProject, scripts, model.Build, model.ScriptRun, model.CommittedScript, model.CodeReview);
+            model = new SqlSyncBuildDataModel(model.SqlSyncBuildProject, scripts, model.Build, model.ScriptRun, model.CommittedScript);
 
             // Act
             SqlBuildFileHelper.GetFileDataForObjectUpdates(model, _testDirectory, out var canUpdate, out var canNotUpdate);
