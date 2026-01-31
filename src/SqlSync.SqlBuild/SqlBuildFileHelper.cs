@@ -796,6 +796,7 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region .: Add / Remove scripts from build :.
+        [Obsolete("Use POCO-based script removal methods")]
         public static bool RemoveScriptFilesFromBuild(ref SqlSyncBuildData buildData, string projFileName, string buildZipFileName, SqlSyncBuildData.ScriptRow[] rows, bool deleteFiles)
         {
             string fileName;
@@ -877,6 +878,7 @@ namespace SqlSync.SqlBuild
                 buildData = model.ToDataSet();
             }
         }
+        [Obsolete("Use AddScriptFileToBuild(SqlSyncBuildDataModel, ...) for POCO")]
         public static void AddScriptFileToBuild(ref SqlSyncBuildData buildData, string projFileName, string fileName, double buildOrder, string description, bool rollBackScript, bool rollBackBuild, string databaseName, bool stripTransactions, string buildZipFileName, bool saveToZip, bool allowMultipleRuns, string addedBy, int scriptTimeOut, string tag)
         {
     #pragma warning disable CS0618
@@ -942,6 +944,7 @@ namespace SqlSync.SqlBuild
             }
             return registry;
         }
+        [Obsolete("Use POCO-based default script methods")]
         public static DefaultScriptCopyStatus AddDefaultScriptToBuild(ref SqlSyncBuildData buildData, DefaultScripts.DefaultScript defaultScript, DefaultScriptCopyAction copyAction, string projFileName, string buildZipFileName)
         {
             DefaultScriptCopyStatus status = DefaultScriptCopyStatus.Success;
@@ -1006,6 +1009,7 @@ namespace SqlSync.SqlBuild
         #endregion 
 
         #region .: Object/ Populate Script Update settings :.
+        [Obsolete("Use POCO-based code table update methods")]
         public static SqlBuild.CodeTable.ScriptUpdates[] GetFileDataForCodeTableUpdates(ref SqlSyncBuildData buildData, string projFileName)
         {
             if (buildData == null)
@@ -1074,6 +1078,7 @@ namespace SqlSync.SqlBuild
             return codeTableUpdate;
         }
 
+        [Obsolete("Use GetFileDataForObjectUpdates(SqlSyncBuildDataModel, ...) for POCO")]
         public static SqlBuild.Objects.ObjectUpdates[] GetFileDataForObjectUpdates(ref SqlSyncBuildData buildData, string projFileName)
         {
             List<SqlBuild.Objects.ObjectUpdates> canUpdate;
@@ -1131,6 +1136,7 @@ namespace SqlSync.SqlBuild
                 }
             }
         }
+        [Obsolete("Use GetFileDataForObjectUpdates(SqlSyncBuildDataModel, ...) for POCO")]
         public static void GetFileDataForObjectUpdates(ref SqlSyncBuildData buildData, string projFileName, out List<SqlBuild.Objects.ObjectUpdates> canUpdate, out List<string> canNotUpdate)
         {
             if (buildData == null)
@@ -1306,6 +1312,7 @@ namespace SqlSync.SqlBuild
         /// <param name="projectFileExtractionPath">Path where all of the script files are to be founw</param>
         /// <param name="buildData">The SqlSyncBuildData build config data the contains the script names and build order</param>
         /// <returns></returns>
+        [Obsolete("Use CalculateBuildPackageSHA1SignatureFromPath(string, SqlSyncBuildDataModel) for POCO")]
         public static string CalculateBuildPackageSHA1SignatureFromPath(string projectFileExtractionPath, SqlSyncBuildData buildData)
         {
 
@@ -1458,10 +1465,12 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region .: Renumbering/ Resorting :.
+        [Obsolete("Use POCO-based build renumbering methods")]
         public static bool RenumberBuildSequence(ref SqlSyncBuildData buildData, string projectFileName, string buildZipFileName)
         {
             return RenumberBuildSequence(ref buildData, projectFileName, buildZipFileName, (int)ResequenceIgnore.StartNumber);
         }
+        [Obsolete("Use POCO-based build renumbering methods")]
         internal static bool RenumberBuildSequence(ref SqlSyncBuildData buildData, string projectFileName, string buildZipFileName, int renumberIgnoreStart)
         {
             try
@@ -1488,6 +1497,7 @@ namespace SqlSync.SqlBuild
             }
 
         }
+        [Obsolete("Use POCO-based build resorting methods")]
         public static bool ResortBuildByFileType(ref SqlSyncBuildData buildData, string projectFileName, string buildZipFileName)
         {
 
@@ -1556,6 +1566,7 @@ namespace SqlSync.SqlBuild
         }
 
         #region .: Updating from Legacy code :.
+        [Obsolete("Legacy project history conversion - use POCO-based methods")]
         public static void ConvertLegacyProjectHistory(ref SqlSyncBuildData buildData, string projFilePath, string zipFileName)
         {
             if (buildData.Builds.Count == 0 || buildData.Build.Count == 0)
@@ -1627,6 +1638,7 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region .: Copying scripts out to plain files :.
+        [Obsolete("Use POCO-based script copy methods")]
         public static bool CopyIndividualScriptsToFolder(ref SqlSyncBuildData buildData, string destinationFolder, string projectFilePath, bool includeUSE, bool includeSequence)
         {
             if (buildData.Script == null || buildData.Script.Count == 0)
@@ -1675,6 +1687,7 @@ namespace SqlSync.SqlBuild
                 return false;
             }
         }
+        [Obsolete("Use POCO-based script copy methods")]
         public static bool CopyScriptsToSingleFile(ref SqlSyncBuildData buildData, string destinationFile, string projectFilePath, string buildFileName, bool includeUSE)
         {
             if (buildData.Script == null || buildData.Script.Count == 0)
@@ -1719,6 +1732,7 @@ namespace SqlSync.SqlBuild
             }
         }
 
+        [Obsolete("Use POCO-based script copy methods")]
         public static async Task<(bool success, SqlSyncBuildData buildData)> CopyIndividualScriptsToFolderAsync(SqlSyncBuildData buildData, string destinationFolder, string projectFilePath, bool includeUSE, bool includeSequence, CancellationToken cancellationToken = default)
         {
             if (buildData.Script == null || buildData.Script.Count == 0)
@@ -1763,6 +1777,7 @@ namespace SqlSync.SqlBuild
             }
         }
 
+        [Obsolete("Use POCO-based script copy methods")]
         public static async Task<(bool success, SqlSyncBuildData buildData)> CopyScriptsToSingleFileAsync(SqlSyncBuildData buildData, string destinationFile, string projectFilePath, string buildFileName, bool includeUSE, CancellationToken cancellationToken = default)
         {
             if (buildData.Script == null || buildData.Script.Count == 0)
@@ -1802,7 +1817,7 @@ namespace SqlSync.SqlBuild
         }
         #endregion
 
-        //public static double ImportSqlScriptFile
+        [Obsolete("Use POCO-based import methods")]
         public static double ImportSqlScriptFile(ref SqlSyncBuildData buildData, SqlSyncBuildData importData, string importWorkingDirectory, double lastBuildNumber, string projectFilePath, string projectFileName, string buildZipFileName, bool cleanUp, out string[] addedFileNames)
         {
             bool haveImportedRows = false;
