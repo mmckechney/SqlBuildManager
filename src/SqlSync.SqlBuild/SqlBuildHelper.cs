@@ -235,7 +235,7 @@ namespace SqlSync.SqlBuild
             return calculatedStatus;
         }
 
-        public async Task<BuildModels.Build> ProcessBuild(BuildModels.SqlBuildRunDataModel runData, int allowableTimeoutRetries = 3, string buildRequestedBy = "", ScriptBatchCollection scriptBatchColl = null)
+        public async Task<BuildModels.Build> ProcessBuildAsync(BuildModels.SqlBuildRunDataModel runData, int allowableTimeoutRetries = 3, string buildRequestedBy = "", ScriptBatchCollection scriptBatchColl = null)
         {
             ConnectionsService.Connections.Clear();
             committedScripts.Clear();

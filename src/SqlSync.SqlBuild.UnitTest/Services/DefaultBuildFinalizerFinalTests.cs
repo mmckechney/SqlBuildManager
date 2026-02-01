@@ -59,7 +59,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
             // Act
-            await _finalizer.SaveBuildDataModel(mockContext.Object, true);
+            await _finalizer.SaveBuildDataModelAsync(mockContext.Object, true);
         }
 
         [TestMethod]
@@ -72,7 +72,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
             // Act
-            await _finalizer.SaveBuildDataModel(mockContext.Object, true);
+            await _finalizer.SaveBuildDataModelAsync(mockContext.Object, true);
         }
 
         [TestMethod]
@@ -90,7 +90,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
             // Act
-            await _finalizer.SaveBuildDataModel(mockContext.Object, true);
+            await _finalizer.SaveBuildDataModelAsync(mockContext.Object, true);
         }
 
         [TestMethod]
@@ -108,7 +108,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
             // Act
-            await _finalizer.SaveBuildDataModel(mockContext.Object, true);
+            await _finalizer.SaveBuildDataModelAsync(mockContext.Object, true);
         }
 
         #endregion

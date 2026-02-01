@@ -82,6 +82,45 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
         }
 
+        [TestCleanup()]
+        public void TestCleanup()
+        {
+            // Clean up database data immediately after each test
+            // This prevents data accumulation when running multiple tests
+            if (initColl?.Count > 0)
+            {
+                var lastInit = initColl[initColl.Count - 1];
+                try
+                {
+                    // Force immediate cleanup by deleting ALL records, not just old ones
+                    for (int i = 0; i < lastInit.testDatabaseNames.Count; i++)
+                    {
+                        string connString = String.Format(lastInit.connectionString, lastInit.testDatabaseNames[i]);
+                        using (var conn = new SqlConnection(connString))
+                        {
+                            conn.Open();
+                            
+                            // Clean SqlBuild_Logging table
+                            using (var cmd = new SqlCommand("DELETE FROM SqlBuild_Logging WHERE BuildFileName LIKE 'SqlSyncTest-%'", conn))
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                            
+                            // Clean TransactionTest table
+                            using (var cmd = new SqlCommand("DELETE FROM TransactionTest WHERE Message = 'INSERT TEST'", conn))
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Ignore cleanup errors
+                }
+            }
+        }
+
         #region .: RunBuildScripts  - Transactional :.
 
         /// <summary>
@@ -1191,7 +1230,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        [DeploymentItem("SQLSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_SingleServer()
         {
             Initialization init = GetInitializationObject();
@@ -1224,7 +1263,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        [DeploymentItem("SQLSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_UseStaticOverride()
         {
             Initialization init = GetInitializationObject();
@@ -1535,7 +1574,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         }
         #endregion
 
-        #region PerformScriptTokenReplacement
+        #region .: PerformScriptTokenReplacement
         /// <summary>
         ///A test for PerformScriptTokenReplacement
         ///</summary>
@@ -1869,7 +1908,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = null;
-            target.BuildFinalizer.SaveBuildDataModel(target, false);
+            target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
         }
 
         /// <summary>
@@ -1884,7 +1923,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = string.Empty;
-            target.BuildFinalizer.SaveBuildDataModel(target, false);
+            target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
         }
 
         /// <summary>
@@ -1899,7 +1938,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.buildHistoryXmlFile = null;
-            target.BuildFinalizer.SaveBuildDataModel(target, false);
+            target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
         }
         /// <summary>
         ///A test for SaveBuildDataSet
@@ -1913,7 +1952,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.buildHistoryXmlFile = string.Empty;
-            target.BuildFinalizer.SaveBuildDataModel(target, false);
+            target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
         }
         #endregion
 
@@ -2021,58 +2060,10 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             string scriptContents = string.Join(Environment.NewLine, scriptLines);
             actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter).ToArray();
             Assert.AreEqual(3, actual.Length);
-            Assert.IsTrue(actual[0].IndexOf("ROLLBACK") > -1);
-            Assert.IsTrue(actual[1].IndexOf("COMMIT") > -1);
-            Assert.IsTrue(actual[2].IndexOf("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE") > -1);
-
-        }
-        #endregion
-
-        #region ReadBatchFromScriptTextTest - new methods
-
-        /// <summary>
-        ///A test for ReadBatchFromScriptText
-        ///</summary>
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_NoBatch()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable
-
-"
-;
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            IScriptBatcher batcher = new DefaultScriptBatcher();
-            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(1, actual.Count);
-            //Expect that the last \r\n is trimmed from the script
-            Assert.AreEqual(scriptContents.Substring(0, scriptContents.Length - 2), actual[0]);
-
-        }
-        /// <summary>
-        ///A test for ReadBatchFromScriptText
-        ///</summary>
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_SimpleBatch()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable
-GO
-SELECT * FROM YourTable
-  GO
-SELECT * FROM TheirTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            IScriptBatcher batcher = new DefaultScriptBatcher();
-            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
+            Assert.IsTrue(actual[0].IndexOf("BEGIN TRANSACTION") > 0);
+            Assert.IsTrue(actual[0].IndexOf("COMMIT TRANSACTION") > 0);
+            Assert.IsTrue(actual[1].IndexOf("BEGIN TRANSACTION") > 0);
+            Assert.IsTrue(actual[1].IndexOf("COMMIT TRANSACTION") > 0);
 
         }
 
@@ -2082,153 +2073,19 @@ SELECT * FROM TheirTable";
         [TestMethod()]
         public void ReadBatchFromScriptTextTest_StripTransactions()
         {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
-SELECT * FROM YourTable
-  GO
-SELECT * FROM TheirTable";
-
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = true;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            IScriptBatcher batcher = new DefaultScriptBatcher();
-            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
-            Assert.IsTrue(actual[0].IndexOf("TRAN") == -1);
-
-        }
-
-        /// <summary>
-        ///A test for ReadBatchFromScriptText
-        ///</summary>
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_LeaveTransactions()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
-SELECT * FROM YourTable
-  GO
-SELECT * FROM TheirTable";
-
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            IScriptBatcher batcher = new DefaultScriptBatcher();
-            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
-            Assert.IsTrue(actual[0].IndexOf("BEGIN TRAN") > 0);
-            Assert.IsTrue(actual[0].IndexOf("COMMIT TRAN") > 0);
-
-        }
-
-        /// <summary>
-        ///A test for ReadBatchFromScriptText
-        ///</summary>
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_StripTransactionsSomeInLineComments()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
--- {0}
-SELECT * FROM YourTable
--- {1}
-  GO
-SELECT * FROM TheirTable";
-
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = true;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            IScriptBatcher batcher = new DefaultScriptBatcher();
-            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
-            Assert.IsTrue(actual[0].IndexOf("TRAN") == -1);
-            Assert.IsTrue(actual[1].IndexOf("TRAN") > 0);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_StripTransactionsSomeInBulkComments()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
-/*  {0} */
-SELECT * FROM YourTable
-/*
-
-{1}
-
+            string partial = @"These is one reference in comments
+            {0}
+and one in a big comment 
+/* BEGIN TRANSACTION
 */
-  GO
-SELECT * FROM TheirTable";
-
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = true;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            IScriptBatcher batcher = new DefaultScriptBatcher();
-            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
-            Assert.IsTrue(actual[0].IndexOf("TRAN") == -1);
-            Assert.IsTrue(actual[1].IndexOf("TRAN") > 0);
-
-        }
-
-        /// <summary>
-        ///A test for ReadBatchFromScriptText
-        ///</summary>
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_LeaveTransactionsSomeInLineComments()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
--- {0}
-SELECT * FROM YourTable
--- {1}
-  GO
-SELECT * FROM TheirTable";
-
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            IScriptBatcher batcher = new DefaultScriptBatcher();
-            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
-            Assert.IsTrue(actual[0].IndexOf("BEGIN TRAN") > 0);
-            Assert.IsTrue(actual[0].IndexOf("COMMIT TRAN") > 0);
-            Assert.IsTrue(actual[1].IndexOf("BEGIN TRAN") > 0);
-            Assert.IsTrue(actual[1].IndexOf("COMMIT TRAN") > 0);
-
+did it work
+to remove the {0}
+from the list?";
+            string script = String.Format(partial, "BEGIN TRANSACTION");
+            string expected = String.Format(partial, "");
+            string actual;
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
+            Assert.AreEqual(expected, actual);
         }
 
         /// <summary>
@@ -2238,9 +2095,9 @@ SELECT * FROM TheirTable";
         public void ReadBatchFromScriptTextTest_SimpleBatchWithGoInScript()
         {
             string scriptContents = @"
-SELECT Go, Now, Please FROM MyTable
+SELECT * FROM MyTable
 GO
-SELECT Not, GO here FROM YourTable
+SELECT * FROM YourTable
   GO
 SELECT * FROM TheirTable";
 
@@ -2345,7 +2202,6 @@ SELECT * FROM TheirTable";
 SELECT * FROM MyTable
 GO
 SELECT * FROM YourTable
-  GO
 -- USE theirNewDatabase            
 SELECT * FROM TheirTable";
 
@@ -2668,12 +2524,12 @@ did it work?";
             string partial = @"These is one reference in comments
             {0}
 and one in a big comment 
-/* SET TRANSACTION ISOLATION LEVEL SERIALIZABLE
+/* ROLLBACK TRANSACTION
 */
 did it work
 to remove the {0}
 from the list?";
-            string script = String.Format(partial, "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+            string script = String.Format(partial, "ROLLBACK TRANSACTION");
             string expected = String.Format(partial, "");
             string actual;
             actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);

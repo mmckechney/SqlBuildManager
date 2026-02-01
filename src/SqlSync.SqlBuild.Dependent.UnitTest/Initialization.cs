@@ -208,16 +208,21 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 {
                     string connString = String.Format(connectionString, testDatabaseNames[i]);
                     SqlConnection conn = new SqlConnection(connString);
-                    string cleaner = string.Format(Properties.Resources.CleanLoggingTable, DateTime.Now.AddHours(-1).ToString());
+                    // Use immediate cleanup - delete test data regardless of age
+                    // This prevents timeout issues when running multiple tests
+                    string cleaner = "IF EXISTS (SELECT 1 FROM sys.objects WHERE name = 'SqlBuild_Logging' AND type = 'U') " +
+                                   "BEGIN DELETE FROM SqlBuild_Logging WHERE BuildFileName LIKE 'SqlSyncTest-%' OR CommitDate < @CutoffDate END";
                     SqlCommand cmd = new SqlCommand(cleaner, conn);
+                    cmd.Parameters.AddWithValue("@CutoffDate", DateTime.Now.AddHours(-1));
                     conn.Open();
                     object val = cmd.ExecuteNonQuery();
                     conn.Close();
                 }
                 return true;
             }
-            catch
+            catch(Exception exe)
             {
+                log.LogError(exe, "Unable to clean SqlBuild_Logging tables");
                 return false;
             }
         }
@@ -584,7 +589,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             {
                 using (SqlConnection conn = new SqlConnection(String.Format(connectionString, testDatabaseNames[databaseIndex])))
                 {
-                    SqlCommand cmd = new SqlCommand("SELECT count(*) FROM SqlBuild_Logging WHERE BuildFileName = @BuildFileName", conn);
+                    SqlCommand cmd = new SqlCommand("SELECT count(*) FROM SqlBuild_Logging WITH (NOLOCK) WHERE BuildFileName = @BuildFileName", conn);
                     cmd.Parameters.AddWithValue("@BuildFileName", Path.GetFileName(projectFileName));
                     conn.Open();
                     object val = cmd.ExecuteScalar();

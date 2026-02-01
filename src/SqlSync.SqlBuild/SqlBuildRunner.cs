@@ -190,7 +190,7 @@ namespace SqlSync.SqlBuild
             }
             finally
             {
-                _buildFinalizer.SaveBuildDataModel(_ctx, false);
+                _buildFinalizer.SaveBuildDataModelAsync(_ctx, false).GetAwaiter().GetResult();
                 WriteFinalScriptLog(dbTargets, buildFailure, isTransactional: _ctx.IsTransactional, isTrialBuild: _ctx.IsTrialBuild);
             }
 
@@ -388,7 +388,7 @@ namespace SqlSync.SqlBuild
             }
             finally
             {
-                _buildFinalizer.SaveBuildDataModel(_ctx, false);
+                await _buildFinalizer.SaveBuildDataModelAsync(_ctx, false).ConfigureAwait(false);
                 WriteFinalScriptLog(dbTargets, buildFailure, isTransactional: _ctx.IsTransactional, isTrialBuild: _ctx.IsTrialBuild);
                 if (buildFailure)
                 {

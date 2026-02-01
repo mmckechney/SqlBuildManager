@@ -151,7 +151,7 @@ namespace SqlBuildManager.Console
                         defaultScriptTimeout: sqlBuildRunData.DefaultScriptTimeout,
                         allowObjectDelete: sqlBuildRunData.AllowObjectDelete);
 
-                    await helper.ProcessBuild(runData: runDataModel, allowableTimeoutRetries: cmdLine.TimeoutRetryCount);
+                    await helper.ProcessBuildAsync(runData: runDataModel, allowableTimeoutRetries: cmdLine.TimeoutRetryCount);
                 }
                 else
                 {

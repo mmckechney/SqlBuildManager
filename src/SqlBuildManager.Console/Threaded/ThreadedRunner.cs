@@ -267,7 +267,7 @@ namespace SqlBuildManager.Console.Threaded
 
                 if(runDataModel.BuildDataModel == null) runDataModel.BuildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-                var result = await helper.ProcessBuild(runDataModel, cmdArgs.TimeoutRetryCount, buildRequestedBy, _context.BatchCollection);
+                var result = await helper.ProcessBuildAsync(runDataModel, cmdArgs.TimeoutRetryCount, buildRequestedBy, _context.BatchCollection);
                 returnValue = result.FinalStatus.Value.ToRunnerReturn();
 
 

@@ -92,7 +92,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var bgWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
             var e = new DoWorkEventArgs(null);
 
-            var result = await helper.ProcessBuild(runData, allowableTimeoutRetries: 3, buildRequestedBy: string.Empty, scriptBatchColl: scriptBatchColl);
+            var result = await helper.ProcessBuildAsync(runData, allowableTimeoutRetries: 3, buildRequestedBy: string.Empty, scriptBatchColl: scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries, result.FinalStatus);
         }

@@ -123,7 +123,7 @@ namespace SqlSync.SqlBuild.Services
             return model;
         }
 
-        public async Task SaveBuildDataModel(ISqlBuildRunnerProperties context, bool fireSavedEvent)
+        public async Task SaveBuildDataModelAsync(ISqlBuildRunnerProperties context, bool fireSavedEvent)
         {
             log.LogInformation("Saving Build File Updates");
 
@@ -215,7 +215,7 @@ namespace SqlSync.SqlBuild.Services
                 finalizerContext.RaiseBuildErrorRollBackEvent(context);
             }
 
-            await SaveBuildDataModel(context, true);
+            await SaveBuildDataModelAsync(context, true);
 
             if (buildFailure)
             {

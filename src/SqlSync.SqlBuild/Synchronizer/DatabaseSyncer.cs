@@ -182,7 +182,7 @@ namespace SqlSync.SqlBuild.Synchronizer
                 DoWorkEventArgs e = new DoWorkEventArgs(null);
 
                 PushInfo(string.Format("Applying {0}", Path.GetFileName(sbmPackageName)));
-                helper.ProcessBuild(runData: runDataModel, allowableTimeoutRetries: 0).GetAwaiter().GetResult();
+                helper.ProcessBuildAsync(runData: runDataModel, allowableTimeoutRetries: 0).GetAwaiter().GetResult();
 
                 if (lastBuildSuccessful)
                 {
