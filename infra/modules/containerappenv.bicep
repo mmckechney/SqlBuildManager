@@ -54,4 +54,6 @@ resource containerAppEnvNoSubnet 'Microsoft.App/managedEnvironments@2022-11-01-p
   }
 }
 
+output name string = subnetId != '' ? containerAppEnvWithSubnet.name : containerAppEnvNoSubnet.name
+output id string = subnetId != '' ? containerAppEnvWithSubnet.id : containerAppEnvNoSubnet.id
 

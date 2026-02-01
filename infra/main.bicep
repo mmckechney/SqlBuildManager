@@ -229,3 +229,58 @@ module serviceBusResource './modules/servicebus.bicep' = {
 output AZURE_LOCATION string = location
 output AZURE_RESOURCE_GROUP string = resourceGroupName
 output AZURE_NAME_PREFIX string = namePrefix
+
+// Deployment parameter outputs
+output DEPLOY_BATCH_ACCOUNT bool = deployBatchAccount
+output DEPLOY_CONTAINER_REGISTRY bool = deployContainerRegistry
+output DEPLOY_CONTAINERAPP_ENV bool = deployContainerAppEnv
+output DEPLOY_AKS bool = deployAks
+output TEST_DB_COUNT_PER_SERVER int = testDbCountPerServer
+output EVENTHUB_SKU string = eventhubSku
+output SKU_CAPACITY int = skuCapacity
+
+// Resource outputs
+output RESOURCE_GROUP_NAME string = resourceGroupName
+output RESOURCE_GROUP_ID string = rg.id
+
+output VNET_NAME string = networkResource.outputs.vnetName
+output VNET_ID string = networkResource.outputs.vnetId
+output NSG_NAME string = networkResource.outputs.nsgName
+output ACI_SUBNET_NAME string = networkResource.outputs.aciSubnetName
+output BATCH_SUBNET_NAME string = networkResource.outputs.batchSubnetName
+output CONTAINERAPP_SUBNET_NAME string = networkResource.outputs.containerAppSubnetName
+output AKS_SUBNET_NAME string = networkResource.outputs.aksSubnetName
+
+output MANAGED_IDENTITY_NAME string = identityResource.outputs.name
+output MANAGED_IDENTITY_ID string = identityResource.outputs.id
+output MANAGED_IDENTITY_CLIENT_ID string = identityResource.outputs.clientId
+output MANAGED_IDENTITY_PRINCIPAL_ID string = identityResource.outputs.principalId
+
+output STORAGE_ACCOUNT_NAME string = storageAccountResource.outputs.name
+output STORAGE_ACCOUNT_ID string = storageAccountResource.outputs.id
+
+output LOG_ANALYTICS_WORKSPACE_NAME string = logAnalyticsWorkspaceResource.outputs.name
+output LOG_ANALYTICS_WORKSPACE_ID string = logAnalyticsWorkspaceResource.outputs.id
+output LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = logAnalyticsWorkspaceResource.outputs.customerId
+
+output EVENTHUB_NAMESPACE_NAME string = eventHubNamespaceResource.outputs.namespaceName
+output EVENTHUB_NAMESPACE_ID string = eventHubNamespaceResource.outputs.namespaceId
+output EVENTHUB_NAME string = eventHubNamespaceResource.outputs.eventHubName
+
+output SERVICEBUS_NAMESPACE_NAME string = serviceBusResource.outputs.namespaceName
+output SERVICEBUS_NAMESPACE_ID string = serviceBusResource.outputs.namespaceId
+
+output CONTAINER_REGISTRY_NAME string = deployContainerRegistry ? containerRegistry!.outputs.name : ''
+output CONTAINER_REGISTRY_ID string = deployContainerRegistry ? containerRegistry!.outputs.id : ''
+output CONTAINER_REGISTRY_LOGIN_SERVER string = deployContainerRegistry ? containerRegistry!.outputs.loginServer : ''
+
+output CONTAINERAPP_ENVIRONMENT_NAME string = deployContainerAppEnv ? containerAppEnv!.outputs.name : ''
+output CONTAINERAPP_ENVIRONMENT_ID string = deployContainerAppEnv ? containerAppEnv!.outputs.id : ''
+
+output BATCH_ACCOUNT_NAME string = deployBatchAccount ? batchAccount!.outputs.name : ''
+output BATCH_ACCOUNT_ID string = deployBatchAccount ? batchAccount!.outputs.id : ''
+
+output AKS_CLUSTER_NAME string = deployAks ? aks!.outputs.clusterName : ''
+output AKS_CLUSTER_ID string = deployAks ? aks!.outputs.clusterId : ''
+output AKS_FEDERATED_IDENTITY_NAME string = deployAks ? aks!.outputs.federatedIdName : ''
+output AKS_SERVICE_ACCOUNT_NAME string = deployAks ? aks!.outputs.serviceAccountName : ''

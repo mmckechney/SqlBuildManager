@@ -8,7 +8,7 @@ Write-Host "========================================" -ForegroundColor Cyan
 
 # Get the environment name (used as prefix)
 $prefix = $env:AZURE_ENV_NAME
-$resourceGroupName = "$prefix-rg"
+$resourceGroupName = $env:RESOURCE_GROUP_NAME
 
 Write-Host "Environment: $prefix" -ForegroundColor DarkGreen
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
@@ -29,7 +29,39 @@ if (Test-Path $scriptPath) {
     Write-Host "Skipping SQL permissions grant. Run manually after deployment:" -ForegroundColor Yellow
     Write-Host "  .\scripts\Database\grant_identity_permissions.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
 }
+$aksDeployed = $env:DEPLOY_AKS
+if ($aksDeployed -eq "true") {
 
+    $aksClusterName = $env:AKS_CLUSTER_NAME
+    $userAssignedIdentity = $env:MANAGED_IDENTITY_NAME
+    $userAssignedClientId = $env:MANAGED_IDENTITY_CLIENT_ID
+    $serviceAccountName = $env:AKS_SERVICE_ACCOUNT_NAME
+
+    Write-Host "Retrieving credentials for: $aksClusterName to be able to run kubectl commands" -ForegroundColor DarkGreen
+    az aks get-credentials --name $aksClusterName --resource-group $resourceGroupName --overwrite-existing --admin -o table
+
+    Write-Host "Create 'sqlbuildmanager' Kubernetes namespace" -ForegroundColor DarkGreen
+    kubectl create namespace sqlbuildmanager
+
+
+    $userAssignedClientId = az identity show --resource-group $resourceGroupName --name $userAssignedIdentity --query "clientId"
+
+    #create Kubernetes service principal
+    Write-Host "Creating Kubernetes Service Principal $serviceAccountName associated with $userAssignedIdentity having Client ID $userAssignedClientId" -ForegroundColor DarkGreen
+    $svcAcctYml = "
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+    annotations:
+        azure.workload.identity/client-id: $userAssignedClientId 
+    labels:
+        azure.workload.identity/use: 'true'
+    name: $serviceAccountName
+    namespace: sqlbuildmanager"
+
+    $svcAcctYml | kubectl apply -f -
+
+}
 # Build and upload Batch application packages if BUILD_BATCH_PACKAGES is set
 $buildBatch = $env:BUILD_BATCH_PACKAGES
 if ($buildBatch -eq "true") {

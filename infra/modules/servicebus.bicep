@@ -41,3 +41,4 @@ resource topic 'Microsoft.ServiceBus/namespaces/topics@2018-01-01-preview' = {
 
 output namespaceId string = serviceBusNamespace.id
 output topicId string = topic.id
+output namespaceName string = serviceBusNamespace.name

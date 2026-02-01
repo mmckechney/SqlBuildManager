@@ -73,3 +73,4 @@ output clientId string = identityResource.properties.clientId
 output tenantId string = identityResource.properties.tenantId
 output principalId string = identityResource.properties.principalId
 output name string = identityResource.name
+output id string = identityResource.id

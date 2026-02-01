@@ -33,3 +33,6 @@ resource batchAccountResource 'Microsoft.Batch/batchAccounts@2021-01-01' = {
   }
 
 }
+
+output name string = batchAccountResource.name
+output id string = batchAccountResource.id

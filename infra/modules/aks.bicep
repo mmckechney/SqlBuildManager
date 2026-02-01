@@ -100,4 +100,8 @@ resource aks 'Microsoft.ContainerService/managedClusters@2023-05-01' = {
   }
 }
 
+output clusterName string = aks.name
+output clusterId string = aks.id
+output federatedIdName string = federatedCredential.name
+output serviceAccountName string = serviceAccountName
 
