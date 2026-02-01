@@ -70,7 +70,7 @@ namespace SqlBuildManager.Console
                 }
                 else if (string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
                 {
-                    cmdLine.ManualOverRideSets = sqlB.SqlBuildFileHelper.InferOverridesFromPackage(cmdLine.BuildFileName, cmdLine.Database);
+                    cmdLine.ManualOverRideSets = await sqlB.SqlBuildFileHelper.InferOverridesFromPackageAsync(cmdLine.BuildFileName, cmdLine.Database).ConfigureAwait(false);
                     var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
                     var def = ovrRide.Split(':')[1].Split(',')[0];
                     var target = ovrRide.Split(':')[1].Split(',')[1];
@@ -90,10 +90,17 @@ namespace SqlBuildManager.Console
                     cmdLine.RootLoggingPath = Directory.GetCurrentDirectory();
                 }
 
-                string projFilePath = "", projectFileName = "";
-                sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFile(cmdLine.BuildFileName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
+                var extractResult = await sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(cmdLine.BuildFileName, workingDirectory: workingDir, resetWorkingDirectory: true, overwriteExistingProjectFiles: true).ConfigureAwait(false);
+                if (!extractResult.success)
+                {
+                    log.LogError($"Unable to extract build file: {cmdLine.BuildFileName}. {extractResult.result}");
+                    return -1;
+                }
+                workingDir = extractResult.workingDirectory;
+                string projFilePath = extractResult.projectFilePath;
+                string projectFileName = extractResult.projectFileName;
 
-                bool success = sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sqlM.SqlSyncBuildDataModel buildModel, projectFileName, true);
+                var (success, buildModel) = await sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projectFileName, validateSchema: true).ConfigureAwait(false);
                 if (!success)
                 {
                     log.LogError($"Unable to load and extract build file: {cmdLine.BuildFileName}");
@@ -166,7 +173,7 @@ namespace SqlBuildManager.Console
             }
             finally
             {
-                sqlB.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDir);
+                await sqlB.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectoryAsync(workingDir).ConfigureAwait(false);
             }
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
