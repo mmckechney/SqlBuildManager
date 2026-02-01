@@ -103,7 +103,7 @@ namespace SqlBuildManager.Console.Threaded
             }
             //Determine where to get the scripts from (SBM, DACPAC, generated DACPAC, scripts?)
             int success;
-            (success, cmdLine) = ConfigureScriptSource(cmdLine);
+            (success, cmdLine) = await ConfigureScriptSource(cmdLine);
             if (success != 0)
             {
                 return success;
@@ -285,12 +285,12 @@ namespace SqlBuildManager.Console.Threaded
         /// </summary>
         /// <param name="cmdLine"></param>
         /// <returns></returns>
-        private (int, CommandLineArgs) ConfigureScriptSource(CommandLineArgs cmdLine)
+        private async Task<(int, CommandLineArgs)> ConfigureScriptSource(CommandLineArgs cmdLine)
         {
             //If we don't have a pre-constructed build file, but rather a script source directory, we'll build one from there...
             if (!string.IsNullOrWhiteSpace(cmdLine.ScriptSrcDir))
             {
-                ConstructBuildFileFromScriptDirectory(cmdLine.ScriptSrcDir);
+                await ConstructBuildFileFromScriptDirectory(cmdLine.ScriptSrcDir);
             }
             else if (!string.IsNullOrWhiteSpace(cmdLine.BuildFileName)) //using SBM as a source
             {
@@ -533,7 +533,7 @@ namespace SqlBuildManager.Console.Threaded
             return (0, model);
         }
 
-        private void ConstructBuildFileFromScriptDirectory(string directoryName)
+        private async Task ConstructBuildFileFromScriptDirectory(string directoryName)
         {
             log.LogInformation("Constructing build file from script directory");
             string shortFileName = string.Empty;
@@ -548,7 +548,7 @@ namespace SqlBuildManager.Console.Threaded
                 shortFileName = Path.GetFileName(fileList[i]);
                 File.Copy(fileList[i], Path.Combine(_context.WorkingDirectory, shortFileName), true);
 
-                localBuildData = SqlBuildFileHelper.AddScriptFileToBuildAsync(localBuildData,
+                localBuildData = await SqlBuildFileHelper.AddScriptFileToBuildAsync(localBuildData,
                     projFileName,
                     shortFileName,
                     i,
@@ -563,7 +563,7 @@ namespace SqlBuildManager.Console.Threaded
                     System.Environment.UserDomainName + @"/" + System.Environment.UserName,
                     20,
                     Guid.NewGuid(),
-                    "").GetAwaiter().GetResult();
+                    "").ConfigureAwait(false);
             }
 
         }
