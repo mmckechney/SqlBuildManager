@@ -104,6 +104,27 @@ if ($generateSettings -eq "true") {
     Write-Host "  azd env set GENERATE_MI_SETTINGS true" -ForegroundColor DarkGray
 }
 
+# Generate database override config files for integration tests
+Write-Host ""
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "Post-Provision: Creating Database Config Files" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+
+$dbConfigScriptPath = Join-Path $repoRoot "scripts\templates\Database\create_database_override_files.ps1"
+$outputPath = Join-Path $repoRoot "src\TestConfig"
+
+# Ensure output directory exists
+if (-not (Test-Path $outputPath)) {
+    New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
+}
+
+if (Test-Path $dbConfigScriptPath) {
+    & $dbConfigScriptPath -prefix $prefix -path $outputPath
+} else {
+    Write-Host "Database config script not found at: $dbConfigScriptPath" -ForegroundColor Yellow
+    Write-Host "Run manually: .\scripts\templates\Database\create_database_override_files.ps1 -prefix $prefix -path $outputPath" -ForegroundColor Yellow
+}
+
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host "Deployment Complete!" -ForegroundColor Green
