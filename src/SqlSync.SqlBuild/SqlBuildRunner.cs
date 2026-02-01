@@ -102,7 +102,7 @@ namespace SqlSync.SqlBuild
                     BuildModels.ScriptRun currentRun = null;
                     try
                     {
-                        cData = _connectionsService.GetBuildConnectionDataClass(serverName, targetDatabase, _ctx.IsTransactional);
+                        cData = _connectionsService.GetOrAddBuildConnectionDataClass(_ctx.ConnectionData, serverName, targetDatabase, _ctx.IsTransactional);
                         currentRun = new BuildModels.ScriptRun(
                             fileHash: null,
                             results: string.Empty,

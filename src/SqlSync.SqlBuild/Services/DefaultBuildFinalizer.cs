@@ -180,18 +180,29 @@ namespace SqlSync.SqlBuild.Services
             {
                 if (!context.IsTrialBuild)
                 {
+                    bool commitSuccess = true;
                     if (context.IsTransactional)
                     {
                         log.LogInformation("Attempting to Commit Build");
-                        bool commitSuccess = CommitBuild(connectionsService, context.IsTransactional);
-                        if (commitSuccess)
-                            log.LogInformation("Commit Successful");
+                        commitSuccess = CommitBuild(connectionsService, context.IsTransactional);
+                    //    if (commitSuccess)
+                    //        log.LogInformation("Commit Successful");  -- Not needed since each connection will show a commit or not
                     }
-
-                    myBuild.FinalStatus = BuildItemStatus.Committed;
-                    updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
-                    await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
-                    finalizerContext.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
+                    if (commitSuccess)
+                    {
+                        myBuild.FinalStatus = BuildItemStatus.Committed;
+                        updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
+                        await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
+                        finalizerContext.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
+                    }
+                    else
+                    {
+                        myBuild.FinalStatus = BuildItemStatus.RolledBack;
+                        //updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
+                        //await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
+                        finalizerContext.RaiseBuildErrorRollBackEvent(context);
+                    }
+                }
                 }
                 else
                 {
@@ -298,6 +309,26 @@ namespace SqlSync.SqlBuild.Services
             }
 
             return BuildResultStatus.UNKNOWN;
+        }
+
+        public BuildResultStatus ConvertBuildItemStatusToResultStatus(BuildItemStatus? itemStatus, bool isTransactional, bool isTrialBuild)
+        {
+            return itemStatus switch
+            {
+                BuildItemStatus.Committed or BuildItemStatus.CommittedWithTimeoutRetries or BuildItemStatus.CommittedWithCustomDacpac => 
+                    BuildResultStatus.BUILD_COMMITTED,
+                BuildItemStatus.RolledBack or BuildItemStatus.RolledBackAfterRetries => 
+                    BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK,
+                BuildItemStatus.TrialRolledBack => 
+                    BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL,
+                BuildItemStatus.FailedNoTransaction => 
+                    BuildResultStatus.BUILD_FAILED_NO_TRANSACTION,
+                BuildItemStatus.PendingRollBack => 
+                    isTransactional ? BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK : BuildResultStatus.BUILD_FAILED_NO_TRANSACTION,
+                BuildItemStatus.AlreadyInSync => 
+                    BuildResultStatus.BUILD_COMMITTED,
+                _ => BuildResultStatus.UNKNOWN
+            };
         }
     }
 }

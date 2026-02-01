@@ -187,7 +187,6 @@ namespace SqlSync.SqlBuild
             ConnectionsService.Connections.Clear();
             var buildResults = new List<BuildModels.Build>();
             List<BuildResultStatus> finalizedBuildStatus = new List<BuildResultStatus>();
-            BuildResultStatus tmpStatus;
 
             foreach (var srvData in multiDbRunData)
             {
@@ -218,18 +217,14 @@ namespace SqlSync.SqlBuild
                 targetDatabaseOverrides = srvData.Overrides;
                 var buildResult = await ProcessBuildAsync(runData, multiDbRunData.AllowableTimeoutRetries, string.Empty, null, cancellationToken).ConfigureAwait(false);
 
-                if (buildResult.FinalStatus == BuildItemStatus.PendingRollBack || buildResult.FinalStatus == BuildItemStatus.FailedNoTransaction)
-                {
-                    (buildResult, buildDataModel, tmpStatus) = await BuildFinalizer.PerformRunScriptFinalizationAsync(this, ConnectionsService, this, true, buildResult).ConfigureAwait(false);
-                    finalizedBuildStatus.Add(tmpStatus);
-                    buildResults.Add(buildResult);
-                }
-                else
-                {
-                    (buildResult, buildDataModel, tmpStatus) = await BuildFinalizer.PerformRunScriptFinalizationAsync(this, ConnectionsService, this, false, buildResult).ConfigureAwait(false);
-                    finalizedBuildStatus.Add(tmpStatus);
-                    buildResults.Add(buildResult);
-                }
+                // Convert BuildItemStatus to BuildResultStatus without calling finalization again
+                // (finalization is already done in SqlBuildRunner.RunAsync)
+                var tmpStatus = BuildFinalizer.ConvertBuildItemStatusToResultStatus(
+                    buildResult.FinalStatus, 
+                    multiDbRunData.IsTransactional, 
+                    multiDbRunData.RunAsTrial);
+                finalizedBuildStatus.Add(tmpStatus);
+                buildResults.Add(buildResult);
                 this.committedScripts.Clear();
             }
             BuildResultStatus calculatedStatus = BuildFinalizer.CalculateFinalStatus(finalizedBuildStatus);

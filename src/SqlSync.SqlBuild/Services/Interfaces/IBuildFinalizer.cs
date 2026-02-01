@@ -15,5 +15,6 @@ namespace SqlSync.SqlBuild.Services
         public Task<(Build updatedBuild, SqlSyncBuildDataModel updatedModel, BuildResultStatus buildResult)> PerformRunScriptFinalizationAsync(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, IBuildFinalizerContext finalizerContext, bool buildFailure, Build myBuild);
         public SqlSyncBuildDataModel RecordCommittedScripts(List<SqlSync.SqlBuild.SqlLogging.CommittedScript> committedScripts, SqlSyncBuildDataModel buildDataModel);
         public BuildResultStatus CalculateFinalStatus(IList<BuildResultStatus> buildResults);
+        public BuildResultStatus ConvertBuildItemStatusToResultStatus(BuildItemStatus? itemStatus, bool isTransactional, bool isTrialBuild);
     }
 }

@@ -257,8 +257,8 @@ namespace SqlSync.SqlBuild.Services
                     ? runnerProperties.LogToDatabaseName 
                     : firstScript.DatabaseTarget;
 
-                BuildConnectData tmpConnDat = connectionsService.GetBuildConnectionDataClass(
-                    firstScript.ServerName, targetDb, runnerProperties.IsTransactional);
+                BuildConnectData tmpConnDat = connectionsService.GetOrAddBuildConnectionDataClass(
+                    runnerProperties.ConnectionData, firstScript.ServerName, targetDb, runnerProperties.IsTransactional);
 
                 log.LogInformation($"Batch logging {scriptsForConnection.Count} script(s) to {tmpConnDat.ServerName}:{tmpConnDat.DatabaseName}");
 
