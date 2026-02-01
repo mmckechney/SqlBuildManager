@@ -192,7 +192,7 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     runDataModel.ForceCustomDacpac = true;
                     //This will set the BuildData and BuildFileName and ProjectFileName properties on runData
-                    (var status, runDataModel) = DacPacHelper.UpdateBuildRunDataForDacPacSync(runDataModel, server, targetDatabase, authType, username, password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout, cmdArgs.AllowObjectDelete, cmdArgs.IdentityArgs.ClientId);
+                    (var status, runDataModel) = await DacPacHelper.UpdateBuildRunDataForDacPacSyncAsync(runDataModel, server, targetDatabase, authType, username, password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout, cmdArgs.AllowObjectDelete, cmdArgs.IdentityArgs.ClientId, cancellationToken).ConfigureAwait(false);
                     switch (status)
                     {
                         case DacpacDeltasStatus.Success:

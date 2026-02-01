@@ -64,7 +64,7 @@ namespace SqlSync.SqlBuild.Services
             
             log.LogWarning($"Custom dacpac required for {context.ServerName} : {targetDatabase}. Generating file.");
             
-            var (stat, updatedRunData) = DacPacHelper.UpdateBuildRunDataForDacPacSync(
+            var (stat, updatedRunData) = await DacPacHelper.UpdateBuildRunDataForDacPacSyncAsync(
                 runData, 
                 context.ServerName, 
                 targetDatabase, 
@@ -75,7 +75,8 @@ namespace SqlSync.SqlBuild.Services
                 runData.BuildRevision ?? string.Empty, 
                 runData.DefaultScriptTimeout, 
                 runData.AllowObjectDelete ?? false, 
-                context.ConnectionData.ManagedIdentityClientId);
+                context.ConnectionData.ManagedIdentityClientId,
+                cancellationToken).ConfigureAwait(false);
 
             result.WasAttempted = true;
 

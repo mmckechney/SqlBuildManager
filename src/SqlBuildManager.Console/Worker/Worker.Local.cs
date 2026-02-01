@@ -213,7 +213,7 @@ namespace SqlBuildManager.Console
                 log.LogInformation("Saving updated build file to disk");
                 try
                 {
-                    sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(LocalRunInfo.Sq1SyncBuildData, LocalRunInfo.WorkingDirectory, LocalRunInfo.BuildZipFileName, includeHistoryAndLogs: true);
+                    sqlB.SqlBuildFileHelper.PackageProjectFileIntoZipAsync(LocalRunInfo.Sq1SyncBuildData, LocalRunInfo.WorkingDirectory, LocalRunInfo.BuildZipFileName, includeHistoryAndLogs: true).GetAwaiter().GetResult();
                     log.LogInformation("Build file saved to disk");
                 }
                 catch (Exception exe)
