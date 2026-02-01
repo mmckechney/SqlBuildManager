@@ -25,4 +25,4 @@ $params = $params | ConvertTo-Json
 Write-Host $params 
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-az deployment group create --resource-group $resourceGroupName --template-file "$($scriptDir)/../Modules/batch.bicep" --parameters $params -o table
+az deployment group create --resource-group $resourceGroupName --template-file "$($scriptDir)/../../infra/modules/batch.bicep" --parameters $params -o table

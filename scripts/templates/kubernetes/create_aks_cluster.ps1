@@ -20,7 +20,7 @@ if($aksClusterName -ne $exists)
   Write-Host "Create AKS cluster $aksClusterName"  -ForegroundColor Cyan
 
   $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-  az deployment group create --resource-group $resourceGroupName --template-file "$($scriptDir)/../Modules/aks.bicep" --parameters `
+  az deployment group create --resource-group $resourceGroupName --template-file "$($scriptDir)/../../infra/modules/aks.bicep" --parameters `
     aksClusterName=$aksClusterName `
     identityName=$userAssignedIdentity `
     vnetName=$vnet `

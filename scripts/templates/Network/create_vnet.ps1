@@ -77,4 +77,4 @@ $params = $params | ConvertTo-Json
 Write-Host $params 
 
 
-az deployment group create --resource-group $resourceGroupName --template-file .$scriptDir../Modules/network.bicep --parameters $params  -o table 
+az deployment group create --resource-group $resourceGroupName --template-file $scriptDir/../../infra/modules/network.bicep --parameters $params  -o table 

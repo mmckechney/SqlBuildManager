@@ -133,9 +133,11 @@ if($shouldDeploy)
     if($testDatabaseCount -ge 0) {Write-Host "Deploying $testDatabaseCount Test Databases (Entra ID auth only)"  -ForegroundColor Cyan} else {Write-Host  "Skipping Test database deployment" -ForegroundColor DarkBlue}
 
 
-    $deployStatus = az deployment group create --resource-group $resourceGroupName --template-file azuredeploy_main.bicep `
+    $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+    $deployStatus = az deployment sub create --location $location --template-file "$scriptDir/../../infra/main.bicep" `
         --parameters `
             namePrefix="$prefix" `
+            location="$location" `
             currentIpAddress=$ipAddress `
             userIdGuid=$userIdGuid `
             deployBatchAccount=$deployBatch `

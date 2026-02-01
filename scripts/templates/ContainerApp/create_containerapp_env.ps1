@@ -24,4 +24,4 @@ $logAnalyticsClientId = az monitor log-analytics workspace show --query customer
 $logAnalyticsKey = az monitor log-analytics workspace get-shared-keys --query primarySharedKey -g $resourceGroupName -n $logAnalyticsWorkspace
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-az deployment group create --resource-group $resourceGroupName --template-file "$($scriptDir)/../Modules/containerappenv.bicep" --parameters containerAppEnvName=$containerAppEnvName logAnalyticsClientId=$logAnalyticsClientId logAnalyticsKey=$logAnalyticsKey subnetId=$subnetId -o table
+az deployment group create --resource-group $resourceGroupName --template-file "$($scriptDir)/../../infra/modules/containerappenv.bicep" --parameters containerAppEnvName=$containerAppEnvName logAnalyticsClientId=$logAnalyticsClientId logAnalyticsKey=$logAnalyticsKey subnetId=$subnetId -o table
