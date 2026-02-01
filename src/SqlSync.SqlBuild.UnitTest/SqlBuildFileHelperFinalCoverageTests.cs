@@ -210,7 +210,7 @@ namespace SqlSync.SqlBuild.UnitTest
         #region CleanUpAndDeleteWorkingDirectory Tests
 
         [TestMethod]
-        public void CleanUpAndDeleteWorkingDirectory_WithExistingDir_DeletesAndReturnsTrue()
+        public async Task CleanUpAndDeleteWorkingDirectory_WithExistingDir_DeletesAndReturnsTrue()
         {
             // Arrange
             string testSubDir = Path.Combine(_testDir, "subdir");
@@ -218,7 +218,7 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllText(Path.Combine(testSubDir, "test.txt"), "content");
 
             // Act
-            var result = SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(testSubDir);
+            var result = await SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectoryAsync(testSubDir);
 
             // Assert
             Assert.IsTrue(result);
@@ -226,13 +226,13 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void CleanUpAndDeleteWorkingDirectory_WithNonExistentDir_ReturnsTrue()
+        public async Task CleanUpAndDeleteWorkingDirectory_WithNonExistentDir_ReturnsTrue()
         {
             // Arrange
             string nonExistentDir = Path.Combine(_testDir, "nonexistent");
 
             // Act
-            var result = SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(nonExistentDir);
+            var result = await SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectoryAsync(nonExistentDir);
 
             // Assert
             Assert.IsTrue(result);
@@ -243,35 +243,30 @@ namespace SqlSync.SqlBuild.UnitTest
         #region InitilizeWorkingDirectory Tests
 
         [TestMethod]
-        public void InitilizeWorkingDirectory_WithValidInput_CreatesDirectory()
+        public async Task InitilizeWorkingDirectory_WithValidInput_CreatesDirectory()
         {
             // Arrange
             string workingDir = Path.Combine(_testDir, "working");
             Directory.CreateDirectory(workingDir);
-            string projectFilePath = workingDir;
-            string projectFileName = "test.xml";
 
             // Act
-            var result = SqlBuildFileHelper.InitilizeWorkingDirectory(ref workingDir, ref projectFilePath, ref projectFileName);
+            var (success, workingDirectory, projectFilePath, projectFileName) = await SqlBuildFileHelper.InitializeWorkingDirectoryAsync();
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.IsTrue(Directory.Exists(workingDir));
+            Assert.IsTrue(success);
+            Assert.IsTrue(Directory.Exists(workingDirectory));
         }
 
         [TestMethod]
-        public void InitilizeWorkingDirectory_WithNullWorkingDir_HandlesSafely()
+        public async Task InitilizeWorkingDirectory_WithNullWorkingDir_HandlesSafely()
         {
-            // Arrange
-            string workingDir = null;
-            string projectFilePath = null;
-            string projectFileName = null;
-
             // Act
-            var result = SqlBuildFileHelper.InitilizeWorkingDirectory(ref workingDir, ref projectFilePath, ref projectFileName);
+            var (success, workingDirectory, projectFilePath, projectFileName) = await SqlBuildFileHelper.InitializeWorkingDirectoryAsync();
 
             // Assert
-            Assert.IsFalse(result);
+            // The async version initializes a new working directory, so it should succeed
+            Assert.IsTrue(success);
+            Assert.IsFalse(string.IsNullOrEmpty(workingDirectory));
         }
 
         #endregion
@@ -562,30 +557,30 @@ namespace SqlSync.SqlBuild.UnitTest
         #region CalculateSha1HashFromPackage Tests
 
         [TestMethod]
-        public void CalculateSha1HashFromPackage_WithNullFileName_ReturnsEmpty()
+        public async Task CalculateSha1HashFromPackage_WithNullFileName_ReturnsEmpty()
         {
             // Act
-            var result = SqlBuildFileHelper.CalculateSha1HashFromPackage(null);
+            var result = await SqlBuildFileHelper.CalculateSha1HashFromPackageAsync(null);
 
             // Assert
             Assert.AreEqual(string.Empty, result);
         }
 
         [TestMethod]
-        public void CalculateSha1HashFromPackage_WithEmptyFileName_ReturnsEmpty()
+        public async Task CalculateSha1HashFromPackage_WithEmptyFileName_ReturnsEmpty()
         {
             // Act
-            var result = SqlBuildFileHelper.CalculateSha1HashFromPackage(string.Empty);
+            var result = await SqlBuildFileHelper.CalculateSha1HashFromPackageAsync(string.Empty);
 
             // Assert
             Assert.AreEqual(string.Empty, result);
         }
 
         [TestMethod]
-        public void CalculateSha1HashFromPackage_WithUnknownExtension_ReturnsEmpty()
+        public async Task CalculateSha1HashFromPackage_WithUnknownExtension_ReturnsEmpty()
         {
             // Act
-            var result = SqlBuildFileHelper.CalculateSha1HashFromPackage("file.unknown");
+            var result = await SqlBuildFileHelper.CalculateSha1HashFromPackageAsync("file.unknown");
 
             // Assert
             Assert.AreEqual(string.Empty, result);

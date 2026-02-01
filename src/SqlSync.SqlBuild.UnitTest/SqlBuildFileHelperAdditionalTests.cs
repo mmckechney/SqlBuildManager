@@ -41,14 +41,14 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void GetFileDataForCodeTableUpdates_WithFileNotFound_SkipsFile()
+        public async Task GetFileDataForCodeTableUpdates_WithFileNotFound_SkipsFile()
         {
             var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(tempDir);
             try
             {
                 var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-                model = SqlBuildFileHelper.AddScriptFileToBuild(model, Path.Combine(tempDir, "test.xml"),
+                model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(model, Path.Combine(tempDir, "test.xml"),
                     "nonexistent.POP", 1, "Test", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
                 var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates(model, Path.Combine(tempDir, "test.xml"));
@@ -191,7 +191,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         }
 
         [TestMethod]
-        public void GetFileDataForObjectUpdates_ModelVersion_WithObjectScripts_CategorizesByExtension()
+        public async Task GetFileDataForObjectUpdates_ModelVersion_WithObjectScripts_CategorizesByExtension()
         {
             var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(tempDir);
@@ -200,7 +200,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
                 var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
                 // Add a regular SQL file (should go to canNotUpdate)
-                model = SqlBuildFileHelper.AddScriptFileToBuild(model, Path.Combine(tempDir, "test.xml"),
+                model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(model, Path.Combine(tempDir, "test.xml"),
                     "regular.sql", 1, "", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
                 SqlBuildFileHelper.GetFileDataForObjectUpdates(model, Path.Combine(tempDir, "test.xml"),
@@ -298,7 +298,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         #region LoadSqlBuildProjectFile Tests
 
         [TestMethod]
-        public void LoadSqlBuildProjectFile_FileDoesNotExist_ReturnsFalseAndCreatesShell()
+        public async Task LoadSqlBuildProjectFile_FileDoesNotExist_ReturnsFalseAndCreatesShell()
         {
             var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(tempDir);
@@ -306,9 +306,9 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
             {
                 var projFile = Path.Combine(tempDir, "nonexistent.xml");
 
-                var result = SqlBuildFileHelper.LoadSqlBuildProjectFile(out SqlSyncBuildDataModel model, projFile, false);
+                var (success, model) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projFile, false);
 
-                Assert.IsFalse(result);
+                Assert.IsFalse(success);
                 Assert.IsNotNull(model);
                 // Shell model is created
                 Assert.IsNotNull(model.SqlSyncBuildProject);
@@ -343,25 +343,25 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         #region CalculateSha1HashFromPackage Tests
 
         [TestMethod]
-        public void CalculateSha1HashFromPackage_WithEmptyString_ReturnsEmptyString()
+        public async Task CalculateSha1HashFromPackage_WithEmptyString_ReturnsEmptyString()
         {
-            var result = SqlBuildFileHelper.CalculateSha1HashFromPackage(string.Empty);
+            var result = await SqlBuildFileHelper.CalculateSha1HashFromPackageAsync(string.Empty);
 
             Assert.AreEqual(string.Empty, result);
         }
 
         [TestMethod]
-        public void CalculateSha1HashFromPackage_WithNullString_ReturnsEmptyString()
+        public async Task CalculateSha1HashFromPackage_WithNullString_ReturnsEmptyString()
         {
-            var result = SqlBuildFileHelper.CalculateSha1HashFromPackage(null);
+            var result = await SqlBuildFileHelper.CalculateSha1HashFromPackageAsync(null);
 
             Assert.AreEqual(string.Empty, result);
         }
 
         [TestMethod]
-        public void CalculateSha1HashFromPackage_WithInvalidExtension_ReturnsEmptyString()
+        public async Task CalculateSha1HashFromPackage_WithInvalidExtension_ReturnsEmptyString()
         {
-            var result = SqlBuildFileHelper.CalculateSha1HashFromPackage("test.txt");
+            var result = await SqlBuildFileHelper.CalculateSha1HashFromPackageAsync("test.txt");
 
             Assert.AreEqual(string.Empty, result);
         }
@@ -582,9 +582,9 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         #region InferOverridesFromPackage Tests
 
         [TestMethod]
-        public void InferOverridesFromPackage_WithNonExistentFile_ReturnsEmptyString()
+        public async Task InferOverridesFromPackage_WithNonExistentFile_ReturnsEmptyString()
         {
-            var result = SqlBuildFileHelper.InferOverridesFromPackage(@"C:\NonExistent\File.sbm", "TestDb");
+            var result = await SqlBuildFileHelper.InferOverridesFromPackageAsync(@"C:\NonExistent\File.sbm", "TestDb");
 
             Assert.AreEqual(string.Empty, result);
         }
@@ -594,21 +594,21 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         #region CalculateBuildPackageSHA1SignatureFromPath Tests
 
         [TestMethod]
-        public void CalculateBuildPackageSHA1SignatureFromPath_WithNullBuildData_ReturnsError()
+        public async Task CalculateBuildPackageSHA1SignatureFromPath_WithNullBuildData_ReturnsError()
         {
             SqlSyncBuildDataModel model = null;
 
-            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(@"C:\Temp", model);
+            var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(@"C:\Temp", model);
 
             Assert.AreEqual("Error calculating hash", result);
         }
 
         [TestMethod]
-        public void CalculateBuildPackageSHA1SignatureFromPath_WithEmptyPath_ReturnsError()
+        public async Task CalculateBuildPackageSHA1SignatureFromPath_WithEmptyPath_ReturnsError()
         {
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(string.Empty, model);
+            var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(string.Empty, model);
 
             Assert.AreEqual("Error calculating hash", result);
         }

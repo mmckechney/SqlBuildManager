@@ -41,7 +41,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 await File.WriteAllTextAsync(scriptPath, "SELECT 1;");
 
                 var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-                model = SqlBuildFileHelper.AddScriptFileToBuild(
+                model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
                     model,
                     projFileName: Path.Combine(tmpDir, "build.xml"),
                     fileName: Path.GetFileName(scriptPath),

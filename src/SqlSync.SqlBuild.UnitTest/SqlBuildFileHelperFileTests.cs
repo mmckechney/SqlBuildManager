@@ -65,7 +65,7 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void CopyIndividualScriptsToFolder_WithScripts_CopiesFiles()
+        public async Task CopyIndividualScriptsToFolder_WithScripts_CopiesFiles()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -75,7 +75,7 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 1");
 
             // Add script to model
-            model = SqlBuildFileHelper.AddScriptFileToBuild(
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
                 model, Path.Combine(_testDirectory, "test.xml"),
                 scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
@@ -92,7 +92,7 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void CopyIndividualScriptsToFolder_WithSequence_AddsSequencePrefix()
+        public async Task CopyIndividualScriptsToFolder_WithSequence_AddsSequencePrefix()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -100,7 +100,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string scriptFileName = "test.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 1");
 
-            model = SqlBuildFileHelper.AddScriptFileToBuild(
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
                 model, Path.Combine(_testDirectory, "test.xml"),
                 scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
@@ -120,7 +120,7 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void CopyIndividualScriptsToFolder_WithUse_AddsUseStatement()
+        public async Task CopyIndividualScriptsToFolder_WithUse_AddsUseStatement()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -128,7 +128,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string scriptFileName = "test.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 1");
 
-            model = SqlBuildFileHelper.AddScriptFileToBuild(
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
                 model, Path.Combine(_testDirectory, "test.xml"),
                 scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
@@ -168,7 +168,7 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void CopyScriptsToSingleFile_WithScripts_CreatesSingleFile()
+        public async Task CopyScriptsToSingleFile_WithScripts_CreatesSingleFile()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -176,7 +176,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string scriptFileName = "test.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 1");
 
-            model = SqlBuildFileHelper.AddScriptFileToBuild(
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
                 model, Path.Combine(_testDirectory, "test.xml"),
                 scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
@@ -221,7 +221,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string scriptFileName = "async_test.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 2");
 
-            model = SqlBuildFileHelper.AddScriptFileToBuild(
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
                 model, Path.Combine(_testDirectory, "test.xml"),
                 scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
@@ -245,7 +245,7 @@ namespace SqlSync.SqlBuild.UnitTest
             // Add a script
             string scriptFileName = "script_cancel.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 1");
-            model = SqlBuildFileHelper.AddScriptFileToBuild(
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
                 model, Path.Combine(_testDirectory, "test.xml"),
                 scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
@@ -302,7 +302,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string scriptFileName = "async_single.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 3");
 
-            model = SqlBuildFileHelper.AddScriptFileToBuild(
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
                 model, Path.Combine(_testDirectory, "test.xml"),
                 scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
@@ -322,7 +322,7 @@ namespace SqlSync.SqlBuild.UnitTest
         #region RemoveScriptFilesFromBuild Tests
 
         [TestMethod]
-        public void RemoveScriptFilesFromBuild_RemovesSpecifiedScripts()
+        public async Task RemoveScriptFilesFromBuild_RemovesSpecifiedScripts()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -330,7 +330,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string scriptFileName = "to_remove.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 1");
 
-            model = SqlBuildFileHelper.AddScriptFileToBuild(
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
                 model, Path.Combine(_testDirectory, "test.xml"),
                 scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
@@ -348,7 +348,7 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void RemoveScriptFilesFromBuild_WithDeleteFiles_DeletesPhysicalFiles()
+        public async Task RemoveScriptFilesFromBuild_WithDeleteFiles_DeletesPhysicalFiles()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -357,7 +357,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string scriptPath = Path.Combine(_testDirectory, scriptFileName);
             File.WriteAllText(scriptPath, "SELECT 1");
 
-            model = SqlBuildFileHelper.AddScriptFileToBuild(
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
                 model, Path.Combine(_testDirectory, "test.xml"),
                 scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
@@ -402,7 +402,7 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void ImportSqlScriptFile_WithScripts_ImportsSuccessfully()
+        public async Task ImportSqlScriptFile_WithScripts_ImportsSuccessfully()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -413,7 +413,7 @@ namespace SqlSync.SqlBuild.UnitTest
             Directory.CreateDirectory(importWorkingDir);
             File.WriteAllText(Path.Combine(importWorkingDir, scriptFileName), "SELECT 1");
 
-            importModel = SqlBuildFileHelper.AddScriptFileToBuild(
+            importModel = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
                 importModel, Path.Combine(importWorkingDir, "test.xml"),
                 scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 

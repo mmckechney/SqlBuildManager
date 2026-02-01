@@ -3,6 +3,7 @@ using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Models;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
@@ -20,7 +21,7 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void SaveAndLoadModel_RoundTrips()
+        public async Task SaveAndLoadModel_RoundTrips()
         {
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             var oldProj = model.SqlSyncBuildProject[0];
@@ -42,7 +43,7 @@ namespace SqlSync.SqlBuild.UnitTest
             try
             {
                 SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFile, zipFile, includeHistoryAndLogs: false);
-                var ok = SqlBuildFileHelper.LoadSqlBuildProjectFile(out SqlSyncBuildDataModel loaded, projFile, validateSchema: false);
+                var (ok, loaded) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projFile, validateSchema: false);
                 Assert.IsTrue(ok);
                 Assert.AreEqual("TestProj", loaded.SqlSyncBuildProject[0].ProjectName);
             }

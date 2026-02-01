@@ -3,6 +3,7 @@ using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Models;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console.UnitTest
 {
@@ -18,7 +19,7 @@ namespace SqlBuildManager.Console.UnitTest
         }
 
         [TestMethod]
-        public void SaveLoadModel_RoundTrips()
+        public async Task SaveLoadModel_RoundTrips()
         {
             var tmpDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tmpDir);
@@ -39,7 +40,8 @@ namespace SqlBuildManager.Console.UnitTest
                     scriptRun: model.ScriptRun,
                     committedScript: model.CommittedScript);
                 SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFile, zipFile, includeHistoryAndLogs: false);
-                SqlBuildFileHelper.LoadSqlBuildProjectFile(out SqlSyncBuildDataModel loaded, projFile, validateSchema: false);
+                var (success, loaded) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projFile, validateSchema: false);
+                Assert.IsTrue(success);
                 Assert.AreEqual("Proj1", loaded.SqlSyncBuildProject[0].ProjectName);
             }
             finally
