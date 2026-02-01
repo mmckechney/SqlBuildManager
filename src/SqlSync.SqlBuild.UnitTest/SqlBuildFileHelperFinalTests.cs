@@ -377,7 +377,7 @@ namespace SqlSync.SqlBuild.UnitTest
         #region CalculateBuildPackageSHA1SignatureFromBatchCollection Tests
 
         [TestMethod]
-        public void CalculateBuildPackageSHA1SignatureFromBatchCollection_WithBatches_ReturnsHash()
+        public async Task CalculateBuildPackageSHA1SignatureFromBatchCollection_WithBatches_ReturnsHash()
         {
             // Arrange
             var batchCollection = new ScriptBatchCollection();
@@ -385,16 +385,16 @@ namespace SqlSync.SqlBuild.UnitTest
             batchCollection.Add(new ScriptBatch("script2.sql", new[] { "SELECT 2" }, "guid2"));
 
             // Act - This is an internal method, but we can test via reflection or trust the public API
-            // For now, we'll test indirectly through the public CalculateBuildPackageSHA1SignatureFromPath
+            // For now, we'll test indirectly through the public CalculateBuildPackageSHA1SignatureFromPathAsync
             // which eventually calls this method
-            var hash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(_testDir, (SqlSyncBuildDataModel)null);
+            var hash = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(_testDir, (SqlSyncBuildDataModel)null);
 
             // Assert
             Assert.AreEqual("Error calculating hash", hash);
         }
 
         [TestMethod]
-        public void CalculateBuildPackageSHA1SignatureFromPath_WithValidModel_ReturnsHash()
+        public async Task CalculateBuildPackageSHA1SignatureFromPath_WithValidModel_ReturnsHash()
         {
             // Arrange
             File.WriteAllText(Path.Combine(_testDir, "script1.sql"), "SELECT 1");
@@ -412,7 +412,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 model.CommittedScript);
 
             // Act
-            var hash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(_testDir, model);
+            var hash = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(_testDir, model);
 
             // Assert
             Assert.IsNotNull(hash);

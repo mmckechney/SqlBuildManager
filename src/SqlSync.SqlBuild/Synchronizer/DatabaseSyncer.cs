@@ -98,16 +98,18 @@ namespace SqlSync.SqlBuild.Synchronizer
             {
                 log.LogInformation($"Synchronization run for {Path.GetFileName(sbmPackageName)}");
                 //Unzip and read the package
-                Models.SqlSyncBuildDataModel buildModel;
-                if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmPackageName, ref workingDirectory, ref projectFilePath,
-                                                               ref projFileName,
-                                                               out result))
+                var extractResult = SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(sbmPackageName, workingDirectory, resetWorkingDirectory: false).GetAwaiter().GetResult();
+                if (!extractResult.success)
                 {
                     PushInfo(string.Format("Unable to extract build file {0}. See log for details", sbmPackageName));
                     return false;
                 }
+                workingDirectory = extractResult.workingDirectory;
+                projectFilePath = extractResult.projectFilePath;
+                projFileName = extractResult.projectFileName;
 
-                if (!SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildModel, projFileName, false))
+                var (loadSuccess, buildModel) = SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projFileName, false).GetAwaiter().GetResult();
+                if (!loadSuccess)
                 {
                     PushInfo(string.Format("Unable to load build file {0}. See log for details", sbmPackageName));
                     return false;

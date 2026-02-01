@@ -1009,7 +1009,7 @@ namespace SqlSync.SqlBuild.UnitTest
         #region CalculateBuildPackageSHA1SignatureFromPath Tests
 
         [TestMethod]
-        public void CalculateBuildPackageSHA1SignatureFromPath_WithEmptyModel_ReturnsHash()
+        public async Task CalculateBuildPackageSHA1SignatureFromPath_WithEmptyModel_ReturnsHash()
         {
             var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(tempDir);
@@ -1017,7 +1017,7 @@ namespace SqlSync.SqlBuild.UnitTest
             {
                 var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-                var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(tempDir, model);
+                var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(tempDir, model);
 
                 // Method returns a SHA1 hash even for empty model (hash of empty content)
                 Assert.IsFalse(string.IsNullOrEmpty(result));
@@ -1040,7 +1040,7 @@ namespace SqlSync.SqlBuild.UnitTest
                     model, "test.xml", "nonexistent.sql", 1, "", true, true,
                     "TestDb", false, "", false, true, "tester", 30, Guid.NewGuid(), "");
 
-                var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(tempDir, model);
+                var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(tempDir, model);
 
                 // Method returns a hash even when scripts don't exist (hash includes metadata)
                 Assert.IsFalse(string.IsNullOrEmpty(result));
@@ -1066,7 +1066,7 @@ namespace SqlSync.SqlBuild.UnitTest
                     model, Path.Combine(tempDir, "project.xml"), "test.sql", 1, "", true, true,
                     "TestDb", false, "", false, true, "tester", 30, Guid.NewGuid(), "");
 
-                var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(tempDir, model);
+                var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(tempDir, model);
 
                 Assert.IsFalse(string.IsNullOrEmpty(result));
             }
@@ -1098,8 +1098,8 @@ namespace SqlSync.SqlBuild.UnitTest
                 model2 = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
                     model2, Path.Combine(tempDir, "proj.xml"), "script1.sql", 2, "", true, true, "TestDb", false, "", false, true, "tester", 30, Guid.NewGuid(), "");
 
-                var hash1 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(tempDir, model1);
-                var hash2 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(tempDir, model2);
+                var hash1 = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(tempDir, model1);
+                var hash2 = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(tempDir, model2);
 
                 Assert.AreNotEqual(hash1, hash2);
             }

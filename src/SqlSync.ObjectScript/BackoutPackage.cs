@@ -40,7 +40,7 @@ namespace SqlSync.ObjectScript
             string projectPath = string.Empty;
             string projectFileName = string.Empty;
 
-            SqlBuildFileHelper.InitilizeWorkingDirectory(ref workingDir, ref projectPath, ref projectFileName);
+            (_, workingDir, projectPath, projectFileName) = SqlBuildFileHelper.InitializeWorkingDirectoryAsync().GetAwaiter().GetResult();
             string message = $"Initialized working directory {workingDir}";
             log.LogDebug(message);
             if (reportProgress)
@@ -51,8 +51,8 @@ namespace SqlSync.ObjectScript
 
             //Extract destination package into working folder
             string result;
-            bool success = SqlBuildFileHelper.ExtractSqlBuildZipFile(destinationBuildZipFileName, ref workingDir,
-                                                                     ref projectPath, ref projectFileName, out result);
+            bool success;
+            (success, workingDir, projectPath, projectFileName, result) = SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(destinationBuildZipFileName).GetAwaiter().GetResult();
             if (success)
             {
                 log.LogDebug($"Successfully extracted build file {destinationBuildZipFileName} to {workingDir}");
@@ -66,7 +66,8 @@ namespace SqlSync.ObjectScript
             //Load the build data 
             SqlSyncBuildDataModel buildModel;
             if (reportProgress) bg.ReportProgress(-1, "Loading project file for modification.");
-            bool successfulLoad = SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildModel, projectFileName, false);
+            bool successfulLoad;
+            (successfulLoad, buildModel) = SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projectFileName, false).GetAwaiter().GetResult();
             if (!successfulLoad)
             {
                 log.LogError("Unable to load SBM project data");
@@ -348,11 +349,12 @@ namespace SqlSync.ObjectScript
 
             //Extract and load the build data...
             log.LogDebug($"Extracting SBM zip file for {sourceBuildZipFileName}");
-            bool success = SqlBuildFileHelper.ExtractSqlBuildZipFile(sourceBuildZipFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, out result);
+            bool success;
+            (success, workingDirectory, projectFilePath, projectFileName, result) = SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(sourceBuildZipFileName).GetAwaiter().GetResult();
             if (success)
             {
                 log.LogDebug($"Loading SqlSyncBuldData object from {projectFileName}");
-                success = SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projectFileName, false);
+                (success, buildData) = SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projectFileName, false).GetAwaiter().GetResult();
                 if (!success)
                     return string.Empty;
             }
@@ -384,7 +386,7 @@ namespace SqlSync.ObjectScript
                                                 sourceServer, sourceDb, true, true, true, ref bg);
 
             //Cleanup all the temp files created
-            SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDirectory);
+            SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectoryAsync(workingDirectory).GetAwaiter().GetResult();
 
             if (!success)
             {

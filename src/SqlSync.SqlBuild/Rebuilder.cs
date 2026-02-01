@@ -128,7 +128,7 @@ namespace SqlSync.SqlBuild
 
                 for (int i = 0; i < rebuildData.Count; i++)
                 {
-                    buildModel = SqlBuildFileHelper.AddScriptFileToBuild(buildModel,
+                    buildModel = SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel,
                         projFileName,
                         rebuildData[i].ScriptFileName,
                         rebuildData[i].Sequence + 1,
@@ -143,7 +143,7 @@ namespace SqlSync.SqlBuild
                         System.Environment.UserName,
                         defaultTimeout,
                         rebuildData[i].ScriptId,
-                        rebuildData[i].Tag);
+                        rebuildData[i].Tag).GetAwaiter().GetResult();
                 }
 
                 SqlBuildFileHelper.SaveSqlBuildProjectFile(buildModel, projFileName, buildFileName);

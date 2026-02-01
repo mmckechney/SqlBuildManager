@@ -182,18 +182,20 @@ namespace SqlBuildManager.Console
                     {
                         File.Copy(file.FullName, Path.Combine(workingDir, file.Name));
                     }
-                    buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuild(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "");
+                    buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "").GetAwaiter().GetResult();
                     counter++;
                 }
-                // Note: AddScriptFileToBuild with saveToZip=true already persists the project file and packages the zip.
+                // Note: AddScriptFileToBuildAsync with saveToZip=true already persists the project file and packages the zip.
                 // Avoid overwriting the .sbx zip with plain XML.
                 sqlM.SqlSyncBuildDataXmlSerializer.SaveAsync(projFile, buildModel).GetAwaiter().GetResult();
             }
             else
             {
                 string workingDir = "", projFilePath = "", projectFileName = "";
-                sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFile(cmdLine.OutputSbm, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
-                bool success = sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sqlM.SqlSyncBuildDataModel buildModel, projectFileName, true);
+                (_, workingDir, projFilePath, projectFileName, _) = sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(cmdLine.OutputSbm, null, true, true).GetAwaiter().GetResult();
+                var loadResult = sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projectFileName, true).GetAwaiter().GetResult();
+                bool success = loadResult.Item1;
+                sqlM.SqlSyncBuildDataModel buildModel = loadResult.Item2;
                 if (success)
                 {
                     List<string> copied = new List<string>();
@@ -209,9 +211,9 @@ namespace SqlBuildManager.Console
                     foreach (var file in cmdLine.Scripts)
                     {
                         lastBuildNumber++;
-                        buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuild(buildModel, projectFileName, file.Name, lastBuildNumber, "", true, true, "client", true, cmdLine.OutputSbm, true, true, Environment.UserName, 500, Guid.NewGuid(), "");
+                        buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel, projectFileName, file.Name, lastBuildNumber, "", true, true, "client", true, cmdLine.OutputSbm, true, true, Environment.UserName, 500, Guid.NewGuid(), "").GetAwaiter().GetResult();
                     }
-                    sqlB.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDir);
+                    sqlB.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectoryAsync(workingDir).GetAwaiter().GetResult();
                 }
                 else
                 {
@@ -324,7 +326,7 @@ namespace SqlBuildManager.Console
 
             foreach (var file in packages)
             {
-                sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFile(file.FullName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
+                (_, workingDir, projFilePath, projectFileName, _) = sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(file.FullName, null, true, true).GetAwaiter().GetResult();
                 var buildModel = sqlM.SqlSyncBuildDataXmlSerializer.Load(projectFileName);
                 List<string[]> contents = new List<string[]>();
                 string dateformat = "yyyy-MM-dd hh:mm:ss";
@@ -367,7 +369,7 @@ namespace SqlBuildManager.Console
                 string hash = "";
                 if (withHash)
                 {
-                    hash = $" (Package Hash: {sqlB.SqlBuildFileHelper.CalculateSha1HashFromPackage(file.FullName)})";
+                    hash = $" (Package Hash: {sqlB.SqlBuildFileHelper.CalculateSha1HashFromPackageAsync(file.FullName).GetAwaiter().GetResult()})";
                 }
                 System.Console.WriteLine();
                 System.Console.WriteLine(file.FullName + hash);
@@ -410,7 +412,7 @@ namespace SqlBuildManager.Console
                     {
                         File.Copy(file.FullName, Path.Combine(workingDir, file.Name));
                     }
-                    buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuild(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "");
+                    buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "").GetAwaiter().GetResult();
                     counter++;
                 }
                 sqlM.SqlSyncBuildDataXmlSerializer.SaveAsync(projFile, buildModel).GetAwaiter().GetResult();
@@ -428,7 +430,7 @@ namespace SqlBuildManager.Console
                     }
                 });
 
-                bool success = sqlB.SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(cmdLine.OutputSbm, cmdLine.Scripts.Select(f => f.FullName).ToList(), "client", 500, false);
+                bool success = sqlB.SqlBuildFileHelper.SaveSqlFilesToNewBuildFileAsync(cmdLine.OutputSbm, cmdLine.Scripts.Select(f => f.FullName).ToList(), "client", 500, false).GetAwaiter().GetResult();
                 copied.ForEach(f => File.Delete(f));
                 if (!success)
                 {
@@ -460,7 +462,7 @@ namespace SqlBuildManager.Console
 
             }
             string packageName = cmdLine.BuildFileName;
-            string hash = sqlB.SqlBuildFileHelper.CalculateSha1HashFromPackage(packageName);
+            string hash = sqlB.SqlBuildFileHelper.CalculateSha1HashFromPackageAsync(packageName).GetAwaiter().GetResult();
             if (!String.IsNullOrEmpty(hash))
             {
                 //log.LogInformation(hash);
@@ -607,7 +609,8 @@ namespace SqlBuildManager.Console
             {
                 Directory.CreateDirectory(dir);
             }
-            bool success = SqlSync.SqlBuild.SqlBuildFileHelper.ExtractSqlBuildZipFile(package.FullName, ref dir, ref projectFilePath, ref projectFileName, false, true, out result);
+            bool success;
+            (success, dir, projectFilePath, projectFileName, result) = SqlSync.SqlBuild.SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(package.FullName, dir, false, true).GetAwaiter().GetResult();
             if (File.Exists(Path.Combine(dir, projectFileName)))
             {
                 var sbmName = Path.GetFileNameWithoutExtension(package.FullName) + ".sbx";

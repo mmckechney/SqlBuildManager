@@ -548,7 +548,7 @@ namespace SqlBuildManager.Console.Threaded
                 shortFileName = Path.GetFileName(fileList[i]);
                 File.Copy(fileList[i], Path.Combine(_context.WorkingDirectory, shortFileName), true);
 
-                localBuildData = SqlBuildFileHelper.AddScriptFileToBuild(localBuildData,
+                localBuildData = SqlBuildFileHelper.AddScriptFileToBuildAsync(localBuildData,
                     projFileName,
                     shortFileName,
                     i,
@@ -563,7 +563,7 @@ namespace SqlBuildManager.Console.Threaded
                     System.Environment.UserDomainName + @"/" + System.Environment.UserName,
                     20,
                     Guid.NewGuid(),
-                    "");
+                    "").GetAwaiter().GetResult();
             }
 
         }

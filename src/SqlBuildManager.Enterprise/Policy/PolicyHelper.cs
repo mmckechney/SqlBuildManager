@@ -409,11 +409,8 @@ namespace SqlBuildManager.Enterprise.Policy
             switch ((extension))
             {
                 case ".sbm":
-                    string result;
-                    SqlBuildFileHelper.ExtractSqlBuildZipFile(buildPackageName, ref workingDirectory, ref projectFilePath,
-                                           ref projFileName,
-                                           out result);
-                    SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildModel, projFileName, false);
+                    (_, workingDirectory, projectFilePath, projFileName, _) = SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(buildPackageName).GetAwaiter().GetResult();
+                    (_, buildModel) = SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projFileName, false).GetAwaiter().GetResult();
                     break;
                 case ".sbx":
                     projectFilePath = Path.GetDirectoryName(buildPackageName);

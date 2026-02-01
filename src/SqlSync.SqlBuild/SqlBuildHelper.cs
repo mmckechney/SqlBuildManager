@@ -418,7 +418,7 @@ namespace SqlSync.SqlBuild
                 }
 
                 if (scriptBatchColl == null)
-                    buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFilePath, buildDataModelParam);
+                    buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFilePath, buildDataModelParam).GetAwaiter().GetResult();
                 else
                     buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
 

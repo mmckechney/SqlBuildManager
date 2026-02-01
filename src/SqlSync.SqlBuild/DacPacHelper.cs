@@ -157,7 +157,7 @@ namespace SqlSync.SqlBuild
                 }
 
                 buildPackageName = baseFileName + ".sbm";
-                if (SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(buildPackageName, files, "client", true, defaultScriptTimeout))
+                if (SqlBuildFileHelper.SaveSqlFilesToNewBuildFileAsync(buildPackageName, files, "client", true, defaultScriptTimeout).GetAwaiter().GetResult())
                 {
 
                     //Clean up generated scripts files
@@ -316,16 +316,19 @@ namespace SqlSync.SqlBuild
 
             string projectFilePath = Path.GetTempPath() + Guid.NewGuid().ToString();
             string projectFileName = null;
-            string result;
 
             log.LogInformation("Preparing build package for processing");
-            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sbmFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, false, false, out result))
+            var extractResult = SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(sbmFileName, workingDirectory, resetWorkingDirectory: false, overwriteExistingProjectFiles: false).GetAwaiter().GetResult();
+            if (!extractResult.success)
             {
                 return (DacpacDeltasStatus.SbmProcessingFailure, runDataModel);
             }
+            workingDirectory = extractResult.workingDirectory;
+            projectFilePath = extractResult.projectFilePath;
+            projectFileName = extractResult.projectFileName;
 
-            Models.SqlSyncBuildDataModel buildModel;
-            if (!SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildModel, projectFileName, false))
+            var (loadSuccess, buildModel) = SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projectFileName, false).GetAwaiter().GetResult();
+            if (!loadSuccess)
             {
                 return (DacpacDeltasStatus.SbmProcessingFailure, runDataModel);
             }

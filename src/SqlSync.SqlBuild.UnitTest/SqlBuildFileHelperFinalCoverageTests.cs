@@ -517,36 +517,36 @@ namespace SqlSync.SqlBuild.UnitTest
         #region CalculateBuildPackageSHA1SignatureFromPath Tests
 
         [TestMethod]
-        public void CalculateBuildPackageSHA1SignatureFromPath_WithNullData_ReturnsError()
+        public async Task CalculateBuildPackageSHA1SignatureFromPath_WithNullData_ReturnsError()
         {
             // Act
-            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(_testDir, (SqlSyncBuildDataModel)null);
+            var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(_testDir, (SqlSyncBuildDataModel)null);
 
             // Assert
             Assert.AreEqual("Error calculating hash", result);
         }
 
         [TestMethod]
-        public void CalculateBuildPackageSHA1SignatureFromPath_WithNullPath_ReturnsError()
+        public async Task CalculateBuildPackageSHA1SignatureFromPath_WithNullPath_ReturnsError()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(null, model);
+            var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(null, model);
 
             // Assert
             Assert.AreEqual("Error calculating hash", result);
         }
 
         [TestMethod]
-        public void CalculateBuildPackageSHA1SignatureFromPath_WithEmptyPath_ReturnsError()
+        public async Task CalculateBuildPackageSHA1SignatureFromPath_WithEmptyPath_ReturnsError()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(string.Empty, model);
+            var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(string.Empty, model);
 
             // Assert
             Assert.AreEqual("Error calculating hash", result);
