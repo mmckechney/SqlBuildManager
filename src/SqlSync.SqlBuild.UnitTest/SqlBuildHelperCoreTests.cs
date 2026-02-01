@@ -918,15 +918,16 @@ namespace SqlSync.SqlBuild.UnitTest
                 _result = result;
             }
 
-            public override BuildModels.Build Run(
+            public override Task<BuildModels.Build> RunAsync(
                 IList<BuildModels.Script> scripts,
                 BuildModels.Build myBuild,
                 string serverName,
                 bool isMultiDbRun,
                 ScriptBatchCollection scriptBatchColl,
-                BuildModels.SqlSyncBuildDataModel buildDataModel)
+                BuildModels.SqlSyncBuildDataModel buildDataModel,
+                CancellationToken cancellationToken = default)
             {
-                return _result;
+                return Task.FromResult(_result);
             }
         }
 

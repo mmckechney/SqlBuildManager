@@ -105,76 +105,27 @@ namespace SqlSync.SqlBuild.UnitTest
         #region LoadBatchScripts Tests
 
         [TestMethod]
-        public void LoadBatchScripts_WithNullScriptBatchColl_ReadsFromContext()
+        public async Task LoadBatchScriptsAsync_WithNullScriptBatchColl_ReadsFromContext()
         {
             var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "SELECT 1;", "SELECT 2;" } };
             var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
 
-            var result = runner.LoadBatchScripts("script-id", "file.sql", stripTransaction: false, scriptBatchColl: null);
+            var result = await runner.LoadBatchScriptsAsync("script-id", "file.sql", stripTransaction: false, scriptBatchColl: null, default);
 
             CollectionAssert.AreEqual(new[] { "SELECT 1;", "SELECT 2;" }, result);
         }
 
         [TestMethod]
-        public void LoadBatchScripts_WithEmptyScriptBatchColl_ReadsFromContext()
+        public async Task LoadBatchScriptsAsync_WithEmptyScriptBatchColl_ReadsFromContext()
         {
             var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "SELECT 3;" } };
             var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
             var coll = new ScriptBatchCollection();
 
-            var result = runner.LoadBatchScripts("script-id", "file.sql", stripTransaction: false, scriptBatchColl: coll);
+            var result = await runner.LoadBatchScriptsAsync("script-id", "file.sql", stripTransaction: false, scriptBatchColl: coll, default);
 
             CollectionAssert.AreEqual(new[] { "SELECT 3;" }, result);
         }
-
-        [TestMethod]
-        public void LoadBatchScripts_WithMatchingScriptInCollection_ReturnsFromCollection()
-        {
-            var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "WRONG" } };
-            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
-            var coll = new ScriptBatchCollection
-            {
-                new ScriptBatch("file.sql", new[] { "SELECT CORRECT;" }, "script-id")
-            };
-
-            var result = runner.LoadBatchScripts("script-id", "file.sql", stripTransaction: false, scriptBatchColl: coll);
-
-            CollectionAssert.AreEqual(new[] { "SELECT CORRECT;" }, result);
-        }
-
-        [TestMethod]
-        public void LoadBatchScripts_WithDifferentScriptIdInCollection_ReadsFromContext()
-        {
-            var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "FROM CONTEXT" } };
-            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
-            var coll = new ScriptBatchCollection
-            {
-                new ScriptBatch("file.sql", new[] { "FROM COLLECTION" }, "different-script-id")
-            };
-
-            var result = runner.LoadBatchScripts("my-script-id", "file.sql", stripTransaction: false, scriptBatchColl: coll);
-
-            CollectionAssert.AreEqual(new[] { "FROM CONTEXT" }, result);
-        }
-
-        [TestMethod]
-        public void LoadBatchScripts_WithEmptyBatchContentsInCollection_ReadsFromContext()
-        {
-            var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "FROM CONTEXT" } };
-            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
-            var coll = new ScriptBatchCollection
-            {
-                new ScriptBatch("file.sql", new string[0], "script-id")
-            };
-
-            var result = runner.LoadBatchScripts("script-id", "file.sql", stripTransaction: false, scriptBatchColl: coll);
-
-            CollectionAssert.AreEqual(new[] { "FROM CONTEXT" }, result);
-        }
-
-        #endregion
-
-        #region LoadBatchScriptsAsync Tests
 
         [TestMethod]
         public async Task LoadBatchScriptsAsync_WithMatchingScriptInCollection_ReturnsFromCollection()
@@ -183,31 +134,50 @@ namespace SqlSync.SqlBuild.UnitTest
             var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
             var coll = new ScriptBatchCollection
             {
-                new ScriptBatch("file.sql", new[] { "SELECT ASYNC;" }, "script-id")
+                new ScriptBatch("file.sql", new[] { "SELECT CORRECT;" }, "script-id")
             };
 
-            var result = await runner.LoadBatchScriptsAsync("script-id", "file.sql", stripTransaction: false, scriptBatchColl: coll, CancellationToken.None);
+            var result = await runner.LoadBatchScriptsAsync("script-id", "file.sql", stripTransaction: false, scriptBatchColl: coll, default);
 
-            CollectionAssert.AreEqual(new[] { "SELECT ASYNC;" }, result);
+            CollectionAssert.AreEqual(new[] { "SELECT CORRECT;" }, result);
         }
 
         [TestMethod]
-        public async Task LoadBatchScriptsAsync_WithNoMatch_ReadsFromContext()
+        public async Task LoadBatchScriptsAsync_WithDifferentScriptIdInCollection_ReadsFromContext()
         {
-            var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "ASYNC CONTEXT" } };
+            var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "FROM CONTEXT" } };
             var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
+            var coll = new ScriptBatchCollection
+            {
+                new ScriptBatch("file.sql", new[] { "FROM COLLECTION" }, "different-script-id")
+            };
 
-            var result = await runner.LoadBatchScriptsAsync("script-id", "file.sql", stripTransaction: false, scriptBatchColl: null, CancellationToken.None);
+            var result = await runner.LoadBatchScriptsAsync("my-script-id", "file.sql", stripTransaction: false, scriptBatchColl: coll, default);
 
-            CollectionAssert.AreEqual(new[] { "ASYNC CONTEXT" }, result);
+            CollectionAssert.AreEqual(new[] { "FROM CONTEXT" }, result);
+        }
+
+        [TestMethod]
+        public async Task LoadBatchScriptsAsync_WithEmptyBatchContentsInCollection_ReadsFromContext()
+        {
+            var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "FROM CONTEXT" } };
+            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
+            var coll = new ScriptBatchCollection
+            {
+                new ScriptBatch("file.sql", new string[0], "script-id")
+            };
+
+            var result = await runner.LoadBatchScriptsAsync("script-id", "file.sql", stripTransaction: false, scriptBatchColl: coll, default);
+
+            CollectionAssert.AreEqual(new[] { "FROM CONTEXT" }, result);
         }
 
         #endregion
 
-        #region Run Method Edge Cases
+        #region RunAsync Method Edge Cases
 
         [TestMethod]
-        public void Run_WithEmptyScriptList_ReturnsFailedBuild()
+        public async Task RunAsync_WithEmptyScriptList_ReturnsFailedBuild_Sync()
         {
             var ctx = new FakeRunnerContext();
             var mockFinalizer = MockFactory.CreateMockBuildFinalizer();
@@ -222,13 +192,13 @@ namespace SqlSync.SqlBuild.UnitTest
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Empty scripts cause an exception which is caught and results in a failed build
-            var result = runner.Run(scripts, build, "Server", false, null, model);
+            var result = await runner.RunAsync(scripts, build, "Server", false, null, model);
             
             Assert.IsNotNull(result);
         }
 
         [TestMethod]
-        public void Run_WithNullScriptList_ReturnsFailedBuild()
+        public async Task RunAsync_WithNullScriptList_ReturnsFailedBuild_Sync()
         {
             var ctx = new FakeRunnerContext();
             var mockFinalizer = MockFactory.CreateMockBuildFinalizer();
@@ -242,14 +212,10 @@ namespace SqlSync.SqlBuild.UnitTest
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Null scripts cause an exception which is caught and results in a failed build
-            var result = runner.Run(null, build, "Server", false, null, model);
+            var result = await runner.RunAsync(null, build, "Server", false, null, model);
             
             Assert.IsNotNull(result);
         }
-
-        #endregion
-
-        #region RunAsync Method Edge Cases
 
         [TestMethod]
         public async Task RunAsync_WithEmptyScriptList_ReturnsFailedBuild()

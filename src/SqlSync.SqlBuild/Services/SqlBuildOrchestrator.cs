@@ -34,49 +34,6 @@ namespace SqlSync.SqlBuild.Services
             _runnerFactory = runnerFactory ?? new DefaultRunnerFactory();
         }
 
-        public Build Execute(
-            SqlBuildRunDataModel runData,
-            BuildPreparationResult prep,
-            string serverName,
-            bool isMultiDbRun,
-            ScriptBatchCollection scriptBatchColl,
-            int allowableTimeoutRetries)
-        {
-            _props.ErrorOccured = false;
-
-            if (prep.FilteredScripts == null || prep.FilteredScripts.Count == 0)
-            {
-                return prep.Build;
-            }
-
-            Build buildResultsModel = null;
-            int buildRetries = 0;
-            var runner = _runnerFactory.Create(connectionsService, _ctx, _finalizerCtx, null);
-
-            while (buildRetries <= allowableTimeoutRetries &&
-                (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout))
-            {
-                if (buildRetries > 0)
-                {
-                    _ctx.PublishScriptLog(false, new ScriptLogEventArgs(0, "", "", "", "Resetting transaction for retry attempt", true));
-                    connectionsService.ResetConnectionsForRetry();
-                    _props.CommittedScripts.Clear();
-                }
-
-                buildResultsModel = runner.Run(prep.FilteredScripts, prep.Build, serverName, isMultiDbRun, scriptBatchColl, runData.BuildDataModel!);
-
-                if (buildRetries > 0 && buildResultsModel.FinalStatus == BuildItemStatus.Committed)
-                    buildResultsModel.FinalStatus = BuildItemStatus.CommittedWithTimeoutRetries;
-
-                if (!_retryPolicy.ShouldRetry(buildResultsModel, buildRetries))
-                    break;
-
-                buildRetries++;
-            }
-
-            return buildResultsModel;
-        }
-
         public Task<Build> ExecuteAsync(
             SqlBuildRunDataModel runData,
             BuildPreparationResult prep,
