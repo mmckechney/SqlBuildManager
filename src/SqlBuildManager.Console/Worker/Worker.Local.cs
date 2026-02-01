@@ -167,7 +167,7 @@ namespace SqlBuildManager.Console
                     multiDbData.BuildFileName = cmdLine.BuildFileName;
                     multiDbData.BuildDescription = cmdLine.Description;
                     multiDbData.BuildData = buildModel;
-                    var res = helper.ProcessMultiDbBuild(multiDbData, projectFileName);
+                    var res = await helper.ProcessMultiDbBuildAsync(multiDbData, projectFileName);
                     log.LogInformation(res.ToString());
                 }
             }

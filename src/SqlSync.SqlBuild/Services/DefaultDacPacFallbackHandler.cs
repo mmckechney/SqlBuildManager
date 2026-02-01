@@ -1,7 +1,10 @@
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild.Models;
+using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlSync.SqlBuild.Services
 {
@@ -38,7 +41,7 @@ namespace SqlSync.SqlBuild.Services
             }
         }
 
-        public DacPacFallbackResult TryDacPacFallback(DacPacFallbackContext context, Build buildResult)
+        public async Task<DacPacFallbackResult> TryDacPacFallbackAsync(DacPacFallbackContext context, Build buildResult, CancellationToken cancellationToken = default)
         {
             var result = new DacPacFallbackResult { WasAttempted = false };
             var runData = context.RunData;
@@ -79,12 +82,12 @@ namespace SqlSync.SqlBuild.Services
             if (stat == DacpacDeltasStatus.Success)
             {
                 log.LogInformation($"Executing custom dacpac on {targetDatabase}");
-                var dacBuild = context.ProcessBuildCallback(
+                var dacBuild = await context.ProcessBuildCallbackAsync(
                     updatedRunData, 
-                    context.ServerName, 
-                    context.IsMultiDbRun, 
+                    context.AllowableTimeoutRetries,
+                    string.Empty,
                     context.ScriptBatchColl, 
-                    context.AllowableTimeoutRetries);
+                    cancellationToken).ConfigureAwait(false);
                 
                 var dacFinalStatus = dacBuild.FinalStatus;
                 if (dacFinalStatus == BuildItemStatus.Committed || dacFinalStatus == BuildItemStatus.CommittedWithTimeoutRetries)

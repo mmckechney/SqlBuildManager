@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
+using System.Threading.Tasks;
 using SqlSync.SqlBuild.Models;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
@@ -31,11 +32,11 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
         }
         /// <summary>
-        ///A test for ProcessBuild
+        ///A test for ProcessBuildAsync
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void ProcessBuildTest_CommitWithZeroRetries()
+        public async Task ProcessBuildTest_CommitWithZeroRetries()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
@@ -43,24 +44,22 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
-            string serverName = init.serverName;
-            bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 0;
 
             BuildItemStatus expected = BuildItemStatus.Committed;
             Build actual;
-            actual = target.ProcessBuild(runData, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+            actual = await target.ProcessBuildAsync(runData, allowableTimeoutRetries, string.Empty, scriptBatchColl);
             Assert.AreEqual(expected, actual.FinalStatus);
 
         }
 
         /// <summary>
-        ///A test for ProcessBuild
+        ///A test for ProcessBuildAsync
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void ProcessBuildTest_CommitWithRetriesNotUsed()
+        public async Task ProcessBuildTest_CommitWithRetriesNotUsed()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
@@ -68,14 +67,12 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
-            string serverName = init.serverName;
-            bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 3;
 
             BuildItemStatus expected = BuildItemStatus.Committed;
             Build actual;
-            actual = target.ProcessBuild(runData, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+            actual = await target.ProcessBuildAsync(runData, allowableTimeoutRetries, string.Empty, scriptBatchColl);
             Assert.AreEqual(expected, actual.FinalStatus);
 
         }
@@ -83,7 +80,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod()]
         [Ignore]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void ProcessBuildTest_RollbackWithThreeRetries()
+        public async Task ProcessBuildTest_RollbackWithThreeRetries()
         {
             Initialization init = GetInitializationObject();
             init.TableLockingLoopCount = 10000000;
@@ -93,8 +90,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
 
-            string serverName = init.serverName;
-            bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 3;
 
@@ -106,7 +101,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
                 BuildItemStatus expected = BuildItemStatus.RolledBackAfterRetries;
                 Build actual;
-                actual = target.ProcessBuild(runData,serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+                actual = await target.ProcessBuildAsync(runData, allowableTimeoutRetries, string.Empty, scriptBatchColl);
                 Assert.AreEqual(expected, actual.FinalStatus);
             }
             finally
@@ -120,7 +115,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod()]
         [Ignore]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void ProcessBuildTest_RollbackWithZeroRetries()
+        public async Task ProcessBuildTest_RollbackWithZeroRetries()
         {
             Initialization init = GetInitializationObject();
             init.TableLockingLoopCount = 10000000;
@@ -130,8 +125,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
 
-            string serverName = init.serverName;
-            bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 0;
 
@@ -143,7 +136,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
                 BuildItemStatus expected = BuildItemStatus.RolledBack;
                 Build actual;
-                actual = target.ProcessBuild(runData, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+                actual = await target.ProcessBuildAsync(runData, allowableTimeoutRetries, string.Empty, scriptBatchColl);
                 Assert.AreEqual(expected, actual.FinalStatus);
             }
             finally
@@ -156,7 +149,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void ProcessBuildTest_CommitAfterRetries()
+        public async Task ProcessBuildTest_CommitAfterRetries()
         {
             Initialization init = GetInitializationObject();
             init.TableLockingLoopCount = 700000;
@@ -166,8 +159,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
             SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
 
-            string serverName = init.serverName;
-            bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 30;
 
@@ -179,7 +170,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
                 BuildItemStatus expected = BuildItemStatus.CommittedWithTimeoutRetries;
                 Build actual;
-                actual = target.ProcessBuild(runData,serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries);
+                actual = await target.ProcessBuildAsync(runData, allowableTimeoutRetries, string.Empty, scriptBatchColl);
                 Assert.AreEqual(expected, actual.FinalStatus);
             }
             finally

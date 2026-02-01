@@ -174,12 +174,13 @@ namespace SqlSync.SqlBuild
 
         #region Public Methods
 
-        public BuildResultStatus ProcessMultiDbBuild(MultiDbData multiDbRunData, string projectFileName)
+        public Task<BuildResultStatus> ProcessMultiDbBuildAsync(MultiDbData multiDbRunData, string projectFileName, CancellationToken cancellationToken = default)
         {
             this.projectFileName = projectFileName;
-            return ProcessMultiDbBuild(multiDbRunData);
+            return ProcessMultiDbBuildAsync(multiDbRunData, cancellationToken);
         }
-        public BuildResultStatus ProcessMultiDbBuild(MultiDbData multiDbRunData)
+
+        public async Task<BuildResultStatus> ProcessMultiDbBuildAsync(MultiDbData multiDbRunData, CancellationToken cancellationToken = default)
         {
             this.multiDbRunData = multiDbRunData;
             committedScripts.Clear();
@@ -190,6 +191,8 @@ namespace SqlSync.SqlBuild
 
             foreach (var srvData in multiDbRunData)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var runData = new BuildModels.SqlBuildRunDataModel(
                     buildDataModel: multiDbRunData.BuildData,
                     buildType: "Multi Db Build",
@@ -213,24 +216,23 @@ namespace SqlSync.SqlBuild
                     allowObjectDelete: false);
 
                 targetDatabaseOverrides = srvData.Overrides;
-                var buildResult = ProcessBuild(runData,srvData.ServerName, true, null, multiDbRunData.AllowableTimeoutRetries);
-                
+                var buildResult = await ProcessBuildAsync(runData, multiDbRunData.AllowableTimeoutRetries, string.Empty, null, cancellationToken).ConfigureAwait(false);
 
                 if (buildResult.FinalStatus == BuildItemStatus.PendingRollBack || buildResult.FinalStatus == BuildItemStatus.FailedNoTransaction)
                 {
-                    (buildResult, buildDataModel, tmpStatus) = BuildFinalizer.PerformRunScriptFinalizationAsync(this, ConnectionsService,this, true, buildResult).GetAwaiter().GetResult();
+                    (buildResult, buildDataModel, tmpStatus) = await BuildFinalizer.PerformRunScriptFinalizationAsync(this, ConnectionsService, this, true, buildResult).ConfigureAwait(false);
                     finalizedBuildStatus.Add(tmpStatus);
                     buildResults.Add(buildResult);
                 }
                 else
                 {
-                    (buildResult, buildDataModel, tmpStatus) = BuildFinalizer.PerformRunScriptFinalizationAsync(this, ConnectionsService, this, false, buildResult).GetAwaiter().GetResult();
+                    (buildResult, buildDataModel, tmpStatus) = await BuildFinalizer.PerformRunScriptFinalizationAsync(this, ConnectionsService, this, false, buildResult).ConfigureAwait(false);
                     finalizedBuildStatus.Add(tmpStatus);
                     buildResults.Add(buildResult);
                 }
                 this.committedScripts.Clear();
             }
-            BuildResultStatus calculatedStatus =  BuildFinalizer.CalculateFinalStatus(finalizedBuildStatus);
+            BuildResultStatus calculatedStatus = BuildFinalizer.CalculateFinalStatus(finalizedBuildStatus);
 
             return calculatedStatus;
         }
@@ -288,12 +290,12 @@ namespace SqlSync.SqlBuild
                     AllowableTimeoutRetries = allowableTimeoutRetries,
                     ConnectionData = connData,
                     ProjectFilePath = projectFilePath,
-                    ProcessBuildCallback = ProcessBuild,
+                    ProcessBuildCallbackAsync = ProcessBuildAsync,
                     GetTargetDatabaseCallback = GetTargetDatabase,
                     RaiseBuildCommittedEvent = rr => BuildCommittedEvent?.Invoke(this, rr)
                 };
 
-                var fallbackResult = DacPacFallbackHandler.TryDacPacFallback(dacPacContext, buildResultsModel);
+                var fallbackResult = await DacPacFallbackHandler.TryDacPacFallbackAsync(dacPacContext, buildResultsModel, cancellationToken).ConfigureAwait(false);
                 if (fallbackResult.NewStatus.HasValue)
                 {
                     buildResultsModel.FinalStatus = fallbackResult.NewStatus.Value;
@@ -321,97 +323,6 @@ namespace SqlSync.SqlBuild
             }
 
             return buildResultsModel;
-        }
-
-        [Obsolete("Use ProcessBuildAsync instead. Will be removed in future version.")]
-        internal BuildModels.Build ProcessBuild(BuildModels.SqlBuildRunDataModel runData, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, int allowableTimeoutRetries)
-        {
-            errorOccured = false;
-            buildDataModel = runData.BuildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            buildType = runData.BuildType ?? string.Empty;
-            buildDescription = runData.BuildDescription ?? string.Empty;
-            startIndex = runData.StartIndex ?? 0;
-            projectFileName = runData.ProjectFileName ?? string.Empty;
-            projectFilePath = Path.GetDirectoryName(projectFileName);
-            isTrialBuild = runData.IsTrial ?? false;
-            runItemIndexes = runData.RunItemIndexes?.ToArray() ?? Array.Empty<double>();
-            runScriptOnly = runData.RunScriptOnly ?? false;
-            buildFileName = Path.GetFileName(runData.BuildFileName ?? string.Empty);
-            targetDatabaseOverrides = runData.TargetDatabaseOverrides?.ToList();
-            logToDatabaseName = runData.LogToDatabaseName ?? string.Empty;
-
-            //log.LogInformation($"Starting Build Process targeting: {serverName} ");
-
-            var prep = PrepareBuildForRun(buildDataModel, serverName, isMultiDbRun, scriptBatchColl);
-            if (prep.FilteredScripts == null || prep.FilteredScripts.Count == 0)
-            {
-                return prep.Build;
-            }
-
-            var orchestrator = new Services.SqlBuildOrchestrator(this, this, this.RetryPolicy, this, ConnectionsService, SqlLoggingService, RunnerFactory);
-            var buildResultsModel = orchestrator.ExecuteAsync(runData, prep, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries).GetAwaiter().GetResult();
-
-            // Handle DacPac fallback for failed builds
-            bool candidateForCustomDacPac = DacPacFallbackHandler.IsCandidateForDacPacFallback(buildResultsModel.FinalStatus ?? BuildItemStatus.Unknown);
-            
-            if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout || 
-                buildResultsModel.FinalStatus == BuildItemStatus.FailedWithCustomDacpac)
-            {
-                log.LogWarning($"Build was not successful. Status is {buildResultsModel.FinalStatus} and Platinum DACPAC name is '{runData.PlatinumDacPacFileName}', and this file exists '{File.Exists(runData.PlatinumDacPacFileName ?? string.Empty)}' ");
-            }
-
-            if (candidateForCustomDacPac)
-            {
-                var dacPacContext = new Services.DacPacFallbackContext
-                {
-                    RunData = runData,
-                    Prep = prep,
-                    ServerName = serverName,
-                    IsMultiDbRun = isMultiDbRun,
-                    ScriptBatchColl = scriptBatchColl,
-                    AllowableTimeoutRetries = allowableTimeoutRetries,
-                    ConnectionData = connData,
-                    ProjectFilePath = projectFilePath,
-                    ProcessBuildCallback = ProcessBuild,
-                    GetTargetDatabaseCallback = GetTargetDatabase,
-                    RaiseBuildCommittedEvent = rr => BuildCommittedEvent?.Invoke(this, rr)
-                };
-
-                var fallbackResult = DacPacFallbackHandler.TryDacPacFallback(dacPacContext, buildResultsModel);
-                if (fallbackResult.NewStatus.HasValue)
-                {
-                    buildResultsModel.FinalStatus = fallbackResult.NewStatus.Value;
-                }
-            }
-
-            //If a timeout gets here.. need to decide how to label the rollback
-            if (buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout)
-            {
-                buildResultsModel.FinalStatus = allowableTimeoutRetries > 0 ? BuildItemStatus.RolledBackAfterRetries : BuildItemStatus.RolledBack;
-            }
-
-            switch (buildResultsModel.FinalStatus)
-            {
-                case BuildItemStatus.Committed:
-                case BuildItemStatus.Pending:
-                case BuildItemStatus.CommittedWithTimeoutRetries:
-                case BuildItemStatus.TrialRolledBack:
-                case BuildItemStatus.AlreadyInSync:
-                case BuildItemStatus.CommittedWithCustomDacpac:
-                    break;
-                default:
-                    log.LogWarning($"Build was not successful. Status is {buildResultsModel.FinalStatus} and Platinum DACPAC name is '{runData.PlatinumDacPacFileName}', and this file exists '{File.Exists(runData.PlatinumDacPacFileName ?? string.Empty)}' ");
-                    break;
-
-            }
-
-            return buildResultsModel;
-        }
-
-        [Obsolete("Use PrepareBuildForRunAsync instead. Will be removed in future version.")]
-        internal BuildPreparationResult PrepareBuildForRun(BuildModels.SqlSyncBuildDataModel buildDataModelParam, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl)
-        {
-            return PrepareBuildForRunAsync(buildDataModelParam, serverName, isMultiDbRun, scriptBatchColl).GetAwaiter().GetResult();
         }
 
         internal async Task<BuildPreparationResult> PrepareBuildForRunAsync(BuildModels.SqlSyncBuildDataModel buildDataModelParam, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, CancellationToken cancellationToken = default)
@@ -511,13 +422,6 @@ namespace SqlSync.SqlBuild
                 log.LogError(ex, "[PrepareBuildForRunModel] Exception");
                 throw;
             }
-        }
-
-        [Obsolete("Use RunBuildScriptsAsync instead. Will be removed in future version.")]
-        internal BuildModels.Build RunBuildScripts(IList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel)
-        {
-            var runner = RunnerFactory.Create(ConnectionsService, this, this, null);
-            return runner.RunAsync(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel).GetAwaiter().GetResult();
         }
 
         internal async Task<BuildModels.Build> RunBuildScriptsAsync(IList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel, CancellationToken cancellationToken = default)

@@ -49,7 +49,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             return init;
         }
 
-        private static BuildModels.Build RunBuildScripts(
+        private static async Task<BuildModels.Build> RunBuildScriptsAsync(
             SqlBuildHelper sbh,
             SqlSyncBuildDataModel buildDataModel,
             Build myBuildModel,
@@ -71,7 +71,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                     scriptRun: buildDataModel.ScriptRun,
                     committedScript: buildDataModel.CommittedScript);
             }
-            return sbh.RunBuildScripts(scripts, myBuildModel, serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
+            return await sbh.RunBuildScriptsAsync(scripts, myBuildModel, serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
         }
         [ClassCleanup()]
         public static void Cleanup()
@@ -128,7 +128,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_FinishCommitted()
+        public async Task RunBuildScriptsTest_FinishCommitted()
         {
             Initialization init = GetInitializationObject();
 
@@ -147,7 +147,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -163,7 +163,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_FinishRollback()
+        public async Task RunBuildScriptsTest_FinishRollback()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -181,7 +181,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
@@ -196,7 +196,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_MissingViewData()
+        public async Task RunBuildScriptsTest_MissingViewData()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -212,7 +212,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            var actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
 
@@ -226,7 +226,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_UnableToConnectToDatabase()
+        public async Task RunBuildScriptsTest_UnableToConnectToDatabase()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -244,7 +244,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
@@ -259,7 +259,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_SingleRunScript()
+        public async Task RunBuildScriptsTest_SingleRunScript()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -277,7 +277,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -292,7 +292,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_SkippingPreRunScript()
+        public async Task RunBuildScriptsTest_SkippingPreRunScript()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -321,7 +321,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 build: buildDataModel.Build,
                 scriptRun: buildDataModel.ScriptRun,
                 committedScript: csList);
-            actual = sbh.RunBuildScripts(scripts, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
+            actual = await sbh.RunBuildScriptsAsync(scripts, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -337,7 +337,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
         [Ignore("With removal of background worker need to reintroduce cancellation token")]
-        public void RunBuildScriptsTest_WithPendingCancellation()
+        public async Task RunBuildScriptsTest_WithPendingCancellation()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -356,7 +356,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Build myBuild = init.GetRunBuildRow(sbh);
 
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
@@ -371,7 +371,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_TrialSuccessful()
+        public async Task RunBuildScriptsTest_TrialSuccessful()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -391,7 +391,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = true;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.TrialRolledBack, actual.FinalStatus);
 
@@ -406,7 +406,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_TrialWithFailure()
+        public async Task RunBuildScriptsTest_TrialWithFailure()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -426,7 +426,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = true;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
@@ -438,7 +438,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_WithFailureDontCauseFailure()
+        public async Task RunBuildScriptsTest_WithFailureDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -459,7 +459,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -471,7 +471,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_WithFailureDontRollbackDontCauseFailure()
+        public async Task RunBuildScriptsTest_WithFailureDontRollbackDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -492,7 +492,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -507,7 +507,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_WithPreBatchedScripts()
+        public async Task RunBuildScriptsTest_WithPreBatchedScripts()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -526,7 +526,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Build myBuild = init.GetRunBuildRow(sbh);
 
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -541,7 +541,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_AsScriptOnly()
+        public async Task RunBuildScriptsTest_AsScriptOnly()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -561,7 +561,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Set the script only flag
             sbh.runScriptOnly = true;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -573,7 +573,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_SelectData()
+        public async Task RunBuildScriptsTest_SelectData()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -591,7 +591,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -604,7 +604,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_AlternateLoggingDb()
+        public async Task RunBuildScriptsTest_AlternateLoggingDb()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -623,7 +623,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             Build myBuild = new(); //init.GetRunBuildRow(po);
             //Execute the run...
-            actual = RunBuildScripts(target, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(target, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -642,7 +642,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_NonTransactional_FinishCommitted()
+        public async Task RunBuildScriptsTest_NonTransactional_FinishCommitted()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -661,7 +661,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             Build myBuild = init.GetRunBuildRow(target);
             //Execute the run...
-            actual = RunBuildScripts(target, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(target, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -676,7 +676,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_NonTransactional_FinishCommittedWithScripting()
+        public async Task RunBuildScriptsTest_NonTransactional_FinishCommittedWithScripting()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -695,7 +695,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -710,7 +710,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_NonTransactional_Failure()
+        public async Task RunBuildScriptsTest_NonTransactional_Failure()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -728,7 +728,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.FailedNoTransaction, actual.FinalStatus);
 
@@ -742,7 +742,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_NonTransactional_WithFailureDontCauseFailure()
+        public async Task RunBuildScriptsTest_NonTransactional_WithFailureDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -763,7 +763,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -778,7 +778,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_NonTransactional_WithFailureDontRollbackDontCauseFailure()
+        public async Task RunBuildScriptsTest_NonTransactional_WithFailureDontRollbackDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -799,7 +799,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -815,7 +815,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
         [Ignore("With removal of background worker need to reintroduce cancellation token")]
-        public void RunBuildScriptsTest_NonTransactional_Cancelled()
+        public async Task RunBuildScriptsTest_NonTransactional_Cancelled()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -836,7 +836,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Build myBuild = init.GetRunBuildRow(sbh);
 
             //Execute the run...
-            actual = RunBuildScripts(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.FailedNoTransaction, actual.FinalStatus);
 
@@ -996,7 +996,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRunTest_Success()
+        public async Task PrepareBuildForRunTest_Success()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
@@ -1005,7 +1005,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1017,7 +1017,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRunTest_Success2()
+        public async Task PrepareBuildForRunTest_Success2()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
@@ -1026,7 +1026,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1036,7 +1036,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRun_Poco_Success()
+        public async Task PrepareBuildForRun_Poco_Success()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
@@ -1046,7 +1046,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             string serverName = init.serverName;
             bool isMultiDbRun = false;
 
-            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
             Assert.AreEqual(Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1055,7 +1055,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRun_Poco_NoScripts()
+        public async Task PrepareBuildForRun_Poco_NoScripts()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
@@ -1063,7 +1063,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(0, prep.FilteredScripts.Count);
             Assert.AreEqual(Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1076,7 +1076,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRunTest_SuccessWithScriptBatch()
+        public async Task PrepareBuildForRunTest_SuccessWithScriptBatch()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
@@ -1090,7 +1090,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             ScriptBatchCollection coll = init.GetScriptBatchCollection();
 
-            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, coll);
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, coll);
             Assert.AreEqual(1, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1104,7 +1104,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRunTest_SuccessWithMultipleScripts()
+        public async Task PrepareBuildForRunTest_SuccessWithMultipleScripts()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
@@ -1116,7 +1116,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             string serverName = init.serverName;
             bool isMultiDbRun = false;
             target.runItemIndexes = new double[] { 0, 1 };
-            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(3, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1127,7 +1127,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRunTest_WithNoScriptsAdded()
+        public async Task PrepareBuildForRunTest_WithNoScriptsAdded()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
@@ -1135,7 +1135,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
             Assert.AreEqual(0, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
             Assert.AreEqual(serverName, prep.Build.ServerName);
@@ -1146,7 +1146,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRunTest_WithNoScriptsAdded_MultiDbSet()
+        public async Task PrepareBuildForRunTest_WithNoScriptsAdded_MultiDbSet()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
@@ -1154,7 +1154,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = true;
-            var prep = target.PrepareBuildForRun(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
 
             Assert.AreEqual(0, prep.FilteredScripts.Count);
             Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
