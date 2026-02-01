@@ -47,6 +47,7 @@ namespace SqlSync.SqlBuild
 
         }
 
+        [Obsolete("Use RunAsync instead. Will be removed in future version.")]
         public virtual BuildModels.Build Run(
             IList<BuildModels.Script> scripts,
             BuildModels.Build myBuild,
@@ -407,9 +408,9 @@ namespace SqlSync.SqlBuild
             return csList.Any(cs => string.Equals(cs.ScriptId, scriptId, StringComparison.OrdinalIgnoreCase));
         }
 
+        [Obsolete("Use LoadBatchScriptsAsync instead. Will be removed in future version.")]
         internal string[] LoadBatchScripts(string scriptId, string fileName, bool stripTransaction, ScriptBatchCollection scriptBatchColl)
         {
-
             var batchScripts = LoadBatchScriptsAsync(scriptId, fileName, stripTransaction, scriptBatchColl, default).GetAwaiter().GetResult();
             return batchScripts;
         }

@@ -333,7 +333,13 @@ namespace SqlSync.SqlBuild
             return buildResultsModel;
         }
 
+        [Obsolete("Use PrepareBuildForRunAsync instead. Will be removed in future version.")]
         internal BuildPreparationResult PrepareBuildForRun(BuildModels.SqlSyncBuildDataModel buildDataModelParam, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl)
+        {
+            return PrepareBuildForRunAsync(buildDataModelParam, serverName, isMultiDbRun, scriptBatchColl).GetAwaiter().GetResult();
+        }
+
+        internal async Task<BuildPreparationResult> PrepareBuildForRunAsync(BuildModels.SqlSyncBuildDataModel buildDataModelParam, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -418,7 +424,7 @@ namespace SqlSync.SqlBuild
                 }
 
                 if (scriptBatchColl == null)
-                    buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFilePath, buildDataModelParam).GetAwaiter().GetResult();
+                    buildPackageHash = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFilePath, buildDataModelParam, cancellationToken).ConfigureAwait(false);
                 else
                     buildPackageHash = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(scriptBatchColl);
 
@@ -432,10 +438,17 @@ namespace SqlSync.SqlBuild
             }
         }
 
+        [Obsolete("Use RunBuildScriptsAsync instead. Will be removed in future version.")]
         internal BuildModels.Build RunBuildScripts(IList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel)
         {
             var runner = RunnerFactory.Create(ConnectionsService, this, this, null);
             return runner.Run(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
+        }
+
+        internal async Task<BuildModels.Build> RunBuildScriptsAsync(IList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel, CancellationToken cancellationToken = default)
+        {
+            var runner = RunnerFactory.Create(ConnectionsService, this, this, null);
+            return await runner.RunAsync(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, cancellationToken).ConfigureAwait(false);
         }
 
         public string GetFromResources(string resourceName)
