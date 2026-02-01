@@ -16,7 +16,7 @@ $vnextTag =  "sqlbuildmanager:latest-vNext"
 Write-Host "Uploading and building Container image on registry $azureContainerRegistry." -ForegroundColor DarkGreen
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-$originalSourcePath = Resolve-Path (Join-Path $scriptDir ..\..\..\src)
+$originalSourcePath = Resolve-Path (Join-Path $scriptDir ..\..\src)
 
 # Create a clean copy of source to avoid VS file locks
 $tempBuildContext = Join-Path $env:TEMP "acr-build-context-$(Get-Random)"

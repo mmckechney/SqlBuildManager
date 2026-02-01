@@ -8,7 +8,7 @@ param
 # Get set resource name variables from prefix
 #############################################
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-. "$scriptDir\..\templates\prefix_resource_names.ps1" -prefix $prefix
+. "$scriptDir\..\prefix_resource_names.ps1" -prefix $prefix
 
 
 $batchAccts = az batch account list --resource-group $resourceGroupName  --query "[].{Name:name, AccountEndpoint:accountEndpoint}" | ConvertFrom-Json

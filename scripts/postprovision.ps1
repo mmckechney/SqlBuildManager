@@ -21,13 +21,13 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 Write-Host "Repo Root: $repoRoot" -ForegroundColor DarkGreen
 
 # Run the grant identity permissions script
-$scriptPath = Join-Path $repoRoot "scripts\templates\Database\grant_identity_permissions.ps1"
+$scriptPath = Join-Path $repoRoot "scripts\Database\grant_identity_permissions.ps1"
 if (Test-Path $scriptPath) {
     & $scriptPath -prefix $prefix -resourceGroupName $resourceGroupName
 } else {
     Write-Host "Script not found at: $scriptPath" -ForegroundColor Yellow
     Write-Host "Skipping SQL permissions grant. Run manually after deployment:" -ForegroundColor Yellow
-    Write-Host "  .\scripts\templates\Database\grant_identity_permissions.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
+    Write-Host "  .\scripts\Database\grant_identity_permissions.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
 }
 
 # Build and upload Batch application packages if BUILD_BATCH_PACKAGES is set
@@ -38,14 +38,14 @@ if ($buildBatch -eq "true") {
     Write-Host "Post-Provision: Building Batch Application Packages" -ForegroundColor Cyan
     Write-Host "========================================" -ForegroundColor Cyan
     
-    $batchScriptPath = Join-Path $repoRoot "scripts\templates\Batch\build_and_upload_batch_fromprefix.ps1"
+    $batchScriptPath = Join-Path $repoRoot "scripts\Batch\build_and_upload_batch_fromprefix.ps1"
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $batchScriptPath) {
         & $batchScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -action "BuildAndUpload"
     } else {
         Write-Host "Batch build script not found at: $batchScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\templates\Batch\build_and_upload_batch_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\Batch\build_and_upload_batch_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
     }
 } else {
     Write-Host ""
@@ -61,14 +61,14 @@ if ($buildContainers -eq "true") {
     Write-Host "Post-Provision: Building Container Images" -ForegroundColor Cyan
     Write-Host "========================================" -ForegroundColor Cyan
     
-    $containerScriptPath = Join-Path $repoRoot "scripts\templates\ContainerRegistry\build_container_registry_image_fromprefix.ps1"
+    $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_image_fromprefix.ps1"
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $containerScriptPath) {
         & $containerScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -wait $true
     } else {
         Write-Host "Container build script not found at: $containerScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\templates\ContainerRegistry\build_container_registry_image_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_container_registry_image_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
     }
 } else {
     Write-Host ""
@@ -84,7 +84,7 @@ if ($generateSettings -eq "true") {
     Write-Host "Post-Provision: Generating MI-Only Settings Files" -ForegroundColor Cyan
     Write-Host "========================================" -ForegroundColor Cyan
     
-    $settingsScriptPath = Join-Path $repoRoot "scripts\templates\create_all_settingsfiles_mi_only.ps1"
+    $settingsScriptPath = Join-Path $repoRoot "scripts\create_all_settingsfiles_mi_only.ps1"
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     # Ensure output directory exists
@@ -96,7 +96,7 @@ if ($generateSettings -eq "true") {
         & $settingsScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath
     } else {
         Write-Host "Settings script not found at: $settingsScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\templates\create_all_settingsfiles_mi_only.ps1 -prefix $prefix" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\create_all_settingsfiles_mi_only.ps1 -prefix $prefix" -ForegroundColor Yellow
     }
 } else {
     Write-Host ""
@@ -110,7 +110,7 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Post-Provision: Creating Database Config Files" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
-$dbConfigScriptPath = Join-Path $repoRoot "scripts\templates\Database\create_database_override_files.ps1"
+$dbConfigScriptPath = Join-Path $repoRoot "scripts\Database\create_database_override_files.ps1"
 $outputPath = Join-Path $repoRoot "src\TestConfig"
 
 # Ensure output directory exists
@@ -122,7 +122,7 @@ if (Test-Path $dbConfigScriptPath) {
     & $dbConfigScriptPath -prefix $prefix -path $outputPath
 } else {
     Write-Host "Database config script not found at: $dbConfigScriptPath" -ForegroundColor Yellow
-    Write-Host "Run manually: .\scripts\templates\Database\create_database_override_files.ps1 -prefix $prefix -path $outputPath" -ForegroundColor Yellow
+    Write-Host "Run manually: .\scripts\Database\create_database_override_files.ps1 -prefix $prefix -path $outputPath" -ForegroundColor Yellow
 }
 
 Write-Host ""

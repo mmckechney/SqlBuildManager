@@ -1,7 +1,7 @@
 
 param (
     $prefix,
-    $path = "..\..\src\TestConfig"
+    $path = "..\src\TestConfig"
 )
 
 if($false -eq (Test-Path $path))

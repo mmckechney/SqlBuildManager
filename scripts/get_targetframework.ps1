@@ -2,7 +2,7 @@
 param (
     [Parameter()]
     [string]
-    $path = "..\..\src\SqlBuildManager.Console"
+    $path = "..\src\SqlBuildManager.Console"
 )
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path

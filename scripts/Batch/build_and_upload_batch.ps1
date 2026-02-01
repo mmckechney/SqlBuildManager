@@ -41,14 +41,14 @@ foreach ($env in $vars) {
 
     if($action -ne "UploadOnly")
     {
-        dotnet publish (Resolve-Path (Join-Path $scriptDir  "..\..\..\src\SqlBuildManager.Console\sbm.csproj")) -r $env.BuildTarget --configuration Debug -f $frameworkTarget --self-contained
+        dotnet publish (Resolve-Path (Join-Path $scriptDir  "..\..\src\SqlBuildManager.Console\sbm.csproj")) -r $env.BuildTarget --configuration Debug -f $frameworkTarget --self-contained
     }
     
-    if($false -eq (Test-Path (Join-Path $scriptDir "..\..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish")))
+    if($false -eq (Test-Path (Join-Path $scriptDir "..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish")))
     {
-        New-Item  (Join-Path $scriptDir "..\..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish") -ItemType Directory
+        New-Item  (Join-Path $scriptDir "..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish") -ItemType Directory
     }
-    $source= Resolve-Path (Join-Path $scriptDir "..\..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish")
+    $source= Resolve-Path (Join-Path $scriptDir "..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish")
     if($env.OSName -eq "Windows")
     {
         $version = (Get-Item "$($source)\sbm.exe").VersionInfo.ProductVersion  #Get version for Batch application

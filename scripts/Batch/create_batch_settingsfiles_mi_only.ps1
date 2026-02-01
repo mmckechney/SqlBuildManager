@@ -4,7 +4,7 @@ param
     [string] $prefix,
 
     [string] $sbmExe = "sbm.exe",
-    [string] $path = "..\..\..\src\TestConfig",
+    [string] $path = "..\..\src\TestConfig",
     [string] $resourceGroupName
 )
 

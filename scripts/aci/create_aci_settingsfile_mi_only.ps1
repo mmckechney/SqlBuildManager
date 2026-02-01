@@ -4,17 +4,17 @@ param
     [string] $prefix,
 
     [string] $sbmExe = "sbm.exe",
-    [string] $path = "..\..\..\src\TestConfig",
+    [string] $path = "..\..\src\TestConfig",
     [string] $resourceGroupName,
     [string] $imageTag = "latest-vNext"
 )
 
 <#
 .SYNOPSIS
-    Creates Container App settings files that use ONLY Managed Identity authentication (no keys or connection strings).
+    Creates ACI settings files that use ONLY Managed Identity authentication (no keys or connection strings).
 
 .DESCRIPTION
-    This script generates settings files for Azure Container App deployments
+    This script generates settings files for Azure Container Instance (ACI) deployments
     that use Managed Identity for ALL Azure service authentication:
     - Storage: Uses Managed Identity (no StorageAccountKey)
     - Event Hub: Uses namespace only (no connection string)
@@ -50,7 +50,7 @@ if ([string]::IsNullOrWhiteSpace($resourceGroupName)) {
 }
 
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "Creating Container App Managed Identity-Only Settings File" -ForegroundColor Cyan
+Write-Host "Creating ACI Managed Identity-Only Settings File" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "This settings file uses Managed Identity for ALL Azure services." -ForegroundColor Yellow
@@ -70,20 +70,19 @@ Write-Host "Using Storage Account: $storageAccountName" -ForegroundColor DarkGre
 Write-Host "Using Event Hub Namespace: $eventHubNamespaceName" -ForegroundColor DarkGreen
 Write-Host "Using Service Bus Namespace: $serviceBusNamespaceName" -ForegroundColor DarkGreen
 Write-Host "Using Container Registry: $containerRegistryName" -ForegroundColor DarkGreen
-Write-Host "Using Container App Environment: $containerAppEnvName" -ForegroundColor DarkGreen
 Write-Host "Using Managed Identity: $identityName (ClientId: $($identity.clientId))" -ForegroundColor DarkGreen
+Write-Host "Using ACI Name: $aciName" -ForegroundColor DarkGreen
+Write-Host "Using VNET: $vnet" -ForegroundColor DarkGreen
+Write-Host "Using Subnet: $aciSubnet" -ForegroundColor DarkGreen
 
 # Get Event Hub name
 $eventHubName = az eventhubs eventhub list --resource-group $resourceGroupName --namespace-name $eventHubNamespaceName -o tsv --query "[0].name"
-
-# Get Container App Environment info
-$location = az containerapp env show -g $resourceGroupName -n $containerAppEnvName -o tsv --query location
 
 # Get ACR server name
 $acrServerName = az acr show -g $resourceGroupName --name $containerRegistryName -o tsv --query loginServer
 
 # Output file path
-$settingsContainerApp = Join-Path $path "settingsfile-containerapp-mi-only.json"
+$settingsAci = Join-Path $path "settingsfile-aci-mi-only.json"
 
 # Settings file key
 $keyFile = Join-Path $path "settingsfilekey.txt"
@@ -95,52 +94,60 @@ if ($false -eq (Test-Path $keyFile)) {
 }
 
 # Build parameters (NO KEYS!)
-$params = @("containerapp", "savesettings")
+$params = @("aci", "savesettings")
+$params += @("--settingsfile", $settingsAci)
+# Note: ACI CLI requires -kv but we use a placeholder since MI mode doesn't need it
+$params += @("-kv", "placeholder-not-used-with-mi")
+$params += @("--aciname", $aciName)
+$params += @("--identityname", $identityName)
+$params += @("--clientid", $identity.clientId)
+$params += @("--idrg", $resourceGroupName)
+$params += @("--acirg", $resourceGroupName)
 $params += @("--tenantid", $tenantId)
-$params += @("--environmentname", $containerAppEnvName)
-$params += @("--location", """$location""")
-$params += @("--resourcegroup", $resourceGroupName)
-$params += @("--imagetag", $imageTag)
-$params += @("--settingsfile", $settingsContainerApp)
-$params += @("--settingsfilekey", $keyFile)
 $params += @("--storageaccountname", $storageAccountName)
 # NO --storageaccountkey - will use Managed Identity
+$params += @("--defaultscripttimeout", "500")
+$params += @("--subscriptionid", $subscriptionId)
+$params += @("--force")
+$params += @("--eventhublogging", "ScriptErrors")
 $params += @("--ehrg", $resourceGroupName)
 $params += @("--ehsub", $subscriptionId)
-$params += @("--defaultscripttimeout", 500)
-$params += @("--subscriptionid", $subscriptionId)
-$params += @("--force", "true")
-$params += @("--eventhublogging", "ScriptErrors")
-
-# Identity parameters
-$params += @("--identityname", $identityName)
-$params += @("--idrg", $resourceGroupName)
-$params += @("--clientid", $identity.clientId)
 
 # Container Registry - use server name but NO credentials (MI will pull)
 $params += @("--registryserver", $acrServerName)
 # NO --registryusername or --registrypassword - will use Managed Identity
 
+# Image tag
+$params += @("--imagetag", $imageTag)
+
+# Network settings
+if ($vnet -ne "" -and $aciSubnet -ne "") {
+    $params += @("--vnetname", $vnet)
+    $params += @("--subnetname", $aciSubnet)
+    $params += @("--vnetrg", $resourceGroupName)
+}
+
+# Auth type
+$params += @("--authtype", "ManagedIdentity")
+
 # Event Hub (namespace only, no connection string)
 $ehValue = "$($eventHubNamespaceName)|$($eventHubName)"
-$params += @("--eventhubconnection", $ehValue)
+$params += @("-eh", $ehValue)
 
 # Service Bus (namespace only, no connection string)
-# NOTE: Container Apps KEDA scaler may still require connection string for Service Bus
-# For MI-only, we use the namespace only and rely on MI for authentication
-$params += @("--servicebustopicconnection", $serviceBusNamespaceName)
+$params += @("-sb", $serviceBusNamespaceName)
 
 #############################################
 # Generate Settings File
 #############################################
-if (Test-Path $settingsContainerApp) { Remove-Item $settingsContainerApp }
-Write-Host "Saving MI-only settings file to $settingsContainerApp" -ForegroundColor DarkGreen
+if (Test-Path $settingsAci) { Remove-Item $settingsAci }
+Write-Host "Saving MI-only settings file to $settingsAci" -ForegroundColor DarkGreen
 Write-Host $params -ForegroundColor DarkYellow
 & $sbmExe $params
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Green
-Write-Host "Container App Managed Identity-Only Settings File Created" -ForegroundColor Green
+Write-Host "ACI Managed Identity-Only Settings File Created" -ForegroundColor Green
 Write-Host "============================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "This settings file contains NO secrets, keys, or connection strings." -ForegroundColor Cyan
@@ -148,8 +155,5 @@ Write-Host "All Azure services will authenticate using the Managed Identity:" -F
 Write-Host "  Identity Name: $identityName" -ForegroundColor Cyan
 Write-Host "  Client ID: $($identity.clientId)" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "NOTE: Container Apps KEDA scaler for Service Bus may require additional" -ForegroundColor Yellow
-Write-Host "      configuration for MI authentication." -ForegroundColor Yellow
-Write-Host ""
 Write-Host "File created:" -ForegroundColor Yellow
-Write-Host "  - $settingsContainerApp" -ForegroundColor Yellow
+Write-Host "  - $settingsAci" -ForegroundColor Yellow

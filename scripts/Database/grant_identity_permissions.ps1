@@ -6,7 +6,7 @@ param
     [Parameter(Mandatory=$true)]
     [string] $resourceGroupName,
 
-    [string] $path = "..\..\..\src\TestConfig",
+    [string] $path = "..\..\src\TestConfig",
 
     [ValidateSet("db_owner", "db_datareader", "db_datawriter")]
     [string] $databaseRole = "db_owner"

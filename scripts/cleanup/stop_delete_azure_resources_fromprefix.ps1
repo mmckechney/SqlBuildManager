@@ -4,9 +4,8 @@ param
 )
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-$templatesDir = Join-Path $scriptDir "..\templates"
 
-. "$templatesDir\prefix_resource_names.ps1" -prefix $prefix
+. "$scriptDir\..\prefix_resource_names.ps1" -prefix $prefix
 
 Write-Host "Deleting test databases" -ForegroundColor DarkGreen
 & "$scriptDir\delete_databases_fromprefix.ps1" -prefix $prefix
