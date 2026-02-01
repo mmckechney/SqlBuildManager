@@ -787,6 +787,111 @@ namespace SqlBuildManager.Console.ExternalTest
             }
 
         }
+
+        /// <summary>
+        /// Tests the 'containerapp worker test' command which runs the container worker locally
+        /// by setting environment variables to simulate the container environment.
+        /// This validates the local execution path without deploying to Azure Container Apps.
+        /// </summary>
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", 2, ConcurrencyType.Count)]
+        [DataTestMethod]
+        public void ContainerApp_WorkerTest_SBMSource_Success(string settingsFile, int concurrency, ConcurrencyType concurrencyType)
+        {
+            string jobName = null;
+            settingsFile = Path.GetFullPath(settingsFile);
+            try
+            {
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
+                if (!File.Exists(sbmFileName))
+                {
+                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
+                }
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                jobName = TestHelper.GetUniqueJobName("cawt");
+
+                // Step 1: Prep - upload the SBM package to storage
+                var args = new string[]{
+                    "containerapp",  "prep",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--packagename", sbmFileName
+                };
+
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result, "Prep step failed");
+
+                // Step 2: Enqueue - send database targets to Service Bus
+                args = new string[]{
+                    "containerapp",  "enqueue",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--override", overrideFile
+                };
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result, "Enqueue step failed");
+
+                // Step 3: Run worker test - executes locally with environment variables
+                args = new string[]{
+                    "--loglevel", "Debug",
+                    "containerapp",  "worker", "test",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--packagename", sbmFileName,
+                    "--override", overrideFile,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString()
+                };
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+
+                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                Assert.AreEqual(0, result, $"Worker test failed. Log contents: {logFileContents}");
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(logFileContents.Contains("Completed Successfully") || ConsoleOutput.ToString().Contains("Completed Successfully"), 
+                    $"Expected 'Completed Successfully' in output. Log: {logFileContents}");
+            }
+            finally
+            {
+                Debug.WriteLine(ConsoleOutput.ToString());
+
+                // Cleanup: Dequeue any remaining messages from Service Bus
+                if (!string.IsNullOrEmpty(jobName))
+                {
+                    try
+                    {
+                        RootCommand rootCommand = CommandLineBuilder.SetUp();
+                        var args = new string[]{
+                            "containerapp",  "dequeue",
+                            "--settingsfile", settingsFile,
+                            "--settingsfilekey", settingsFileKeyPath,
+                            "--jobname", jobName,
+                            "--concurrencytype", concurrencyType.ToString()
+                        };
+                        var val = rootCommand.InvokeAsync(args);
+                        val.Wait();
+                    }
+                    catch
+                    {
+                        // Ignore cleanup errors
+                    }
+                }
+            }
+        }
     }
 }
 
