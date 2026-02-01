@@ -417,8 +417,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
                 Assert.IsTrue(executionLogFile[3].IndexOf("SqlBuildTest: Starting up thread") > -1);
 
-                Assert.IsTrue(executionLogFile[4].IndexOf("SqlBuildTest11: Queuing up thread") > -1);
-                Assert.IsTrue(executionLogFile[5].IndexOf("SqlBuildTest11: Starting up thread") > -1);
+                Assert.IsTrue(executionLogFile[4].IndexOf("SqlBuildTest4: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[5].IndexOf("SqlBuildTest4: Starting up thread") > -1);
 
             }
             finally
