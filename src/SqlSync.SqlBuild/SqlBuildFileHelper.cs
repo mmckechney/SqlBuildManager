@@ -129,6 +129,103 @@ namespace SqlSync.SqlBuild
             }
         }
 
+        /// <summary>
+        /// Async version of ExtractSqlBuildZipFile. Extracts and validates a SQL Build zip file.
+        /// </summary>
+        public static async Task<(bool success, string workingDirectory, string projectFilePath, string projectFileName, string result)> ExtractSqlBuildZipFileAsync(
+            string fileName, 
+            string? workingDirectory = null,
+            bool resetWorkingDirectory = true, 
+            bool overwriteExistingProjectFiles = false,
+            CancellationToken cancellationToken = default)
+        {
+            string result = "";
+            string projFilePath = workingDirectory ?? string.Empty;
+            string projFileName = string.Empty;
+            string workDir = workingDirectory ?? string.Empty;
+
+            try
+            {
+                if (resetWorkingDirectory)
+                {
+                    var initResult = await InitializeWorkingDirectoryAsync(cancellationToken).ConfigureAwait(false);
+                    if (!initResult.success)
+                    {
+                        result = "Unable to initialize working directory.";
+                        log.LogError($"ExtractSqlBuildZipFileAsync error: {result}");
+                        return (false, workDir, projFilePath, projFileName, result);
+                    }
+                    workDir = initResult.workingDirectory;
+                    projFilePath = initResult.projectFilePath;
+                    projFileName = initResult.projectFileName;
+                }
+                else
+                {
+                    if (!workDir.EndsWith(@"\") && !workDir.EndsWith(@"/"))
+                    {
+                        workDir = workDir + @"/";
+                    }
+                    projFilePath = workDir;
+                    log.LogDebug($"ExtractSqlBuildZipFileAsync projectFilePath set to: {projFilePath}");
+                }
+
+                // Unpack the zip contents into the working directory
+                if (!await ZipHelper.UnpackZipPackageAsync(workDir, fileName, overwriteExistingProjectFiles, cancellationToken).ConfigureAwait(false))
+                {
+                    result = "Unable to unpack Sql Build Project File [" + fileName + "]";
+                    log.LogError($"ExtractSqlBuildZipFileAsync error: {result}");
+                    return (false, workDir, projFilePath, projFileName, result);
+                }
+                log.LogDebug($"Successfully UnZipped Sql Build Project file {fileName}");
+
+                var mainProjectFilePath = Path.Combine(workDir, XmlFileNames.MainProjectFile);
+                if (File.Exists(mainProjectFilePath))
+                {
+                    log.LogDebug($"Found MainProjectFile at: {mainProjectFilePath}");
+                    if (SqlBuildFileHelper.ValidateAgainstSchema(mainProjectFilePath, out string valErrorMessage))
+                    {
+                        projFileName = mainProjectFilePath;
+                        log.LogDebug("MainProjectFile successfully validated against schema");
+                        return (true, workDir, projFilePath, projFileName, result);
+                    }
+                    else
+                    {
+                        await CleanUpAndDeleteWorkingDirectoryAsync(workDir, cancellationToken).ConfigureAwait(false);
+                        result = "Unable to validate the schema for: " + mainProjectFilePath;
+                        log.LogError($"ExtractSqlBuildZipFileAsync error: {result}");
+                        return (false, workDir, projFilePath, projFileName, result);
+                    }
+                }
+                else
+                {
+                    log.LogWarning($"The MainProjectFile not found at {mainProjectFilePath}");
+                    string[] files = Directory.GetFiles(workDir, "*.xml");
+                    for (int i = 0; i < files.Length; i++)
+                    {
+                        log.LogDebug($"Attempting to validate {files[i]} against schema.");
+                        if (SqlBuildFileHelper.ValidateAgainstSchema(files[i], out string valErrorMessage))
+                        {
+                            log.LogDebug($"Project file found at {files[i]}. Using as main project metadata file.");
+                            projFileName = files[i];
+                            return (true, workDir, projFilePath, projFileName, result);
+                        }
+                    }
+
+                    await CleanUpAndDeleteWorkingDirectoryAsync(workDir, cancellationToken).ConfigureAwait(false);
+                    result = "Unable to validate the schema for any XML file in " + workDir;
+                    log.LogError($"ExtractSqlBuildZipFileAsync error: {result}");
+                    return (false, workDir, projFilePath, projFileName, result);
+                }
+            }
+            catch (Exception exe)
+            {
+                result = exe.Message;
+                log.LogError($"ExtractSqlBuildZipFileAsync exception: {result}");
+                await CleanUpAndDeleteWorkingDirectoryAsync(workDir, cancellationToken).ConfigureAwait(false);
+                return (false, workDir, projFilePath, projFileName, result);
+            }
+        }
+
 
         public static bool LoadSqlBuildProjectFile(out SqlSyncBuildDataModel model, string projFileName, bool validateSchema)
         {
@@ -146,11 +243,40 @@ namespace SqlSync.SqlBuild
             }
         }
 
+        /// <summary>
+        /// Async version of LoadSqlBuildProjectFile. Loads or creates a SQL Build project file.
+        /// </summary>
+        public static async Task<(bool success, SqlSyncBuildDataModel model)> LoadSqlBuildProjectFileAsync(string projFileName, bool validateSchema, CancellationToken cancellationToken = default)
+        {
+            if (File.Exists(projFileName))
+            {
+                var model = await SqlSyncBuildDataXmlSerializer.LoadAsync(projFileName, cancellationToken).ConfigureAwait(false);
+                return (true, model);
+            }
+            else
+            {
+                log.LogInformation($"LoadSqlBuildProjectFileAsync: unable to find projectFile at {projFileName}. Creating shell.");
+                var model = CreateShellSqlSyncBuildDataModel();
+                await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model).ConfigureAwait(false);
+                return (false, model);
+            }
+        }
+
         public static SqlSyncBuildDataModel LoadSqlBuildProjectModel(string projFileName, bool validateSchema)
         {
             LoadSqlBuildProjectFile(out SqlSyncBuildDataModel model, projFileName, validateSchema);
             return model;
         }
+
+        /// <summary>
+        /// Async version of LoadSqlBuildProjectModel. Loads a SQL Build project model.
+        /// </summary>
+        public static async Task<SqlSyncBuildDataModel> LoadSqlBuildProjectModelAsync(string projFileName, bool validateSchema, CancellationToken cancellationToken = default)
+        {
+            var (_, model) = await LoadSqlBuildProjectFileAsync(projFileName, validateSchema, cancellationToken).ConfigureAwait(false);
+            return model;
+        }
+
         #endregion
 
         public static string InferOverridesFromPackage(string sbmFileName, string suppliedDbName)
@@ -1056,6 +1182,53 @@ namespace SqlSync.SqlBuild
             }
         }
 
+        /// <summary>
+        /// Async version of CalculateSha1HashFromPackage. Calculates the SHA1 hash of a build package.
+        /// </summary>
+        public static async Task<string> CalculateSha1HashFromPackageAsync(string buildPackageName, CancellationToken cancellationToken = default)
+        {
+            SqlSyncBuildDataModel? model = null;
+
+            if (String.IsNullOrEmpty(buildPackageName))
+                return string.Empty;
+
+            string projectFilePath = string.Empty;
+
+            string extension = Path.GetExtension(buildPackageName).ToLower();
+            switch (extension)
+            {
+                case ".sbm":
+                    var extractResult = await ExtractSqlBuildZipFileAsync(buildPackageName, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    if (extractResult.success)
+                    {
+                        projectFilePath = extractResult.projectFilePath;
+                        var loadResult = await LoadSqlBuildProjectFileAsync(extractResult.projectFileName, false, cancellationToken).ConfigureAwait(false);
+                        model = loadResult.model;
+                    }
+                    break;
+                case ".sbx":
+                    projectFilePath = Path.GetDirectoryName(buildPackageName) ?? string.Empty;
+                    var sbxLoadResult = await LoadSqlBuildProjectFileAsync(buildPackageName, false, cancellationToken).ConfigureAwait(false);
+                    model = sbxLoadResult.model;
+                    break;
+                default:
+                    return string.Empty;
+            }
+
+            if (model != null)
+            {
+                string hash = await CalculateBuildPackageSHA1SignatureFromPathAsync(projectFilePath, model, cancellationToken).ConfigureAwait(false);
+                if (extension == ".sbm")
+                    await CleanUpAndDeleteWorkingDirectoryAsync(projectFilePath, cancellationToken).ConfigureAwait(false);
+
+                return hash;
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
 
 
 
@@ -1074,6 +1247,31 @@ namespace SqlSync.SqlBuild
                 foreach (var script in scripts)
                 {
                     GetSHA1Hash(Path.Combine(projectFileExtractionPath, script.FileName), out fileHash, out textHash, script.StripTransactionText ?? false);
+                    sb.AppendLine(textHash);
+                }
+
+                string strHashData = GetSHA1Hash(sb.ToString());
+                return strHashData;
+            }
+            else
+            {
+                return "Error calculating hash";
+            }
+        }
+
+        /// <summary>
+        /// Async version of CalculateBuildPackageSHA1SignatureFromPath. Calculates the SHA1 hash of a script package.
+        /// </summary>
+        public static async Task<string> CalculateBuildPackageSHA1SignatureFromPathAsync(string projectFileExtractionPath, SqlSyncBuildDataModel model, CancellationToken cancellationToken = default)
+        {
+            if (model != null && !string.IsNullOrEmpty(projectFileExtractionPath))
+            {
+                var scripts = model.Script.OrderBy(s => s.BuildOrder);
+
+                StringBuilder sb = new StringBuilder();
+                foreach (var script in scripts)
+                {
+                    var (_, textHash) = await GetSHA1HashAsync(Path.Combine(projectFileExtractionPath, script.FileName), script.StripTransactionText ?? false, cancellationToken).ConfigureAwait(false);
                     sb.AppendLine(textHash);
                 }
 
@@ -1664,6 +1862,16 @@ namespace SqlSync.SqlBuild
                 return false;
             }
         }
+
+        /// <summary>
+        /// Async version of CleanUpAndDeleteWorkingDirectory. Cleans up and deletes a working directory.
+        /// </summary>
+        public static Task<bool> CleanUpAndDeleteWorkingDirectoryAsync(string workingDir, CancellationToken cancellationToken = default)
+        {
+            // Directory operations are not truly async in .NET, but we wrap for consistency
+            return Task.Run(() => CleanUpAndDeleteWorkingDirectory(workingDir), cancellationToken);
+        }
+
         public static bool InitilizeWorkingDirectory(ref string workingDirectory, ref string projectFilePath, ref string projectFileName)
         {
             try
@@ -1693,6 +1901,23 @@ namespace SqlSync.SqlBuild
                 return false;
             }
         }
+
+        /// <summary>
+        /// Async version of InitilizeWorkingDirectory. Initializes a working directory.
+        /// </summary>
+        public static Task<(bool success, string workingDirectory, string projectFilePath, string projectFileName)> InitializeWorkingDirectoryAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() =>
+            {
+                string workingDirectory = string.Empty;
+                string projectFilePath = string.Empty;
+                string projectFileName = string.Empty;
+                
+                bool success = InitilizeWorkingDirectory(ref workingDirectory, ref projectFilePath, ref projectFileName);
+                return (success, workingDirectory, projectFilePath, projectFileName);
+            }, cancellationToken);
+        }
+
         #endregion
 
 

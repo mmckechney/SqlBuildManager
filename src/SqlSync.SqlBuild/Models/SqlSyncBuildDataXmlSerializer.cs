@@ -8,6 +8,7 @@ using System.IO.Compression;
 using System.Xml.Linq;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Identity.Client;
+using System.Threading;
 using System.Threading.Tasks;
 
 #nullable enable
@@ -38,6 +39,29 @@ namespace SqlSync.SqlBuild.Models
 
             stream.Position = 0;
             return Load(XDocument.Load(stream));
+        }
+
+        public static async Task<SqlSyncBuildDataModel> LoadAsync(string path, CancellationToken cancellationToken = default)
+        {
+            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true);
+            var buffer = new byte[stream.Length];
+            await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
+            
+            using var memStream = new MemoryStream(buffer);
+            if (LooksLikeZip(memStream))
+            {
+                memStream.Position = 0;
+                using var archive = new ZipArchive(memStream, ZipArchiveMode.Read, leaveOpen: true);
+                var entry = archive.GetEntry(XmlFileNames.MainProjectFile)
+                           ?? archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
+                if (entry == null)
+                    throw new InvalidOperationException($"Zip package '{path}' does not contain a project XML file.");
+                using var entryStream = entry.Open();
+                return Load(XDocument.Load(entryStream));
+            }
+
+            memStream.Position = 0;
+            return Load(XDocument.Load(memStream));
         }
 
         private static bool LooksLikeZip(Stream stream)
