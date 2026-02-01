@@ -393,14 +393,6 @@ namespace SqlBuildManager.Enterprise.Policy
             return line;
         }
 
-        [Obsolete("Use CommandLinePolicyCheckAsync instead. Will be removed in future version.")]
-        public List<string[]> CommandLinePolicyCheck(string buildPackageName, out bool passed)
-        {
-            var (policyReturns, result) = CommandLinePolicyCheckAsync(buildPackageName).GetAwaiter().GetResult();
-            passed = result;
-            return policyReturns;
-        }
-
         /// <summary>
         /// Async version of CommandLinePolicyCheck.
         /// </summary>

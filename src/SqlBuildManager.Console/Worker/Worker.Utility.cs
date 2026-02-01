@@ -94,7 +94,7 @@ namespace SqlBuildManager.Console
 
 
 
-        internal static void SyncronizeDatabase(CommandLineArgs cmdLine)
+        internal static async Task SyncronizeDatabaseAsync(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
@@ -106,7 +106,7 @@ namespace SqlBuildManager.Console
                 return;
             }
 
-            bool success = Synchronize.SyncDatabases(cmdLine);
+            bool success = await Synchronize.SyncDatabasesAsync(cmdLine).ConfigureAwait(false);
             if (success)
                 System.Environment.Exit(0);
             else
@@ -531,7 +531,7 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static void PackageSbxFilesIntoSbmFiles(CommandLineArgs cmdLine)
+        internal static async Task PackageSbxFilesIntoSbmFilesAsync(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
@@ -550,8 +550,7 @@ namespace SqlBuildManager.Console
                 System.Environment.Exit(9835);
             }
             string directory = cmdLine.Directory;
-            string message;
-            List<string> sbmFiles = sqlB.SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(directory, out message);
+            List<string> sbmFiles = await sqlB.SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(directory).ConfigureAwait(false);
             if (sbmFiles.Count > 0)
             {
                 foreach (string sbm in sbmFiles)
@@ -559,14 +558,10 @@ namespace SqlBuildManager.Console
 
                 System.Environment.Exit(0);
             }
-            else if (message.Length > 0)
-            {
-                log.LogWarning(message);
-                System.Environment.Exit(604);
-            }
             else
             {
-                System.Environment.Exit(0);
+                log.LogWarning("No SBX files found or packaged in directory: " + directory);
+                System.Environment.Exit(604);
             }
         }
 

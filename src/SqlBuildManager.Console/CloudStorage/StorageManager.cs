@@ -167,12 +167,6 @@ namespace SqlBuildManager.Console.CloudStorage
             return $"https://{storageAccountName}.blob.core.windows.net/{outputContainerName}";
         }
 
-        [Obsolete("Use GetOutputContainerSasUrlAsync instead. Will be removed in future version.")]
-        internal static string GetOutputContainerSasUrl(string storageAccountName, string storageAccountKey, string outputContainerName, bool forRead)
-        {
-            return GetOutputContainerSasUrlAsync(storageAccountName, storageAccountKey, outputContainerName, forRead).GetAwaiter().GetResult();
-        }
-
         /// <summary>
         /// Async version of GetOutputContainerSasUrl.
         /// </summary>
@@ -403,12 +397,6 @@ namespace SqlBuildManager.Console.CloudStorage
                 log.LogError($"Unable to download file {Path.GetFileName(localFileName)} to {localFileName}: {ex.Message}");
                 return false;
             }
-        }
-
-        [Obsolete("Use UploadFileToBatchContainerAsync instead. Will be removed in future version.")]
-        internal static ResourceFile UploadFileToBatchContainer(string storageAcctName, string containerName, StorageSharedKeyCredential storageCreds, string filePath)
-        {
-            return UploadFileToBatchContainerAsync(storageAcctName, containerName, storageCreds, filePath).GetAwaiter().GetResult();
         }
 
         internal static async Task<ResourceFile> UploadFileToBatchContainerAsync(string storageAcctName, string containerName, StorageSharedKeyCredential storageCreds, string filePath, CancellationToken cancellationToken = default)

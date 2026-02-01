@@ -115,7 +115,6 @@ namespace SqlSync.SqlBuild
 
         }
 
-        [Obsolete("Use CreateSbmFromDacPacDifferencesAsync instead. Will be removed in future version.")]
         public static DacpacDeltasStatus CreateSbmFromDacPacDifferences(string platinumDacPacFileName, string targetDacPacFileName, bool batchScripts, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete, out string buildPackageName)
         {
             var result = CreateSbmFromDacPacDifferencesAsync(platinumDacPacFileName, targetDacPacFileName, batchScripts, buildRevision, defaultScriptTimeout, allowObjectDelete).GetAwaiter().GetResult();
@@ -305,7 +304,6 @@ namespace SqlSync.SqlBuild
         }
 
 
-        [Obsolete("Use UpdateBuildRunDataForDacPacSyncAsync instead. Will be removed in future version.")]
         public static (DacpacDeltasStatus, SqlBuildRunDataModel updatedModel) UpdateBuildRunDataForDacPacSync(SqlBuildRunDataModel runDataModel, string targetServerName, string targetDatabase, AuthenticationType authType, string userName, string password, string workingDirectory, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete, string managedIdentityClientId)
         {
             return UpdateBuildRunDataForDacPacSyncAsync(runDataModel, targetServerName, targetDatabase, authType, userName, password, workingDirectory, buildRevision, defaultScriptTimeout, allowObjectDelete, managedIdentityClientId).GetAwaiter().GetResult();

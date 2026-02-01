@@ -47,7 +47,7 @@ namespace SqlBuildManager.Console.CommandLine
 					continueonfailureOption
 				};
 				DatabaseAuthArgs.ForEach(o => cmd.Add(o));
-				cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.SyncronizeDatabase);
+				cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.SyncronizeDatabaseAsync);
 				return cmd;
 			}
 		}
@@ -85,7 +85,7 @@ namespace SqlBuildManager.Console.CommandLine
 				{
 					directoryOption
 				};
-				cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.PackageSbxFilesIntoSbmFiles);
+				cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.PackageSbxFilesIntoSbmFilesAsync);
 				cmd.AddAlias("pack");
 				return cmd;
 			}

@@ -75,7 +75,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 AuthenticationType = AuthenticationType.Windows
             };
             target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
-            bool success = target.SyncronizeDatabases(gold, toUpdate, false);
+            bool success = target.SyncronizeDatabasesAsync(gold, toUpdate, false).GetAwaiter().GetResult();
 
             CleanUpSyncTest2();
 
@@ -100,7 +100,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 AuthenticationType = AuthenticationType.Windows
             };
             target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
-            bool success = target.SyncronizeDatabases(gold, toUpdate, false);
+            bool success = target.SyncronizeDatabasesAsync(gold, toUpdate, false).GetAwaiter().GetResult();
 
             DatabaseDiffer differ = new DatabaseDiffer();
             var history = differ.GetDatabaseHistoryDifference(gold, toUpdate);

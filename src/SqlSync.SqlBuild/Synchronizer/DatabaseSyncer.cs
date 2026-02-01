@@ -16,12 +16,6 @@ namespace SqlSync.SqlBuild.Synchronizer
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private bool lastBuildSuccessful = true;
 
-        [Obsolete("Use SyncronizeDatabasesAsync instead. Will be removed in future version.")]
-        public Boolean SyncronizeDatabases(string goldServer, string goldDatabase, string toUpdateServer, string toUpdateDatabase, bool continueOnFailure)
-        {
-            return SyncronizeDatabasesAsync(goldServer, goldDatabase, toUpdateServer, toUpdateDatabase, continueOnFailure).GetAwaiter().GetResult();
-        }
-
         public async Task<Boolean> SyncronizeDatabasesAsync(string goldServer, string goldDatabase, string toUpdateServer, string toUpdateDatabase, bool continueOnFailure, CancellationToken cancellationToken = default)
         {
             ConnectionData gold = new ConnectionData()
@@ -38,12 +32,6 @@ namespace SqlSync.SqlBuild.Synchronizer
             };
 
             return await SyncronizeDatabasesAsync(gold, toUpdate, continueOnFailure, cancellationToken).ConfigureAwait(false);
-        }
-
-        [Obsolete("Use SyncronizeDatabasesAsync instead. Will be removed in future version.")]
-        public Boolean SyncronizeDatabases(ConnectionData gold, ConnectionData toUpdate, bool continueOnFailure)
-        {
-            return SyncronizeDatabasesAsync(gold, toUpdate, continueOnFailure).GetAwaiter().GetResult();
         }
 
         public async Task<Boolean> SyncronizeDatabasesAsync(ConnectionData gold, ConnectionData toUpdate, bool continueOnFailure, CancellationToken cancellationToken = default)
@@ -99,12 +87,6 @@ namespace SqlSync.SqlBuild.Synchronizer
 
             return syncronized;
 
-        }
-
-        [Obsolete("Use ProcessSyncronizationPackagesAsync instead. Will be removed in future version.")]
-        private bool ProcessSyncronizationPackages(IEnumerable<string> sbmPackages, ConnectionData toUpdate, bool runAsTrial, bool continueOnFailure)
-        {
-            return ProcessSyncronizationPackagesAsync(sbmPackages, toUpdate, runAsTrial, continueOnFailure).GetAwaiter().GetResult();
         }
 
         private async Task<bool> ProcessSyncronizationPackagesAsync(IEnumerable<string> sbmPackages, ConnectionData toUpdate, bool runAsTrial, bool continueOnFailure, CancellationToken cancellationToken = default)

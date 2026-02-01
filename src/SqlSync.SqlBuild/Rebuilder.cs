@@ -101,7 +101,7 @@ namespace SqlSync.SqlBuild
             return data;
 
         }
-        [Obsolete("Use RebuildBuildManagerFileAsync instead. Will be removed in future version.")]
+
         internal static bool RebuildBuildManagerFile(int defaultTimeout, string buildFileName, List<RebuilderData> rebuildData)
         {
             return RebuildBuildManagerFileAsync(defaultTimeout, buildFileName, rebuildData).GetAwaiter().GetResult();
