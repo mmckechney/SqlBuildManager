@@ -41,10 +41,12 @@ namespace SqlSync.SqlBuild
             return true;
 
         }
+        [Obsolete("Use ExtractSqlBuildZipFileAsync instead for better performance. This synchronous method will be removed in a future version.")]
         public static bool ExtractSqlBuildZipFile(string fileName, ref string workingDirectory, ref string projectFilePath, ref string projectFileName, out string result)
         {
             return ExtractSqlBuildZipFile(fileName, ref workingDirectory, ref projectFilePath, ref projectFileName, true, false, out result);
         }
+        [Obsolete("Use ExtractSqlBuildZipFileAsync instead for better performance. This synchronous method will be removed in a future version.")]
         public static bool ExtractSqlBuildZipFile(string fileName, ref string workingDirectory, ref string projectFilePath, ref string projectFileName, bool resetWorkingDirectory, bool overwriteExistingProjectFiles, out string result)
         {
             result = "";
@@ -227,6 +229,7 @@ namespace SqlSync.SqlBuild
         }
 
 
+        [Obsolete("Use LoadSqlBuildProjectFileAsync instead for better performance. This synchronous method will be removed in a future version.")]
         public static bool LoadSqlBuildProjectFile(out SqlSyncBuildDataModel model, string projFileName, bool validateSchema)
         {
             if (File.Exists(projFileName))
@@ -279,6 +282,7 @@ namespace SqlSync.SqlBuild
 
         #endregion
 
+        [Obsolete("Use InferOverridesFromPackageAsync instead for better performance. This synchronous method will be removed in a future version.")]
         public static string InferOverridesFromPackage(string sbmFileName, string suppliedDbName)
         {
             string tempWorkingDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -522,11 +526,13 @@ namespace SqlSync.SqlBuild
             await PackageProjectFileIntoZipAsync(model, Path.GetDirectoryName(projFileName), buildZipFileName, includeHistoryAndLogs, cancellationToken).ConfigureAwait(false);
         }
 
+        [Obsolete("Use SaveSqlFilesToNewBuildFileAsync instead for better performance. This synchronous method will be removed in a future version.")]
         public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, int defaultScriptTimeout, bool includeHistoryAndLogs = true)
         {
             return SaveSqlFilesToNewBuildFile(buildFileName, fileNames, targetDatabaseName, false, defaultScriptTimeout, false);
         }
 
+        [Obsolete("Use SaveSqlFilesToNewBuildFileAsync instead for better performance. This synchronous method will be removed in a future version.")]
         public static bool SaveSqlFilesToNewBuildFile(string buildFileName, List<string> fileNames, string targetDatabaseName, bool overwritePreExistingFile, int defaultScriptTimeout, bool includeHistoryAndLogs = true)
         {
             if (File.Exists(buildFileName) && !overwritePreExistingFile)
@@ -588,6 +594,7 @@ namespace SqlSync.SqlBuild
             }
 
         }
+        [Obsolete("Use SaveSqlFilesToNewBuildFileAsync instead for better performance. This synchronous method will be removed in a future version.")]
         public static bool SaveSqlFilesToNewBuildFile(string buildFileName, string directory, string targetDatabaseName, int defaultScriptTimeout)
         {
             string[] files = Directory.GetFiles(directory);
@@ -910,6 +917,7 @@ namespace SqlSync.SqlBuild
 
 
 
+        [Obsolete("Use AddScriptFileToBuildAsync instead for better performance. This synchronous method will be removed in a future version.")]
         public static SqlSyncBuildDataModel AddScriptFileToBuild(SqlSyncBuildDataModel model, string projFileName, string fileName, double buildOrder, string description, bool rollBackScript, bool rollBackBuild, string databaseName, bool stripTransactions, string buildZipFileName, bool saveToZip, bool allowMultipleRuns, string addedBy, int scriptTimeOut, Guid scriptId, string tag)
         {
             var newScript = new Script(
@@ -1325,6 +1333,7 @@ namespace SqlSync.SqlBuild
 
         #region .: SHA1 Hashing related :.
 
+        [Obsolete("Use CalculateSha1HashFromPackageAsync instead for better performance. This synchronous method will be removed in a future version.")]
         public static string CalculateSha1HashFromPackage(string buildPackageName)
         {
             SqlSyncBuildDataModel model = null;
@@ -1423,6 +1432,7 @@ namespace SqlSync.SqlBuild
         /// Calculated the SHA1 hash of the script package. Takes the build order into account 
         /// </summary>
 
+        [Obsolete("Use CalculateBuildPackageSHA1SignatureFromPathAsync instead for better performance. This synchronous method will be removed in a future version.")]
         public static string CalculateBuildPackageSHA1SignatureFromPath(string projectFileExtractionPath, SqlSyncBuildDataModel model)
         {
             if (model != null && !string.IsNullOrEmpty(projectFileExtractionPath))
@@ -2035,6 +2045,7 @@ namespace SqlSync.SqlBuild
         }
 
         #region .: Files/Path Initilization Methods :.
+        [Obsolete("Use CleanUpAndDeleteWorkingDirectoryAsync instead for better performance. This synchronous method will be removed in a future version.")]
         public static bool CleanUpAndDeleteWorkingDirectory(string workingDir)
         {
             try
@@ -2056,9 +2067,23 @@ namespace SqlSync.SqlBuild
         public static Task<bool> CleanUpAndDeleteWorkingDirectoryAsync(string workingDir, CancellationToken cancellationToken = default)
         {
             // Directory operations are not truly async in .NET, but we wrap for consistency
-            return Task.Run(() => CleanUpAndDeleteWorkingDirectory(workingDir), cancellationToken);
+            return Task.Run(() =>
+            {
+                try
+                {
+                    if (Directory.Exists(workingDir))
+                        Directory.Delete(workingDir, true);
+                    return true;
+                }
+                catch (Exception exe)
+                {
+                    log.LogWarning(exe, $"Unable to clean up working directory '{workingDir}'");
+                    return false;
+                }
+            }, cancellationToken);
         }
 
+        [Obsolete("Use InitializeWorkingDirectoryAsync instead for better performance. This synchronous method will be removed in a future version.")]
         public static bool InitilizeWorkingDirectory(ref string workingDirectory, ref string projectFilePath, ref string projectFileName)
         {
             try
