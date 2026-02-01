@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlSync.SqlBuild.Synchronizer
 {
@@ -14,7 +16,13 @@ namespace SqlSync.SqlBuild.Synchronizer
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private bool lastBuildSuccessful = true;
 
+        [Obsolete("Use SyncronizeDatabasesAsync instead. Will be removed in future version.")]
         public Boolean SyncronizeDatabases(string goldServer, string goldDatabase, string toUpdateServer, string toUpdateDatabase, bool continueOnFailure)
+        {
+            return SyncronizeDatabasesAsync(goldServer, goldDatabase, toUpdateServer, toUpdateDatabase, continueOnFailure).GetAwaiter().GetResult();
+        }
+
+        public async Task<Boolean> SyncronizeDatabasesAsync(string goldServer, string goldDatabase, string toUpdateServer, string toUpdateDatabase, bool continueOnFailure, CancellationToken cancellationToken = default)
         {
             ConnectionData gold = new ConnectionData()
             {
@@ -29,9 +37,16 @@ namespace SqlSync.SqlBuild.Synchronizer
                 AuthenticationType = AuthenticationType.Windows
             };
 
-            return SyncronizeDatabases(gold, toUpdate, continueOnFailure);
+            return await SyncronizeDatabasesAsync(gold, toUpdate, continueOnFailure, cancellationToken).ConfigureAwait(false);
         }
+
+        [Obsolete("Use SyncronizeDatabasesAsync instead. Will be removed in future version.")]
         public Boolean SyncronizeDatabases(ConnectionData gold, ConnectionData toUpdate, bool continueOnFailure)
+        {
+            return SyncronizeDatabasesAsync(gold, toUpdate, continueOnFailure).GetAwaiter().GetResult();
+        }
+
+        public async Task<Boolean> SyncronizeDatabasesAsync(ConnectionData gold, ConnectionData toUpdate, bool continueOnFailure, CancellationToken cancellationToken = default)
         {
             DatabaseDiffer diff = new DatabaseDiffer();
 
@@ -51,13 +66,14 @@ namespace SqlSync.SqlBuild.Synchronizer
             //Create SBM packages for each
             foreach (var buildFileHistory in toBeRun.BuildFileHistory)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 PushInfo(string.Format("Rebuilding Package {0} (Hash:{1})", buildFileHistory.BuildFileName, buildFileHistory.BuildFileHash));
 
                 var fileName = tempPath + "\\" + Path.GetFileNameWithoutExtension(buildFileHistory.BuildFileName) + ".sbm"; //Make sure it creates and SBM and not an SBX
                 var rebuildData = Rebuilder.RetreiveBuildData(gold, buildFileHistory.BuildFileHash, buildFileHistory.CommitDate);
                 rebuildData.ForEach(h => h.ScriptFileName = Path.GetFileName(h.ScriptFileName)); //trim off the path, we just want the file name
 
-                bool success = Rebuilder.RebuildBuildManagerFile(500, fileName, rebuildData);
+                bool success = await Rebuilder.RebuildBuildManagerFileAsync(500, fileName, rebuildData, cancellationToken).ConfigureAwait(false);
                 if (!success)
                 {
                     PushInfo(string.Format("Error creating package {0} (Hash:{1}) see error log for details.", buildFileHistory.BuildFileName, buildFileHistory.BuildFileHash));
@@ -67,7 +83,7 @@ namespace SqlSync.SqlBuild.Synchronizer
                 rebuiltPackages.Add(fileName);
             }
 
-            bool syncronized = ProcessSyncronizationPackages(rebuiltPackages, toUpdate, false, continueOnFailure);
+            bool syncronized = await ProcessSyncronizationPackagesAsync(rebuiltPackages, toUpdate, false, continueOnFailure, cancellationToken).ConfigureAwait(false);
 
             if (syncronized)
             {
@@ -85,7 +101,13 @@ namespace SqlSync.SqlBuild.Synchronizer
 
         }
 
+        [Obsolete("Use ProcessSyncronizationPackagesAsync instead. Will be removed in future version.")]
         private bool ProcessSyncronizationPackages(IEnumerable<string> sbmPackages, ConnectionData toUpdate, bool runAsTrial, bool continueOnFailure)
+        {
+            return ProcessSyncronizationPackagesAsync(sbmPackages, toUpdate, runAsTrial, continueOnFailure).GetAwaiter().GetResult();
+        }
+
+        private async Task<bool> ProcessSyncronizationPackagesAsync(IEnumerable<string> sbmPackages, ConnectionData toUpdate, bool runAsTrial, bool continueOnFailure, CancellationToken cancellationToken = default)
         {
             log.LogInformation($"Starting synchronization of {toUpdate.DatabaseName} with {sbmPackages.Count()} packages...");
 
@@ -96,9 +118,10 @@ namespace SqlSync.SqlBuild.Synchronizer
 
             foreach (var sbmPackageName in sbmPackages)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 log.LogInformation($"Synchronization run for {Path.GetFileName(sbmPackageName)}");
                 //Unzip and read the package
-                var extractResult = SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(sbmPackageName, workingDirectory, resetWorkingDirectory: false).GetAwaiter().GetResult();
+                var extractResult = await SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(sbmPackageName, workingDirectory, resetWorkingDirectory: false, cancellationToken: cancellationToken).ConfigureAwait(false);
                 if (!extractResult.success)
                 {
                     PushInfo(string.Format("Unable to extract build file {0}. See log for details", sbmPackageName));
@@ -108,7 +131,7 @@ namespace SqlSync.SqlBuild.Synchronizer
                 projectFilePath = extractResult.projectFilePath;
                 projFileName = extractResult.projectFileName;
 
-                var (loadSuccess, buildModel) = SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projFileName, false).GetAwaiter().GetResult();
+                var (loadSuccess, buildModel) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projFileName, false, cancellationToken).ConfigureAwait(false);
                 if (!loadSuccess)
                 {
                     PushInfo(string.Format("Unable to load build file {0}. See log for details", sbmPackageName));
@@ -176,15 +199,9 @@ namespace SqlSync.SqlBuild.Synchronizer
                 SqlBuildHelper helper = new SqlBuildHelper(toUpdate, false, string.Empty, runDataModel.IsTransactional ?? true);
                 helper.BuildCommittedEvent += new BuildCommittedEventHandler(helper_BuildCommittedEvent);
                 helper.BuildErrorRollBackEvent += new EventHandler(helper_BuildErrorRollBackEvent);
-                BackgroundWorker bg = new BackgroundWorker()
-                {
-                    WorkerReportsProgress = true,
-                    WorkerSupportsCancellation = true
-                };
-                DoWorkEventArgs e = new DoWorkEventArgs(null);
 
                 PushInfo(string.Format("Applying {0}", Path.GetFileName(sbmPackageName)));
-                helper.ProcessBuildAsync(runData: runDataModel, allowableTimeoutRetries: 0).GetAwaiter().GetResult();
+                await helper.ProcessBuildAsync(runData: runDataModel, allowableTimeoutRetries: 0).ConfigureAwait(false);
 
                 if (lastBuildSuccessful)
                 {
