@@ -528,8 +528,6 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         /// <summary>
         ///A test for Execute
         ///</summary>
-        // TODO: This test is flaky - it depends on database lock timing which can vary. Review and stabilize.
-        [Ignore("Flaky test - sometimes passes, sometimes fails depending on database lock timing")]
         [TestMethod()]
         public void ExecuteTest_CommitWithRetries()
         {
