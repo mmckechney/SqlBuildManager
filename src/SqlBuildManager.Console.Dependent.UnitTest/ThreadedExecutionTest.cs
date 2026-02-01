@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using MoreLinq.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -99,7 +100,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
         #region ExecuteTest - Not Trial - Transactional
         [TestMethod()]
-        public void ExecuteTest_ConcurrencyByNumber_1()
+        public async Task ExecuteTest_ConcurrencyByNumber_1()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -127,7 +128,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
 
             try
             {
@@ -172,7 +173,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
         }
         [TestMethod()]
-        public void ExecuteTest_ConcurrencyByNumber_2()
+        public async Task ExecuteTest_ConcurrencyByNumber_2()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -198,7 +199,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
 
             try
             {
@@ -233,7 +234,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
         }
         [TestMethod()]
-        public void ExecuteTest_ConcurrencyByNumber_4()
+        public async Task ExecuteTest_ConcurrencyByNumber_4()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -259,7 +260,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
 
             try
             {
@@ -301,7 +302,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
 
         [TestMethod()]
-        public void ExecuteTest_ConcurrencyByServer()
+        public async Task ExecuteTest_ConcurrencyByServer()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -328,7 +329,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
 
             try
             {
@@ -374,7 +375,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
         }
         [TestMethod()]
-        public void ExecuteTest_ConcurrencyByMaxByServer_2()
+        public async Task ExecuteTest_ConcurrencyByMaxByServer_2()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -402,7 +403,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
 
             try
             {
@@ -442,7 +443,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_CommitWithoutUsingRetries()
+        public async Task ExecuteTest_CommitWithoutUsingRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -471,7 +472,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
 
             try
             {
@@ -520,7 +521,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
 
         [TestMethod()]
-        public void InfiniteLock_Test()
+        public async Task InfiniteLock_Test()
         {
             var res = StartInfiniteLockingThread(1.5);
             Assert.AreEqual(0, res);
@@ -529,7 +530,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_CommitWithRetries()
+        public async Task ExecuteTest_CommitWithRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -572,7 +573,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 }
 
 
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                actual = await target.ExecuteAsync();
 
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
@@ -627,7 +628,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         // TODO: This test is flaky - it depends on database lock timing which can vary. Review and stabilize.
         [Ignore("Flaky test - sometimes passes, sometimes fails depending on database lock timing")]
         [TestMethod()]
-        public void ExecuteTest_RollbackWithThreeRetries()
+        public async Task ExecuteTest_RollbackWithThreeRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -668,7 +669,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                     if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
                 }
 
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                actual = await target.ExecuteAsync();
 
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
@@ -719,7 +720,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         // TODO: This test is flaky - it depends on database lock timing which can vary. Review and stabilize.
         [Ignore("Flaky test - sometimes passes, sometimes fails depending on database lock timing")]
         [TestMethod()]
-        public void ExecuteTest_RollbackWithFiveRetries()
+        public async Task ExecuteTest_RollbackWithFiveRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -760,7 +761,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                     if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
                 }
 
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                actual = await target.ExecuteAsync();
 
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
@@ -809,7 +810,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_NegativeTimeoutRetryCount()
+        public async Task ExecuteTest_NegativeTimeoutRetryCount()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -836,7 +837,7 @@ localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
 
             int expected = (int)ExecutionReturn.NegativeTimeoutRetryCount;
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
 
 
@@ -866,7 +867,7 @@ localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_SuccessWithoutTransactionsNoUsingRetries()
+        public async Task ExecuteTest_SuccessWithoutTransactionsNoUsingRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -893,7 +894,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
             try
             {
@@ -946,7 +947,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_NonTransactionalWithRetriesArgsFailure()
+        public async Task ExecuteTest_NonTransactionalWithRetriesArgsFailure()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllText(sbmFileName, "");
@@ -971,7 +972,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
             try
             {
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                actual = await target.ExecuteAsync();
                 Assert.AreEqual(expected, actual);
             }
             finally
@@ -994,7 +995,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_ErrorWithoutTransactionsNoUsingRetries()
+        public async Task ExecuteTest_ErrorWithoutTransactionsNoUsingRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -1035,7 +1036,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 }
 
 
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                actual = await target.ExecuteAsync();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 if (actual == -600)
                     Assert.Fail("Unable to completed test.");
@@ -1088,7 +1089,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_TrialSuccessWithRollbackWithRetries()
+        public async Task ExecuteTest_TrialSuccessWithRollbackWithRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -1131,7 +1132,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                 }
             
 
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                actual = await target.ExecuteAsync();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
@@ -1180,7 +1181,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_TrialFailureRollbackWithRetries()
+        public async Task ExecuteTest_TrialFailureRollbackWithRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -1221,7 +1222,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
                     if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
                 }
 
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                actual = await target.ExecuteAsync();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");

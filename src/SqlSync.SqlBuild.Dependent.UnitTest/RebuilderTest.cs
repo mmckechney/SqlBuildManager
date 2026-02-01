@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
@@ -131,7 +132,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         #region RebuildBuildManagerFile Static Tests
 
         [TestMethod]
-        public void RebuildBuildManagerFile_Static_WithValidData_CreatesFile()
+        public async Task RebuildBuildManagerFile_Static_WithValidData_CreatesFile()
         {
             int defaultTimeout = 30;
             string buildFileName = Path.Combine(Path.GetTempPath(), $"TestRebuild_{Guid.NewGuid()}.sbm");
@@ -150,14 +151,14 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 }
             };
 
-            bool result = Rebuilder.RebuildBuildManagerFile(defaultTimeout, buildFileName, rebuildData);
+            bool result = await Rebuilder.RebuildBuildManagerFileAsync(defaultTimeout, buildFileName, rebuildData);
 
             Assert.IsTrue(result, "Should successfully create build file");
             Assert.IsTrue(File.Exists(buildFileName), "Build file should exist");
         }
 
         [TestMethod]
-        public void RebuildBuildManagerFile_Static_WithMultipleScripts_CreatesFile()
+        public async Task RebuildBuildManagerFile_Static_WithMultipleScripts_CreatesFile()
         {
             int defaultTimeout = 30;
             string buildFileName = Path.Combine(Path.GetTempPath(), $"TestRebuild_{Guid.NewGuid()}.sbm");
@@ -194,14 +195,14 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 }
             };
 
-            bool result = Rebuilder.RebuildBuildManagerFile(defaultTimeout, buildFileName, rebuildData);
+            bool result = await Rebuilder.RebuildBuildManagerFileAsync(defaultTimeout, buildFileName, rebuildData);
 
             Assert.IsTrue(result);
             Assert.IsTrue(File.Exists(buildFileName));
         }
 
         [TestMethod]
-        public void RebuildBuildManagerFile_Static_WithEmptyList_CreatesEmptyBuild()
+        public async Task RebuildBuildManagerFile_Static_WithEmptyList_CreatesEmptyBuild()
         {
             int defaultTimeout = 30;
             string buildFileName = Path.Combine(Path.GetTempPath(), $"TestRebuild_{Guid.NewGuid()}.sbm");
@@ -209,7 +210,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             var rebuildData = new List<RebuilderData>();
 
-            bool result = Rebuilder.RebuildBuildManagerFile(defaultTimeout, buildFileName, rebuildData);
+            bool result = await Rebuilder.RebuildBuildManagerFileAsync(defaultTimeout, buildFileName, rebuildData);
 
             Assert.IsTrue(result, "Should handle empty list");
         }

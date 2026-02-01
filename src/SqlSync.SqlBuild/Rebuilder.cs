@@ -102,11 +102,6 @@ namespace SqlSync.SqlBuild
 
         }
 
-        internal static bool RebuildBuildManagerFile(int defaultTimeout, string buildFileName, List<RebuilderData> rebuildData)
-        {
-            return RebuildBuildManagerFileAsync(defaultTimeout, buildFileName, rebuildData).GetAwaiter().GetResult();
-        }
-
         internal static async System.Threading.Tasks.Task<bool> RebuildBuildManagerFileAsync(int defaultTimeout, string buildFileName, List<RebuilderData> rebuildData, System.Threading.CancellationToken cancellationToken = default)
         {
             string tempPath = System.IO.Path.GetTempPath() + System.Guid.NewGuid();
@@ -164,10 +159,10 @@ namespace SqlSync.SqlBuild
                     Directory.Delete(tempPath, true);
             }
         }
-        public bool RebuildBuildManagerFile(int defaultTimeout)
+        public async System.Threading.Tasks.Task<bool> RebuildBuildManagerFileAsync(int defaultTimeout)
         {
             List<RebuilderData> rebuildData = RetreiveBuildData();
-            return RebuildBuildManagerFile(defaultTimeout, newBuildFileName, rebuildData);
+            return await RebuildBuildManagerFileAsync(defaultTimeout, newBuildFileName, rebuildData);
         }
 
         #region .: Discovery Methods :.

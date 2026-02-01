@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.Synchronizer;
 using System;
+using System.Threading.Tasks;
 
 #nullable enable
 
@@ -59,7 +60,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for SyncronizeDatabases
         ///</summary>
         [TestMethod()]
-        public void SyncronizeDatabasesTest_SyncWorked()
+        public async Task SyncronizeDatabasesTest_SyncWorked()
         {
             DatabaseSyncer target = new DatabaseSyncer();
             ConnectionData gold = new ConnectionData()
@@ -75,7 +76,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 AuthenticationType = AuthenticationType.Windows
             };
             target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
-            bool success = target.SyncronizeDatabasesAsync(gold, toUpdate, false).GetAwaiter().GetResult();
+            bool success = await target.SyncronizeDatabasesAsync(gold, toUpdate, false);
 
             CleanUpSyncTest2();
 
@@ -84,7 +85,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         [TestMethod()]
         [Ignore("Flaky since history was not found")]
-        public void SyncronizeDatabasesTest_SyncWorkedAndSticks()
+        public async Task SyncronizeDatabasesTest_SyncWorkedAndSticks()
         {
             DatabaseSyncer target = new DatabaseSyncer();
             ConnectionData gold = new ConnectionData()
@@ -100,7 +101,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 AuthenticationType = AuthenticationType.Windows
             };
             target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
-            bool success = target.SyncronizeDatabasesAsync(gold, toUpdate, false).GetAwaiter().GetResult();
+            bool success = await target.SyncronizeDatabasesAsync(gold, toUpdate, false);
 
             DatabaseDiffer differ = new DatabaseDiffer();
             var history = differ.GetDatabaseHistoryDifference(gold, toUpdate);
