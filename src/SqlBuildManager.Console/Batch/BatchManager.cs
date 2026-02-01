@@ -194,13 +194,13 @@ namespace SqlBuildManager.Console.Batch
             {
                log.LogDebug($"Generating SAS URL with Managed Identity for container '{storageContainerName}'");
                storageSvcClient = new BlobServiceClient(new Uri($"https://{cmdLine.ConnectionArgs.StorageAccountName}.blob.core.windows.net"), Aad.AadHelper.TokenCredential);
-               containerSasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, null, storageContainerName, false);
+               containerSasToken = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, null, storageContainerName, false).ConfigureAwait(false);
             }
             else
             {
                storageSvcClient = StorageManager.CreateStorageClient(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
                storageCreds = StorageManager.GetStorageSharedKeyCredential(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
-               containerSasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, false);
+               containerSasToken = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, false).ConfigureAwait(false);
             }
             log.LogDebug($"Output write SAS token: {containerSasToken}");
 
@@ -301,7 +301,7 @@ namespace SqlBuildManager.Console.Batch
 
             foreach (string filePath in inputFilePaths)
             {
-               inputFiles.Add(StorageManager.UploadFileToBatchContainer(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName, storageCreds, filePath));
+               inputFiles.Add(await StorageManager.UploadFileToBatchContainerAsync(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName, storageCreds, filePath).ConfigureAwait(false));
             }
 
             //Create the individual command lines for each node
@@ -480,7 +480,7 @@ namespace SqlBuildManager.Console.Batch
 
             // Generate read-only SAS URL for log access - use MI if no key provided
             log.LogDebug($"Generating SAS URL with Managed Identity for container '{storageContainerName}'");
-            readOnlySasToken = StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, true);
+            readOnlySasToken = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, true).ConfigureAwait(false);
             log.LogInformation($"The consolidated log files can be found in the Azure storage account '{cmdLine.ConnectionArgs.StorageAccountName}' in blob container '{storageContainerName}'");
             log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
             log.LogInformation("You can also get details on your Azure Batch execution from the \"Azure Batch Explorer\" found here: https://azure.github.io/BatchExplorer/");

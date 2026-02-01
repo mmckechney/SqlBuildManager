@@ -131,7 +131,7 @@ namespace SqlBuildManager.Console
             System.Environment.Exit(0);
         }
 
-        internal static void CreateBackout(CommandLineArgs cmdLine)
+        internal static async Task CreateBackout(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
@@ -143,7 +143,7 @@ namespace SqlBuildManager.Console
                 return;
             }
 
-            string packageName = BackoutCommandLine.CreateBackoutPackage(cmdLine);
+            string packageName = await BackoutCommandLine.CreateBackoutPackage(cmdLine).ConfigureAwait(false);
             if (!String.IsNullOrEmpty(packageName))
             {
                 log.LogInformation(packageName);
@@ -503,8 +503,7 @@ namespace SqlBuildManager.Console
             }
             string packageName = cmdLine.BuildFileName;
             PolicyHelper helper = new PolicyHelper();
-            bool passed;
-            List<string[]> policyMessages = helper.CommandLinePolicyCheck(packageName, out passed);
+            var (policyMessages, passed) = await helper.CommandLinePolicyCheckAsync(packageName).ConfigureAwait(false);
             if (policyMessages.Count > 0)
             {
                 List<string[]> tmp = new List<string[]>();

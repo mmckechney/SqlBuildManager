@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.XPath;
@@ -391,15 +393,27 @@ namespace SqlBuildManager.Enterprise.Policy
             return line;
         }
 
+        [Obsolete("Use CommandLinePolicyCheckAsync instead. Will be removed in future version.")]
         public List<string[]> CommandLinePolicyCheck(string buildPackageName, out bool passed)
         {
+            var (policyReturns, result) = CommandLinePolicyCheckAsync(buildPackageName).GetAwaiter().GetResult();
+            passed = result;
+            return policyReturns;
+        }
+
+        /// <summary>
+        /// Async version of CommandLinePolicyCheck.
+        /// </summary>
+        /// <returns>Tuple of (policy violations list, passed bool)</returns>
+        public async Task<(List<string[]> policyReturns, bool passed)> CommandLinePolicyCheckAsync(string buildPackageName, CancellationToken cancellationToken = default)
+        {
             string highSeverity = ViolationSeverity.High.ToString();
-            passed = true;
+            bool passed = true;
             List<string[]> policyReturns = new List<string[]>();
             SqlSyncBuildDataModel buildModel = null;
 
             if (String.IsNullOrEmpty(buildPackageName))
-                return policyReturns;
+                return (policyReturns, passed);
 
             string projFileName = string.Empty;
             string projectFilePath = string.Empty;
@@ -409,15 +423,15 @@ namespace SqlBuildManager.Enterprise.Policy
             switch ((extension))
             {
                 case ".sbm":
-                    (_, workingDirectory, projectFilePath, projFileName, _) = SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(buildPackageName).GetAwaiter().GetResult();
-                    (_, buildModel) = SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projFileName, false).GetAwaiter().GetResult();
+                    (_, workingDirectory, projectFilePath, projFileName, _) = await SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(buildPackageName, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    (_, buildModel) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projFileName, false, cancellationToken).ConfigureAwait(false);
                     break;
                 case ".sbx":
                     projectFilePath = Path.GetDirectoryName(buildPackageName);
-                    buildModel = SqlSyncBuildDataXmlSerializer.Load(buildPackageName);
+                    buildModel = await SqlSyncBuildDataXmlSerializer.LoadAsync(buildPackageName, cancellationToken).ConfigureAwait(false);
                     break;
                 default:
-                    return policyReturns;
+                    return (policyReturns, passed);
             }
 
             if (buildModel != null)
@@ -433,11 +447,11 @@ namespace SqlBuildManager.Enterprise.Policy
                 {
                     policyReturns.Add(new string[] { violation.Severity, violation.ScriptName, violation.Message });
                 }
-                return policyReturns;
+                return (policyReturns, passed);
             }
             else
             {
-                return policyReturns;
+                return (policyReturns, passed);
             }
         }
 

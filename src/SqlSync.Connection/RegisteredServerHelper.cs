@@ -3,6 +3,8 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 namespace SqlSync.Connection
 {
@@ -70,6 +72,11 @@ namespace SqlSync.Connection
         }
         internal static RegisteredServers GetRegisteredServers()
         {
+            return GetRegisteredServersAsync().GetAwaiter().GetResult();
+        }
+
+        internal static async Task<RegisteredServers> GetRegisteredServersAsync(CancellationToken cancellationToken = default)
+        {
             string localRegisteredServerPath = Path.Combine(SqlBuildManager.Logging.Configure.AppDataPath, "RegisteredServers.xml");
             string serverFileContents = string.Empty;
             try
@@ -77,11 +84,11 @@ namespace SqlSync.Connection
                 if (RegisteredServerHelper.RegisteredServerFileName.ToLower().StartsWith("http"))
                 {
                     var httpClient = new HttpClient();
-                    serverFileContents = httpClient.GetStringAsync(RegisteredServerHelper.RegisteredServerFileName).GetAwaiter().GetResult();
+                    serverFileContents = await httpClient.GetStringAsync(RegisteredServerHelper.RegisteredServerFileName, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    serverFileContents = File.ReadAllText(RegisteredServerHelper.RegisteredServerFileName);
+                    serverFileContents = await File.ReadAllTextAsync(RegisteredServerHelper.RegisteredServerFileName, cancellationToken).ConfigureAwait(false);
 
                 }
 
@@ -90,7 +97,7 @@ namespace SqlSync.Connection
                 if (!File.Exists(localRegisteredServerPath))
                 {
                     log.LogDebug($"Copying Registered Server file to local path {localRegisteredServerPath}");
-                    File.WriteAllText(localRegisteredServerPath, serverFileContents);
+                    await File.WriteAllTextAsync(localRegisteredServerPath, serverFileContents, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (Exception exe)

@@ -53,7 +53,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 }
                 else
                 {
-                    cmdLine.BatchArgs.OutputContainerSasUrl = CloudStorage.StorageManager.GetOutputContainerSasUrl(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, false);
+                    cmdLine.BatchArgs.OutputContainerSasUrl = await CloudStorage.StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, false).ConfigureAwait(false);
                 }
 
 

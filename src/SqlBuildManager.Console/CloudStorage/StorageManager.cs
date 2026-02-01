@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console.CloudStorage
@@ -165,26 +166,35 @@ namespace SqlBuildManager.Console.CloudStorage
         {
             return $"https://{storageAccountName}.blob.core.windows.net/{outputContainerName}";
         }
+
+        [Obsolete("Use GetOutputContainerSasUrlAsync instead. Will be removed in future version.")]
         internal static string GetOutputContainerSasUrl(string storageAccountName, string storageAccountKey, string outputContainerName, bool forRead)
+        {
+            return GetOutputContainerSasUrlAsync(storageAccountName, storageAccountKey, outputContainerName, forRead).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Async version of GetOutputContainerSasUrl.
+        /// </summary>
+        internal static async Task<string> GetOutputContainerSasUrlAsync(string storageAccountName, string storageAccountKey, string outputContainerName, bool forRead, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(storageAccountKey))
             {
                 // Use Managed Identity with User Delegation Key
-                return GetOutputContainerSasUrlWithManagedIdentity(storageAccountName, outputContainerName, forRead)
-                    .GetAwaiter().GetResult();
+                return await GetOutputContainerSasUrlWithManagedIdentity(storageAccountName, outputContainerName, forRead, cancellationToken).ConfigureAwait(false);
             }
             else
             {
                 // Legacy: Use storage key
                 var cred = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
-                return GetOutputContainerSasUrl(storageAccountName, outputContainerName, cred, forRead);
+                return await GetOutputContainerSasUrlWithKeyAsync(storageAccountName, outputContainerName, cred, forRead, cancellationToken).ConfigureAwait(false);
             }
         }
 
         /// <summary>
         /// Generates a SAS URL using User Delegation Key (Managed Identity) instead of storage account key
         /// </summary>
-        private static async Task<string> GetOutputContainerSasUrlWithManagedIdentity(string storageAccountName, string outputContainerName, bool forRead)
+        private static async Task<string> GetOutputContainerSasUrlWithManagedIdentity(string storageAccountName, string outputContainerName, bool forRead, CancellationToken cancellationToken = default)
         {
             log.LogDebug($"Generating SAS URL with Managed Identity for container '{outputContainerName}'");
             
@@ -218,11 +228,11 @@ namespace SqlBuildManager.Console.CloudStorage
             return $"https://{storageAccountName}.blob.core.windows.net/{outputContainerName}?{sasToken}";
         }
 
-        private static string GetOutputContainerSasUrl(string storageAccountName, string outputContainerName, StorageSharedKeyCredential storageCreds, bool forRead)
+        private static async Task<string> GetOutputContainerSasUrlWithKeyAsync(string storageAccountName, string outputContainerName, StorageSharedKeyCredential storageCreds, bool forRead, CancellationToken cancellationToken = default)
         {
             log.LogDebug($"Ensuring presence of output blob container '{outputContainerName}'");
             var container = new BlobContainerClient(new Uri($"https://{storageAccountName}.blob.core.windows.net/{outputContainerName}"), storageCreds);
-            container.CreateIfNotExists();
+            await container.CreateIfNotExistsAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
             BlobSasBuilder sasConstraints;
             if (!forRead)
@@ -395,7 +405,13 @@ namespace SqlBuildManager.Console.CloudStorage
             }
         }
 
+        [Obsolete("Use UploadFileToBatchContainerAsync instead. Will be removed in future version.")]
         internal static ResourceFile UploadFileToBatchContainer(string storageAcctName, string containerName, StorageSharedKeyCredential storageCreds, string filePath)
+        {
+            return UploadFileToBatchContainerAsync(storageAcctName, containerName, storageCreds, filePath).GetAwaiter().GetResult();
+        }
+
+        internal static async Task<ResourceFile> UploadFileToBatchContainerAsync(string storageAcctName, string containerName, StorageSharedKeyCredential storageCreds, string filePath, CancellationToken cancellationToken = default)
         {
             log.LogInformation($"Uploading file {filePath} to container [{containerName}]...");
 
@@ -415,7 +431,7 @@ namespace SqlBuildManager.Console.CloudStorage
 
             using (var fs = new FileStream(filePath, FileMode.Open))
             {
-                blobData.Upload(fs);
+                await blobData.UploadAsync(fs, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
 
             // Generate SAS URL
@@ -433,14 +449,14 @@ namespace SqlBuildManager.Console.CloudStorage
             else
             {
                 // Use Managed Identity with User Delegation Key
-                return GetResourceFileWithUserDelegationKey(storageAcctName, containerName, blobName).GetAwaiter().GetResult();
+                return await GetResourceFileWithUserDelegationKey(storageAcctName, containerName, blobName, cancellationToken).ConfigureAwait(false);
             }
         }
 
         /// <summary>
         /// Creates a ResourceFile with SAS URL using User Delegation Key (Managed Identity)
         /// </summary>
-        private static async Task<ResourceFile> GetResourceFileWithUserDelegationKey(string storageAcctName, string containerName, string blobName)
+        private static async Task<ResourceFile> GetResourceFileWithUserDelegationKey(string storageAcctName, string containerName, string blobName, CancellationToken cancellationToken = default)
         {
             var serviceClient = new BlobServiceClient(
                 new Uri($"https://{storageAcctName}.blob.core.windows.net"),
