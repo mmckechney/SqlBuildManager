@@ -594,6 +594,93 @@ namespace SqlSync.SqlBuild
             return SaveSqlFilesToNewBuildFile(buildFileName, files.ToList(), targetDatabaseName, defaultScriptTimeout);
         }
 
+        /// <summary>
+        /// Async version of SaveSqlFilesToNewBuildFile. Creates a new build file from a list of SQL files.
+        /// </summary>
+        public static Task<bool> SaveSqlFilesToNewBuildFileAsync(string buildFileName, List<string> fileNames, string targetDatabaseName, int defaultScriptTimeout, bool includeHistoryAndLogs = true, CancellationToken cancellationToken = default)
+        {
+            return SaveSqlFilesToNewBuildFileAsync(buildFileName, fileNames, targetDatabaseName, false, defaultScriptTimeout, includeHistoryAndLogs, cancellationToken);
+        }
+
+        /// <summary>
+        /// Async version of SaveSqlFilesToNewBuildFile. Creates a new build file from a list of SQL files.
+        /// </summary>
+        public static async Task<bool> SaveSqlFilesToNewBuildFileAsync(string buildFileName, List<string> fileNames, string targetDatabaseName, bool overwritePreExistingFile, int defaultScriptTimeout, bool includeHistoryAndLogs = true, CancellationToken cancellationToken = default)
+        {
+            if (File.Exists(buildFileName) && !overwritePreExistingFile)
+            {
+                return false;
+            }
+            string directory = Path.GetDirectoryName(buildFileName);
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                directory = System.IO.Directory.GetCurrentDirectory();
+            }
+            try
+            {
+                SqlSyncBuildDataModel model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+                string projFileName = Path.Combine(directory, XmlFileNames.MainProjectFile);
+                int i = 0;
+                foreach (string file in fileNames)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
+                    string shortFileName = Path.GetFileName(file);
+                    if (shortFileName == XmlFileNames.MainProjectFile ||
+                        shortFileName == XmlFileNames.ExportFile)
+                        continue;
+
+                    i++;
+                    model = await AddScriptFileToBuildAsync(
+                        model,
+                        projFileName,
+                        shortFileName,
+                        i,
+                        "",
+                        rollBackScript: true,
+                        rollBackBuild: true,
+                        databaseName: targetDatabaseName,
+                        stripTransactions: false,
+                        buildZipFileName: buildFileName,
+                        saveToZip: false,
+                        allowMultipleRuns: true,
+                        addedBy: System.Environment.UserName,
+                        scriptTimeOut: defaultScriptTimeout,
+                        scriptId: Guid.NewGuid(),
+                        tag: string.Empty,
+                        cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+                await SaveSqlBuildProjectFileAsync(model, projFileName, buildFileName, includeHistoryAndLogs, cancellationToken).ConfigureAwait(false);
+
+                // Clean up project file (not needed, it is now in the package)
+                try
+                {
+                    File.Delete(projFileName);
+                }
+                catch { log.LogWarning($"Unable to clean up temporary project file '{projFileName}'. Please remove manually."); }
+
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception exe)
+            {
+                log.LogError(exe, "Unable to package scripts");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Async version of SaveSqlFilesToNewBuildFile. Creates a new build file from all SQL files in a directory.
+        /// </summary>
+        public static async Task<bool> SaveSqlFilesToNewBuildFileAsync(string buildFileName, string directory, string targetDatabaseName, int defaultScriptTimeout, CancellationToken cancellationToken = default)
+        {
+            string[] files = Directory.GetFiles(directory);
+            return await SaveSqlFilesToNewBuildFileAsync(buildFileName, files.ToList(), targetDatabaseName, defaultScriptTimeout, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
         #region .: Packaging SBX into SBM :.
         public static List<string> PackageSbxFilesIntoSbmFiles(string directoryName, out string message)
         {
@@ -852,6 +939,60 @@ namespace SqlSync.SqlBuild
             if (saveToZip)
             {
                 SaveSqlBuildProjectFile(updatedModel, projFileName, buildZipFileName);
+            }
+            return updatedModel;
+        }
+
+        /// <summary>
+        /// Async version of AddScriptFileToBuild. Adds a script file to the build model.
+        /// </summary>
+        public static async Task<SqlSyncBuildDataModel> AddScriptFileToBuildAsync(
+            SqlSyncBuildDataModel model, 
+            string projFileName, 
+            string fileName, 
+            double buildOrder, 
+            string description, 
+            bool rollBackScript, 
+            bool rollBackBuild, 
+            string databaseName, 
+            bool stripTransactions, 
+            string buildZipFileName, 
+            bool saveToZip, 
+            bool allowMultipleRuns, 
+            string addedBy, 
+            int scriptTimeOut, 
+            Guid scriptId, 
+            string tag,
+            CancellationToken cancellationToken = default)
+        {
+            var newScript = new Script(
+                fileName: fileName,
+                buildOrder: buildOrder,
+                description: description,
+                rollBackOnError: rollBackScript,
+                causesBuildFailure: rollBackBuild,
+                dateAdded: DateTime.Now,
+                scriptId: (scriptId == Guid.Empty ? Guid.NewGuid() : scriptId).ToString(),
+                database: databaseName,
+                stripTransactionText: stripTransactions,
+                allowMultipleRuns: allowMultipleRuns,
+                addedBy: addedBy,
+                scriptTimeOut: scriptTimeOut,
+                dateModified: DateTime.MinValue,
+                modifiedBy: string.Empty,
+                tag: tag);
+
+            var updatedScripts = model.Script.Concat(new[] { newScript }).ToList();
+            var updatedModel = new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: model.SqlSyncBuildProject,
+                script: updatedScripts,
+                build: model.Build,
+                scriptRun: model.ScriptRun,
+                committedScript: model.CommittedScript);
+            
+            if (saveToZip)
+            {
+                await SaveSqlBuildProjectFileAsync(updatedModel, projFileName, buildZipFileName, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
             return updatedModel;
         }
