@@ -326,6 +326,52 @@ namespace SqlSync.SqlBuild
             return ovr.ToString();
         }
 
+        /// <summary>
+        /// Async version of InferOverridesFromPackage. Infers database overrides from a build package.
+        /// </summary>
+        public static async Task<string> InferOverridesFromPackageAsync(string sbmFileName, string suppliedDbName, CancellationToken cancellationToken = default)
+        {
+            string tempWorkingDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            StringBuilder ovr = new StringBuilder();
+            try
+            {
+                var extractResult = await ExtractSqlBuildZipFileAsync(sbmFileName, tempWorkingDir, resetWorkingDirectory: false, cancellationToken: cancellationToken).ConfigureAwait(false);
+                if (!extractResult.success)
+                    return string.Empty;
+
+                var (_, model) = await LoadSqlBuildProjectFileAsync(extractResult.projectFileName, false, cancellationToken).ConfigureAwait(false);
+                if (model != null)
+                {
+                    var targets = model.Script.Select(s => s.Database).Distinct();
+                    if (targets != null && targets.Count() > 0)
+                    {
+                        foreach (var t in targets)
+                        {
+                            if (!string.IsNullOrWhiteSpace(suppliedDbName))
+                            {
+                                ovr.Append($"{t},{suppliedDbName};");
+                            }
+                            else
+                            {
+                                ovr.Append($"{t},{t};");
+                            }
+                        }
+                        ovr.Length = ovr.Length - 1;
+                    }
+                }
+            }
+            catch
+            {
+                // Swallow exceptions like sync version
+            }
+            finally
+            {
+                await CleanUpAndDeleteWorkingDirectoryAsync(tempWorkingDir, cancellationToken).ConfigureAwait(false);
+            }
+
+            return ovr.ToString();
+        }
+
 
         public static bool PackageProjectFileIntoZip(SqlSyncBuildDataModel model, string projFilePath, string zipFileName, bool includeHistoryAndLogs)
         {
