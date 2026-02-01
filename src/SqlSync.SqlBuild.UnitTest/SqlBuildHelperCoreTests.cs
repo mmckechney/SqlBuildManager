@@ -856,7 +856,7 @@ namespace SqlSync.SqlBuild.UnitTest
         #region RunBuildScripts Tests
 
         [TestMethod]
-        public void RunBuildScripts_WithInjectedFactory_UsesFactory()
+        public async Task RunBuildScripts_WithInjectedFactory_UsesFactory()
         {
             var expectedBuild = new BuildModels.Build(
                 name: "test",
@@ -889,7 +889,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var scripts = new List<BuildModels.Script>();
             var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            var result = helper.RunBuildScripts(scripts, expectedBuild, "srv", false, null, buildData);
+            var result = await helper.RunBuildScriptsAsync(scripts, expectedBuild, "srv", false, null, buildData);
 
             Assert.AreEqual(expectedBuild.BuildId, result.BuildId);
             Assert.IsTrue(fakeFactory.CreateCalled);

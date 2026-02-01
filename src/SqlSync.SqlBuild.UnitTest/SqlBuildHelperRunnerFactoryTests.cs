@@ -18,7 +18,7 @@ namespace SqlSync.SqlBuild.UnitTest
     public class SqlBuildHelperRunnerFactoryTests
     {
         [TestMethod]
-        public void RunBuildScripts_UsesInjectedRunnerFactory()
+        public async Task RunBuildScripts_UsesInjectedRunnerFactory()
         {
             // Arrange
             var expectedBuild = new BuildModels.Build(
@@ -54,7 +54,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = helper.RunBuildScripts(scripts, expectedBuild, "srv", false, null, buildData);
+            var result = await helper.RunBuildScriptsAsync(scripts, expectedBuild, "srv", false, null, buildData);
 
             // Assert
             Assert.AreEqual(expectedBuild.BuildId, result.BuildId);
