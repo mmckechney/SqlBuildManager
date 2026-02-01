@@ -4,11 +4,20 @@ param
     [string] $prefix
 )
 
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$prefixScript = Join-Path $scriptDir "..\prefix_resource_names.ps1"
+# Get the repo root
+$repoRoot = $env:AZD_PROJECT_PATH
+if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+    $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
+}
+
+if ([string]::IsNullOrWhiteSpace($path)) {
+    $path = Join-Path $repoRoot "src\TestConfig"
+}
+
+$prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
 . $prefixScript -prefix $prefix
 
-$keyFileScript = Join-Path $scriptDir "..\key_file_names.ps1"
+$keyFileScript = Join-Path $repoRoot "scripts\key_file_names.ps1"
 . $keyFileScript -prefix $prefix -path $path
 
 Write-Host "Create Database override files for sql servers in resource group '$resourceGroupName'"  -ForegroundColor Cyan

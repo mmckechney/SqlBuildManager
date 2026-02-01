@@ -15,8 +15,12 @@ $dateTag =  "sqlbuildmanager:$dateTag"
 $vnextTag =  "sqlbuildmanager:latest-vNext"
 Write-Host "Uploading and building Container image on registry $azureContainerRegistry." -ForegroundColor DarkGreen
 
-$scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-$originalSourcePath = Resolve-Path (Join-Path $scriptDir ..\..\src)
+# Get the repo root
+$repoRoot = $env:AZD_PROJECT_PATH
+if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+    $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
+}
+$originalSourcePath = Join-Path $repoRoot "src"
 
 # Create a clean copy of source to avoid VS file locks
 $tempBuildContext = Join-Path $env:TEMP "acr-build-context-$(Get-Random)"

@@ -7,11 +7,16 @@ param
     [string] $action = "BuildAndUpload"
 )
 Write-Host "Build and Upload Batch" -ForegroundColor Cyan
-$scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+
+# Get the repo root
+$repoRoot = $env:AZD_PROJECT_PATH
+if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+    $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
+}
 
 $path = Resolve-Path $path
 Write-Host "Code Publish output path set to $path" -ForegroundColor DarkGreen
-$frameworkTarget = Invoke-Expression -Command (Join-Path $scriptDir ..\get_targetframework.ps1)
+$frameworkTarget = Invoke-Expression -Command (Join-Path $repoRoot "scripts\get_targetframework.ps1")
 
 Write-Host "Target Framework:  $frameworkTarget" -ForegroundColor DarkGreen
 
@@ -41,14 +46,14 @@ foreach ($env in $vars) {
 
     if($action -ne "UploadOnly")
     {
-        dotnet publish (Resolve-Path (Join-Path $scriptDir  "..\..\src\SqlBuildManager.Console\sbm.csproj")) -r $env.BuildTarget --configuration Debug -f $frameworkTarget --self-contained
+        dotnet publish (Join-Path $repoRoot "src\SqlBuildManager.Console\sbm.csproj") -r $env.BuildTarget --configuration Debug -f $frameworkTarget --self-contained
     }
     
-    if($false -eq (Test-Path (Join-Path $scriptDir "..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish")))
+    if($false -eq (Test-Path (Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish")))
     {
-        New-Item  (Join-Path $scriptDir "..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish") -ItemType Directory
+        New-Item (Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish") -ItemType Directory
     }
-    $source= Resolve-Path (Join-Path $scriptDir "..\..\src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish")
+    $source= Resolve-Path (Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish")
     if($env.OSName -eq "Windows")
     {
         $version = (Get-Item "$($source)\sbm.exe").VersionInfo.ProductVersion  #Get version for Batch application

@@ -59,11 +59,15 @@ Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 Write-Host "Output Path: $path" -ForegroundColor DarkGreen
 Write-Host ""
 
-$scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
+# Get the repo root
+$repoRoot = $env:AZD_PROJECT_PATH
+if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+    $repoRoot = Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent
+}
 
 if ($batch) {
     Write-Host "Generating Batch MI-only settings files..." -ForegroundColor Yellow
-    $batchScript = Join-Path $scriptDir "Batch\create_batch_settingsfiles_mi_only.ps1"
+    $batchScript = Join-Path $repoRoot "scripts\Batch\create_batch_settingsfiles_mi_only.ps1"
     if (Test-Path $batchScript) {
         & $batchScript -prefix $prefix -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName
     } else {
@@ -74,7 +78,7 @@ if ($batch) {
 
 if ($aks) {
     Write-Host "Generating AKS MI-only settings file..." -ForegroundColor Yellow
-    $aksScript = Join-Path $scriptDir "kubernetes\create_aks_settingsfile_mi_only.ps1"
+    $aksScript = Join-Path $repoRoot "scripts\kubernetes\create_aks_settingsfile_mi_only.ps1"
     if (Test-Path $aksScript) {
         & $aksScript -prefix $prefix -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName
     } else {
@@ -85,7 +89,7 @@ if ($aks) {
 
 if ($aci) {
     Write-Host "Generating ACI MI-only settings file..." -ForegroundColor Yellow
-    $aciScript = Join-Path $scriptDir "aci\create_aci_settingsfile_mi_only.ps1"
+    $aciScript = Join-Path $repoRoot "scripts\aci\create_aci_settingsfile_mi_only.ps1"
     if (Test-Path $aciScript) {
         & $aciScript -prefix $prefix -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName
     } else {
@@ -96,7 +100,7 @@ if ($aci) {
 
 if ($containerApp) {
     Write-Host "Generating Container App MI-only settings file..." -ForegroundColor Yellow
-    $containerAppScript = Join-Path $scriptDir "ContainerApp\create_containerapp_settingsfile_mi_only.ps1"
+    $containerAppScript = Join-Path $repoRoot "scripts\ContainerApp\create_containerapp_settingsfile_mi_only.ps1"
     if (Test-Path $containerAppScript) {
         & $containerAppScript -prefix $prefix -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName
     } else {

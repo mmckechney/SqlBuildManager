@@ -2,15 +2,25 @@ param
 (
     [string] $prefix,
     [string] $resourceGroupName,
-    [string] $path = "..\..\src\TestConfig",
+    [string] $path,
     [bool] $wait = $true
 )
+
+# Get the repo root
+$repoRoot = $env:AZD_PROJECT_PATH
+if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+    $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
+}
+
+if ([string]::IsNullOrWhiteSpace($path)) {
+    $path = Join-Path $repoRoot "src\TestConfig"
+}
+
 #############################################
 # Get set resource name variables from prefix
 #############################################
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$prefixScript = Join-Path $scriptDir "..\prefix_resource_names.ps1"
-$keyFileScript = Join-Path $scriptDir "..\key_file_names.ps1"
+$prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
+$keyFileScript = Join-Path $repoRoot "scripts\key_file_names.ps1"
 
 . $prefixScript -prefix $prefix
 . $keyFileScript -prefix $prefix -path $path
@@ -19,5 +29,5 @@ Write-Host "Upload and build Docker image in Container Registry from prefix: $pr
 Write-Host "Retrieving resource names from resources in $resourceGroupName with prefix $prefix" -ForegroundColor DarkGreen
 Write-Host "Using Azure Container Registry Name: $containerRegistryName  " -ForegroundColor DarkGreen
 
-$buildScript = Join-Path $scriptDir "build_container_registry_image.ps1"
+$buildScript = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_image.ps1"
 & $buildScript -azureContainerRegistry $containerRegistryName -resourceGroupName $resourceGroupName -wait $wait

@@ -1,8 +1,17 @@
 
 param (
     $prefix,
-    $path = "..\src\TestConfig"
+    $path
 )
+
+# Get the repo root if path not provided
+if ([string]::IsNullOrWhiteSpace($path)) {
+    $repoRoot = $env:AZD_PROJECT_PATH
+    if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+        $repoRoot = Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent
+    }
+    $path = Join-Path $repoRoot "src\TestConfig"
+}
 
 if($false -eq (Test-Path $path))
 {

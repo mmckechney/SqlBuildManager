@@ -4,7 +4,7 @@ param
     [string] $prefix,
 
     [string] $sbmExe = "sbm.exe",
-    [string] $path = "..\..\src\TestConfig",
+    [string] $path,
     [string] $resourceGroupName
 )
 
@@ -35,11 +35,20 @@ param
     The Azure resource group name (defaults to {prefix}-rg).
 #>
 
+# Get the repo root
+$repoRoot = $env:AZD_PROJECT_PATH
+if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+    $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
+}
+
+if ([string]::IsNullOrWhiteSpace($path)) {
+    $path = Join-Path $repoRoot "src\TestConfig"
+}
+
 #############################################
 # Get set resource name variables from prefix
 #############################################
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$prefixScript = Join-Path $scriptDir "..\prefix_resource_names.ps1"
+$prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
 . $prefixScript -prefix $prefix
 
 if ([string]::IsNullOrWhiteSpace($resourceGroupName)) {
