@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
 using SqlSync.SqlBuild.Utilities;
@@ -600,13 +600,13 @@ END
         ///A test for CleanProjectFileForRemoteExecution
         ///</summary>
         [TestMethod()]
-        public void CleanProjectFileForRemoteExecutionTest_FileNotExist()
+        public async Task CleanProjectFileForRemoteExecutionTest_FileNotExist()
         {
             string fileName = string.Empty;
             byte[] expected = new byte[0];
             byte[] actual;
             SqlSyncBuildDataModel cleanedBuildData;
-            actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(fileName, out cleanedBuildData);
+            (actual, cleanedBuildData) = await SqlBuildFileHelper.CleanProjectFileForRemoteExecutionAsync(fileName);
             Assert.IsTrue(actual.Length == 0);
             Assert.AreEqual(expected.Length, actual.Length);
             // Validate the shell model was returned
@@ -620,7 +620,7 @@ END
         ///A test for CleanProjectFileForRemoteExecution
         ///</summary>
         [TestMethod()]
-        public void CleanProjectFileForRemoteExecutionTest_NothingToClean()
+        public async Task CleanProjectFileForRemoteExecutionTest_NothingToClean()
         {
             Initialization init = GetInitializationObject();
 
@@ -635,12 +635,12 @@ END
             string zipFileName = init.GetTrulyUniqueFile() + ".sbm";
             string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
 
-            SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
+            await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(buildData, path, zipFileName, false);
 
             byte[] expected = File.ReadAllBytes(zipFileName);
             byte[] actual;
             SqlSyncBuildDataModel cleanedBuildData;
-            actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
+            (actual, cleanedBuildData) = await SqlBuildFileHelper.CleanProjectFileForRemoteExecutionAsync(zipFileName);
             Assert.IsTrue(expected.Length == actual.Length);
 
             Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
@@ -653,7 +653,7 @@ END
         ///A test for CleanProjectFileForRemoteExecution
         ///</summary>
         [TestMethod()]
-        public void CleanProjectFileForRemoteExecutionTest_CleanOutUnitTest()
+        public async Task CleanProjectFileForRemoteExecutionTest_CleanOutUnitTest()
         {
             Initialization init = GetInitializationObject();
 
@@ -670,13 +670,13 @@ END
 
             string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
-            SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
+            await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(buildData, path, zipFileName, false);
 
             byte[] expected = File.ReadAllBytes(zipFileName);
             byte[] actual;
 
             SqlSyncBuildDataModel cleanedBuildData;
-            actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
+            (actual, cleanedBuildData) = await SqlBuildFileHelper.CleanProjectFileForRemoteExecutionAsync(zipFileName);
             Assert.IsTrue(actual.Length >= 1200);  //can't get exact length due to variations in guids and dates.
 
             Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
@@ -711,13 +711,13 @@ END
             string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
             await SqlSyncBuildDataXmlSerializer.SaveAsync(projectFileName, buildData);
-            SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
+            await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(buildData, path, zipFileName, false);
 
             byte[] expected = File.ReadAllBytes(zipFileName);
             byte[] actual;
 
             SqlSyncBuildDataModel cleanedBuildData;
-            actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
+            (actual, cleanedBuildData) = await SqlBuildFileHelper.CleanProjectFileForRemoteExecutionAsync(zipFileName);
 
             Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
             Assert.IsTrue(cleanedBuildData.Build.Count == 0);
@@ -752,13 +752,13 @@ END
             string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
             await SqlSyncBuildDataXmlSerializer.SaveAsync(projectFileName, buildData);
-            SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
+            await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(buildData, path, zipFileName, false);
 
             byte[] expected = File.ReadAllBytes(zipFileName);
             byte[] actual;
 
             SqlSyncBuildDataModel cleanedBuildData;
-            actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
+            (actual, cleanedBuildData) = await SqlBuildFileHelper.CleanProjectFileForRemoteExecutionAsync(zipFileName);
             Assert.IsTrue(2000 <= actual.Length);  //can't get exact length due to variations in guids and dates.
 
             Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);

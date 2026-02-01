@@ -61,7 +61,7 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllText(Path.Combine(_testDir, "script3.sql"), "SELECT 3");
 
             // Act
-            var result = SqlBuildFileHelper.RenumberBuildSequence(model, projFileName, zipFileName);
+            var result = await SqlBuildFileHelper.RenumberBuildSequenceAsync(model, projFileName, zipFileName);
 
             // Assert
             Assert.IsNotNull(result);
@@ -72,7 +72,7 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void RenumberBuildSequence_WithEmptyBuildData_ReturnsModel()
+        public async Task RenumberBuildSequence_WithEmptyBuildData_ReturnsModel()
         {
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
@@ -80,7 +80,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = SqlBuildFileHelper.RenumberBuildSequence(model, projFileName, zipFileName);
+            var result = await SqlBuildFileHelper.RenumberBuildSequenceAsync(model, projFileName, zipFileName);
 
             // Assert
             Assert.IsNotNull(result);
@@ -99,7 +99,7 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllText(Path.Combine(_testDir, "script1.sql"), "SELECT 1");
 
             // Act
-            var result = SqlBuildFileHelper.RenumberBuildSequence(model, projFileName, zipFileName);
+            var result = await SqlBuildFileHelper.RenumberBuildSequenceAsync(model, projFileName, zipFileName);
 
             // Assert
             Assert.IsNotNull(result);
@@ -132,7 +132,7 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllText(Path.Combine(_testDir, "test.TAB"), "CREATE TABLE dbo.Test (Id INT)");
 
             // Act
-            var result = SqlBuildFileHelper.ResortBuildByFileType(model, projFileName, zipFileName);
+            var result = await SqlBuildFileHelper.ResortBuildByFileTypeAsync(model, projFileName, zipFileName);
 
             // Assert
             Assert.IsNotNull(result);
@@ -141,7 +141,7 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void ResortBuildByFileType_WithEmptyBuildData_ReturnsModel()
+        public async Task ResortBuildByFileType_WithEmptyBuildData_ReturnsModel()
         {
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
@@ -149,7 +149,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = SqlBuildFileHelper.ResortBuildByFileType(model, projFileName, zipFileName);
+            var result = await SqlBuildFileHelper.ResortBuildByFileTypeAsync(model, projFileName, zipFileName);
 
             // Assert
             Assert.IsNotNull(result);
@@ -177,7 +177,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var scriptsToRemove = new[] { model.Script[0] };
 
             // Act
-            var result = SqlBuildFileHelper.RemoveScriptFilesFromBuild(
+            var result = await SqlBuildFileHelper.RemoveScriptFilesFromBuildAsync(
                 model, projFileName, zipFileName, scriptsToRemove, false);
 
             // Assert
@@ -203,7 +203,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var scriptsToRemove = new[] { model.Script[0] };
 
             // Act
-            var result = SqlBuildFileHelper.RemoveScriptFilesFromBuild(
+            var result = await SqlBuildFileHelper.RemoveScriptFilesFromBuildAsync(
                 model, projFileName, zipFileName, scriptsToRemove, deleteFiles: true);
 
             // Assert
@@ -226,7 +226,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var emptyRows = Array.Empty<Script>();
 
             // Act
-            var result = SqlBuildFileHelper.RemoveScriptFilesFromBuild(
+            var result = await SqlBuildFileHelper.RemoveScriptFilesFromBuildAsync(
                 model, projFileName, zipFileName, emptyRows, false);
 
             // Assert
@@ -425,14 +425,13 @@ namespace SqlSync.SqlBuild.UnitTest
         #region CleanProjectFileForRemoteExecution Tests
 
         [TestMethod]
-        public void CleanProjectFileForRemoteExecution_WithNonExistentFile_ReturnsEmptyArray()
+        public async Task CleanProjectFileForRemoteExecution_WithNonExistentFile_ReturnsEmptyArray()
         {
             // Arrange
             string nonExistentFile = Path.Combine(_testDir, "nonexistent.sbm");
 
             // Act
-            var result = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(
-                nonExistentFile, out SqlSyncBuildDataModel cleanedData);
+            var (result, cleanedData) = await SqlBuildFileHelper.CleanProjectFileForRemoteExecutionAsync(nonExistentFile);
 
             // Assert
             Assert.IsNotNull(result);
@@ -454,7 +453,7 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllText(Path.Combine(_testDir, "script.sql"), "SELECT 1");
 
             string sbmFile = Path.Combine(_testDir, "test.sbm");
-            SqlBuildFileHelper.PackageProjectFileIntoZip(model, _testDir, sbmFile, false);
+            await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, _testDir, sbmFile, false);
 
             // Act
             var (success, extractedWorkingDir, extractedProjFilePath, extractedProjFileName, extractResult) = 
@@ -492,7 +491,7 @@ namespace SqlSync.SqlBuild.UnitTest
             await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model);
 
             string sbmFile = Path.Combine(_testDir, "test.sbm");
-            SqlBuildFileHelper.PackageProjectFileIntoZip(model, _testDir, sbmFile, false);
+            await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, _testDir, sbmFile, false);
 
             string workingDir = Path.Combine(_testDir, "extract");
             Directory.CreateDirectory(workingDir);
@@ -514,13 +513,13 @@ namespace SqlSync.SqlBuild.UnitTest
         #region PackageProjectFileIntoZip Tests
 
         [TestMethod]
-        public void PackageProjectFileIntoZip_WithEmptyZipFileName_ReturnsTrue()
+        public async Task PackageProjectFileIntoZip_WithEmptyZipFileName_ReturnsTrue()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            bool result = SqlBuildFileHelper.PackageProjectFileIntoZip(model, _testDir, "", false);
+            bool result = await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, _testDir, "", false);
 
             // Assert
             Assert.IsTrue(result);
@@ -537,7 +536,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string zipFile = Path.Combine(_testDir, "output.sbm");
 
             // Act
-            bool result = SqlBuildFileHelper.PackageProjectFileIntoZip(model, _testDir, zipFile, false);
+            bool result = await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, _testDir, zipFile, false);
 
             // Assert
             Assert.IsTrue(result);
@@ -710,7 +709,7 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllText(Path.Combine(_testDir, "test.sql"), "SELECT 1");
 
             string sbmFile = Path.Combine(_testDir, "override.sbm");
-            SqlBuildFileHelper.PackageProjectFileIntoZip(model, _testDir, sbmFile, false);
+            await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, _testDir, sbmFile, false);
 
             // Act
             string result = await SqlBuildFileHelper.InferOverridesFromPackageAsync(sbmFile, "TargetDb");
@@ -734,7 +733,7 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllText(Path.Combine(_testDir, "test.sql"), "SELECT 1");
 
             string sbmFile = Path.Combine(_testDir, "override2.sbm");
-            SqlBuildFileHelper.PackageProjectFileIntoZip(model, _testDir, sbmFile, false);
+            await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, _testDir, sbmFile, false);
 
             // Act
             string result = await SqlBuildFileHelper.InferOverridesFromPackageAsync(sbmFile, null);
@@ -783,7 +782,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 "import2.sql", 2.0, "Import 2", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             // Act
-            var (result, updatedModel, addedFileNames) = SqlBuildFileHelper.ImportSqlScriptFile(
+            var (result, updatedModel, addedFileNames) = await SqlBuildFileHelper.ImportSqlScriptFileAsync(
                 model, importModel, importDir, 0,
                 _testDir, projFileName, zipFileName, false);
 
@@ -794,7 +793,7 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void ImportSqlScriptFile_WithEmptyImportData_ReturnsNoRowsImported()
+        public async Task ImportSqlScriptFile_WithEmptyImportData_ReturnsNoRowsImported()
         {
             // Arrange
             string projFileName = Path.Combine(_testDir, "SqlSyncBuildProject.xml");
@@ -803,7 +802,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var importModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var (result, _, addedFileNames) = SqlBuildFileHelper.ImportSqlScriptFile(
+            var (result, _, addedFileNames) = await SqlBuildFileHelper.ImportSqlScriptFileAsync(
                 model, importModel, _testDir, 0,
                 _testDir, projFileName, zipFileName, false);
 
@@ -943,7 +942,7 @@ CREATE PROCEDURE dbo.Proc1 AS SELECT 1");
             await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, originalModel);
 
             // Act
-            var loadedModel = SqlBuildFileHelper.LoadSqlBuildProjectModel(projFileName, false);
+            var loadedModel = await SqlBuildFileHelper.LoadSqlBuildProjectModelAsync(projFileName, false);
 
             // Assert
             Assert.IsNotNull(loadedModel);

@@ -320,7 +320,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         }
 
         [TestMethod]
-        public void LoadSqlBuildProjectModel_ReturnsModelEvenIfFileDoesNotExist()
+        public async Task LoadSqlBuildProjectModel_ReturnsModelEvenIfFileDoesNotExist()
         {
             var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(tempDir);
@@ -328,7 +328,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
             {
                 var projFile = Path.Combine(tempDir, "nonexistent.xml");
 
-                var model = SqlBuildFileHelper.LoadSqlBuildProjectModel(projFile, false);
+                var model = await SqlBuildFileHelper.LoadSqlBuildProjectModelAsync(projFile, false);
 
                 Assert.IsNotNull(model);
             }
@@ -487,27 +487,27 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         #region PackageSbxFileIntoSbmFile Tests
 
         [TestMethod]
-        public void PackageSbxFileIntoSbmFile_WithEmptyFileName_ReturnsFalse()
+        public async Task PackageSbxFileIntoSbmFile_WithEmptyFileName_ReturnsEmpty()
         {
-            var result = SqlBuildFileHelper.PackageSbxFileIntoSbmFile(string.Empty, "test.sbm");
+            var result = await SqlBuildFileHelper.PackageSbxFileIntoSbmFileAsync(string.Empty);
 
-            Assert.IsFalse(result);
+            Assert.AreEqual(string.Empty, result);
         }
 
         [TestMethod]
-        public void PackageSbxFileIntoSbmFile_WithNullFileName_ReturnsFalse()
+        public async Task PackageSbxFileIntoSbmFile_WithNullFileName_ReturnsEmpty()
         {
-            var result = SqlBuildFileHelper.PackageSbxFileIntoSbmFile(null, "test.sbm");
+            var result = await SqlBuildFileHelper.PackageSbxFileIntoSbmFileAsync(null);
 
-            Assert.IsFalse(result);
+            Assert.AreEqual(string.Empty, result);
         }
 
         [TestMethod]
-        public void PackageSbxFileIntoSbmFile_WithWhitespaceFileName_ReturnsFalse()
+        public async Task PackageSbxFileIntoSbmFile_WithWhitespaceFileName_ReturnsEmpty()
         {
-            var result = SqlBuildFileHelper.PackageSbxFileIntoSbmFile("   ", "test.sbm");
+            var result = await SqlBuildFileHelper.PackageSbxFileIntoSbmFileAsync("   ");
 
-            Assert.IsFalse(result);
+            Assert.AreEqual(string.Empty, result);
         }
 
         [TestMethod]
@@ -523,41 +523,40 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         #region PackageSbxFilesIntoSbmFiles Tests
 
         [TestMethod]
-        public void PackageSbxFilesIntoSbmFiles_WithNullDirectory_ReturnsEmptyList()
+        public async Task PackageSbxFilesIntoSbmFiles_WithNullDirectory_ReturnsEmptyList()
         {
-            var result = SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(null, out string message);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(0, result.Count);
-            Assert.IsFalse(string.IsNullOrEmpty(message));
-        }
-
-        [TestMethod]
-        public void PackageSbxFilesIntoSbmFiles_WithEmptyDirectory_ReturnsEmptyList()
-        {
-            var result = SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(string.Empty, out string message);
+            var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(null);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(0, result.Count);
         }
 
         [TestMethod]
-        public void PackageSbxFilesIntoSbmFiles_WithNonExistentDirectory_ReturnsEmptyList()
+        public async Task PackageSbxFilesIntoSbmFiles_WithEmptyDirectory_ReturnsEmptyList()
         {
-            var result = SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(@"C:\NonExistent\Directory", out string message);
+            var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(string.Empty);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(0, result.Count);
         }
 
         [TestMethod]
-        public void PackageSbxFilesIntoSbmFiles_WithNoSbxFiles_ReturnsEmptyList()
+        public async Task PackageSbxFilesIntoSbmFiles_WithNonExistentDirectory_ReturnsEmptyList()
+        {
+            var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(@"C:\NonExistent\Directory");
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [TestMethod]
+        public async Task PackageSbxFilesIntoSbmFiles_WithNoSbxFiles_ReturnsEmptyList()
         {
             var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(tempDir);
             try
             {
-                var result = SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(tempDir, out string message);
+                var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(tempDir);
 
                 Assert.IsNotNull(result);
                 Assert.AreEqual(0, result.Count);

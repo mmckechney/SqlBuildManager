@@ -339,7 +339,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string zipFileName = Path.Combine(_testDirectory, "test.sbm");
 
             // Act
-            var updatedModel = SqlBuildFileHelper.RemoveScriptFilesFromBuild(
+            var updatedModel = await SqlBuildFileHelper.RemoveScriptFilesFromBuildAsync(
                 model, projFileName, zipFileName, scriptsToRemove, false);
 
             // Assert
@@ -366,7 +366,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string zipFileName = Path.Combine(_testDirectory, "test.sbm");
 
             // Act
-            var updatedModel = SqlBuildFileHelper.RemoveScriptFilesFromBuild(
+            var updatedModel = await SqlBuildFileHelper.RemoveScriptFilesFromBuildAsync(
                 model, projFileName, zipFileName, scriptsToRemove, true);
 
             // Assert
@@ -379,7 +379,7 @@ namespace SqlSync.SqlBuild.UnitTest
         #region ImportSqlScriptFile Tests
 
         [TestMethod]
-        public void ImportSqlScriptFile_EmptyImportData_ReturnsNoRowsImported()
+        public async Task ImportSqlScriptFile_EmptyImportData_ReturnsNoRowsImported()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -392,7 +392,7 @@ namespace SqlSync.SqlBuild.UnitTest
             Directory.CreateDirectory(importWorkingDir);
 
             // Act
-            var (result, _, addedFileNames) = SqlBuildFileHelper.ImportSqlScriptFile(
+            var (result, _, addedFileNames) = await SqlBuildFileHelper.ImportSqlScriptFileAsync(
                 model, importModel, importWorkingDir, 0,
                 _testDirectory, projFileName, zipFileName, false);
 
@@ -421,7 +421,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string zipFileName = Path.Combine(_testDirectory, "test.sbm");
 
             // Act
-            var (result, _, addedFileNames) = SqlBuildFileHelper.ImportSqlScriptFile(
+            var (result, _, addedFileNames) = await SqlBuildFileHelper.ImportSqlScriptFileAsync(
                 model, importModel, importWorkingDir, 0,
                 _testDirectory, projFileName, zipFileName, false);
 

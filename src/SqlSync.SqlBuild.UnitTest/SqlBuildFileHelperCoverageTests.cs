@@ -70,13 +70,13 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void LoadSqlBuildProjectModel_NonExistentFile_ReturnsShellModel()
+        public async Task LoadSqlBuildProjectModel_NonExistentFile_ReturnsShellModel()
         {
             // Arrange
             string projFileName = Path.Combine(_testDirectory, "NonExistent.xml");
 
             // Act
-            var model = SqlBuildFileHelper.LoadSqlBuildProjectModel(projFileName, false);
+            var model = await SqlBuildFileHelper.LoadSqlBuildProjectModelAsync(projFileName, false);
 
             // Assert
             Assert.IsNotNull(model);
@@ -104,40 +104,40 @@ namespace SqlSync.SqlBuild.UnitTest
         #region PackageProjectFileIntoZip Tests
 
         [TestMethod]
-        public void PackageProjectFileIntoZip_EmptyZipFileName_ReturnsTrue()
+        public async Task PackageProjectFileIntoZip_EmptyZipFileName_ReturnsTrue()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            bool result = SqlBuildFileHelper.PackageProjectFileIntoZip(model, _testDirectory, string.Empty, false);
+            bool result = await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, _testDirectory, string.Empty, false);
 
             // Assert
             Assert.IsTrue(result);
         }
 
         [TestMethod]
-        public void PackageProjectFileIntoZip_NullModel_ReturnsFalse()
+        public async Task PackageProjectFileIntoZip_NullModel_ReturnsFalse()
         {
             // Arrange
             SqlSyncBuildDataModel model = null;
 
             // Act
-            bool result = SqlBuildFileHelper.PackageProjectFileIntoZip(model, _testDirectory, "test.sbm", false);
+            bool result = await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, _testDirectory, "test.sbm", false);
 
             // Assert
             Assert.IsFalse(result);
         }
 
         [TestMethod]
-        public void PackageProjectFileIntoZip_ValidModel_CreatesZipFile()
+        public async Task PackageProjectFileIntoZip_ValidModel_CreatesZipFile()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string zipFileName = Path.Combine(_testDirectory, "test.sbm");
 
             // Act
-            bool result = SqlBuildFileHelper.PackageProjectFileIntoZip(model, _testDirectory, zipFileName, false);
+            bool result = await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, _testDirectory, zipFileName, false);
 
             // Assert
             Assert.IsTrue(result);
@@ -175,7 +175,7 @@ namespace SqlSync.SqlBuild.UnitTest
         #region SaveSqlBuildProjectFile Tests
 
         [TestMethod]
-        public void SaveSqlBuildProjectFile_ValidModel_SavesFiles()
+        public async Task SaveSqlBuildProjectFile_ValidModel_SavesFiles()
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -183,7 +183,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string zipFileName = Path.Combine(_testDirectory, "test.sbm");
 
             // Act
-            SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFileName, zipFileName, false);
+            await SqlBuildFileHelper.SaveSqlBuildProjectFileAsync(model, projFileName, zipFileName, false);
 
             // Assert
             Assert.IsTrue(File.Exists(projFileName));
@@ -684,7 +684,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string zipFileName = Path.Combine(_testDirectory, "test.sbm");
 
             // Act
-            var result = SqlBuildFileHelper.RenumberBuildSequence(model, projFileName, zipFileName);
+            var result = await SqlBuildFileHelper.RenumberBuildSequenceAsync(model, projFileName, zipFileName);
 
             // Assert
             Assert.IsNotNull(result);
@@ -710,38 +710,34 @@ namespace SqlSync.SqlBuild.UnitTest
         #region PackageSbxFilesIntoSbmFiles Tests
 
         [TestMethod]
-        public void PackageSbxFilesIntoSbmFiles_EmptyDirectory_ReturnsEmptyListWithMessage()
+        public async Task PackageSbxFilesIntoSbmFiles_EmptyDirectory_ReturnsEmptyList()
         {
             // Act
-            var result = SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(string.Empty, out string message);
+            var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(string.Empty);
 
             // Assert
             Assert.AreEqual(0, result.Count);
-            Assert.IsTrue(message.Contains("empty"));
         }
 
         [TestMethod]
-        public void PackageSbxFilesIntoSbmFiles_NonExistentDirectory_ReturnsEmptyListWithMessage()
+        public async Task PackageSbxFilesIntoSbmFiles_NonExistentDirectory_ReturnsEmptyList()
         {
             // Act
-            var result = SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(
-                Path.Combine(_testDirectory, "nonexistent"),
-                out string message);
+            var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(
+                Path.Combine(_testDirectory, "nonexistent"));
 
             // Assert
             Assert.AreEqual(0, result.Count);
-            Assert.IsTrue(message.Contains("does not exist"));
         }
 
         [TestMethod]
-        public void PackageSbxFilesIntoSbmFiles_NoSbxFiles_ReturnsEmptyListWithMessage()
+        public async Task PackageSbxFilesIntoSbmFiles_NoSbxFiles_ReturnsEmptyList()
         {
             // Act
-            var result = SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(_testDirectory, out string message);
+            var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(_testDirectory);
 
             // Assert
             Assert.AreEqual(0, result.Count);
-            Assert.IsTrue(message.Contains("No SBX files"));
         }
 
         #endregion

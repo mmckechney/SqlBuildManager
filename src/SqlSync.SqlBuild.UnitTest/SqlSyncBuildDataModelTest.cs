@@ -42,7 +42,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var zipFile = Path.Combine(tmpDir, "proj.zip");
             try
             {
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFile, zipFile, includeHistoryAndLogs: false);
+                await SqlBuildFileHelper.SaveSqlBuildProjectFileAsync(model, projFile, zipFile, includeHistoryAndLogs: false);
                 var (ok, loaded) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projFile, validateSchema: false);
                 Assert.IsTrue(ok);
                 Assert.AreEqual("TestProj", loaded.SqlSyncBuildProject[0].ProjectName);
