@@ -76,16 +76,17 @@ if ($aksDeployed -eq "true") {
 
     #create Kubernetes service principal
     Write-Host "Creating Kubernetes Service Principal $serviceAccountName associated with $userAssignedIdentity having Client ID $userAssignedClientId" -ForegroundColor DarkGreen
-    $svcAcctYml = "
-    apiVersion: v1
-    kind: ServiceAccount
-    metadata:
-    annotations:
-        azure.workload.identity/client-id: $userAssignedClientId 
-    labels:
-        azure.workload.identity/use: 'true'
-    name: $serviceAccountName
-    namespace: sqlbuildmanager"
+    $svcAcctYml = @"
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    azure.workload.identity/client-id: $userAssignedClientId 
+  labels:
+    azure.workload.identity/use: 'true'
+  name: $serviceAccountName
+  namespace: sqlbuildmanager
+"@
 
     $svcAcctYml | kubectl apply -f -
 
