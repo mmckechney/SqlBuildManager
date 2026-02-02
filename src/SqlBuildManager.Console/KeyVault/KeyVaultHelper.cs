@@ -188,7 +188,7 @@ namespace SqlBuildManager.Console.KeyVault
             }
 
             //Only get password and user name if not using managed identity
-            if (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity)
+            if (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault)
             {
                 tmp = GetSecret(kvName, KeyVaultHelper.UserName);
                 if (!string.IsNullOrWhiteSpace(tmp))

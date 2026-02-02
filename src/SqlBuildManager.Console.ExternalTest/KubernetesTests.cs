@@ -509,7 +509,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 settingsFile = Path.GetFullPath(settingsFile);
                 var cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingsFile), SettingsFileKey = settingsFileKeyPath };
                 (var x, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-                if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity)
+                if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault)
                 {
                     (x, cmdLine) = SqlBuildManager.Console.KeyVault.KeyVaultHelper.GetSecrets(cmdLine);
                 }
@@ -647,7 +647,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 settingsFile = Path.GetFullPath(settingsFile);
                 var cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingsFile), SettingsFileKey = settingsFileKeyPath };
                 (var x, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-                if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity)
+                if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault)
                 {
                     (x, cmdLine) = SqlBuildManager.Console.KeyVault.KeyVaultHelper.GetSecrets(cmdLine);
                 }
