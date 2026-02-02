@@ -569,13 +569,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             return sbc;
         }
-        public BackgroundWorker GetBackgroundWorker()
-        {
-            BackgroundWorker bg = new BackgroundWorker();
-            bg.WorkerReportsProgress = true;
-            bg.WorkerSupportsCancellation = true;
-            return bg;
-        }
+
         public List<DatabaseOverride> GetDatabaseOverrides()
         {
             List<DatabaseOverride> o = new List<DatabaseOverride>();

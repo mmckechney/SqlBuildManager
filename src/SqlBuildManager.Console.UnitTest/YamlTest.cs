@@ -21,7 +21,7 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod()]
         public void JobYaml_Format_Test()
         {
-            string settingsFile = Path.GetFullPath("TestConfig/settingsfile-k8s-kv.json");
+            string settingsFile = Path.GetFullPath("TestConfig/settingsfile-k8s-mi-only.json");
             if (!File.Exists(settingsFile))
             {
                 Assert.Inconclusive($"Could not find required settings file {settingsFile}");
