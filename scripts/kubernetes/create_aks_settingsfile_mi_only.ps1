@@ -122,7 +122,8 @@ $params += @("-eh", $ehValue)
 $params += @("-sb", $serviceBusNamespaceName)
 
 # Set auth type to Managed Identity
-$params += @("--authtype", "ManagedIdentity")
+
+$params += @("--authtype", "AzureADDefault") #use this for local testing, will be overridden to ManagedIdentity in ACI
 
 # Output file
 $params += @("--settingsfile", $settingsFileName)

@@ -6,7 +6,10 @@ function Get-AzdEnvValue {
     param([string]$Name)
     $value = [System.Environment]::GetEnvironmentVariable($Name)
     if ([string]::IsNullOrWhiteSpace($value)) {
-        $value = azd env get-value $Name 2>$null
+        $value = azd env get-value $Name 2>&1
+        if ($LASTEXITCODE -ne 0 -or $value -like "ERROR:*") {
+            $value = $null
+        }
     }
     return $value
 }
@@ -24,11 +27,26 @@ Write-Host "Environment: $prefix" -ForegroundColor DarkGreen
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 
 # Get the repo root (where azure.yaml is located)
+# First try AZD_PROJECT_PATH, then derive from script location, then fall back to current directory
 $repoRoot = Get-AzdEnvValue "AZD_PROJECT_PATH"
+if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+    # Derive from script location - this script is in /scripts, so parent is repo root
+    # Try $PSScriptRoot first (works when script is invoked directly)
+    if (-not [string]::IsNullOrWhiteSpace($PSScriptRoot)) {
+        $repoRoot = Split-Path -Parent $PSScriptRoot
+    }
+    # Then try $MyInvocation.MyCommand.Path (works for dot-sourced or invoked scripts)
+    elseif ($MyInvocation.MyCommand.Path) {
+        $repoRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
+    }
+}
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Get-Location
 }
 Write-Host "Repo Root: $repoRoot" -ForegroundColor DarkGreen
+
+$sbmExe = Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Debug\net8.0\sbm.exe"
+write-Host "SBM Executable: $sbmExe" -ForegroundColor DarkGreen
 
 # Run the grant identity permissions script
 $scriptPath = Join-Path $repoRoot "scripts\Database\grant_identity_permissions.ps1"
@@ -126,7 +144,7 @@ if ($generateSettings -eq "true") {
     Write-Host "Post-Provision: Generating MI-Only Settings Files" -ForegroundColor Cyan
     Write-Host "========================================" -ForegroundColor Cyan
     
-    $settingsScriptPath = Join-Path $repoRoot "scripts\create_all_settingsfiles_mi_only.ps1"
+    $settingsScriptPath = Join-Path $repoRoot "scripts\scripts\create_all_settingsfiles_mi_only.ps1"
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     # Ensure output directory exists
@@ -135,7 +153,7 @@ if ($generateSettings -eq "true") {
     }
     
     if (Test-Path $settingsScriptPath) {
-        & $settingsScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath
+        & $settingsScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -sbmExe $sbmExe
     } else {
         Write-Host "Settings script not found at: $settingsScriptPath" -ForegroundColor Yellow
         Write-Host "Run manually: .\scripts\create_all_settingsfiles_mi_only.ps1 -prefix $prefix" -ForegroundColor Yellow

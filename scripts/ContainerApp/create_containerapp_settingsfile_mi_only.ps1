@@ -121,6 +121,8 @@ $params += @("--subscriptionid", $subscriptionId)
 $params += @("--force", "true")
 $params += @("--eventhublogging", "ScriptErrors")
 
+$params += @("--authtype", "AzureADDefault") #use this for local testing, will be overridden to ManagedIdentity in ACI
+
 # Identity parameters
 $params += @("--identityname", $identityName)
 $params += @("--idrg", $resourceGroupName)

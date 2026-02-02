@@ -106,7 +106,7 @@ if ($false -eq (Test-Path $keyFile)) {
 $params = @("aci", "savesettings")
 $params += @("--settingsfile", $settingsAci)
 # Note: ACI CLI requires -kv but we use a placeholder since MI mode doesn't need it
-$params += @("-kv", "placeholder-not-used-with-mi")
+#$params += @("-kv", "placeholder-not-used-with-mi")
 $params += @("--aciname", $aciName)
 $params += @("--identityname", $identityName)
 $params += @("--clientid", $identity.clientId)
@@ -137,7 +137,7 @@ if ($vnet -ne "" -and $aciSubnet -ne "") {
 }
 
 # Auth type
-$params += @("--authtype", "ManagedIdentity")
+$params += @("--authtype", "AzureADDefault") #use this for local testing, will be overridden to ManagedIdentity in ACI
 
 # Event Hub (namespace only, no connection string)
 $ehValue = "$($eventHubNamespaceName)|$($eventHubName)"
