@@ -640,8 +640,6 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         /// <summary>
         ///A test for Execute
         ///</summary>
-        // TODO: This test is flaky - it depends on database lock timing which can vary. Review and stabilize.
-        [Ignore("Flaky test - sometimes passes, sometimes fails depending on database lock timing")]
         [TestMethod()]
         public async Task ExecuteTest_RollbackWithThreeRetries()
         {
@@ -671,18 +669,24 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int expected = (int)ExecutionReturn.FinishingWithErrors;
             int actual;
 
-            Thread THRInfinite = null;
+            // Use a cancellation token to properly clean up the locking task
+            using var lockCts = new CancellationTokenSource();
+            using var lockAcquired = new ManualResetEventSlim(false);
+            Task lockTask = null;
+
             try
             {
-                var task = System.Threading.Tasks.Task.Run(() =>
+                // Start the locking thread - lock for 1 minute to ensure all 3 retries fail
+                // (3 retries × ~3 sec each = ~12 seconds, so 1 min lock will outlast all retries)
+                lockTask = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(2);
+                    StartLockingThreadWithSignal(1.0, lockAcquired, lockCts.Token);
                 });
-                while (true)
-                {
-                    System.Threading.Thread.Sleep(2000);
-                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
-                }
+
+                // Wait for the lock to actually be acquired
+                bool lockWasAcquired = lockAcquired.Wait(TimeSpan.FromSeconds(30));
+                Assert.IsTrue(lockWasAcquired, "Failed to acquire database lock within 30 seconds");
+                await System.Threading.Tasks.Task.Delay(500);
 
                 actual = await target.ExecuteAsync();
 
@@ -715,8 +719,11 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (THRInfinite != null)
-                    THRInfinite.Interrupt();
+                lockCts.Cancel();
+                if (lockTask != null)
+                {
+                    try { await lockTask.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+                }
                 try
                 {
                     if (File.Exists(sbmFileName))
@@ -732,8 +739,6 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         /// <summary>
         ///A test for Execute
         ///</summary>
-        // TODO: This test is flaky - it depends on database lock timing which can vary. Review and stabilize.
-        [Ignore("Flaky test - sometimes passes, sometimes fails depending on database lock timing")]
         [TestMethod()]
         public async Task ExecuteTest_RollbackWithFiveRetries()
         {
@@ -763,18 +768,24 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int expected = (int)ExecutionReturn.FinishingWithErrors;
             int actual;
 
-            Thread THRInfinite = null;
+            // Use a cancellation token to properly clean up the locking task
+            using var lockCts = new CancellationTokenSource();
+            using var lockAcquired = new ManualResetEventSlim(false);
+            Task lockTask = null;
+
             try
             {
-                var task = System.Threading.Tasks.Task.Run(() =>
+                // Start the locking thread - lock for 1 minute to ensure all 5 retries fail
+                // (5 retries × ~3 sec each = ~18 seconds, so 1 min lock will outlast all retries)
+                lockTask = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(2);
+                    StartLockingThreadWithSignal(1.0, lockAcquired, lockCts.Token);
                 });
-                while (true)
-                {
-                    System.Threading.Thread.Sleep(2000);
-                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
-                }
+
+                // Wait for the lock to actually be acquired
+                bool lockWasAcquired = lockAcquired.Wait(TimeSpan.FromSeconds(30));
+                Assert.IsTrue(lockWasAcquired, "Failed to acquire database lock within 30 seconds");
+                await System.Threading.Tasks.Task.Delay(500);
 
                 actual = await target.ExecuteAsync();
 
@@ -806,9 +817,11 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (THRInfinite != null)
-                    THRInfinite.Interrupt();
-
+                lockCts.Cancel();
+                if (lockTask != null)
+                {
+                    try { await lockTask.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+                }
                 try
                 {
                     if (File.Exists(sbmFileName))
@@ -1037,19 +1050,23 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int expected = (int)ExecutionReturn.FinishingWithErrors;
             int actual;
 
-            Thread THRInfinite = null;
+            // Use a cancellation token to properly clean up the locking task
+            using var lockCts = new CancellationTokenSource();
+            using var lockAcquired = new ManualResetEventSlim(false);
+            Task lockTask = null;
+
             try
             {
-                var task = System.Threading.Tasks.Task.Run(() =>
+                // Start the locking thread - lock for 30 seconds (no retries, so just needs to hold during single attempt)
+                lockTask = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(2);
+                    StartLockingThreadWithSignal(0.5, lockAcquired, lockCts.Token);
                 });
-                while (true)
-                {
-                    System.Threading.Thread.Sleep(2000);
-                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
-                }
 
+                // Wait for the lock to actually be acquired
+                bool lockWasAcquired = lockAcquired.Wait(TimeSpan.FromSeconds(30));
+                Assert.IsTrue(lockWasAcquired, "Failed to acquire database lock within 30 seconds");
+                await System.Threading.Tasks.Task.Delay(500);
 
                 actual = await target.ExecuteAsync();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
@@ -1082,8 +1099,11 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (THRInfinite != null)
-                    THRInfinite.Interrupt();
+                lockCts.Cancel();
+                if (lockTask != null)
+                {
+                    try { await lockTask.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+                }
                 try
                 {
                     if (File.Exists(sbmFileName))
@@ -1133,19 +1153,23 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int expected = (int)ExecutionReturn.Successful;
             int actual;
 
-            Thread THRInfinite = null;
+            // Use a cancellation token to properly clean up the locking task
+            using var lockCts = new CancellationTokenSource();
+            using var lockAcquired = new ManualResetEventSlim(false);
+            Task lockTask = null;
+
             try
             {
-                var task = System.Threading.Tasks.Task.Run(() =>
+                // Start the locking thread - lock for 30 seconds, allowing some retries then success
+                lockTask = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(.5);
+                    StartLockingThreadWithSignal(0.5, lockAcquired, lockCts.Token);
                 });
-                while (true)
-                {
-                    System.Threading.Thread.Sleep(2000);
-                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
-                }
-            
+
+                // Wait for the lock to actually be acquired
+                bool lockWasAcquired = lockAcquired.Wait(TimeSpan.FromSeconds(30));
+                Assert.IsTrue(lockWasAcquired, "Failed to acquire database lock within 30 seconds");
+                await System.Threading.Tasks.Task.Delay(500);
 
                 actual = await target.ExecuteAsync();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
@@ -1177,8 +1201,11 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (THRInfinite != null)
-                    THRInfinite.Interrupt();
+                lockCts.Cancel();
+                if (lockTask != null)
+                {
+                    try { await lockTask.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+                }
                 try
                 {
                     if (File.Exists(sbmFileName))
@@ -1224,18 +1251,23 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int expected = (int)ExecutionReturn.FinishingWithErrors;
             int actual;
 
-            Thread THRInfinite = null;
+            // Use a cancellation token to properly clean up the locking task
+            using var lockCts = new CancellationTokenSource();
+            using var lockAcquired = new ManualResetEventSlim(false);
+            Task lockTask = null;
+
             try
             {
-                var task = System.Threading.Tasks.Task.Run(() =>
+                // Start the locking thread - lock for 1 minute to ensure all 3 retries fail
+                lockTask = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(2);
+                    StartLockingThreadWithSignal(1.0, lockAcquired, lockCts.Token);
                 });
-                while (true)
-                {
-                    System.Threading.Thread.Sleep(2000);
-                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
-                }
+
+                // Wait for the lock to actually be acquired
+                bool lockWasAcquired = lockAcquired.Wait(TimeSpan.FromSeconds(30));
+                Assert.IsTrue(lockWasAcquired, "Failed to acquire database lock within 30 seconds");
+                await System.Threading.Tasks.Task.Delay(500);
 
                 actual = await target.ExecuteAsync();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
@@ -1267,9 +1299,11 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (THRInfinite != null)
-                    THRInfinite.Interrupt();
-
+                lockCts.Cancel();
+                if (lockTask != null)
+                {
+                    try { await lockTask.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+                }
                 try
                 {
                     if (File.Exists(sbmFileName))
