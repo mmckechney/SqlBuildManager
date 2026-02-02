@@ -131,11 +131,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataTestMethod]
         public void Batch_Override_SBMSource_ByTag_ConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
             settingsFile = Path.GetFullPath(settingsFile);
             string jobName = GetUniqueBatchJobName("batch-sbm-tag");
@@ -187,11 +183,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataTestMethod]
         public void Batch_Override_SBMSource_ByTag_ConcurrencyType_MissingTag_Fail(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
             settingsFile = Path.GetFullPath(settingsFile);
             string jobName = GetUniqueBatchJobName("batch-sbm-tag");
@@ -235,11 +227,7 @@ namespace SqlBuildManager.Console.ExternalTest
         public void Batch_Queue_SBMSource_ByTag_ConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
             string jobName = GetUniqueBatchJobName("batch-sbm-tag");
             int startingLine = LogFileCurrentLineCount();
 
@@ -292,11 +280,7 @@ namespace SqlBuildManager.Console.ExternalTest
         public void Batch_Queue_SBMSource_ByTag_ConcurrencyType_MissingTag_Fail(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
             string jobName = GetUniqueBatchJobName("batch-sbm-tag");
             int startingLine = LogFileCurrentLineCount();
 
@@ -329,11 +313,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataTestMethod]
         public void Batch_Override_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
             settingsFile = Path.GetFullPath(settingsFile);
             string jobName = GetUniqueBatchJobName("batch-sbm");
@@ -381,11 +361,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataTestMethod]
         public void Batch_OverrideWithBadTarget_SBMSource_ByConcurrencyType_Fail(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
             settingsFile = Path.GetFullPath(settingsFile);
             string jobName = GetUniqueBatchJobName("batch-sbm");
@@ -421,11 +397,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataTestMethod]
         public void Batch_SqlScriptOverride_SBMSource_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
             settingsFile = Path.GetFullPath(settingsFile);
 
@@ -495,11 +467,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataTestMethod]
         public void Batch_Override_SBMSource_ManagedIdentity_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
             settingsFile = Path.GetFullPath(settingsFile);
 
@@ -1371,11 +1339,7 @@ namespace SqlBuildManager.Console.ExternalTest
         public void Batch_Queue_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
             string jobName = GetUniqueBatchJobName("batch-sbm");
             int startingLine = LogFileCurrentLineCount();
 
@@ -1426,11 +1390,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataTestMethod]
         public void Batch_Queue_SBMSource_ManagedIdentity_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
             settingsFile = Path.GetFullPath(settingsFile);
 
@@ -1495,11 +1455,7 @@ namespace SqlBuildManager.Console.ExternalTest
         public void Batch_Queue_SBMSource_MissingEventHubConnection_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
             string settingFileNoEventHub = Path.Combine(Path.GetDirectoryName(settingsFile), "settingsfile-no-eventhub.json");
 
@@ -1872,11 +1828,7 @@ namespace SqlBuildManager.Console.ExternalTest
         public void Batch_Queue_LongRunning_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
-            string sbmFileName = Path.GetFullPath("LongRunning.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.long_running);
-            }
+            string sbmFileName = TestHelper.GetLongRunningSbm();
             string jobName = GetUniqueBatchJobName("batch-long");
             int startingLine = LogFileCurrentLineCount();
             var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFilePath), Guid.NewGuid().ToString() + ".cfg");
@@ -1973,11 +1925,7 @@ namespace SqlBuildManager.Console.ExternalTest
         public void Batch_Queue_SBMSource_KeyVault_NoSettingsFileKey_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
             string jobName = GetUniqueBatchJobName("batch-sbm-tag");
             int startingLine = LogFileCurrentLineCount();
 

@@ -50,11 +50,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var prc = new ProcessHelper();
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
                 string jobName = TestHelper.GetUniqueJobName("k8s");
 
 
@@ -115,11 +111,7 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 var prc = new ProcessHelper();
                 settingsFile = Path.GetFullPath(settingsFile);
-                var sbmFileName = Path.GetFullPath("LongRunning.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.long_running);
-                }
+                var sbmFileName = TestHelper.GetLongRunningSbm();
                 string jobName = TestHelper.GetUniqueJobName("k8s-long");
 
 
@@ -252,11 +244,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 settingsFile = Path.GetFullPath(settingsFile);
                 System.Console.WriteLine(File.ReadAllText(settingsFile));
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets-badtargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
                 string jobName = TestHelper.GetUniqueJobName("k8s");
 
 
@@ -316,11 +304,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var prc = new ProcessHelper();
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/clientdbtargets-doubledb.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect_DoubleClient.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect_DoubleClient);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectDoubleClientSbm();
                 string jobName = TestHelper.GetUniqueJobName("k8s");
 
 
@@ -383,11 +367,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var overrideFileTags = Path.GetFullPath("TestConfig/databasetargets-tag.cfg");
                 var overrideFile = concurType == ConcurrencyType.Tag || concurType == ConcurrencyType.MaxPerTag ? overrideFileTags : overrideFilePlain;
 
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect_DoubleClient);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
                 string jobName = TestHelper.GetUniqueJobName("k8s");
 
 
@@ -443,11 +423,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var prc = new ProcessHelper();
 
                 var settingsFileKeyString = File.ReadAllText(settingsFileKeyPath);
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
                 string jobName = TestHelper.GetUniqueJobName("k8s");
 
                 var overrideFile = Path.GetFullPath("TestConfig/clientdbtargets.cfg");

@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
@@ -103,11 +103,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [TestMethod]
         public void LocalThreaded_SBMSource_Success()
         {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
             //get the size of the log file before we start
             int startingLine = LogFileCurrentLineCount();
 
@@ -135,11 +131,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [TestMethod]
         public void LocalSingleRun_SBMSource_Success()
         {
-            string sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-            if (!File.Exists(sbmFileName))
-            {
-                File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-            }
+            string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
             //get the size of the log file before we start
             int startingLine = LogFileCurrentLineCount();

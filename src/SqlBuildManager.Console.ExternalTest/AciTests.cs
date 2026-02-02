@@ -58,11 +58,7 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
 
 
                 //get the size of the log file before we start
@@ -116,11 +112,7 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
 
 
                 //get the size of the log file before we start
@@ -196,11 +188,7 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/clientdbtargets-doubledb.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect_DoubleClient.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect_DoubleClient);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectDoubleClientSbm();
 
 
                 //get the size of the log file before we start
@@ -279,11 +267,7 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
 
 
                 //get the size of the log file before we start
@@ -636,11 +620,7 @@ namespace SqlBuildManager.Console.ExternalTest
             try
             {
                 settingsFile = Path.GetFullPath(settingsFile);
-                var sbmFileName = Path.GetFullPath("LongRunning.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.long_running);
-                }
+                var sbmFileName = TestHelper.GetLongRunningSbm();
 
 
                 //get the size of the log file before we start

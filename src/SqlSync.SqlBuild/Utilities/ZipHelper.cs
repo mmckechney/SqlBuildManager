@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -138,6 +139,7 @@ namespace SqlSync.SqlBuild.Utilities
                 }
                 using (ZipArchive archive = ZipFile.Open(zipFileName, ZipArchiveMode.Read))
                 {
+                    log.LogDebug($"Archive contains {archive.Entries.Count} entries: {string.Join(", ", archive.Entries.Select(e => e.FullName))}");
                     foreach (ZipArchiveEntry file in archive.Entries)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
