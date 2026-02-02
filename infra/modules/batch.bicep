@@ -13,21 +13,26 @@ param storageAccountName string = '${namePrefix}storage'
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
+// Reference to the user-assigned identity
+var userAssignedIdentityId = '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${identityName}'
 
-resource batchAccountResource 'Microsoft.Batch/batchAccounts@2021-01-01' = {
+resource batchAccountResource 'Microsoft.Batch/batchAccounts@2024-07-01' = {
   name: batchAccountName
   location: location
   identity: {
     type: 'UserAssigned'
 
     userAssignedIdentities: {
-      '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${identityName}': {
-      }
+      '${userAssignedIdentityId}': {}
     }
   }
   properties: {
     autoStorage: {
       storageAccountId: resourceId('Microsoft.Storage/storageAccounts',storageAccountName)
+      authenticationMode: 'BatchAccountManagedIdentity'
+      nodeIdentityReference: {
+        resourceId: userAssignedIdentityId
+      }
     }
     poolAllocationMode: 'BatchService'
   }
