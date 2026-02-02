@@ -1902,13 +1902,13 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         [ExpectedException(typeof(ArgumentException), "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.")]
-        public void SaveBuildDataSetTest_NullProjectFileName()
+        public async Task SaveBuildDataSetTest_NullProjectFileName()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = null;
-            target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
+            await target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
         }
 
         /// <summary>
@@ -1917,42 +1917,48 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         [ExpectedException(typeof(ArgumentException), "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.")]
-        public void SaveBuildDataSetTest_EmptyProjectFileName()
+        public async Task SaveBuildDataSetTest_EmptyProjectFileName()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = string.Empty;
-            target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
+            await target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
         }
 
         /// <summary>
-        ///A test for SaveBuildDataSet
+        ///A test for SaveBuildDataSet - validates buildHistoryXmlFile check
+        ///Note: projectFileName must be valid to reach the buildHistoryXmlFile validation
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         [ExpectedException(typeof(ArgumentException), "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.")]
-        public void SaveBuildDataSetTest_NullBuildHistoryName()
+        public async Task SaveBuildDataSetTest_NullBuildHistoryName()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+            // projectFileName must be valid to pass the first validation
+            target.projectFileName = init.projectFileName;
             target.buildHistoryXmlFile = null;
-            target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
+            await target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
         }
         /// <summary>
-        ///A test for SaveBuildDataSet
+        ///A test for SaveBuildDataSet - validates buildHistoryXmlFile check
+        ///Note: projectFileName must be valid to reach the buildHistoryXmlFile validation
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
         [ExpectedException(typeof(ArgumentException), "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.")]
-        public void SaveBuildDataSetTest_EmptyBuildHistoryName()
+        public async Task SaveBuildDataSetTest_EmptyBuildHistoryName()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+            // projectFileName must be valid to pass the first validation
+            target.projectFileName = init.projectFileName;
             target.buildHistoryXmlFile = string.Empty;
-            target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
+            await target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
         }
         #endregion
 
