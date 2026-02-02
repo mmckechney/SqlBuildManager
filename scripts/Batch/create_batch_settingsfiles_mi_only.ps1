@@ -116,7 +116,7 @@ $baseParams += @("--subscriptionid", $subscriptionId)
 $baseParams += @("--clientid", $identity.clientId)
 $baseParams += @("--principalid", $identity.principalId)
 
-$params += @("--authtype", "AzureADDefault") #use this for local testing, will be overridden to ManagedIdentity in ACI
+$baseParams += @("--authtype", "AzureADDefault") #use this for local testing, will be overridden to ManagedIdentity in ACI
 $baseParams += @("--silent")
 $baseParams += @("--eventhublogging", "ScriptErrors")
 $baseParams += @("--ehrg", $resourceGroupName)
