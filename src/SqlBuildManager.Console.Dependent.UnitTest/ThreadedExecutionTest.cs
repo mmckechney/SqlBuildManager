@@ -559,19 +559,28 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int expected = (int)ExecutionReturn.Successful;
             int actual;
 
-            Thread THRInfinite = null;
+            // Use a cancellation token to properly clean up the locking task
+            using var lockCts = new CancellationTokenSource();
+            // Use a signal to know when the lock is actually acquired
+            using var lockAcquired = new ManualResetEventSlim(false);
+            Task lockTask = null;
+
             try
             {
-                var task = System.Threading.Tasks.Task.Run(() =>
+                // Start the locking thread with proper signaling
+                lockTask = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(1);
+                    // Hold lock for 30 seconds - enough for some retries to fail, but 
+                    // releases before all 20 retries are exhausted (each retry ~3 sec)
+                    StartLockingThreadWithSignal(0.5, lockAcquired, lockCts.Token);
                 });
-                while (true)
-                {
-                    System.Threading.Thread.Sleep(2000);
-                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
-                }
 
+                // Wait for the lock to actually be acquired (with timeout)
+                bool lockWasAcquired = lockAcquired.Wait(TimeSpan.FromSeconds(30));
+                Assert.IsTrue(lockWasAcquired, "Failed to acquire database lock within 30 seconds");
+
+                // Small delay to ensure lock is fully established
+                await System.Threading.Tasks.Task.Delay(500);
 
                 actual = await target.ExecuteAsync();
 
@@ -607,8 +616,14 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (THRInfinite != null)
-                    THRInfinite.Interrupt();
+                // Cancel the locking task so it releases the lock
+                lockCts.Cancel();
+                
+                // Wait briefly for the lock task to complete
+                if (lockTask != null)
+                {
+                    try { await lockTask.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+                }
 
                 try
                 {
@@ -1288,6 +1303,62 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             catch(Exception exe)
             {
                 System.Console.WriteLine($"Error: {exe.Message}; {Environment.NewLine}Connection String:{connStr}{Environment.NewLine}Query:{cmdStr}");
+                return 1;
+            }
+        }
+
+        /// <summary>
+        /// Starts a locking thread that signals when the lock is acquired.
+        /// This is more reliable than the original method because it ensures the lock
+        /// is actually held before returning control to the test.
+        /// </summary>
+        /// <param name="waitMin">How long to hold the lock in minutes</param>
+        /// <param name="lockAcquired">Event that will be signaled when lock is acquired</param>
+        /// <param name="cancellationToken">Token to cancel the lock early</param>
+        /// <returns>0 on success, 1 on failure</returns>
+        private int StartLockingThreadWithSignal(double waitMin, ManualResetEventSlim lockAcquired, CancellationToken cancellationToken)
+        {
+            string connStr = string.Empty;
+            try
+            {
+                connStr = string.Format(Initialization.ConnectionString, "SqlBuildTest");
+                using var conn = new SqlConnection(connStr);
+                conn.Open();
+
+                // Start a transaction and acquire the lock
+                using var transaction = conn.BeginTransaction();
+                
+                // Acquire the exclusive table lock
+                string lockCmd = "SELECT TOP 1 * FROM dbo.TransactionTest WITH (TABLOCKX, HOLDLOCK) WHERE 0 = 1";
+                using (var cmd = new SqlCommand(lockCmd, conn, transaction))
+                {
+                    cmd.CommandTimeout = 30;
+                    cmd.ExecuteNonQuery();
+                }
+
+                // Signal that the lock is now held
+                lockAcquired.Set();
+
+                // Wait for the specified duration or until cancelled
+                try
+                {
+                    // Convert minutes to milliseconds and wait
+                    int waitMs = (int)(waitMin * 60 * 1000);
+                    cancellationToken.WaitHandle.WaitOne(waitMs);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected when test completes
+                }
+
+                // Transaction is rolled back when disposed
+                transaction.Rollback();
+                return 0;
+            }
+            catch (Exception exe)
+            {
+                System.Console.WriteLine($"Error in locking thread: {exe.Message}; {Environment.NewLine}Connection String:{connStr}");
+                lockAcquired.Set(); // Signal anyway so test doesn't hang
                 return 1;
             }
         }

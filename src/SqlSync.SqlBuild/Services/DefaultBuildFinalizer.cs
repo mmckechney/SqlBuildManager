@@ -185,8 +185,8 @@ namespace SqlSync.SqlBuild.Services
                     {
                         log.LogInformation("Attempting to Commit Build");
                         commitSuccess = CommitBuild(connectionsService, context.IsTransactional);
-                    //    if (commitSuccess)
-                    //        log.LogInformation("Commit Successful");  -- Not needed since each connection will show a commit or not
+                        //    if (commitSuccess)
+                        //        log.LogInformation("Commit Successful");  -- Not needed since each connection will show a commit or not
                     }
                     if (commitSuccess)
                     {
@@ -202,7 +202,6 @@ namespace SqlSync.SqlBuild.Services
                         //await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
                         finalizerContext.RaiseBuildErrorRollBackEvent(context);
                     }
-                }
                 }
                 else
                 {

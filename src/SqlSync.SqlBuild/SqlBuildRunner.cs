@@ -222,6 +222,13 @@ namespace SqlSync.SqlBuild
             }
 
             (myBuild, buildDataModel, _) = await _buildFinalizer.PerformRunScriptFinalizationAsync(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild).ConfigureAwait(false);
+            
+            // If build failed due to a timeout, set the status to allow retry mechanism to work
+            if (buildFailure && failureDueToScriptTimeout)
+            {
+                myBuild.FinalStatus = BuildItemStatus.FailedDueToScriptTimeout;
+            }
+            
             return myBuild;
         }
 
