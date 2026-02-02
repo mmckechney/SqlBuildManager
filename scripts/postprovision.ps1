@@ -1,20 +1,30 @@
 # Post-provision hook for Azure Developer CLI (azd)
 # Grants managed identity SQL permissions and optionally generates settings files
 
+# Helper function to get azd environment value (checks $env first, then azd env get-value)
+function Get-AzdEnvValue {
+    param([string]$Name)
+    $value = [System.Environment]::GetEnvironmentVariable($Name)
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        $value = azd env get-value $Name 2>$null
+    }
+    return $value
+}
+
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Post-Provision: Granting SQL Permissions" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
 # Get the environment name (used as prefix)
-$prefix = $env:AZURE_ENV_NAME
-$resourceGroupName = $env:RESOURCE_GROUP_NAME
+$prefix = Get-AzdEnvValue "AZURE_ENV_NAME"
+$resourceGroupName = Get-AzdEnvValue "RESOURCE_GROUP_NAME"
 
 Write-Host "Environment: $prefix" -ForegroundColor DarkGreen
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 
 # Get the repo root (where azure.yaml is located)
-$repoRoot = $env:AZD_PROJECT_PATH
+$repoRoot = Get-AzdEnvValue "AZD_PROJECT_PATH"
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Get-Location
 }
@@ -29,13 +39,13 @@ if (Test-Path $scriptPath) {
     Write-Host "Skipping SQL permissions grant. Run manually after deployment:" -ForegroundColor Yellow
     Write-Host "  .\scripts\Database\grant_identity_permissions.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
 }
-$aksDeployed = $env:DEPLOY_AKS
+$aksDeployed = Get-AzdEnvValue "DEPLOY_AKS"
 if ($aksDeployed -eq "true") {
 
-    $aksClusterName = $env:AKS_CLUSTER_NAME
-    $userAssignedIdentity = $env:MANAGED_IDENTITY_NAME
-    $userAssignedClientId = $env:MANAGED_IDENTITY_CLIENT_ID
-    $serviceAccountName = $env:AKS_SERVICE_ACCOUNT_NAME
+    $aksClusterName = Get-AzdEnvValue "AKS_CLUSTER_NAME"
+    $userAssignedIdentity = Get-AzdEnvValue "MANAGED_IDENTITY_NAME"
+    $userAssignedClientId = Get-AzdEnvValue "MANAGED_IDENTITY_CLIENT_ID"
+    $serviceAccountName = Get-AzdEnvValue "AKS_SERVICE_ACCOUNT_NAME"
 
     Write-Host "Retrieving credentials for: $aksClusterName to be able to run kubectl commands" -ForegroundColor DarkGreen
     az aks get-credentials --name $aksClusterName --resource-group $resourceGroupName --overwrite-existing --admin -o table
@@ -63,7 +73,7 @@ if ($aksDeployed -eq "true") {
 
 }
 # Build and upload Batch application packages if BUILD_BATCH_PACKAGES is set
-$buildBatch = $env:BUILD_BATCH_PACKAGES
+$buildBatch = Get-AzdEnvValue "BUILD_BATCH_PACKAGES"
 if ($buildBatch -eq "true") {
     Write-Host ""
     Write-Host "========================================" -ForegroundColor Cyan
@@ -86,7 +96,7 @@ if ($buildBatch -eq "true") {
 }
 
 # Build and push Docker container images if BUILD_CONTAINER_IMAGES is set
-$buildContainers = $env:BUILD_CONTAINER_IMAGES
+$buildContainers = Get-AzdEnvValue "BUILD_CONTAINER_IMAGES"
 if ($buildContainers -eq "true") {
     Write-Host ""
     Write-Host "========================================" -ForegroundColor Cyan
@@ -109,7 +119,7 @@ if ($buildContainers -eq "true") {
 }
 
 # Generate MI-only settings files if GENERATE_MI_SETTINGS is set
-$generateSettings = $env:GENERATE_MI_SETTINGS
+$generateSettings = Get-AzdEnvValue "GENERATE_MI_SETTINGS"
 if ($generateSettings -eq "true") {
     Write-Host ""
     Write-Host "========================================" -ForegroundColor Cyan
