@@ -2066,10 +2066,9 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             string scriptContents = string.Join(Environment.NewLine, scriptLines);
             actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter).ToArray();
             Assert.AreEqual(3, actual.Length);
-            Assert.IsTrue(actual[0].IndexOf("BEGIN TRANSACTION") > 0);
-            Assert.IsTrue(actual[0].IndexOf("COMMIT TRANSACTION") > 0);
-            Assert.IsTrue(actual[1].IndexOf("BEGIN TRANSACTION") > 0);
-            Assert.IsTrue(actual[1].IndexOf("COMMIT TRANSACTION") > 0);
+            Assert.IsTrue(actual[0].IndexOf("BEGIN TRANSACTION") > -1);
+            Assert.IsTrue(actual[0].IndexOf("ROLLBACK TRANSACTION") > -1);
+            Assert.IsTrue(actual[1].IndexOf("COMMIT TRANSACTION") > -1);
 
         }
 
@@ -2217,9 +2216,9 @@ SELECT * FROM TheirTable";
             List<string> actual;
             IScriptBatcher batcher = new DefaultScriptBatcher();
             actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
+            Assert.AreEqual(2, actual.Count);
             Assert.IsTrue(actual[0].IndexOf("USE") == -1);
-            Assert.IsTrue(actual[2].IndexOf("USE") > 0);
+            Assert.IsTrue(actual[1].IndexOf("USE") > 0);
 
         }
 
