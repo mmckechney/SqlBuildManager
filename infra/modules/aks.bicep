@@ -68,7 +68,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2023-05-01' = {
       count: 1
       mode: 'System'
       enableAutoScaling: true
-      minCount: 1
+      minCount: 3
       maxCount: 5
       enableNodePublicIP: false
       osType: 'Linux' 

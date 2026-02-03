@@ -186,7 +186,8 @@ namespace SqlBuildManager.Console.Kubernetes
       internal static string GenerateJobYaml(CommandLineArgs args, string logLevel)
       {
          bool hasKeyVault = !string.IsNullOrWhiteSpace(args.ConnectionArgs.KeyVaultName);
-         bool useMangedIdenty = args.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity;
+         bool useMangedIdenty = args.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity 
+            || args.AuthenticationArgs.AuthenticationType == AuthenticationType.AzureADDefault;
          string k8jobname = KubernetesJobName(args);
          string k8ConfigMapName = KubernetesConfigmapName(args);
          string k8SecretsName = KubernetesSecretsName(args);
@@ -219,7 +220,8 @@ namespace SqlBuildManager.Console.Kubernetes
             secretAdded = true;
          }
 
-         if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
+         if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity 
+            && args.AuthenticationArgs.AuthenticationType != AuthenticationType.AzureADDefault)
          {
             if (!string.IsNullOrWhiteSpace(args.AuthenticationArgs.UserName))
             {
