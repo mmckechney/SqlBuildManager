@@ -28,8 +28,8 @@ param privateEndpointSubnetName string = '${namePrefix}pesubnet'
 @description('Name of the location. Default is the resource group location')
 param location string = resourceGroup().location
 
-@description('IP range for the VNet. Default is 10.180.0.0/20')
-param vnetIpRange string = '10.180.0.0/20'
+@description('IP range for the VNet. Default is 10.180.0.0/19')
+param vnetIpRange string = '10.180.0.0/19'
 
 @description('IP range for the AKS subnet. Default is 10.180.0.0/22')
 param aksSubnetIpRange  string = '10.180.0.0/22'
@@ -43,8 +43,8 @@ param aciSubnetIpRange  string = '10.180.8.0/22'
 @description('IP range for the Batch subnet. Default is 10.180.12.0/22')
 param batchSubnetIpRange  string = '10.180.12.0/22'
 
-@description('IP range for the private endpoint subnet. Default is 10.180.15.0/24')
-param privateEndpointSubnetIpRange string = '10.180.15.0/24'
+@description('IP range for the private endpoint subnet. Default is 10.180.16.0/24')
+param privateEndpointSubnetIpRange string = '10.180.16.0/24'
 
 resource nsg_resource 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
   name: nsgName
