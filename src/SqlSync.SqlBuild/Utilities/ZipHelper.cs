@@ -35,7 +35,7 @@ namespace SqlSync.SqlBuild.Utilities
 
             try
             {
-                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName), @"~" + retryCount.ToString() + "~" + Path.GetFileName(zipFileName));
+                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName), @"~" + Guid.NewGuid().ToString("N") + "~" + Path.GetFileName(zipFileName));
                 using (ZipArchive newFile = ZipFile.Open(tempName, ZipArchiveMode.Create))
                 {
                     foreach (string file in fullPathFilesToZip)
@@ -216,7 +216,7 @@ namespace SqlSync.SqlBuild.Utilities
         {
             try
             {
-                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName), @"~" + retryCount.ToString() + "~" + Path.GetFileName(zipFileName));
+                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName), @"~" + Guid.NewGuid().ToString("N") + "~" + Path.GetFileName(zipFileName));
                 await using (var zipFs = new FileStream(tempName, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan))
                 using (var archive = new ZipArchive(zipFs, ZipArchiveMode.Create, leaveOpen: false))
                 {
