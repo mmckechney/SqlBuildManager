@@ -473,7 +473,8 @@ namespace SqlBuildManager.Console.Kubernetes
                log.LogDebug($"storageaccountkey= {args.ConnectionArgs.StorageAccountKey}");
             }
 
-            if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
+            if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity
+               && args.AuthenticationArgs.AuthenticationType != AuthenticationType.AzureADDefault)
             {
                args.Password = File.ReadAllText("/etc/sbm/Password");
                log.LogDebug($"password= {args.AuthenticationArgs.Password}");
@@ -514,7 +515,8 @@ namespace SqlBuildManager.Console.Kubernetes
             args = new CommandLineArgs();
          }
 
-         if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity)
+         if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity
+            && args.AuthenticationArgs.AuthenticationType != AuthenticationType.AzureADDefault)
          {
             var tmp = GetValueFromSecrets(filename, "UserName");
             if (!string.IsNullOrWhiteSpace(tmp)) args.UserName = tmp;
