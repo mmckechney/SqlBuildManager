@@ -12,7 +12,7 @@ Each of the remote execution options allows for varying use of Azure Managed Ide
  |                          | Azure Batch   | Kubernetes (AKS)                                                                                                              | Container Apps                    | Container Instance (ACI)  |
  | ------------------------ | :-----------: | :----------------------------------------------------------------------------------------------------------------------------:| :---------------:                 | :-----------------------: |
  | Azure Key Vault          |   Yes         |   Yes, with [Key Vault Identity Provider](https://docs.microsoft.com/en-us/azure/aks/csi-secrets-store-driver)                |   Yes                             |   Yes                     |
- | SQL databases            |   Yes         |   Yes                                                                                                                         |   No, see [note](#sql-database)   |   Yes                     |
+ | SQL databases            |   Yes         |   Yes                                                                                                                         |   Yes                             |   Yes                     |
  | Blob Storage             |   No, see [note](#blob-storage)|   Yes                                                                                                        |   Yes                             |   Yes                     |
  | Service Bus              |   Yes         |   Yes                                                                                                                         |   No, see [note](#service-bus)    |   Yes                     |
  | Event Hub                |   Yes         |   Yes                                                                                                                         |   Yes                             |   Yes                     |
@@ -50,8 +50,6 @@ To instruct the app to pull secrets from Azure Key Vault, you need to provide th
 ### SQL Database
 
 By default, the app uses username/password database authentication. To enable Managed Identity authentication, you will first need to add the [Manged Identity as a user to the database](https://docs.microsoft.com/en-us/azure/azure-sql/database/authentication-azure-ad-user-assigned-managed-identity?view=azuresql#managing-a-managed-identity-for-a-server-or-instance). Once this has been done, you can direct the app to use the identity to authenticate with the `--authtype ManagedIdentity` flag. (As always, this can be saved in a settings file with `savesettings` for easier execution and reuse).
-
-**NOTE:** Azure Container Apps does not currently allow for Managed Identity authentication to Azure SQL Databases
 
 
 ### Blob Storage

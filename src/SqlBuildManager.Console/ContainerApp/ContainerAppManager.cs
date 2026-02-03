@@ -57,6 +57,8 @@ namespace SqlBuildManager.Console.ContainerApp
             Environment.SetEnvironmentVariable(ContainerEnvVariables.StorageAccountKey, cmdLine.ConnectionArgs.StorageAccountKey, target);
             Environment.SetEnvironmentVariable(ContainerEnvVariables.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountName, target);
             Environment.SetEnvironmentVariable(ContainerEnvVariables.UserName, cmdLine.AuthenticationArgs.UserName, target);
+            Environment.SetEnvironmentVariable(ContainerEnvVariables.AuthType, cmdLine.AuthenticationArgs.AuthenticationType.ToString(), target);
+            Environment.SetEnvironmentVariable(ContainerEnvVariables.IdentityClientId, cmdLine.IdentityArgs?.ClientId, target);
 
         }
 
