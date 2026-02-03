@@ -37,6 +37,9 @@
     },
     "skuCapacity": {
       "value": 1
+    },
+    "usePrivateEndpoint": {
+      "value": true
     }
   }
 }

@@ -19,6 +19,15 @@ param sqlAdminObjectId string
 @description('Login name (email or display name) of the Entra ID admin')
 param sqlAdminLogin string
 
+@description('Whether to use private endpoints instead of public network access')
+param usePrivateEndpoint bool = false
+
+@description('VNet ID for private DNS zone link (required when usePrivateEndpoint is true)')
+param vnetId string = ''
+
+@description('Private endpoint subnet ID (required when usePrivateEndpoint is true)')
+param privateEndpointSubnetId string = ''
+
 var resourceGroupNameVar = '${namePrefix}-rg'
 var sqlserverNameVar = '${namePrefix}sql'
 var sqlpoolNameVar = '${namePrefix}pool'
@@ -77,7 +86,7 @@ resource sqlserverAFirewallRule 'Microsoft.Sql/servers/firewallRules@2021-11-01'
   }
 }
 
-resource sqlserverA_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2021-11-01' = [for subnet in subnetNamesArray:{
+resource sqlserverA_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2021-11-01' = [for subnet in subnetNamesArray: {
   parent: sqlserverAResource
   name: '${sqlserverNameVar}A_${subnet}'
   properties: {
@@ -155,7 +164,7 @@ resource sqlserverBFirewallRule 'Microsoft.Sql/servers/firewallRules@2021-11-01'
   }
 }
 
-resource sqlserverB_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2021-11-01' = [for subnet in subnetNamesArray:{
+resource sqlserverB_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2021-11-01' = [for subnet in subnetNamesArray: {
   parent: sqlserverBResource
   name: '${sqlserverNameVar}B_${subnet}'
   properties: {
@@ -204,3 +213,101 @@ resource sqlserverBResource_Database 'Microsoft.Sql/servers/databases@2021-11-01
     isLedgerOn: false
   }
 }]
+
+// Private DNS zone name for SQL Server using environment suffix
+var sqlPrivateDnsZoneName = 'privatelink${environment().suffixes.sqlServerHostname}'
+
+// Private DNS Zone for SQL Server (only when using private endpoints)
+resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if(usePrivateEndpoint) {
+  name: sqlPrivateDnsZoneName
+  location: 'global'
+}
+
+// Link private DNS zone to VNet
+resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if(usePrivateEndpoint) {
+  parent: privateDnsZone
+  name: '${namePrefix}-sql-vnet-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnetId
+    }
+  }
+}
+
+// Private Endpoint for SQL Server A
+resource privateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = if(usePrivateEndpoint) {
+  name: '${namePrefix}sql-a-pe'
+  location: location
+  properties: {
+    subnet: {
+      id: privateEndpointSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${namePrefix}sql-a-plsc'
+        properties: {
+          privateLinkServiceId: sqlserverAResource.id
+          groupIds: [
+            'sqlServer'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+// DNS Zone Group for SQL Server A private endpoint
+resource privateEndpointADnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = if(usePrivateEndpoint) {
+  parent: privateEndpointA
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-database-windows-net'
+        properties: {
+          privateDnsZoneId: privateDnsZone.id
+        }
+      }
+    ]
+  }
+}
+
+// Private Endpoint for SQL Server B
+resource privateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = if(usePrivateEndpoint) {
+  name: '${namePrefix}sql-b-pe'
+  location: location
+  properties: {
+    subnet: {
+      id: privateEndpointSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${namePrefix}sql-b-plsc'
+        properties: {
+          privateLinkServiceId: sqlserverBResource.id
+          groupIds: [
+            'sqlServer'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+// DNS Zone Group for SQL Server B private endpoint
+resource privateEndpointBDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = if(usePrivateEndpoint) {
+  parent: privateEndpointB
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-database-windows-net'
+        properties: {
+          privateDnsZoneId: privateDnsZone.id
+        }
+      }
+    ]
+  }
+}

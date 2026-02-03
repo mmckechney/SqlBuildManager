@@ -22,6 +22,9 @@ param aciSubnetName string = '${namePrefix}acisubnet'
 @description('Name of the Batch subnet to create. Default is <namePrefix>batchsubnet')
 param batchSubnetName string = '${namePrefix}batchsubnet'
 
+@description('Name of the private endpoint subnet to create. Default is <namePrefix>privateendpointsubnet')
+param privateEndpointSubnetName string = '${namePrefix}pesubnet'
+
 @description('Name of the location. Default is the resource group location')
 param location string = resourceGroup().location
 
@@ -39,6 +42,9 @@ param aciSubnetIpRange  string = '10.180.8.0/22'
 
 @description('IP range for the Batch subnet. Default is 10.180.12.0/22')
 param batchSubnetIpRange  string = '10.180.12.0/22'
+
+@description('IP range for the private endpoint subnet. Default is 10.180.15.0/24')
+param privateEndpointSubnetIpRange string = '10.180.15.0/24'
 
 resource nsg_resource 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
   name: nsgName
@@ -165,6 +171,16 @@ resource virtualNetworkResource 'Microsoft.Network/virtualNetworks@2021-02-01' =
           ]
         }
       }
+      {
+        name: privateEndpointSubnetName
+        properties: {
+          addressPrefix: privateEndpointSubnetIpRange
+          networkSecurityGroup: {
+            id: nsg_resource.id
+          }
+          privateEndpointNetworkPolicies: 'Disabled'
+        }
+      }
     ]
   }
 }
@@ -175,6 +191,7 @@ output aksSubnetName string = aksSubnetName
 output containerAppSubnetName string = containerAppSubnetName
 output aciSubnetName string = aciSubnetName
 output batchSubnetName string = batchSubnetName
+output privateEndpointSubnetName string = privateEndpointSubnetName
 
 output subnetNames array = [
   aksSubnetName
@@ -187,6 +204,7 @@ output aksSubnetId string = virtualNetworkResource.properties.subnets[0].id
 output containerAppSubnetId string = virtualNetworkResource.properties.subnets[1].id
 output aciSubnetId string = virtualNetworkResource.properties.subnets[2].id
 output batchSubnetId string = virtualNetworkResource.properties.subnets[3].id
+output privateEndpointSubnetId string = virtualNetworkResource.properties.subnets[4].id
 
 output nsgId string = nsg_resource.id
 output vnetId string = virtualNetworkResource.id

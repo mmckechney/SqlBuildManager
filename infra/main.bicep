@@ -34,6 +34,9 @@ param deployAks bool = true
 @description('Number of test databases to create per server (0 to skip database deployment)')
 param testDbCountPerServer int = 10
 
+@description('Whether to use private endpoints for SQL Server connectivity instead of public network access')
+param usePrivateEndpoint bool = false
+
 @allowed([
   'Basic'
   'Standard'
@@ -66,6 +69,7 @@ var nsgNameVar = '${namePrefix}nsg'
 var containerAppSubnetVar = '${namePrefix}containerappsubnet'
 var aciSubnetVar = '${namePrefix}acisubnet'
 var batchSubnetVar = '${namePrefix}batchsubnet'
+var privateEndpointSubnetVar = '${namePrefix}pesubnet'
 
 // Used with Kubernetes Workload Identity
 var aksClusterNameVar = '${namePrefix}aks'
@@ -90,6 +94,7 @@ module networkResource './modules/network.bicep' = {
     batchSubnetName: batchSubnetVar
     containerAppSubnetName: containerAppSubnetVar
     aksSubnetName: aksSubnetVar
+    privateEndpointSubnetName: privateEndpointSubnetVar
   }
 }
 
@@ -147,6 +152,9 @@ module databases './modules/database.bicep' = if(testDbCountPerServer > 0 && use
     testDbCountPerServer: testDbCountPerServer
     sqlAdminObjectId: userIdGuid
     sqlAdminLogin: userLoginName
+    usePrivateEndpoint: usePrivateEndpoint
+    vnetId: networkResource.outputs.vnetId
+    privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
   }
 }
 
@@ -238,6 +246,7 @@ output DEPLOY_AKS bool = deployAks
 output TEST_DB_COUNT_PER_SERVER int = testDbCountPerServer
 output EVENTHUB_SKU string = eventhubSku
 output SKU_CAPACITY int = skuCapacity
+output USE_PRIVATE_ENDPOINT bool = usePrivateEndpoint
 
 // Resource outputs
 output RESOURCE_GROUP_NAME string = resourceGroupName
@@ -250,6 +259,7 @@ output ACI_SUBNET_NAME string = networkResource.outputs.aciSubnetName
 output BATCH_SUBNET_NAME string = networkResource.outputs.batchSubnetName
 output CONTAINERAPP_SUBNET_NAME string = networkResource.outputs.containerAppSubnetName
 output AKS_SUBNET_NAME string = networkResource.outputs.aksSubnetName
+output PRIVATE_ENDPOINT_SUBNET_NAME string = networkResource.outputs.privateEndpointSubnetName
 
 output MANAGED_IDENTITY_NAME string = identityResource.outputs.name
 output MANAGED_IDENTITY_ID string = identityResource.outputs.id

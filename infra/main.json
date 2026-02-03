@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "14739651554304165759"
+      "templateHash": "4966390806141282920"
     }
   },
   "parameters": {
@@ -79,6 +79,13 @@
         "description": "Number of test databases to create per server (0 to skip database deployment)"
       }
     },
+    "usePrivateEndpoint": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether to use private endpoints for SQL Server connectivity instead of public network access"
+      }
+    },
     "eventhubSku": {
       "type": "string",
       "defaultValue": "Standard",
@@ -120,6 +127,7 @@
     "containerAppSubnetVar": "[format('{0}containerappsubnet', parameters('namePrefix'))]",
     "aciSubnetVar": "[format('{0}acisubnet', parameters('namePrefix'))]",
     "batchSubnetVar": "[format('{0}batchsubnet', parameters('namePrefix'))]",
+    "privateEndpointSubnetVar": "[format('{0}pesubnet', parameters('namePrefix'))]",
     "aksClusterNameVar": "[format('{0}aks', parameters('namePrefix'))]",
     "serviceAccountNameVar": "[format('{0}serviceaccount', parameters('namePrefix'))]",
     "federatedIdNameVar": "[format('{0}federatedidname', parameters('namePrefix'))]"
@@ -162,6 +170,9 @@
           },
           "aksSubnetName": {
             "value": "[variables('aksSubnetVar')]"
+          },
+          "privateEndpointSubnetName": {
+            "value": "[variables('privateEndpointSubnetVar')]"
           }
         },
         "template": {
@@ -171,7 +182,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "1452130156265106617"
+              "templateHash": "16399528370034608429"
             }
           },
           "parameters": {
@@ -231,6 +242,13 @@
                 "description": "Name of the Batch subnet to create. Default is <namePrefix>batchsubnet"
               }
             },
+            "privateEndpointSubnetName": {
+              "type": "string",
+              "defaultValue": "[format('{0}pesubnet', parameters('namePrefix'))]",
+              "metadata": {
+                "description": "Name of the private endpoint subnet to create. Default is <namePrefix>privateendpointsubnet"
+              }
+            },
             "location": {
               "type": "string",
               "defaultValue": "[resourceGroup().location]",
@@ -271,6 +289,13 @@
               "defaultValue": "10.180.12.0/22",
               "metadata": {
                 "description": "IP range for the Batch subnet. Default is 10.180.12.0/22"
+              }
+            },
+            "privateEndpointSubnetIpRange": {
+              "type": "string",
+              "defaultValue": "10.180.15.0/24",
+              "metadata": {
+                "description": "IP range for the private endpoint subnet. Default is 10.180.15.0/24"
               }
             }
           },
@@ -402,6 +427,16 @@
                         }
                       ]
                     }
+                  },
+                  {
+                    "name": "[parameters('privateEndpointSubnetName')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('privateEndpointSubnetIpRange')]",
+                      "networkSecurityGroup": {
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
+                      },
+                      "privateEndpointNetworkPolicies": "Disabled"
+                    }
                   }
                 ]
               },
@@ -436,6 +471,10 @@
               "type": "string",
               "value": "[parameters('batchSubnetName')]"
             },
+            "privateEndpointSubnetName": {
+              "type": "string",
+              "value": "[parameters('privateEndpointSubnetName')]"
+            },
             "subnetNames": {
               "type": "array",
               "value": [
@@ -460,6 +499,10 @@
             "batchSubnetId": {
               "type": "string",
               "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '2021-02-01').subnets[3].id]"
+            },
+            "privateEndpointSubnetId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '2021-02-01').subnets[4].id]"
             },
             "nsgId": {
               "type": "string",
@@ -993,6 +1036,15 @@
           },
           "sqlAdminLogin": {
             "value": "[parameters('userLoginName')]"
+          },
+          "usePrivateEndpoint": {
+            "value": "[parameters('usePrivateEndpoint')]"
+          },
+          "vnetId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.vnetId.value]"
+          },
+          "privateEndpointSubnetId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.privateEndpointSubnetId.value]"
           }
         },
         "template": {
@@ -1002,7 +1054,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "15060218056322260072"
+              "templateHash": "3161946516191096166"
             }
           },
           "parameters": {
@@ -1050,6 +1102,27 @@
               "metadata": {
                 "description": "Login name (email or display name) of the Entra ID admin"
               }
+            },
+            "usePrivateEndpoint": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether to use private endpoints instead of public network access"
+              }
+            },
+            "vnetId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "VNet ID for private DNS zone link (required when usePrivateEndpoint is true)"
+              }
+            },
+            "privateEndpointSubnetId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Private endpoint subnet ID (required when usePrivateEndpoint is true)"
+              }
             }
           },
           "variables": {
@@ -1057,7 +1130,8 @@
             "sqlserverNameVar": "[format('{0}sql', parameters('namePrefix'))]",
             "sqlpoolNameVar": "[format('{0}pool', parameters('namePrefix'))]",
             "identityNameVar": "[format('{0}identity', parameters('namePrefix'))]",
-            "subnetNamesArray": "[split(parameters('subnetNames'), ',')]"
+            "subnetNamesArray": "[split(parameters('subnetNames'), ',')]",
+            "sqlPrivateDnsZoneName": "[format('privatelink{0}', environment().suffixes.sqlServerHostname)]"
           },
           "resources": [
             {
@@ -1261,6 +1335,121 @@
               ]
             },
             {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateDnsZones",
+              "apiVersion": "2020-06-01",
+              "name": "[variables('sqlPrivateDnsZoneName')]",
+              "location": "global"
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/{1}', variables('sqlPrivateDnsZoneName'), format('{0}-sql-vnet-link', parameters('namePrefix')))]",
+              "location": "global",
+              "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                  "id": "[parameters('vnetId')]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('sqlPrivateDnsZoneName'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}sql-a-pe', parameters('namePrefix'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "subnet": {
+                  "id": "[parameters('privateEndpointSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}sql-a-plsc', parameters('namePrefix'))]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.Sql/servers', format('{0}-a', variables('sqlserverNameVar')))]",
+                      "groupIds": [
+                        "sqlServer"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', format('{0}-a', variables('sqlserverNameVar')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}', format('{0}sql-a-pe', parameters('namePrefix')), 'default')]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "privatelink-database-windows-net",
+                    "properties": {
+                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('sqlPrivateDnsZoneName'))]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('sqlPrivateDnsZoneName'))]",
+                "[resourceId('Microsoft.Network/privateEndpoints', format('{0}sql-a-pe', parameters('namePrefix')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}sql-b-pe', parameters('namePrefix'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "subnet": {
+                  "id": "[parameters('privateEndpointSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}sql-b-plsc', parameters('namePrefix'))]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.Sql/servers', format('{0}-b', variables('sqlserverNameVar')))]",
+                      "groupIds": [
+                        "sqlServer"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', format('{0}-b', variables('sqlserverNameVar')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}', format('{0}sql-b-pe', parameters('namePrefix')), 'default')]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "privatelink-database-windows-net",
+                    "properties": {
+                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('sqlPrivateDnsZoneName'))]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('sqlPrivateDnsZoneName'))]",
+                "[resourceId('Microsoft.Network/privateEndpoints', format('{0}sql-b-pe', parameters('namePrefix')))]"
+              ]
+            },
+            {
               "type": "Microsoft.Resources/deployments",
               "apiVersion": "2025-04-01",
               "name": "networkResource",
@@ -1285,7 +1474,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.39.26.7824",
-                      "templateHash": "1452130156265106617"
+                      "templateHash": "16399528370034608429"
                     }
                   },
                   "parameters": {
@@ -1345,6 +1534,13 @@
                         "description": "Name of the Batch subnet to create. Default is <namePrefix>batchsubnet"
                       }
                     },
+                    "privateEndpointSubnetName": {
+                      "type": "string",
+                      "defaultValue": "[format('{0}pesubnet', parameters('namePrefix'))]",
+                      "metadata": {
+                        "description": "Name of the private endpoint subnet to create. Default is <namePrefix>privateendpointsubnet"
+                      }
+                    },
                     "location": {
                       "type": "string",
                       "defaultValue": "[resourceGroup().location]",
@@ -1385,6 +1581,13 @@
                       "defaultValue": "10.180.12.0/22",
                       "metadata": {
                         "description": "IP range for the Batch subnet. Default is 10.180.12.0/22"
+                      }
+                    },
+                    "privateEndpointSubnetIpRange": {
+                      "type": "string",
+                      "defaultValue": "10.180.15.0/24",
+                      "metadata": {
+                        "description": "IP range for the private endpoint subnet. Default is 10.180.15.0/24"
                       }
                     }
                   },
@@ -1516,6 +1719,16 @@
                                 }
                               ]
                             }
+                          },
+                          {
+                            "name": "[parameters('privateEndpointSubnetName')]",
+                            "properties": {
+                              "addressPrefix": "[parameters('privateEndpointSubnetIpRange')]",
+                              "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
+                              },
+                              "privateEndpointNetworkPolicies": "Disabled"
+                            }
                           }
                         ]
                       },
@@ -1550,6 +1763,10 @@
                       "type": "string",
                       "value": "[parameters('batchSubnetName')]"
                     },
+                    "privateEndpointSubnetName": {
+                      "type": "string",
+                      "value": "[parameters('privateEndpointSubnetName')]"
+                    },
                     "subnetNames": {
                       "type": "array",
                       "value": [
@@ -1574,6 +1791,10 @@
                     "batchSubnetId": {
                       "type": "string",
                       "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '2021-02-01').subnets[3].id]"
+                    },
+                    "privateEndpointSubnetId": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '2021-02-01').subnets[4].id]"
                     },
                     "nsgId": {
                       "type": "string",
@@ -1788,7 +2009,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "5317197420149410366"
+              "templateHash": "3294596986679570136"
             }
           },
           "parameters": {
@@ -1827,21 +2048,28 @@
               }
             }
           },
+          "variables": {
+            "userAssignedIdentityId": "[format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{2}', subscription().subscriptionId, resourceGroup().name, parameters('identityName'))]"
+          },
           "resources": [
             {
               "type": "Microsoft.Batch/batchAccounts",
-              "apiVersion": "2021-01-01",
+              "apiVersion": "2024-07-01",
               "name": "[parameters('batchAccountName')]",
               "location": "[parameters('location')]",
               "identity": {
                 "type": "UserAssigned",
                 "userAssignedIdentities": {
-                  "[format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{2}', subscription().subscriptionId, resourceGroup().name, parameters('identityName'))]": {}
+                  "[format('{0}', variables('userAssignedIdentityId'))]": {}
                 }
               },
               "properties": {
                 "autoStorage": {
-                  "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+                  "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                  "authenticationMode": "BatchAccountManagedIdentity",
+                  "nodeIdentityReference": {
+                    "resourceId": "[variables('userAssignedIdentityId')]"
+                  }
                 },
                 "poolAllocationMode": "BatchService"
               }
@@ -2513,6 +2741,10 @@
       "type": "int",
       "value": "[parameters('skuCapacity')]"
     },
+    "USE_PRIVATE_ENDPOINT": {
+      "type": "bool",
+      "value": "[parameters('usePrivateEndpoint')]"
+    },
     "RESOURCE_GROUP_NAME": {
       "type": "string",
       "value": "[variables('resourceGroupName')]"
@@ -2548,6 +2780,10 @@
     "AKS_SUBNET_NAME": {
       "type": "string",
       "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.aksSubnetName.value]"
+    },
+    "PRIVATE_ENDPOINT_SUBNET_NAME": {
+      "type": "string",
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.privateEndpointSubnetName.value]"
     },
     "MANAGED_IDENTITY_NAME": {
       "type": "string",
