@@ -32,8 +32,10 @@ namespace SqlBuildManager.Console
                 }
             }
 
-            //Validate that if username or password is specified, then both are (not required if set to ManagedIdentity)
-            if (cmdLine.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity && (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password)))
+            //Validate that if username or password is specified, then both are (not required if set to ManagedIdentity or AzureADDefault)
+            if (cmdLine.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity 
+                && cmdLine.AuthenticationArgs.AuthenticationType != AuthenticationType.AzureADDefault 
+                && (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password)))
             {
                 if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
