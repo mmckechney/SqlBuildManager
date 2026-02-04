@@ -45,6 +45,14 @@ param usePrivateEndpoint bool = false
 param eventhubSku string = 'Standard'
 
 @allowed([
+  'Basic'
+  'Standard'
+  'Premium'
+])
+@description('The messaging tier for Service Bus namespace. Premium required for private endpoints.')
+param serviceBusSku string = 'Standard'
+
+@allowed([
   1
   2
   4
@@ -241,6 +249,7 @@ module serviceBusResource './modules/servicebus.bicep' = {
   params: {
     serviceBusNamespaceName: serviceBusNamespaceNameVar
     location: location
+    serviceBusSku: serviceBusSku
     usePrivateEndpoint: usePrivateEndpoint
     vnetId: networkResource.outputs.vnetId
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
@@ -260,6 +269,7 @@ output DEPLOY_CONTAINERAPP_ENV bool = deployContainerAppEnv
 output DEPLOY_AKS bool = deployAks
 output TEST_DB_COUNT_PER_SERVER int = testDbCountPerServer
 output EVENTHUB_SKU string = eventhubSku
+output SERVICEBUS_SKU string = serviceBusSku
 output SKU_CAPACITY int = skuCapacity
 output USE_PRIVATE_ENDPOINT bool = usePrivateEndpoint
 

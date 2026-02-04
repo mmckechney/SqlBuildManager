@@ -4,6 +4,14 @@ param serviceBusNamespaceName string
 @description('Location for the Service Bus')
 param location string = resourceGroup().location
 
+@allowed([
+  'Basic'
+  'Standard'
+  'Premium'
+])
+@description('The messaging tier for Service Bus namespace')
+param serviceBusSku string = 'Standard'
+
 @description('Whether to use private endpoints instead of public network access')
 param usePrivateEndpoint bool = false
 
@@ -16,17 +24,21 @@ param privateEndpointSubnetId string = ''
 @description('Name prefix for private endpoint resources')
 param namePrefix string = ''
 
+// Private endpoints only supported on Premium SKU
+var canUsePrivateEndpoint = usePrivateEndpoint && serviceBusSku == 'Premium'
+
 resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
   name: serviceBusNamespaceName
   location: location
   sku: {
-    name: 'Standard'
-    tier: 'Standard'
+    name: serviceBusSku
+    tier: serviceBusSku
     capacity: 1
   }
   properties: {
     zoneRedundant: false
-    publicNetworkAccess: usePrivateEndpoint ? 'Disabled' : 'Enabled'
+    // Only disable public network access if we can actually use private endpoints (Premium SKU)
+    publicNetworkAccess: canUsePrivateEndpoint ? 'Disabled' : 'Enabled'
   }
 }
 
@@ -52,14 +64,14 @@ resource topic 'Microsoft.ServiceBus/namespaces/topics@2022-10-01-preview' = {
 
 // Topic authorization rule removed - using Managed Identity with RBAC for Service Bus access
 
-// Private DNS Zone for Service Bus - only when using private endpoints
-resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if(usePrivateEndpoint) {
+// Private DNS Zone for Service Bus - only when using private endpoints with Premium SKU
+resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if(canUsePrivateEndpoint) {
   name: 'privatelink.servicebus.windows.net'
   location: 'global'
 }
 
 // Link private DNS zone to VNet
-resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if(usePrivateEndpoint) {
+resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if(canUsePrivateEndpoint) {
   parent: privateDnsZone
   name: '${namePrefix}-servicebus-vnet-link'
   location: 'global'
@@ -71,8 +83,8 @@ resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
   }
 }
 
-// Private Endpoint for Service Bus
-resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = if(usePrivateEndpoint) {
+// Private Endpoint for Service Bus (Premium SKU only)
+resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = if(canUsePrivateEndpoint) {
   name: '${namePrefix}servicebus-pe'
   location: location
   properties: {
@@ -94,7 +106,7 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = if(us
 }
 
 // DNS Zone Group for Service Bus private endpoint
-resource privateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = if(usePrivateEndpoint) {
+resource privateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = if(canUsePrivateEndpoint) {
   parent: privateEndpoint
   name: 'default'
   properties: {

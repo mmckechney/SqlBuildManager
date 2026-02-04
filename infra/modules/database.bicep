@@ -60,7 +60,8 @@ resource sqlserverAResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
   location: location
   
   properties: {
-    publicNetworkAccess: usePrivateEndpoint ? 'Disabled' : 'Enabled'
+    // Always start with public access enabled so firewall rules can be created
+    publicNetworkAccess: 'Enabled'
     restrictOutboundNetworkAccess: 'Disabled'
     minimalTlsVersion: '1.2'
     administrators: {
@@ -142,7 +143,8 @@ resource sqlserverBResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
   name: '${sqlserverNameVar}-b'
   location: location  
   properties: {
-    publicNetworkAccess: usePrivateEndpoint ? 'Disabled' : 'Enabled'
+    // Always start with public access enabled so firewall rules can be created
+    publicNetworkAccess: 'Enabled'
     restrictOutboundNetworkAccess: 'Disabled'
     minimalTlsVersion: '1.2'
     administrators: {
@@ -311,3 +313,7 @@ resource privateEndpointBDnsGroup 'Microsoft.Network/privateEndpoints/privateDns
     ]
   }
 }
+
+// NOTE: Disabling public network access is handled in postprovision.ps1 via Azure CLI
+// This allows both VNet rules and private endpoints to coexist for flexible switching
+// The Bicep policy may block inline updates, but az sql server update works fine

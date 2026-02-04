@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "142410907785849361"
+      "templateHash": "13963158516066997163"
     }
   },
   "parameters": {
@@ -95,6 +95,18 @@
       ],
       "metadata": {
         "description": "The messaging tier for Event Hub namespace"
+      }
+    },
+    "serviceBusSku": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "allowedValues": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "The messaging tier for Service Bus namespace. Premium required for private endpoints."
       }
     },
     "skuCapacity": {
@@ -1066,7 +1078,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "12959035415069038694"
+              "templateHash": "12204863770624592396"
             }
           },
           "parameters": {
@@ -1152,7 +1164,7 @@
               "name": "[format('{0}-a', variables('sqlserverNameVar'))]",
               "location": "[parameters('location')]",
               "properties": {
-                "publicNetworkAccess": "[if(parameters('usePrivateEndpoint'), 'Disabled', 'Enabled')]",
+                "publicNetworkAccess": "Enabled",
                 "restrictOutboundNetworkAccess": "Disabled",
                 "minimalTlsVersion": "1.2",
                 "administrators": {
@@ -1252,7 +1264,7 @@
               "name": "[format('{0}-b', variables('sqlserverNameVar'))]",
               "location": "[parameters('location')]",
               "properties": {
-                "publicNetworkAccess": "[if(parameters('usePrivateEndpoint'), 'Disabled', 'Enabled')]",
+                "publicNetworkAccess": "Enabled",
                 "restrictOutboundNetworkAccess": "Disabled",
                 "minimalTlsVersion": "1.2",
                 "administrators": {
@@ -2981,6 +2993,9 @@
           "location": {
             "value": "[parameters('location')]"
           },
+          "serviceBusSku": {
+            "value": "[parameters('serviceBusSku')]"
+          },
           "usePrivateEndpoint": {
             "value": "[parameters('usePrivateEndpoint')]"
           },
@@ -3001,7 +3016,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "9727849538215871051"
+              "templateHash": "539878949541765354"
             }
           },
           "parameters": {
@@ -3016,6 +3031,18 @@
               "defaultValue": "[resourceGroup().location]",
               "metadata": {
                 "description": "Location for the Service Bus"
+              }
+            },
+            "serviceBusSku": {
+              "type": "string",
+              "defaultValue": "Standard",
+              "allowedValues": [
+                "Basic",
+                "Standard",
+                "Premium"
+              ],
+              "metadata": {
+                "description": "The messaging tier for Service Bus namespace"
               }
             },
             "usePrivateEndpoint": {
@@ -3047,6 +3074,9 @@
               }
             }
           },
+          "variables": {
+            "canUsePrivateEndpoint": "[and(parameters('usePrivateEndpoint'), equals(parameters('serviceBusSku'), 'Premium'))]"
+          },
           "resources": [
             {
               "type": "Microsoft.ServiceBus/namespaces",
@@ -3054,13 +3084,13 @@
               "name": "[parameters('serviceBusNamespaceName')]",
               "location": "[parameters('location')]",
               "sku": {
-                "name": "Standard",
-                "tier": "Standard",
+                "name": "[parameters('serviceBusSku')]",
+                "tier": "[parameters('serviceBusSku')]",
                 "capacity": 1
               },
               "properties": {
                 "zoneRedundant": false,
-                "publicNetworkAccess": "[if(parameters('usePrivateEndpoint'), 'Disabled', 'Enabled')]"
+                "publicNetworkAccess": "[if(variables('canUsePrivateEndpoint'), 'Disabled', 'Enabled')]"
               }
             },
             {
@@ -3084,14 +3114,14 @@
               ]
             },
             {
-              "condition": "[parameters('usePrivateEndpoint')]",
+              "condition": "[variables('canUsePrivateEndpoint')]",
               "type": "Microsoft.Network/privateDnsZones",
               "apiVersion": "2020-06-01",
               "name": "privatelink.servicebus.windows.net",
               "location": "global"
             },
             {
-              "condition": "[parameters('usePrivateEndpoint')]",
+              "condition": "[variables('canUsePrivateEndpoint')]",
               "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
               "apiVersion": "2020-06-01",
               "name": "[format('{0}/{1}', 'privatelink.servicebus.windows.net', format('{0}-servicebus-vnet-link', parameters('namePrefix')))]",
@@ -3107,7 +3137,7 @@
               ]
             },
             {
-              "condition": "[parameters('usePrivateEndpoint')]",
+              "condition": "[variables('canUsePrivateEndpoint')]",
               "type": "Microsoft.Network/privateEndpoints",
               "apiVersion": "2023-05-01",
               "name": "[format('{0}servicebus-pe', parameters('namePrefix'))]",
@@ -3133,7 +3163,7 @@
               ]
             },
             {
-              "condition": "[parameters('usePrivateEndpoint')]",
+              "condition": "[variables('canUsePrivateEndpoint')]",
               "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
               "apiVersion": "2023-05-01",
               "name": "[format('{0}/{1}', format('{0}servicebus-pe', parameters('namePrefix')), 'default')]",
@@ -3211,6 +3241,10 @@
     "EVENTHUB_SKU": {
       "type": "string",
       "value": "[parameters('eventhubSku')]"
+    },
+    "SERVICEBUS_SKU": {
+      "type": "string",
+      "value": "[parameters('serviceBusSku')]"
     },
     "SKU_CAPACITY": {
       "type": "int",
