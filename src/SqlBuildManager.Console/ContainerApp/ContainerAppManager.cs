@@ -280,11 +280,38 @@ namespace SqlBuildManager.Console.ContainerApp
             customScale.Metadata.Add("topicName", "sqlbuildmanager");
             customScale.Metadata.Add("subscriptionName", cmdLine.JobName);
             customScale.Metadata.Add("messageCount", "2");
-            customScale.Auth.Add(new ContainerAppScaleRuleAuth()
+            
+            // Use managed identity for KEDA scaling if identity is configured
+            if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ResourceId))
             {
-                SecretRef = "servicebustopicconnectionstring",
-                TriggerParameter = "connection"
-            });
+                // Extract namespace from connection string or use as-is if just namespace name
+                string serviceBusNamespace = cmdLine.ConnectionArgs.ServiceBusTopicConnectionString;
+                if (ConnectionStringValidator.IsServiceBusConnectionString(serviceBusNamespace))
+                {
+                    // Extract namespace from full connection string (Endpoint=sb://<namespace>.servicebus.windows.net/...)
+                    var match = System.Text.RegularExpressions.Regex.Match(serviceBusNamespace, @"Endpoint=sb://([^.]+)\.servicebus\.windows\.net", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    if (match.Success)
+                    {
+                        serviceBusNamespace = match.Groups[1].Value;
+                    }
+                }
+                // KEDA expects just the namespace name, not the fully qualified domain
+                // Remove .servicebus.windows.net suffix if present
+                serviceBusNamespace = serviceBusNamespace.Replace(".servicebus.windows.net", "");
+                
+                customScale.Metadata.Add("namespace", serviceBusNamespace);
+                customScale.Identity = cmdLine.IdentityArgs.ResourceId;
+                log.LogInformation($"Using managed identity '{cmdLine.IdentityArgs.ResourceId}' for KEDA Service Bus scaler with namespace '{serviceBusNamespace}'");
+            }
+            else
+            {
+                // Fall back to connection string secret-based authentication
+                customScale.Auth.Add(new ContainerAppScaleRuleAuth()
+                {
+                    SecretRef = "servicebustopicconnectionstring",
+                    TriggerParameter = "connection"
+                });
+            }
                     
 
 
