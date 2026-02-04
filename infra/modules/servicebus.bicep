@@ -24,8 +24,38 @@ param privateEndpointSubnetId string = ''
 @description('Name prefix for private endpoint resources')
 param namePrefix string = ''
 
+@description('Current machine IP address to allow access')
+param currentIpAddress string = ''
+
+@description('Comma-separated list of subnet names to allow access')
+param subnetNames string = ''
+
+@description('VNet name for subnet references')
+param vnetName string = ''
+
 // Private endpoints only supported on Premium SKU
 var canUsePrivateEndpoint = usePrivateEndpoint && serviceBusSku == 'Premium'
+
+var subnetNamesArray = empty(subnetNames) ? [] : split(subnetNames, ',')
+
+// Build virtual network rules array from subnet names
+var virtualNetworkRules = [for subnet in subnetNamesArray: {
+  subnet: {
+    id: resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, subnet)
+  }
+  ignoreMissingVnetServiceEndpoint: false
+}]
+
+// Build IP rules array (only if currentIpAddress is provided)
+var ipRules = empty(currentIpAddress) ? [] : [
+  {
+    ipMask: currentIpAddress
+    action: 'Allow'
+  }
+]
+
+// Determine if we should use network restrictions
+var useNetworkRestrictions = !empty(subnetNames) || !empty(currentIpAddress)
 
 resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
   name: serviceBusNamespaceName
@@ -39,6 +69,19 @@ resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview
     zoneRedundant: false
     // Only disable public network access if we can actually use private endpoints (Premium SKU)
     publicNetworkAccess: canUsePrivateEndpoint ? 'Disabled' : 'Enabled'
+  }
+}
+
+// Network rule set for Service Bus namespace (Premium SKU only)
+resource serviceBusNetworkRuleSet 'Microsoft.ServiceBus/namespaces/networkRuleSets@2022-10-01-preview' = if(useNetworkRestrictions && serviceBusSku == 'Premium') {
+  parent: serviceBusNamespace
+  name: 'default'
+  properties: {
+    publicNetworkAccess: canUsePrivateEndpoint ? 'Disabled' : 'Enabled'
+    defaultAction: useNetworkRestrictions ? 'Deny' : 'Allow'
+    virtualNetworkRules: virtualNetworkRules
+    ipRules: ipRules
+    trustedServiceAccessEnabled: true
   }
 }
 

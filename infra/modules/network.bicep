@@ -103,6 +103,12 @@ resource virtualNetworkResource 'Microsoft.Network/virtualNetworks@2021-02-01' =
             {
               service: 'Microsoft.Storage'
             }
+            {
+              service: 'Microsoft.EventHub'
+            }
+            {
+              service: 'Microsoft.ServiceBus'
+            }
           ]
         }
       }
@@ -122,6 +128,12 @@ resource virtualNetworkResource 'Microsoft.Network/virtualNetworks@2021-02-01' =
             }
             {
               service: 'Microsoft.Storage'
+            }
+            {
+              service: 'Microsoft.EventHub'
+            }
+            {
+              service: 'Microsoft.ServiceBus'
             }
           ]
           delegations: [
@@ -151,6 +163,12 @@ resource virtualNetworkResource 'Microsoft.Network/virtualNetworks@2021-02-01' =
             {
               service: 'Microsoft.Storage'
             }
+            {
+              service: 'Microsoft.EventHub'
+            }
+            {
+              service: 'Microsoft.ServiceBus'
+            }
           ]
           delegations: [
             {
@@ -179,6 +197,12 @@ resource virtualNetworkResource 'Microsoft.Network/virtualNetworks@2021-02-01' =
             }
             {
               service: 'Microsoft.Storage'
+            }
+            {
+              service: 'Microsoft.EventHub'
+            }
+            {
+              service: 'Microsoft.ServiceBus'
             }
           ]
         }

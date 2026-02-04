@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "13963158516066997163"
+      "templateHash": "3539691306875596746"
     }
   },
   "parameters": {
@@ -194,7 +194,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "17228979666088248452"
+              "templateHash": "9139758266500504447"
             }
           },
           "parameters": {
@@ -372,6 +372,12 @@
                         },
                         {
                           "service": "Microsoft.Storage"
+                        },
+                        {
+                          "service": "Microsoft.EventHub"
+                        },
+                        {
+                          "service": "Microsoft.ServiceBus"
                         }
                       ]
                     }
@@ -392,6 +398,12 @@
                         },
                         {
                           "service": "Microsoft.Storage"
+                        },
+                        {
+                          "service": "Microsoft.EventHub"
+                        },
+                        {
+                          "service": "Microsoft.ServiceBus"
                         }
                       ],
                       "delegations": [
@@ -420,6 +432,12 @@
                         },
                         {
                           "service": "Microsoft.Storage"
+                        },
+                        {
+                          "service": "Microsoft.EventHub"
+                        },
+                        {
+                          "service": "Microsoft.ServiceBus"
                         }
                       ],
                       "delegations": [
@@ -448,6 +466,12 @@
                         },
                         {
                           "service": "Microsoft.Storage"
+                        },
+                        {
+                          "service": "Microsoft.EventHub"
+                        },
+                        {
+                          "service": "Microsoft.ServiceBus"
                         }
                       ]
                     }
@@ -1078,7 +1102,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "12204863770624592396"
+              "templateHash": "17864223431006277455"
             }
           },
           "parameters": {
@@ -1498,7 +1522,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.39.26.7824",
-                      "templateHash": "17228979666088248452"
+                      "templateHash": "9139758266500504447"
                     }
                   },
                   "parameters": {
@@ -1676,6 +1700,12 @@
                                 },
                                 {
                                   "service": "Microsoft.Storage"
+                                },
+                                {
+                                  "service": "Microsoft.EventHub"
+                                },
+                                {
+                                  "service": "Microsoft.ServiceBus"
                                 }
                               ]
                             }
@@ -1696,6 +1726,12 @@
                                 },
                                 {
                                   "service": "Microsoft.Storage"
+                                },
+                                {
+                                  "service": "Microsoft.EventHub"
+                                },
+                                {
+                                  "service": "Microsoft.ServiceBus"
                                 }
                               ],
                               "delegations": [
@@ -1724,6 +1760,12 @@
                                 },
                                 {
                                   "service": "Microsoft.Storage"
+                                },
+                                {
+                                  "service": "Microsoft.EventHub"
+                                },
+                                {
+                                  "service": "Microsoft.ServiceBus"
                                 }
                               ],
                               "delegations": [
@@ -1752,6 +1794,12 @@
                                 },
                                 {
                                   "service": "Microsoft.Storage"
+                                },
+                                {
+                                  "service": "Microsoft.EventHub"
+                                },
+                                {
+                                  "service": "Microsoft.ServiceBus"
                                 }
                               ]
                             }
@@ -2769,6 +2817,15 @@
           },
           "namePrefix": {
             "value": "[parameters('namePrefix')]"
+          },
+          "currentIpAddress": {
+            "value": "[parameters('currentIpAddress')]"
+          },
+          "subnetNames": {
+            "value": "[join(reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.subnetNames.value, ',')]"
+          },
+          "vnetName": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.vnetName.value]"
           }
         },
         "template": {
@@ -2778,7 +2835,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "10782381330380128607"
+              "templateHash": "14094556427860466652"
             }
           },
           "parameters": {
@@ -2851,7 +2908,45 @@
               "metadata": {
                 "description": "Name prefix for private endpoint resources"
               }
+            },
+            "currentIpAddress": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Current machine IP address to allow access"
+              }
+            },
+            "subnetNames": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Comma-separated list of subnet names to allow access"
+              }
+            },
+            "vnetName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "VNet name for subnet references"
+              }
             }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "virtualNetworkRules",
+                "count": "[length(variables('subnetNamesArray'))]",
+                "input": {
+                  "subnet": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('subnetNamesArray')[copyIndex('virtualNetworkRules')])]"
+                  },
+                  "ignoreMissingVnetServiceEndpoint": false
+                }
+              }
+            ],
+            "subnetNamesArray": "[if(empty(parameters('subnetNames')), createArray(), split(parameters('subnetNames'), ','))]",
+            "ipRules": "[if(empty(parameters('currentIpAddress')), createArray(), createArray(createObject('ipMask', parameters('currentIpAddress'), 'action', 'Allow')))]",
+            "useNetworkRestrictions": "[or(not(empty(parameters('subnetNames'))), not(empty(parameters('currentIpAddress'))))]"
           },
           "resources": [
             {
@@ -2867,6 +2962,22 @@
               "properties": {
                 "publicNetworkAccess": "[if(parameters('usePrivateEndpoint'), 'Disabled', 'Enabled')]"
               }
+            },
+            {
+              "condition": "[variables('useNetworkRestrictions')]",
+              "type": "Microsoft.EventHub/namespaces/networkRuleSets",
+              "apiVersion": "2022-10-01-preview",
+              "name": "[format('{0}/{1}', parameters('eventHubNamespaceName'), 'default')]",
+              "properties": {
+                "publicNetworkAccess": "[if(parameters('usePrivateEndpoint'), 'Disabled', 'Enabled')]",
+                "defaultAction": "[if(variables('useNetworkRestrictions'), 'Deny', 'Allow')]",
+                "virtualNetworkRules": "[variables('virtualNetworkRules')]",
+                "ipRules": "[variables('ipRules')]",
+                "trustedServiceAccessEnabled": true
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespaceName'))]"
+              ]
             },
             {
               "type": "Microsoft.EventHub/namespaces/eventhubs",
@@ -3007,6 +3118,15 @@
           },
           "namePrefix": {
             "value": "[parameters('namePrefix')]"
+          },
+          "currentIpAddress": {
+            "value": "[parameters('currentIpAddress')]"
+          },
+          "subnetNames": {
+            "value": "[join(reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.subnetNames.value, ',')]"
+          },
+          "vnetName": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.vnetName.value]"
           }
         },
         "template": {
@@ -3016,7 +3136,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "539878949541765354"
+              "templateHash": "903292479149368985"
             }
           },
           "parameters": {
@@ -3072,10 +3192,46 @@
               "metadata": {
                 "description": "Name prefix for private endpoint resources"
               }
+            },
+            "currentIpAddress": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Current machine IP address to allow access"
+              }
+            },
+            "subnetNames": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Comma-separated list of subnet names to allow access"
+              }
+            },
+            "vnetName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "VNet name for subnet references"
+              }
             }
           },
           "variables": {
-            "canUsePrivateEndpoint": "[and(parameters('usePrivateEndpoint'), equals(parameters('serviceBusSku'), 'Premium'))]"
+            "copy": [
+              {
+                "name": "virtualNetworkRules",
+                "count": "[length(variables('subnetNamesArray'))]",
+                "input": {
+                  "subnet": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('subnetNamesArray')[copyIndex('virtualNetworkRules')])]"
+                  },
+                  "ignoreMissingVnetServiceEndpoint": false
+                }
+              }
+            ],
+            "canUsePrivateEndpoint": "[and(parameters('usePrivateEndpoint'), equals(parameters('serviceBusSku'), 'Premium'))]",
+            "subnetNamesArray": "[if(empty(parameters('subnetNames')), createArray(), split(parameters('subnetNames'), ','))]",
+            "ipRules": "[if(empty(parameters('currentIpAddress')), createArray(), createArray(createObject('ipMask', parameters('currentIpAddress'), 'action', 'Allow')))]",
+            "useNetworkRestrictions": "[or(not(empty(parameters('subnetNames'))), not(empty(parameters('currentIpAddress'))))]"
           },
           "resources": [
             {
@@ -3092,6 +3248,22 @@
                 "zoneRedundant": false,
                 "publicNetworkAccess": "[if(variables('canUsePrivateEndpoint'), 'Disabled', 'Enabled')]"
               }
+            },
+            {
+              "condition": "[and(variables('useNetworkRestrictions'), equals(parameters('serviceBusSku'), 'Premium'))]",
+              "type": "Microsoft.ServiceBus/namespaces/networkRuleSets",
+              "apiVersion": "2022-10-01-preview",
+              "name": "[format('{0}/{1}', parameters('serviceBusNamespaceName'), 'default')]",
+              "properties": {
+                "publicNetworkAccess": "[if(variables('canUsePrivateEndpoint'), 'Disabled', 'Enabled')]",
+                "defaultAction": "[if(variables('useNetworkRestrictions'), 'Deny', 'Allow')]",
+                "virtualNetworkRules": "[variables('virtualNetworkRules')]",
+                "ipRules": "[variables('ipRules')]",
+                "trustedServiceAccessEnabled": true
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
+              ]
             },
             {
               "type": "Microsoft.ServiceBus/namespaces/topics",

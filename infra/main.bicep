@@ -239,6 +239,9 @@ module eventHubNamespaceResource './modules/eventhub.bicep' = {
     vnetId: networkResource.outputs.vnetId
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
     namePrefix: namePrefix
+    currentIpAddress: currentIpAddress
+    subnetNames: join(networkResource.outputs.subnetNames, ',')
+    vnetName: networkResource.outputs.vnetName
   }
 }
 
@@ -254,6 +257,9 @@ module serviceBusResource './modules/servicebus.bicep' = {
     vnetId: networkResource.outputs.vnetId
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
     namePrefix: namePrefix
+    currentIpAddress: currentIpAddress
+    subnetNames: join(networkResource.outputs.subnetNames, ',')
+    vnetName: networkResource.outputs.vnetName
   }
 }
 

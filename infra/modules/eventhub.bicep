@@ -34,6 +34,36 @@ param privateEndpointSubnetId string = ''
 @description('Name prefix for private endpoint resources')
 param namePrefix string = ''
 
+@description('Current machine IP address to allow access')
+param currentIpAddress string = ''
+
+@description('Comma-separated list of subnet names to allow access')
+param subnetNames string = ''
+
+@description('VNet name for subnet references')
+param vnetName string = ''
+
+var subnetNamesArray = empty(subnetNames) ? [] : split(subnetNames, ',')
+
+// Build virtual network rules array from subnet names
+var virtualNetworkRules = [for subnet in subnetNamesArray: {
+  subnet: {
+    id: resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, subnet)
+  }
+  ignoreMissingVnetServiceEndpoint: false
+}]
+
+// Build IP rules array (only if currentIpAddress is provided)
+var ipRules = empty(currentIpAddress) ? [] : [
+  {
+    ipMask: currentIpAddress
+    action: 'Allow'
+  }
+]
+
+// Determine if we should use network restrictions
+var useNetworkRestrictions = !empty(subnetNames) || !empty(currentIpAddress)
+
 resource eventHubNamespace 'Microsoft.EventHub/namespaces@2022-10-01-preview' = {
   name: eventHubNamespaceName
   location: location
@@ -44,6 +74,19 @@ resource eventHubNamespace 'Microsoft.EventHub/namespaces@2022-10-01-preview' = 
   }
   properties: {
     publicNetworkAccess: usePrivateEndpoint ? 'Disabled' : 'Enabled'
+  }
+}
+
+// Network rule set for Event Hub namespace
+resource eventHubNetworkRuleSet 'Microsoft.EventHub/namespaces/networkRuleSets@2022-10-01-preview' = if(useNetworkRestrictions) {
+  parent: eventHubNamespace
+  name: 'default'
+  properties: {
+    publicNetworkAccess: usePrivateEndpoint ? 'Disabled' : 'Enabled'
+    defaultAction: useNetworkRestrictions ? 'Deny' : 'Allow'
+    virtualNetworkRules: virtualNetworkRules
+    ipRules: ipRules
+    trustedServiceAccessEnabled: true
   }
 }
 
