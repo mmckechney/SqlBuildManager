@@ -26,34 +26,9 @@ $resourceGroupName = Get-AzdEnvValue "RESOURCE_GROUP_NAME"
 Write-Host "Environment: $prefix" -ForegroundColor DarkGreen
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 
-# Check if private endpoints are enabled - if so, disable public network access on SQL Servers
-$usePrivateEndpoint = Get-AzdEnvValue "USE_PRIVATE_ENDPOINT"
-if ($usePrivateEndpoint -eq "true") {
-    Write-Host ""
-    Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host "Post-Provision: Disabling SQL Server Public Access" -ForegroundColor Cyan
-    Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host "Private endpoints enabled - disabling public network access on SQL Servers..." -ForegroundColor DarkGreen
-    
-    $sqlServerA = "${prefix}sql-a"
-    $sqlServerB = "${prefix}sql-b"
-    
-    Write-Host "Disabling public access on $sqlServerA..." -ForegroundColor DarkGreen
-    az sql server update --name $sqlServerA --resource-group $resourceGroupName --set publicNetworkAccess="Disabled" -o none
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "  Successfully disabled public access on $sqlServerA" -ForegroundColor Green
-    } else {
-        Write-Host "  Warning: Failed to disable public access on $sqlServerA" -ForegroundColor Yellow
-    }
-    
-    Write-Host "Disabling public access on $sqlServerB..." -ForegroundColor DarkGreen
-    az sql server update --name $sqlServerB --resource-group $resourceGroupName --set publicNetworkAccess="Disabled" -o none
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "  Successfully disabled public access on $sqlServerB" -ForegroundColor Green
-    } else {
-        Write-Host "  Warning: Failed to disable public access on $sqlServerB" -ForegroundColor Yellow
-    }
-}
+# NOTE: Public network access remains enabled on all resources.
+# Security is enforced via network rules (defaultAction: Deny + allowed IPs/VNets).
+# This allows local integration testing while private endpoints are also configured.
 
 # Get the repo root (where azure.yaml is located)
 # First try AZD_PROJECT_PATH, then derive from script location, then fall back to current directory

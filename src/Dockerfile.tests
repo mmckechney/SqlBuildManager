@@ -1,0 +1,37 @@
+# Dockerfile for running integration tests in Azure Container Instances
+# This container runs within the VNet subnet to access resources via private endpoints and VNet rules
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+WORKDIR /src
+
+# Copy everything
+COPY . .
+
+# Restore all projects
+RUN dotnet restore SqlBuildManager.Console.ExternalTest/SqlBuildManager.Console.ExternalTest.csproj
+
+# Build the test project (this also builds dependencies)
+RUN dotnet build SqlBuildManager.Console.ExternalTest/SqlBuildManager.Console.ExternalTest.csproj --configuration Release --no-restore -o /tests
+
+# Copy TestConfig files to test output directory
+RUN cp -r TestConfig /tests/TestConfig
+
+# Create the final test runner image (using SDK since we need dotnet test)
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS testrunner
+
+WORKDIR /tests
+
+# Copy built test assemblies and TestConfig
+COPY --from=build /tests .
+
+# Set environment variables for test execution
+ENV DOTNET_ENVIRONMENT=Production
+ENV AZURE_CLIENT_ID=""
+
+# Default entry point runs all tests, but can be overridden with --filter
+# Examples:
+#   --filter "FullyQualifiedName~ContainerApp"
+#   --filter "FullyQualifiedName~AciTests"
+#   --filter "TestCategory=Integration"
+ENTRYPOINT ["dotnet", "vstest", "SqlBuildManager.Console.ExternalTest.dll", "--logger:trx;LogFileName=TestResults.trx", "--logger:console;verbosity=detailed"]

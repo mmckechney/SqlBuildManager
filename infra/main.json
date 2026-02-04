@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "3539691306875596746"
+      "templateHash": "13997598022504672822"
     }
   },
   "parameters": {
@@ -2430,7 +2430,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "4197239731070012410"
+              "templateHash": "10883610697897859022"
             }
           },
           "parameters": {
@@ -2524,7 +2524,7 @@
               },
               "kind": "StorageV2",
               "properties": {
-                "publicNetworkAccess": "[if(parameters('usePrivateEndpoint'), 'Disabled', 'Enabled')]",
+                "publicNetworkAccess": "Enabled",
                 "allowSharedKeyAccess": false,
                 "networkAcls": {
                   "bypass": "AzureServices",
@@ -2835,7 +2835,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "14094556427860466652"
+              "templateHash": "9258375249646276319"
             }
           },
           "parameters": {
@@ -2960,7 +2960,7 @@
                 "capacity": "[parameters('skuCapacity')]"
               },
               "properties": {
-                "publicNetworkAccess": "[if(parameters('usePrivateEndpoint'), 'Disabled', 'Enabled')]"
+                "publicNetworkAccess": "Enabled"
               }
             },
             {
@@ -2969,7 +2969,7 @@
               "apiVersion": "2022-10-01-preview",
               "name": "[format('{0}/{1}', parameters('eventHubNamespaceName'), 'default')]",
               "properties": {
-                "publicNetworkAccess": "[if(parameters('usePrivateEndpoint'), 'Disabled', 'Enabled')]",
+                "publicNetworkAccess": "Enabled",
                 "defaultAction": "[if(variables('useNetworkRestrictions'), 'Deny', 'Allow')]",
                 "virtualNetworkRules": "[variables('virtualNetworkRules')]",
                 "ipRules": "[variables('ipRules')]",
@@ -3136,7 +3136,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "903292479149368985"
+              "templateHash": "11812872965367337640"
             }
           },
           "parameters": {
@@ -3246,7 +3246,7 @@
               },
               "properties": {
                 "zoneRedundant": false,
-                "publicNetworkAccess": "[if(variables('canUsePrivateEndpoint'), 'Disabled', 'Enabled')]"
+                "publicNetworkAccess": "Enabled"
               }
             },
             {
@@ -3255,7 +3255,7 @@
               "apiVersion": "2022-10-01-preview",
               "name": "[format('{0}/{1}', parameters('serviceBusNamespaceName'), 'default')]",
               "properties": {
-                "publicNetworkAccess": "[if(variables('canUsePrivateEndpoint'), 'Disabled', 'Enabled')]",
+                "publicNetworkAccess": "Enabled",
                 "defaultAction": "[if(variables('useNetworkRestrictions'), 'Deny', 'Allow')]",
                 "virtualNetworkRules": "[variables('virtualNetworkRules')]",
                 "ipRules": "[variables('ipRules')]",

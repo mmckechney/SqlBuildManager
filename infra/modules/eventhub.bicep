@@ -73,7 +73,9 @@ resource eventHubNamespace 'Microsoft.EventHub/namespaces@2022-10-01-preview' = 
     capacity: skuCapacity
   }
   properties: {
-    publicNetworkAccess: usePrivateEndpoint ? 'Disabled' : 'Enabled'
+    // Keep public access enabled - security is enforced via network rules (defaultAction: Deny)
+    // This allows access from allowed IPs and VNet subnets while still supporting private endpoints
+    publicNetworkAccess: 'Enabled'
   }
 }
 
@@ -82,7 +84,7 @@ resource eventHubNetworkRuleSet 'Microsoft.EventHub/namespaces/networkRuleSets@2
   parent: eventHubNamespace
   name: 'default'
   properties: {
-    publicNetworkAccess: usePrivateEndpoint ? 'Disabled' : 'Enabled'
+    publicNetworkAccess: 'Enabled'
     defaultAction: useNetworkRestrictions ? 'Deny' : 'Allow'
     virtualNetworkRules: virtualNetworkRules
     ipRules: ipRules

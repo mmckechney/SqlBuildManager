@@ -67,8 +67,9 @@ resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview
   }
   properties: {
     zoneRedundant: false
-    // Only disable public network access if we can actually use private endpoints (Premium SKU)
-    publicNetworkAccess: canUsePrivateEndpoint ? 'Disabled' : 'Enabled'
+    // Keep public access enabled - security is enforced via network rules (defaultAction: Deny)
+    // This allows access from allowed IPs and VNet subnets while still supporting private endpoints
+    publicNetworkAccess: 'Enabled'
   }
 }
 
@@ -77,7 +78,7 @@ resource serviceBusNetworkRuleSet 'Microsoft.ServiceBus/namespaces/networkRuleSe
   parent: serviceBusNamespace
   name: 'default'
   properties: {
-    publicNetworkAccess: canUsePrivateEndpoint ? 'Disabled' : 'Enabled'
+    publicNetworkAccess: 'Enabled'
     defaultAction: useNetworkRestrictions ? 'Deny' : 'Allow'
     virtualNetworkRules: virtualNetworkRules
     ipRules: ipRules

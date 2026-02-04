@@ -53,7 +53,9 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   }
   kind: 'StorageV2'
   properties: {
-    publicNetworkAccess: usePrivateEndpoint ? 'Disabled' : 'Enabled'
+    // Keep public access enabled - security is enforced via network rules (defaultAction: Deny)
+    // This allows access from allowed IPs and VNet subnets while still supporting private endpoints
+    publicNetworkAccess: 'Enabled'
     allowSharedKeyAccess: false
     networkAcls: {
       bypass: 'AzureServices'
