@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "4966390806141282920"
+      "templateHash": "11591688554556635505"
     }
   },
   "parameters": {
@@ -182,7 +182,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "16399528370034608429"
+              "templateHash": "17228979666088248452"
             }
           },
           "parameters": {
@@ -258,9 +258,9 @@
             },
             "vnetIpRange": {
               "type": "string",
-              "defaultValue": "10.180.0.0/20",
+              "defaultValue": "10.180.0.0/19",
               "metadata": {
-                "description": "IP range for the VNet. Default is 10.180.0.0/20"
+                "description": "IP range for the VNet. Default is 10.180.0.0/19"
               }
             },
             "aksSubnetIpRange": {
@@ -293,9 +293,9 @@
             },
             "privateEndpointSubnetIpRange": {
               "type": "string",
-              "defaultValue": "10.180.15.0/24",
+              "defaultValue": "10.180.16.0/24",
               "metadata": {
-                "description": "IP range for the private endpoint subnet. Default is 10.180.15.0/24"
+                "description": "IP range for the private endpoint subnet. Default is 10.180.16.0/24"
               }
             }
           },
@@ -357,6 +357,9 @@
                         },
                         {
                           "service": "Microsoft.KeyVault"
+                        },
+                        {
+                          "service": "Microsoft.Storage"
                         }
                       ]
                     }
@@ -374,6 +377,9 @@
                         },
                         {
                           "service": "Microsoft.KeyVault"
+                        },
+                        {
+                          "service": "Microsoft.Storage"
                         }
                       ],
                       "delegations": [
@@ -399,6 +405,9 @@
                         },
                         {
                           "service": "Microsoft.KeyVault"
+                        },
+                        {
+                          "service": "Microsoft.Storage"
                         }
                       ],
                       "delegations": [
@@ -424,6 +433,9 @@
                         },
                         {
                           "service": "Microsoft.KeyVault"
+                        },
+                        {
+                          "service": "Microsoft.Storage"
                         }
                       ]
                     }
@@ -1054,7 +1066,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "3161946516191096166"
+              "templateHash": "12204863770624592396"
             }
           },
           "parameters": {
@@ -1474,7 +1486,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.39.26.7824",
-                      "templateHash": "16399528370034608429"
+                      "templateHash": "17228979666088248452"
                     }
                   },
                   "parameters": {
@@ -1550,9 +1562,9 @@
                     },
                     "vnetIpRange": {
                       "type": "string",
-                      "defaultValue": "10.180.0.0/20",
+                      "defaultValue": "10.180.0.0/19",
                       "metadata": {
-                        "description": "IP range for the VNet. Default is 10.180.0.0/20"
+                        "description": "IP range for the VNet. Default is 10.180.0.0/19"
                       }
                     },
                     "aksSubnetIpRange": {
@@ -1585,9 +1597,9 @@
                     },
                     "privateEndpointSubnetIpRange": {
                       "type": "string",
-                      "defaultValue": "10.180.15.0/24",
+                      "defaultValue": "10.180.16.0/24",
                       "metadata": {
-                        "description": "IP range for the private endpoint subnet. Default is 10.180.15.0/24"
+                        "description": "IP range for the private endpoint subnet. Default is 10.180.16.0/24"
                       }
                     }
                   },
@@ -1649,6 +1661,9 @@
                                 },
                                 {
                                   "service": "Microsoft.KeyVault"
+                                },
+                                {
+                                  "service": "Microsoft.Storage"
                                 }
                               ]
                             }
@@ -1666,6 +1681,9 @@
                                 },
                                 {
                                   "service": "Microsoft.KeyVault"
+                                },
+                                {
+                                  "service": "Microsoft.Storage"
                                 }
                               ],
                               "delegations": [
@@ -1691,6 +1709,9 @@
                                 },
                                 {
                                   "service": "Microsoft.KeyVault"
+                                },
+                                {
+                                  "service": "Microsoft.Storage"
                                 }
                               ],
                               "delegations": [
@@ -1716,6 +1737,9 @@
                                 },
                                 {
                                   "service": "Microsoft.KeyVault"
+                                },
+                                {
+                                  "service": "Microsoft.Storage"
                                 }
                               ]
                             }
@@ -2137,7 +2161,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "14796823311314326199"
+              "templateHash": "2354031357425139855"
             }
           },
           "parameters": {
@@ -2239,7 +2263,7 @@
                     "count": 1,
                     "mode": "System",
                     "enableAutoScaling": true,
-                    "minCount": 1,
+                    "minCount": 3,
                     "maxCount": 5,
                     "enableNodePublicIP": false,
                     "osType": "Linux",
@@ -2316,6 +2340,15 @@
           },
           "location": {
             "value": "[parameters('location')]"
+          },
+          "currentIpAddress": {
+            "value": "[parameters('currentIpAddress')]"
+          },
+          "subnetNames": {
+            "value": "[join(reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.subnetNames.value, ',')]"
+          },
+          "vnetName": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.vnetName.value]"
           }
         },
         "template": {
@@ -2325,7 +2358,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "5145840881712330385"
+              "templateHash": "16791774073598711669"
             }
           },
           "parameters": {
@@ -2341,12 +2374,49 @@
               "metadata": {
                 "description": "Location for the storage account"
               }
+            },
+            "currentIpAddress": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Current machine IP address to allow access to the storage account"
+              }
+            },
+            "subnetNames": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Comma-separated list of subnet names to allow access to the storage account"
+              }
+            },
+            "vnetName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "VNet name for subnet references"
+              }
             }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "virtualNetworkRules",
+                "count": "[length(variables('subnetNamesArray'))]",
+                "input": {
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), variables('subnetNamesArray')[copyIndex('virtualNetworkRules')])]",
+                  "action": "Allow",
+                  "state": "Succeeded"
+                }
+              }
+            ],
+            "subnetNamesArray": "[if(empty(parameters('subnetNames')), createArray(), split(parameters('subnetNames'), ','))]",
+            "ipRules": "[if(empty(parameters('currentIpAddress')), createArray(), createArray(createObject('value', parameters('currentIpAddress'), 'action', 'Allow')))]",
+            "useNetworkRestrictions": "[or(not(empty(parameters('subnetNames'))), not(empty(parameters('currentIpAddress'))))]"
           },
           "resources": [
             {
               "type": "Microsoft.Storage/storageAccounts",
-              "apiVersion": "2018-07-01",
+              "apiVersion": "2023-01-01",
               "name": "[parameters('storageAccountName')]",
               "location": "[parameters('location')]",
               "sku": {
@@ -2354,13 +2424,15 @@
               },
               "kind": "StorageV2",
               "properties": {
+                "publicNetworkAccess": "Enabled",
+                "allowSharedKeyAccess": false,
                 "networkAcls": {
                   "bypass": "AzureServices",
-                  "virtualNetworkRules": [],
-                  "ipRules": [],
-                  "defaultAction": "Allow"
+                  "virtualNetworkRules": "[variables('virtualNetworkRules')]",
+                  "ipRules": "[variables('ipRules')]",
+                  "defaultAction": "[if(variables('useNetworkRestrictions'), 'Deny', 'Allow')]"
                 },
-                "supportsHttpsTrafficOnly": false,
+                "supportsHttpsTrafficOnly": true,
                 "encryption": {
                   "services": {
                     "file": {
@@ -2389,6 +2461,7 @@
         }
       },
       "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource')]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     },

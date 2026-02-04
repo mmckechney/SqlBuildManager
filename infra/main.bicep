@@ -197,6 +197,9 @@ module storageAccountResource './modules/storage.bicep' = {
   params: {
     storageAccountName: storageAccountNameVar
     location: location
+    currentIpAddress: currentIpAddress
+    subnetNames: join(networkResource.outputs.subnetNames, ',')
+    vnetName: networkResource.outputs.vnetName
   }
 }
 

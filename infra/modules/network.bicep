@@ -100,6 +100,9 @@ resource virtualNetworkResource 'Microsoft.Network/virtualNetworks@2021-02-01' =
             {
               service: 'Microsoft.KeyVault'
             }
+            {
+              service: 'Microsoft.Storage'
+            }
           ]
         }
       }
@@ -116,6 +119,9 @@ resource virtualNetworkResource 'Microsoft.Network/virtualNetworks@2021-02-01' =
             }
             {
               service: 'Microsoft.KeyVault'
+            }
+            {
+              service: 'Microsoft.Storage'
             }
           ]
           delegations: [
@@ -142,6 +148,9 @@ resource virtualNetworkResource 'Microsoft.Network/virtualNetworks@2021-02-01' =
             {
               service: 'Microsoft.KeyVault'
             }
+            {
+              service: 'Microsoft.Storage'
+            }
           ]
           delegations: [
             {
@@ -167,6 +176,9 @@ resource virtualNetworkResource 'Microsoft.Network/virtualNetworks@2021-02-01' =
             }
             {
               service: 'Microsoft.KeyVault'
+            }
+            {
+              service: 'Microsoft.Storage'
             }
           ]
         }
