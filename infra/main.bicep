@@ -200,6 +200,10 @@ module storageAccountResource './modules/storage.bicep' = {
     currentIpAddress: currentIpAddress
     subnetNames: join(networkResource.outputs.subnetNames, ',')
     vnetName: networkResource.outputs.vnetName
+    usePrivateEndpoint: usePrivateEndpoint
+    vnetId: networkResource.outputs.vnetId
+    privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
+    namePrefix: namePrefix
   }
 }
 
@@ -223,6 +227,10 @@ module eventHubNamespaceResource './modules/eventhub.bicep' = {
     eventhubSku: eventhubSku
     skuCapacity: skuCapacity
     location: location
+    usePrivateEndpoint: usePrivateEndpoint
+    vnetId: networkResource.outputs.vnetId
+    privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
+    namePrefix: namePrefix
   }
 }
 
@@ -233,6 +241,10 @@ module serviceBusResource './modules/servicebus.bicep' = {
   params: {
     serviceBusNamespaceName: serviceBusNamespaceNameVar
     location: location
+    usePrivateEndpoint: usePrivateEndpoint
+    vnetId: networkResource.outputs.vnetId
+    privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
+    namePrefix: namePrefix
   }
 }
 

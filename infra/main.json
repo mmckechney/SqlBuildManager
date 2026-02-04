@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "11591688554556635505"
+      "templateHash": "142410907785849361"
     }
   },
   "parameters": {
@@ -1066,7 +1066,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "12204863770624592396"
+              "templateHash": "12959035415069038694"
             }
           },
           "parameters": {
@@ -1152,7 +1152,7 @@
               "name": "[format('{0}-a', variables('sqlserverNameVar'))]",
               "location": "[parameters('location')]",
               "properties": {
-                "publicNetworkAccess": "Enabled",
+                "publicNetworkAccess": "[if(parameters('usePrivateEndpoint'), 'Disabled', 'Enabled')]",
                 "restrictOutboundNetworkAccess": "Disabled",
                 "minimalTlsVersion": "1.2",
                 "administrators": {
@@ -1252,7 +1252,7 @@
               "name": "[format('{0}-b', variables('sqlserverNameVar'))]",
               "location": "[parameters('location')]",
               "properties": {
-                "publicNetworkAccess": "Enabled",
+                "publicNetworkAccess": "[if(parameters('usePrivateEndpoint'), 'Disabled', 'Enabled')]",
                 "restrictOutboundNetworkAccess": "Disabled",
                 "minimalTlsVersion": "1.2",
                 "administrators": {
@@ -2349,6 +2349,18 @@
           },
           "vnetName": {
             "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.vnetName.value]"
+          },
+          "usePrivateEndpoint": {
+            "value": "[parameters('usePrivateEndpoint')]"
+          },
+          "vnetId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.vnetId.value]"
+          },
+          "privateEndpointSubnetId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.privateEndpointSubnetId.value]"
+          },
+          "namePrefix": {
+            "value": "[parameters('namePrefix')]"
           }
         },
         "template": {
@@ -2358,7 +2370,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "16791774073598711669"
+              "templateHash": "4197239731070012410"
             }
           },
           "parameters": {
@@ -2395,6 +2407,34 @@
               "metadata": {
                 "description": "VNet name for subnet references"
               }
+            },
+            "usePrivateEndpoint": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether to use private endpoints instead of public network access"
+              }
+            },
+            "vnetId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "VNet ID for private DNS zone link (required when usePrivateEndpoint is true)"
+              }
+            },
+            "privateEndpointSubnetId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Private endpoint subnet ID (required when usePrivateEndpoint is true)"
+              }
+            },
+            "namePrefix": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Name prefix for private endpoint resources"
+              }
             }
           },
           "variables": {
@@ -2424,7 +2464,7 @@
               },
               "kind": "StorageV2",
               "properties": {
-                "publicNetworkAccess": "Enabled",
+                "publicNetworkAccess": "[if(parameters('usePrivateEndpoint'), 'Disabled', 'Enabled')]",
                 "allowSharedKeyAccess": false,
                 "networkAcls": {
                   "bypass": "AzureServices",
@@ -2446,6 +2486,144 @@
                 },
                 "accessTier": "Hot"
               }
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateDnsZones",
+              "apiVersion": "2020-06-01",
+              "name": "[format('privatelink.blob.{0}', environment().suffixes.storage)]",
+              "location": "global"
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/{1}', format('privatelink.blob.{0}', environment().suffixes.storage), format('{0}-storage-blob-vnet-link', parameters('namePrefix')))]",
+              "location": "global",
+              "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                  "id": "[parameters('vnetId')]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.blob.{0}', environment().suffixes.storage))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}storage-blob-pe', parameters('namePrefix'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "subnet": {
+                  "id": "[parameters('privateEndpointSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}storage-blob-plsc', parameters('namePrefix'))]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                      "groupIds": [
+                        "blob"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}', format('{0}storage-blob-pe', parameters('namePrefix')), 'default')]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "privatelink-blob-storage",
+                    "properties": {
+                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.blob.{0}', environment().suffixes.storage))]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.blob.{0}', environment().suffixes.storage))]",
+                "[resourceId('Microsoft.Network/privateEndpoints', format('{0}storage-blob-pe', parameters('namePrefix')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateDnsZones",
+              "apiVersion": "2020-06-01",
+              "name": "[format('privatelink.queue.{0}', environment().suffixes.storage)]",
+              "location": "global"
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/{1}', format('privatelink.queue.{0}', environment().suffixes.storage), format('{0}-storage-queue-vnet-link', parameters('namePrefix')))]",
+              "location": "global",
+              "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                  "id": "[parameters('vnetId')]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.queue.{0}', environment().suffixes.storage))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}storage-queue-pe', parameters('namePrefix'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "subnet": {
+                  "id": "[parameters('privateEndpointSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}storage-queue-plsc', parameters('namePrefix'))]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                      "groupIds": [
+                        "queue"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}', format('{0}storage-queue-pe', parameters('namePrefix')), 'default')]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "privatelink-queue-storage",
+                    "properties": {
+                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.queue.{0}', environment().suffixes.storage))]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.queue.{0}', environment().suffixes.storage))]",
+                "[resourceId('Microsoft.Network/privateEndpoints', format('{0}storage-queue-pe', parameters('namePrefix')))]"
+              ]
             }
           ],
           "outputs": {
@@ -2567,6 +2745,18 @@
           },
           "location": {
             "value": "[parameters('location')]"
+          },
+          "usePrivateEndpoint": {
+            "value": "[parameters('usePrivateEndpoint')]"
+          },
+          "vnetId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.vnetId.value]"
+          },
+          "privateEndpointSubnetId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.privateEndpointSubnetId.value]"
+          },
+          "namePrefix": {
+            "value": "[parameters('namePrefix')]"
           }
         },
         "template": {
@@ -2576,7 +2766,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "6301248676759459542"
+              "templateHash": "10782381330380128607"
             }
           },
           "parameters": {
@@ -2621,23 +2811,54 @@
               "metadata": {
                 "description": "Location for the Event Hub"
               }
+            },
+            "usePrivateEndpoint": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether to use private endpoints instead of public network access"
+              }
+            },
+            "vnetId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "VNet ID for private DNS zone link (required when usePrivateEndpoint is true)"
+              }
+            },
+            "privateEndpointSubnetId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Private endpoint subnet ID (required when usePrivateEndpoint is true)"
+              }
+            },
+            "namePrefix": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Name prefix for private endpoint resources"
+              }
             }
           },
           "resources": [
             {
               "type": "Microsoft.EventHub/namespaces",
-              "apiVersion": "2017-04-01",
+              "apiVersion": "2022-10-01-preview",
               "name": "[parameters('eventHubNamespaceName')]",
               "location": "[parameters('location')]",
               "sku": {
                 "name": "[parameters('eventhubSku')]",
                 "tier": "[parameters('eventhubSku')]",
                 "capacity": "[parameters('skuCapacity')]"
+              },
+              "properties": {
+                "publicNetworkAccess": "[if(parameters('usePrivateEndpoint'), 'Disabled', 'Enabled')]"
               }
             },
             {
               "type": "Microsoft.EventHub/namespaces/eventhubs",
-              "apiVersion": "2017-04-01",
+              "apiVersion": "2022-10-01-preview",
               "name": "[format('{0}/{1}', parameters('eventHubNamespaceName'), parameters('eventHubName'))]",
               "properties": {
                 "messageRetentionInDays": 1,
@@ -2646,6 +2867,75 @@
               },
               "dependsOn": [
                 "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespaceName'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateDnsZones",
+              "apiVersion": "2020-06-01",
+              "name": "privatelink.servicebus.windows.net",
+              "location": "global"
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/{1}', 'privatelink.servicebus.windows.net', format('{0}-eventhub-vnet-link', parameters('namePrefix')))]",
+              "location": "global",
+              "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                  "id": "[parameters('vnetId')]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.servicebus.windows.net')]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}eventhub-pe', parameters('namePrefix'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "subnet": {
+                  "id": "[parameters('privateEndpointSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}eventhub-plsc', parameters('namePrefix'))]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespaceName'))]",
+                      "groupIds": [
+                        "namespace"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespaceName'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}', format('{0}eventhub-pe', parameters('namePrefix')), 'default')]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "privatelink-servicebus-windows-net",
+                    "properties": {
+                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.servicebus.windows.net')]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.servicebus.windows.net')]",
+                "[resourceId('Microsoft.Network/privateEndpoints', format('{0}eventhub-pe', parameters('namePrefix')))]"
               ]
             }
           ],
@@ -2670,6 +2960,7 @@
         }
       },
       "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource')]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     },
@@ -2689,6 +2980,18 @@
           },
           "location": {
             "value": "[parameters('location')]"
+          },
+          "usePrivateEndpoint": {
+            "value": "[parameters('usePrivateEndpoint')]"
+          },
+          "vnetId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.vnetId.value]"
+          },
+          "privateEndpointSubnetId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.privateEndpointSubnetId.value]"
+          },
+          "namePrefix": {
+            "value": "[parameters('namePrefix')]"
           }
         },
         "template": {
@@ -2698,7 +3001,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "3101273292207028299"
+              "templateHash": "9727849538215871051"
             }
           },
           "parameters": {
@@ -2714,12 +3017,40 @@
               "metadata": {
                 "description": "Location for the Service Bus"
               }
+            },
+            "usePrivateEndpoint": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether to use private endpoints instead of public network access"
+              }
+            },
+            "vnetId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "VNet ID for private DNS zone link (required when usePrivateEndpoint is true)"
+              }
+            },
+            "privateEndpointSubnetId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Private endpoint subnet ID (required when usePrivateEndpoint is true)"
+              }
+            },
+            "namePrefix": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Name prefix for private endpoint resources"
+              }
             }
           },
           "resources": [
             {
               "type": "Microsoft.ServiceBus/namespaces",
-              "apiVersion": "2018-01-01-preview",
+              "apiVersion": "2022-10-01-preview",
               "name": "[parameters('serviceBusNamespaceName')]",
               "location": "[parameters('location')]",
               "sku": {
@@ -2728,12 +3059,13 @@
                 "capacity": 1
               },
               "properties": {
-                "zoneRedundant": false
+                "zoneRedundant": false,
+                "publicNetworkAccess": "[if(parameters('usePrivateEndpoint'), 'Disabled', 'Enabled')]"
               }
             },
             {
               "type": "Microsoft.ServiceBus/namespaces/topics",
-              "apiVersion": "2018-01-01-preview",
+              "apiVersion": "2022-10-01-preview",
               "name": "[format('{0}/{1}', parameters('serviceBusNamespaceName'), 'sqlbuildmanager')]",
               "properties": {
                 "defaultMessageTimeToLive": "P14D",
@@ -2749,6 +3081,75 @@
               },
               "dependsOn": [
                 "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateDnsZones",
+              "apiVersion": "2020-06-01",
+              "name": "privatelink.servicebus.windows.net",
+              "location": "global"
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/{1}', 'privatelink.servicebus.windows.net', format('{0}-servicebus-vnet-link', parameters('namePrefix')))]",
+              "location": "global",
+              "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                  "id": "[parameters('vnetId')]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.servicebus.windows.net')]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}servicebus-pe', parameters('namePrefix'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "subnet": {
+                  "id": "[parameters('privateEndpointSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}servicebus-plsc', parameters('namePrefix'))]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]",
+                      "groupIds": [
+                        "namespace"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}', format('{0}servicebus-pe', parameters('namePrefix')), 'default')]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "privatelink-servicebus-windows-net",
+                    "properties": {
+                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.servicebus.windows.net')]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.servicebus.windows.net')]",
+                "[resourceId('Microsoft.Network/privateEndpoints', format('{0}servicebus-pe', parameters('namePrefix')))]"
               ]
             }
           ],
@@ -2769,6 +3170,7 @@
         }
       },
       "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource')]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     }

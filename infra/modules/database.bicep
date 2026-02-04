@@ -60,7 +60,7 @@ resource sqlserverAResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
   location: location
   
   properties: {
-    publicNetworkAccess: 'Enabled'
+    publicNetworkAccess: usePrivateEndpoint ? 'Disabled' : 'Enabled'
     restrictOutboundNetworkAccess: 'Disabled'
     minimalTlsVersion: '1.2'
     administrators: {
@@ -142,7 +142,7 @@ resource sqlserverBResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
   name: '${sqlserverNameVar}-b'
   location: location  
   properties: {
-    publicNetworkAccess: 'Enabled'
+    publicNetworkAccess: usePrivateEndpoint ? 'Disabled' : 'Enabled'
     restrictOutboundNetworkAccess: 'Disabled'
     minimalTlsVersion: '1.2'
     administrators: {
