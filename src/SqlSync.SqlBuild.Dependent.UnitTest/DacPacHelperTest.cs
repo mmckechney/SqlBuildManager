@@ -61,7 +61,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod]
         public void ScriptDacPacDelta_Test()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
@@ -79,7 +79,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod]
         public void ScriptDacPacDelta_InSync_Test()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
 
@@ -94,7 +94,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod]
         public void ScriptDacPacDelta_WithAllowObjectDelete_Works()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
@@ -112,7 +112,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [Ignore("Large schema comparison - takes long time")]
         public void ScriptDacPacDelta_TestFull()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema.dacpac");
 
@@ -132,7 +132,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod]
         public async Task CreateSbmFromDacPacDifferences_Success_Test()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
@@ -153,7 +153,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod]
         public async Task CreateSbmFromDacPacDifferences_WithBatchScripts_Works()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
@@ -175,7 +175,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod]
         public async Task CreateSbmFromDacPacDifferences_WithBuildRevision_IncludesVersion()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
@@ -196,7 +196,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod]
         public async Task CreateSbmFromDacPacDifferences1_Success_Test()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema1.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema1.dacpac");
             _tempFiles.Add(platinumPath);
@@ -215,7 +215,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod]
         public async Task CreateSbmFromDacPacDifferences_InSync_Test()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
 
@@ -230,7 +230,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod]
         public async Task CreateSbmFromDacPacDifferences1_InSync_Test()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema1.dacpac");
             _tempFiles.Add(platinumPath);
 

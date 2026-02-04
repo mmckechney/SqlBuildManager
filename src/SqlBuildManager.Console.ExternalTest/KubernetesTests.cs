@@ -26,7 +26,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
-            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<KubernetesTests>("SqlBuildManager.Console.log", @"C:\temp");
+            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<KubernetesTests>("SqlBuildManager.Console.log", Path.GetTempPath());
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
 
             System.Console.SetOut(new StringWriter(ConsoleOutput));    // Associate StringBuilder with StdOut

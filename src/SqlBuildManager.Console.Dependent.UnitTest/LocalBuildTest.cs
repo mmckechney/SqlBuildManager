@@ -65,7 +65,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
-            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<LocalBuildTest>("SqlBuildManager.Console.log", @"C:\temp");
+            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<LocalBuildTest>("SqlBuildManager.Console.log", Path.GetTempPath());
 
             System.Console.SetOut(new StringWriter(ConsoleOutput));    // Associate StringBuilder with StdOut
             ConsoleOutput.Clear();    // Clear text from any previous text runs

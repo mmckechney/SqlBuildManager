@@ -26,7 +26,7 @@ namespace SqlBuildManager.Console.ExternalTest
         public void ConfigureProcessInfo()
         {
 
-            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ContainerAppTests>("SqlBuildManager.Console.log", @"C:\temp");
+            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ContainerAppTests>("SqlBuildManager.Console.log", Path.GetTempPath());
             settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-windows.json");
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
             linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux.json");
@@ -80,7 +80,7 @@ namespace SqlBuildManager.Console.ExternalTest
         }
         public static int LogFileCurrentLineCount()
         {
-            string logFile = Path.Combine(@"C:\temp", LogFileName);
+            string logFile = Path.Combine(Path.GetTempPath(), LogFileName);
             int startingLines = 0;
             if (File.Exists(logFile))
             {
@@ -92,7 +92,7 @@ namespace SqlBuildManager.Console.ExternalTest
         public string ReleventLogFileContents(int startingLine)
         {
 
-            string logFile = Path.Combine(@"C:\temp", LogFileName);
+            string logFile = Path.Combine(Path.GetTempPath(), LogFileName);
             return string.Join(Environment.NewLine, ReadLines(logFile).Skip(startingLine).ToArray());
         }
 

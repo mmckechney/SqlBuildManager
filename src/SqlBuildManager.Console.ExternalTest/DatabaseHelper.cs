@@ -89,7 +89,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
         internal static string CreateDacpac(CommandLineArgs cmdLine, string server, string database)
         {
-            var log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<BatchTests>("SqlBuildManager.Console.log", @"C:\temp");
+            var log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<BatchTests>("SqlBuildManager.Console.log", Path.GetTempPath());
             log.LogInformation("Creating DACPAC for tests");
             string fullname = Path.GetFullPath($"TestConfig/{database}.dacpac");
 
