@@ -29,6 +29,7 @@
 	<ItemGroup>
 		<PackageReference Include="Azure.Core" Version="1.49.0" />
 		<PackageReference Include="Azure.Identity" Version="1.14.0" />
+		<PackageReference Include="System.Memory.Data" Version="8.0.1" />
 		<PackageReference Include="Azure.Messaging.EventHubs" Version="5.12.1" />
 		<PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.12.1" />
 		<PackageReference Include="Azure.Messaging.ServiceBus" Version="7.19.0" />
