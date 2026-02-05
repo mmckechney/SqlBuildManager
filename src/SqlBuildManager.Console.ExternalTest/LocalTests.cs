@@ -12,7 +12,7 @@ namespace SqlBuildManager.Console.ExternalTest
     [TestClass]
     public class LocalTests
     {
-
+        public TestContext TestContext { get; set; }
 
         private CommandLineArgs cmdLine;
         private List<string> overrideFileContents;

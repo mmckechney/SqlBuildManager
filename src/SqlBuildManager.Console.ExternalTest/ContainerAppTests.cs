@@ -18,6 +18,7 @@ namespace SqlBuildManager.Console.ExternalTest
     [TestClass]
     public class ContainerAppTests
     {
+        public TestContext TestContext { get; set; }
 
         private string settingsFileKeyPath;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
@@ -93,7 +94,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -150,7 +151,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -237,7 +238,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -314,7 +315,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();
                 result = val.Result;
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
                 Assert.AreEqual(0, result);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
@@ -322,7 +323,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -406,7 +407,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -521,7 +522,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
         }
 
@@ -631,7 +632,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();
                 result = val.Result;
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
                 Assert.AreEqual(0, result);
 
                 var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
@@ -642,7 +643,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -767,7 +768,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -847,7 +848,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
 
                 // Cleanup: Dequeue any remaining messages from Service Bus
                 if (!string.IsNullOrEmpty(jobName))

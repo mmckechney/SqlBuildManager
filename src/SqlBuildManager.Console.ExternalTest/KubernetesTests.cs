@@ -19,6 +19,7 @@ namespace SqlBuildManager.Console.ExternalTest
     [TestClass]
     public class KubernetesTests
     {
+        public TestContext TestContext { get; set; }
 
         private string settingsFileKeyPath;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
@@ -91,7 +92,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -152,7 +153,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -220,7 +221,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
  
                 if (File.Exists(outputFile))
                 {
@@ -286,7 +287,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -343,7 +344,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -409,7 +410,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -493,7 +494,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
 
@@ -632,7 +633,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
         }
 
@@ -778,7 +779,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
 

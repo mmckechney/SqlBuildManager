@@ -19,6 +19,7 @@ namespace SqlBuildManager.Console.ExternalTest
     [TestClass]
     public class AciTests
     {
+        public TestContext TestContext { get; set; }
 
         private string settingsFileKeyPath;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
@@ -92,7 +93,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
 
@@ -171,7 +172,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
 
@@ -252,7 +253,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -327,7 +328,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -422,7 +423,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
         }
         // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
@@ -529,7 +530,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -595,7 +596,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
                 if (File.Exists(outputFile))
                 {
                     File.Delete(outputFile);
@@ -654,7 +655,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
         }
     }

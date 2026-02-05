@@ -23,6 +23,7 @@ namespace SqlBuildManager.Console.ExternalTest
     [TestClass]
     public class BatchTests
     {
+        public TestContext TestContext { get; set; }
 
         private CommandLineArgs cmdLine;
         private List<string> overrideFileContents;
