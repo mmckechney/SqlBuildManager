@@ -142,8 +142,8 @@ if ($buildContainers -eq "true") {
 }
 
 # Generate MI-only settings files if GENERATE_MI_SETTINGS is set
-$generateSettings = Get-AzdEnvValue "GENERATE_MI_SETTINGS"
-if ($generateSettings -eq "true") {
+# $generateSettings = Get-AzdEnvValue "GENERATE_MI_SETTINGS"
+# if ($generateSettings -eq "true") {
     Write-Host ""
     Write-Host "========================================" -ForegroundColor Cyan
     Write-Host "Post-Provision: Generating MI-Only Settings Files" -ForegroundColor Cyan
@@ -163,11 +163,11 @@ if ($generateSettings -eq "true") {
         Write-Host "Settings script not found at: $settingsScriptPath" -ForegroundColor Yellow
         Write-Host "Run manually: .\scripts\create_all_settingsfiles_mi_only.ps1 -prefix $prefix" -ForegroundColor Yellow
     }
-} else {
-    Write-Host ""
-    Write-Host "Tip: Set GENERATE_MI_SETTINGS=true to auto-generate MI-only settings files" -ForegroundColor DarkGray
-    Write-Host "  azd env set GENERATE_MI_SETTINGS true" -ForegroundColor DarkGray
-}
+# } else {
+#     Write-Host ""
+#     Write-Host "Tip: Set GENERATE_MI_SETTINGS=true to auto-generate MI-only settings files" -ForegroundColor DarkGray
+#     Write-Host "  azd env set GENERATE_MI_SETTINGS true" -ForegroundColor DarkGray
+# }
 
 # Generate database override config files for integration tests
 Write-Host ""
