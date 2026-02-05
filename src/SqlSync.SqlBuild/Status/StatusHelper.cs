@@ -2,6 +2,8 @@
 using SqlSync.Constants;
 using SqlSync.DbInformation;
 using SqlSync.DbInformation.ChangeDates;
+using SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,46 +11,44 @@ namespace SqlSync.SqlBuild.Status
 {
     public class StatusHelper
     {
-        public static ScriptStatusType DetermineScriptRunStatus(SqlSyncBuildData.ScriptRow row, ConnectionData connData, string projectFilePath, bool checkForChanges, List<DatabaseOverride> overrides, out DateTime commitDate, out DateTime serverChangeDate)
+        public static ScriptStatusType DetermineScriptRunStatus(IDatabaseUtility dbUtil, Script script, ConnectionData connData, string projectFilePath, bool checkForChanges, List<DatabaseOverride> overrides, out DateTime commitDate, out DateTime serverChangeDate)
         {
-            string targetDatabase = ConnectionHelper.GetTargetDatabase(row.Database, overrides);
+            string targetDatabase = ConnectionHelper.GetTargetDatabase(script.Database ?? string.Empty, overrides);
 
             //Update the routine (sp and functions) change date cache
             if (DatabaseObjectChangeDates.Servers[connData.SQLServerName][targetDatabase].LastRefreshTime < DateTime.Now.AddSeconds(-30))
             {
-                //InfoHelper.DatabaseRoutineChangeDates = InfoHelper.GetRoutineChangeDates(connData, this.targetDatabaseOverrideCtrl1.GetOverrideData());
                 InfoHelper.UpdateRoutineAndViewChangeDates(connData, overrides);
             }
             bool preRun = false;
             bool hashChanged = false;
-            //Determine icon
             string scriptHash = string.Empty;
             string scriptTextHash = string.Empty;
             commitDate = DateTime.MinValue;
             serverChangeDate = DateTime.MinValue;
-            // preRun = (committedScriptView.Find(row.ScriptId) > -1 || helper.HasBlockingSqlLog(new Guid(row.ScriptId), this.data, targetDatabase, out scriptHash, out scriptTextHash) == true);
-            preRun = (SqlBuildHelper.HasBlockingSqlLog(new Guid(row.ScriptId), connData, targetDatabase, out scriptHash, out scriptTextHash, out commitDate) == true);
-            //Check that the file exists
-            if (!File.Exists(Path.Combine(projectFilePath, row.FileName)))
+            
+            string scriptIdStr = script.ScriptId ?? string.Empty;
+            if (!Guid.TryParse(scriptIdStr, out Guid scriptGuid))
+                scriptGuid = Guid.Empty;
+                
+            preRun = (dbUtil.HasBlockingSqlLog(scriptGuid, connData, targetDatabase, out scriptHash, out scriptTextHash, out commitDate) == true);
+            
+            string fileName = script.FileName ?? string.Empty;
+            if (!File.Exists(Path.Combine(projectFilePath, fileName)))
             {
                 return ScriptStatusType.FileMissing;
             }
 
-            //Get the latest hash from the Db only (don't care if the build file is out of date!)
             if (preRun && checkForChanges)
             {
                 if (scriptHash == string.Empty || scriptTextHash == string.Empty)
-                    SqlBuildHelper.HasBlockingSqlLog(new Guid(row.ScriptId), connData, targetDatabase, out scriptHash, out scriptTextHash, out commitDate);
+                    dbUtil.HasBlockingSqlLog(scriptGuid, connData, targetDatabase, out scriptHash, out scriptTextHash, out commitDate);
 
-                /*If the scriptHash is STILL empty, then the file and the Db are out of sync.
-                 *	This could be due to a Db refresh, in which case we'll mark it as changed
-                 *	by default
-                */
                 if (scriptHash != string.Empty || scriptTextHash != string.Empty)
                 {
                     string fileTextHash;
                     string fileHash;
-                    SqlBuildFileHelper.GetSHA1Hash(Path.Combine(projectFilePath, row.FileName), out fileHash, out fileTextHash, row.StripTransactionText);
+                    SqlBuildFileHelper.GetSHA1Hash(Path.Combine(projectFilePath, fileName), out fileHash, out fileTextHash, script.StripTransactionText ?? false);
                     if (fileHash != scriptHash && fileTextHash != scriptHash && fileHash != scriptTextHash && fileTextHash != scriptTextHash)
                     {
                         if (fileHash == SqlBuildFileHelper.FileMissing)
@@ -62,79 +62,76 @@ namespace SqlSync.SqlBuild.Status
                 {
                     hashChanged = true;
                 }
-
             }
-            string routineName = row.FileName.Substring(0, row.FileName.Length - 4).ToLower();
-            if (row.FileName.EndsWith(DbObjectType.Trigger, StringComparison.CurrentCultureIgnoreCase) && routineName.IndexOf(" - ") > -1)
+            
+            string routineName = fileName.Length > 4 ? fileName.Substring(0, fileName.Length - 4).ToLower() : fileName.ToLower();
+            if (fileName.EndsWith(DbObjectType.Trigger, StringComparison.CurrentCultureIgnoreCase) && routineName.IndexOf(" - ") > -1)
                 routineName = routineName.Split(new char[] { '-' })[1].Trim();
 
-            if (!preRun) //not run at all 
+            if (!preRun)
             {
-                commitDate = (row.IsDateModifiedNull() || row.DateModified < new DateTime(1980, 1, 1)) ? row.DateAdded : row.DateModified;
+                commitDate = (script.DateModified == null || script.DateModified < new DateTime(1980, 1, 1)) ? (script.DateAdded ?? DateTime.MinValue) : script.DateModified.Value;
 
-                if (row.FileName.EndsWith(DbObjectType.StoredProcedure, StringComparison.CurrentCultureIgnoreCase) ||
-                        row.FileName.EndsWith(DbObjectType.UserDefinedFunction, StringComparison.CurrentCultureIgnoreCase) ||
-                        row.FileName.EndsWith(DbObjectType.View, StringComparison.CurrentCultureIgnoreCase) ||
-                        row.FileName.EndsWith(DbObjectType.Table, StringComparison.CurrentCultureIgnoreCase) ||
-                        row.FileName.EndsWith(DbObjectType.Trigger, StringComparison.CurrentCultureIgnoreCase))
+                if (fileName.EndsWith(DbObjectType.StoredProcedure, StringComparison.CurrentCultureIgnoreCase) ||
+                        fileName.EndsWith(DbObjectType.UserDefinedFunction, StringComparison.CurrentCultureIgnoreCase) ||
+                        fileName.EndsWith(DbObjectType.View, StringComparison.CurrentCultureIgnoreCase) ||
+                        fileName.EndsWith(DbObjectType.Table, StringComparison.CurrentCultureIgnoreCase) ||
+                        fileName.EndsWith(DbObjectType.Trigger, StringComparison.CurrentCultureIgnoreCase))
                 {
                     serverChangeDate = DatabaseObjectChangeDates.Servers[connData.SQLServerName][targetDatabase][routineName];
 
                     if (commitDate < serverChangeDate)
-                        return ScriptStatusType.NotRunButOlderVersion; // question mark
+                        return ScriptStatusType.NotRunButOlderVersion;
                 }
 
                 return ScriptStatusType.NotRun;
             }
             else
             {
-                if (row.AllowMultipleRuns == false) //(committedScriptView.Find(row.ScriptId) > -1 || helper.HasBlockingSqlLog(new Guid(row.ScriptId),this.data,row.Database) == true))
+                if (script.AllowMultipleRuns == false)
                 {
                     if (!hashChanged)
-                        return ScriptStatusType.Locked; // "locked"
+                        return ScriptStatusType.Locked;
                     else
-                        return ScriptStatusType.ChangedSinceCommit; //the caution icon!
+                        return ScriptStatusType.ChangedSinceCommit;
                 }
                 else
                 {
-
-                    if (!hashChanged) //if "OK" from a SBM status, need to check the DB next for SP's and Functions
+                    if (!hashChanged)
                     {
-                        if (row.FileName.EndsWith(DbObjectType.StoredProcedure, StringComparison.CurrentCultureIgnoreCase) ||
-                          row.FileName.EndsWith(DbObjectType.UserDefinedFunction, StringComparison.CurrentCultureIgnoreCase) ||
-                          row.FileName.EndsWith(DbObjectType.View, StringComparison.CurrentCultureIgnoreCase) ||
-                          row.FileName.EndsWith(DbObjectType.Table, StringComparison.CurrentCultureIgnoreCase) ||
-                          row.FileName.EndsWith(DbObjectType.Trigger, StringComparison.CurrentCultureIgnoreCase))
+                        if (fileName.EndsWith(DbObjectType.StoredProcedure, StringComparison.CurrentCultureIgnoreCase) ||
+                          fileName.EndsWith(DbObjectType.UserDefinedFunction, StringComparison.CurrentCultureIgnoreCase) ||
+                          fileName.EndsWith(DbObjectType.View, StringComparison.CurrentCultureIgnoreCase) ||
+                          fileName.EndsWith(DbObjectType.Table, StringComparison.CurrentCultureIgnoreCase) ||
+                          fileName.EndsWith(DbObjectType.Trigger, StringComparison.CurrentCultureIgnoreCase))
                         {
                             serverChangeDate = DatabaseObjectChangeDates.Servers[connData.SQLServerName][targetDatabase][routineName];
 
-                            //Add in 5 second threshold
                             if (commitDate.Ticks + 50000000 < serverChangeDate.Ticks)
-                                return ScriptStatusType.ServerChange; // magnifying glass
+                                return ScriptStatusType.ServerChange;
 
-                            //if the serverChangeDate here is MinValue, it means that the routine is not in this DB, therefore, we need to set as not run.
                             if (serverChangeDate == DateTime.MinValue)
-                                return ScriptStatusType.NotRun; //"gray server icon"
+                                return ScriptStatusType.NotRun;
                         }
-                        return ScriptStatusType.UpToDate; //green "OK"
+                        return ScriptStatusType.UpToDate;
                     }
                     else
                     {
-                        return ScriptStatusType.ChangedSinceCommit; //the caution icon!
+                        return ScriptStatusType.ChangedSinceCommit;
                     }
                 }
             }
         }
 
-        public static void SetScriptRunStatusAndDates(ref SqlSyncBuildData buildData, ConnectionData connData, string projectFilePath)
+        public static void SetScriptRunStatusAndDates(SqlSyncBuildDataModel model, IDatabaseUtility dbUtil, ConnectionData connData, string projectFilePath)
         {
             DateTime commitDate;
             DateTime serverChangeDate;
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (Script script in model.Script)
             {
-                row.ScriptRunStatus = DetermineScriptRunStatus(row, connData, projectFilePath, true, OverrideData.TargetDatabaseOverrides, out commitDate, out serverChangeDate);
-                row.LastCommitDate = commitDate;
-                row.ServerChangeDate = serverChangeDate;
+                script.ScriptRunStatus = DetermineScriptRunStatus(dbUtil, script, connData, projectFilePath, true, OverrideData.TargetDatabaseOverrides, out commitDate, out serverChangeDate);
+                script.LastCommitDate = commitDate;
+                script.ServerChangeDate = serverChangeDate;
             }
         }
     }

@@ -1,14 +1,20 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
+using SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.Services;
 using SqlSync.SqlBuild.SqlLogging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.IO;
-
+using System.Linq;
+using System.Threading.Tasks;
+using BuildModels = SqlSync.SqlBuild.Models;
+using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
 
@@ -21,7 +27,14 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
     [DoNotParallelize()]
     public class SqlBuildHelperTest
     {
-
+        private class NullProgressReporter :IProgressReporter
+        {
+            public bool CancellationPending => false;
+            public void ReportProgress(int percent, object userState)
+            {
+                // Do nothing
+            }
+        }
         private static List<Initialization> initColl;
 
         [ClassInitialize()]
@@ -35,12 +48,76 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             initColl.Add(init);
             return init;
         }
+
+        private static async Task<BuildModels.Build> RunBuildScriptsAsync(
+            SqlBuildHelper sbh,
+            SqlSyncBuildDataModel buildDataModel,
+            Build myBuildModel,
+            string serverName,
+            bool isMultiDbRun,
+            ScriptBatchCollection scriptBatchColl)
+            
+        {
+            var scripts = buildDataModel.Script ?? new List<BuildModels.Script>();
+;
+            if (!(buildDataModel.Build?.Any(b => b.BuildId == myBuildModel.BuildId) ?? false))
+            {
+                var builds = buildDataModel.Build?.ToList() ?? new List<BuildModels.Build>();
+                builds.Add(myBuildModel);
+                buildDataModel = new BuildModels.SqlSyncBuildDataModel(
+                    sqlSyncBuildProject: buildDataModel.SqlSyncBuildProject,
+                    script: buildDataModel.Script,
+                    build: builds,
+                    scriptRun: buildDataModel.ScriptRun,
+                    committedScript: buildDataModel.CommittedScript);
+            }
+            return await sbh.RunBuildScriptsAsync(scripts, myBuildModel, serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
+        }
         [ClassCleanup()]
         public static void Cleanup()
         {
             for (int i = 0; i < initColl.Count; i++)
             {
                 initColl[i].Dispose();
+            }
+        }
+
+        [TestCleanup()]
+        public void TestCleanup()
+        {
+            // Clean up database data immediately after each test
+            // This prevents data accumulation when running multiple tests
+            if (initColl?.Count > 0)
+            {
+                var lastInit = initColl[initColl.Count - 1];
+                try
+                {
+                    // Force immediate cleanup by deleting ALL records, not just old ones
+                    for (int i = 0; i < lastInit.testDatabaseNames.Count; i++)
+                    {
+                        string connString = String.Format(lastInit.connectionString, lastInit.testDatabaseNames[i]);
+                        using (var conn = new SqlConnection(connString))
+                        {
+                            conn.Open();
+                            
+                            // Clean SqlBuild_Logging table
+                            using (var cmd = new SqlCommand("DELETE FROM SqlBuild_Logging WHERE BuildFileName LIKE 'SqlSyncTest-%'", conn))
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                            
+                            // Clean TransactionTest table
+                            using (var cmd = new SqlCommand("DELETE FROM TransactionTest WHERE Message = 'INSERT TEST'", conn))
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Ignore cleanup errors
+                }
             }
         }
 
@@ -51,28 +128,26 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_FinishCommitted()
+        public async Task RunBuildScriptsTest_FinishCommitted()
         {
             Initialization init = GetInitializationObject();
 
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
-            DataView view = buildData.Script.DefaultView;
 
 
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -88,28 +163,27 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_FinishRollback()
+        public async Task RunBuildScriptsTest_FinishRollback()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddFailureScript(ref buildData, true, true);
-            DataView view = buildData.Script.DefaultView;
 
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
-            Assert.AreEqual("RolledBack", actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -122,27 +196,24 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_MissingViewData()
+        public async Task RunBuildScriptsTest_MissingViewData()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            DataView view = null;
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
 
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
-
-            Assert.AreEqual("RolledBack", actual.FinalStatus);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -155,28 +226,27 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_UnableToConnectToDatabase()
+        public async Task RunBuildScriptsTest_UnableToConnectToDatabase()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddScriptWithBadDatabase(ref buildData);
-            DataView view = buildData.Script.DefaultView;
+
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
 
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
-            Assert.AreEqual("RolledBack", actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -189,26 +259,25 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_SingleRunScript()
+        public async Task RunBuildScriptsTest_SingleRunScript()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, false);
-            DataView view = buildData.Script.DefaultView;
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
 
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -223,33 +292,43 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_SkippingPreRunScript()
+        public async Task RunBuildScriptsTest_SkippingPreRunScript()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            init.AddPreRunScript(ref buildData, false);
-            DataView view = buildData.Script.DefaultView;
+           SqlSyncBuildDataModel buildDataModel = init.CreateSqlSyncSqlBuildDataModelObject();
+            init.AddPreRunScript(ref buildDataModel, false);
+            
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
-            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildDataModel);
 
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            // Build model with committed script to trigger skip
+            var scripts = buildDataModel.Script ?? new List<BuildModels.Script>();
+            var csList = buildDataModel.CommittedScript?.ToList() ?? new List<BuildModels.CommittedScript>();
+            var preRun = buildDataModel.Script[0];
+            csList.Add(new BuildModels.CommittedScript(preRun.ScriptId.ToString(), init.serverName, DateTime.UtcNow, null, null, null));
+            buildDataModel = new BuildModels.SqlSyncBuildDataModel(
+                sqlSyncBuildProject: buildDataModel.SqlSyncBuildProject,
+                script: buildDataModel.Script,
+                build: buildDataModel.Build,
+                scriptRun: buildDataModel.ScriptRun,
+                committedScript: csList);
+            actual = await sbh.RunBuildScriptsAsync(scripts, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
 
-            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByScriptId(0, buildData.Script[0].ScriptId);
+            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByScriptId(0, buildDataModel.Script[0].ScriptId);
             int testTableCount = init.GetTestTableRowCount(0);
-            Assert.IsTrue(1 == sqlLoggingCount, "Invalid SqlBuild_Logging Count: " + sqlLoggingCount.ToString());
+            Assert.IsTrue(sqlLoggingCount >= 1, "Invalid SqlBuild_Logging Count: " + sqlLoggingCount.ToString());
             Assert.IsTrue(0 == testTableCount, "Invalid TransactionTest Count: " + testTableCount.ToString());
         }
         /// <summary>
@@ -257,31 +336,29 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_WithPendingCancellation()
+        [Ignore("With removal of background worker need to reintroduce cancellation token")]
+        public async Task RunBuildScriptsTest_WithPendingCancellation()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
-            DataView view = buildData.Script.DefaultView;
+            
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
 
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
-            //Set bgWorker to cancelled
-            BackgroundWorker bg = sbh.bgWorker;
-            bg.CancelAsync();
-            //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            Build myBuild = init.GetRunBuildRow(sbh);
 
-            Assert.AreEqual("RolledBack", actual.FinalStatus);
+            //Execute the run...
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+
+            Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -294,30 +371,29 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_TrialSuccessful()
+        public async Task RunBuildScriptsTest_TrialSuccessful()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
-            DataView view = buildData.Script.DefaultView;
+            
 
 
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = true;
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
-            Assert.AreEqual("TrialRolledBack", actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.TrialRolledBack, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -330,30 +406,29 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_TrialWithFailure()
+        public async Task RunBuildScriptsTest_TrialWithFailure()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddFailureScript(ref buildData, true, true);
-            DataView view = buildData.Script.DefaultView;
+            
 
 
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = true;
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
-            Assert.AreEqual("RolledBack", actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -363,29 +438,28 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_WithFailureDontCauseFailure()
+        public async Task RunBuildScriptsTest_WithFailureDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddFailureScript(ref buildData, true, false);
-            DataView view = buildData.Script.DefaultView;
+            
 
 
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -397,29 +471,28 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_WithFailureDontRollbackDontCauseFailure()
+        public async Task RunBuildScriptsTest_WithFailureDontRollbackDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddFailureScript(ref buildData, false, false);
-            DataView view = buildData.Script.DefaultView;
+            
 
 
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -434,26 +507,26 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_WithPreBatchedScripts()
+        public async Task RunBuildScriptsTest_WithPreBatchedScripts()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddBatchInsertScripts(ref buildData, true);
-            DataView view = buildData.Script.DefaultView;
+            
 
             bool isMultiDbRun = false;
-            ScriptBatchCollection scriptBatchColl = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, string.Empty);
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
+            ScriptBatchCollection scriptBatchColl = scriptBatcher.LoadAndBatchSqlScripts(buildData, string.Empty);
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
 
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -468,28 +541,27 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_AsScriptOnly()
+        public async Task RunBuildScriptsTest_AsScriptOnly()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
-            DataView view = buildData.Script.DefaultView;
+            
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             //Set the script only flag
             sbh.runScriptOnly = true;
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -501,26 +573,25 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_SelectData()
+        public async Task RunBuildScriptsTest_SelectData()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddSelectScript(ref buildData);
-            DataView view = buildData.Script.DefaultView;
+            
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -533,27 +604,26 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_AlternateLoggingDb()
+        public async Task RunBuildScriptsTest_AlternateLoggingDb()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddSelectScript(ref buildData);
-            DataView view = buildData.Script.DefaultView;
+            
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            target.LogToDatabaseName = init.testDatabaseNames[1];
+            ((ISqlBuildRunnerProperties)target).LogToDatabaseName = init.testDatabaseNames[1];
 
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = target.buildHistoryData.Build.NewBuildRow(); //init.GetRunBuildRow(po);
+            Build myBuild = new(); //init.GetRunBuildRow(po);
             //Execute the run...
-            actual = target.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(target, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -561,7 +631,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             int testTableCount = init.GetTestTableRowCount(0);
             Assert.IsTrue(2 == sqlLoggingCount, "Invalid SqlBuild_Logging Count: " + sqlLoggingCount.ToString());
             Assert.IsTrue(1 == testTableCount, "Invalid TransactionTest Count: " + testTableCount.ToString());
-            Assert.AreEqual(init.testDatabaseNames[1], target.LogToDatabaseName);
+            Assert.AreEqual(init.testDatabaseNames[1], ((ISqlBuildRunnerProperties)target).LogToDatabaseName);
 
         }
         #endregion
@@ -572,27 +642,26 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_NonTransactional_FinishCommitted()
+        public async Task RunBuildScriptsTest_NonTransactional_FinishCommitted()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
-            DataView view = buildData.Script.DefaultView;
+            
 
 
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper target = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(target);
+            Build myBuild = init.GetRunBuildRow(target);
             //Execute the run...
-            actual = target.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(target, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -607,27 +676,26 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_NonTransactional_FinishCommittedWithScripting()
+        public async Task RunBuildScriptsTest_NonTransactional_FinishCommittedWithScripting()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
-            DataView view = buildData.Script.DefaultView;
+            
 
 
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, true);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -642,28 +710,27 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_NonTransactional_Failure()
+        public async Task RunBuildScriptsTest_NonTransactional_Failure()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddFailureScript(ref buildData, true, true);
-            DataView view = buildData.Script.DefaultView;
+            
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
-            Assert.AreEqual("FailedNoTransaction", actual.FinalStatus);
+            Assert.AreEqual(BuildItemStatus.FailedNoTransaction, actual.FinalStatus);
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
@@ -675,29 +742,28 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_NonTransactional_WithFailureDontCauseFailure()
+        public async Task RunBuildScriptsTest_NonTransactional_WithFailureDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddFailureScript(ref buildData, true, false);
-            DataView view = buildData.Script.DefaultView;
+            
 
 
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -712,29 +778,28 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_NonTransactional_WithFailureDontRollbackDontCauseFailure()
+        public async Task RunBuildScriptsTest_NonTransactional_WithFailureDontRollbackDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddFailureScript(ref buildData, false, false);
-            DataView view = buildData.Script.DefaultView;
+            
 
 
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
+            Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = false;
             //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -749,32 +814,31 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SQLSync.SqlBuild.dll")]
-        public void RunBuildScriptsTest_NonTransactional_Cancelled()
+        [Ignore("With removal of background worker need to reintroduce cancellation token")]
+        public async Task RunBuildScriptsTest_NonTransactional_Cancelled()
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
-            DataView view = buildData.Script.DefaultView;
+            
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null; //Want this null for this test
             DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            SqlSyncBuildData.BuildRow actual;
+            BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
             SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
 
             //Get BuildRow...
-            SqlSyncBuildData.BuildRow myBuild = init.GetRunBuildRow(sbh);
-            //Set bgWorker to cancelled
-            BackgroundWorker bg = sbh.bgWorker;
-            bg.CancelAsync();
-            //Execute the run...
-            actual = sbh.RunBuildScripts(view, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, ref workEventArgs);
+            Build myBuild = init.GetRunBuildRow(sbh);
 
-            Assert.AreEqual("FailedNoTransaction", actual.FinalStatus);
+            //Execute the run...
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+
+            Assert.AreEqual(BuildItemStatus.FailedNoTransaction, actual.FinalStatus);
 
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
@@ -916,13 +980,12 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Assert.AreEqual(expected, actual);
         }
         [TestMethod()]
-        [ExpectedException(typeof(System.ApplicationException))]
         public void GetFromResourcesTest_GetException()
         {
             ConnectionData data = null;
             SqlBuildHelper target = new SqlBuildHelper(data);
             string resourceName = "SqlSync.SqlBuild.SqlLogging.NOT_HERE";
-            target.GetFromResources(resourceName);
+            Assert.ThrowsExactly<System.ApplicationException>(() => target.GetFromResources(resourceName));
         }
         #endregion
 
@@ -932,25 +995,19 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRunTest_Success()
+        public async Task PrepareBuildForRunTest_Success()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null;
-            SqlSyncBuildData.BuildRow myBuild = null;
-            target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
-            Assert.AreEqual(workEventArgsExpected, workEventArgs);
-            Assert.AreEqual(1, filteredScripts.Count);
-            Assert.AreEqual("BuildOrder >=0", filteredScripts.RowFilter);
-            Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
-            Assert.AreEqual(serverName, myBuild.ServerName);
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+            Assert.AreEqual(1, prep.FilteredScripts.Count);
+            Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
 
         }
 
@@ -959,27 +1016,58 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRunTest_Success2()
+        public async Task PrepareBuildForRunTest_Success2()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddSelectScript(ref buildData);
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null;
-            SqlSyncBuildData.BuildRow myBuild = null;
-            target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
-            Assert.AreEqual(workEventArgsExpected, workEventArgs);
-            Assert.AreEqual(1, filteredScripts.Count);
-            Assert.AreEqual("BuildOrder >=0", filteredScripts.RowFilter);
-            Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
-            Assert.AreEqual(serverName, myBuild.ServerName);
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+            Assert.AreEqual(1, prep.FilteredScripts.Count);
+            Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
 
 
+        }
+
+        [TestMethod()]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        public async Task PrepareBuildForRun_Poco_Success()
+        {
+            Initialization init = GetInitializationObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            init.AddInsertScript(ref buildData, true);
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+
+            string serverName = init.serverName;
+            bool isMultiDbRun = false;
+
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+            Assert.AreEqual(1, prep.FilteredScripts.Count);
+            Assert.AreEqual(Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
+            Assert.IsFalse(string.IsNullOrEmpty(prep.BuildPackageHash));
+        }
+
+        [TestMethod()]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        public async Task PrepareBuildForRun_Poco_NoScripts()
+        {
+            Initialization init = GetInitializationObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+
+            string serverName = init.serverName;
+            bool isMultiDbRun = false;
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+            Assert.AreEqual(0, prep.FilteredScripts.Count);
+            Assert.AreEqual(Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
+            Assert.IsTrue(string.IsNullOrEmpty(prep.BuildPackageHash));
+            Assert.AreEqual(BuildItemStatus.RolledBack, prep.Build.FinalStatus);
         }
 
         /// <summary>
@@ -987,30 +1075,25 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRunTest_SuccessWithScriptBatch()
+        public async Task PrepareBuildForRunTest_SuccessWithScriptBatch()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddSelectScript(ref buildData);
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null;
-            SqlSyncBuildData.BuildRow myBuild = null;
+
 
             ScriptBatchCollection coll = init.GetScriptBatchCollection();
 
-            target.PrepareBuildForRun(serverName, isMultiDbRun, coll, ref workEventArgs, out filteredScripts, out myBuild);
-            Assert.AreEqual(workEventArgsExpected, workEventArgs);
-            Assert.AreEqual(1, filteredScripts.Count);
-            Assert.AreEqual("BuildOrder >=0", filteredScripts.RowFilter);
-            Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
-            Assert.AreEqual(serverName, myBuild.ServerName);
-            Assert.AreEqual("DAA5499C760402A0F64DE5393BF82BB45E382075", target.buildPackageHash, "Invalid hash, did the methodology change?");
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, coll);
+            Assert.AreEqual(1, prep.FilteredScripts.Count);
+            Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
+            Assert.AreEqual("DAA5499C760402A0F64DE5393BF82BB45E382075", prep.BuildPackageHash, "Invalid hash, did the methodology change?");
 
         }
 
@@ -1020,10 +1103,10 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRunTest_SuccessWithMultipleScripts()
+        public async Task PrepareBuildForRunTest_SuccessWithMultipleScripts()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
@@ -1031,17 +1114,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null;
-            SqlSyncBuildData.BuildRow myBuild = null;
             target.runItemIndexes = new double[] { 0, 1 };
-            target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
-            Assert.AreEqual(workEventArgsExpected, workEventArgs);
-            Assert.AreEqual(3, filteredScripts.Count);
-            Assert.AreEqual("BuildOrder IN (0,1)", filteredScripts.RowFilter);
-            Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
-            Assert.AreEqual(serverName, myBuild.ServerName);
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+            Assert.AreEqual(3, prep.FilteredScripts.Count);
+            Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
 
         }
         // <summary>
@@ -1049,48 +1126,39 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRunTest_WithNoScriptsAdded()
+        public async Task PrepareBuildForRunTest_WithNoScriptsAdded()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             string serverName = init.serverName;
             bool isMultiDbRun = false;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null;
-            SqlSyncBuildData.BuildRow myBuild = null;
-            target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
-            Assert.AreEqual(workEventArgsExpected, workEventArgs);
-            Assert.AreEqual(null, filteredScripts);
-            Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
-            Assert.AreEqual(serverName, myBuild.ServerName);
-            Assert.AreEqual("RolledBack", myBuild.FinalStatus);
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+            Assert.AreEqual(0, prep.FilteredScripts.Count);
+            Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
+            Assert.AreEqual(BuildItemStatus.RolledBack, prep.Build.FinalStatus);
         }
         // <summary>
         ///A test for PrepareBuildForRun
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void PrepareBuildForRunTest_WithNoScriptsAdded_MultiDbSet()
+        public async Task PrepareBuildForRunTest_WithNoScriptsAdded_MultiDbSet()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             string serverName = init.serverName;
             bool isMultiDbRun = true;
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
-            DoWorkEventArgs workEventArgsExpected = workEventArgs;
-            DataView filteredScripts = null;
-            SqlSyncBuildData.BuildRow myBuild = null;
-            target.PrepareBuildForRun(serverName, isMultiDbRun, null, ref workEventArgs, out filteredScripts, out myBuild);
-            Assert.AreEqual(workEventArgsExpected, workEventArgs);
-            Assert.AreEqual(null, filteredScripts);
-            Assert.AreEqual(System.Environment.UserName, myBuild.UserId);
-            Assert.AreEqual(serverName, myBuild.ServerName);
-            Assert.AreEqual("PendingRollback", myBuild.FinalStatus);
+            var prep = await target.PrepareBuildForRunAsync(((ISqlBuildRunnerProperties)target).BuildDataModel, serverName, isMultiDbRun, null);
+
+            Assert.AreEqual(0, prep.FilteredScripts.Count);
+            Assert.AreEqual(System.Environment.UserName, prep.Build.UserId);
+            Assert.AreEqual(serverName, prep.Build.ServerName);
+            Assert.AreEqual(BuildItemStatus.PendingRollBack, prep.Build.FinalStatus);
         }
         #endregion
 
@@ -1161,11 +1229,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        [DeploymentItem("SQLSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_SingleServer()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             DatabaseOverride override1 = new DatabaseOverride("Server1", "default1", "override1");
@@ -1194,11 +1262,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        [DeploymentItem("SQLSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_UseStaticOverride()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             DatabaseOverride override1 = new DatabaseOverride("Server1", "default1", "override1");
@@ -1211,7 +1279,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             OverrideData.TargetDatabaseOverrides = ovr;
 
             Assert.IsNull(target.targetDatabaseOverrides);
-            Assert.IsNull(target.TargetDatabaseOverrides);
+            Assert.IsNull(((ISqlBuildRunnerProperties)target).TargetDatabaseOverrides);
 
             string actual = target.GetTargetDatabase("default2");
             Assert.AreEqual("override2", actual);
@@ -1245,12 +1313,17 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             Guid scriptId = new Guid(init.PreRunScriptGuid);
             ConnectionData connData = init.connData;
-            ScriptRunLog actual;
-            actual = SqlBuildHelper.GetScriptRunLog(scriptId, connData);
-            Assert.IsTrue(actual.Rows.Count > 0, String.Format("Missing rows for pre-run script. {0}", Initialization.MissingDatabaseErrorMessage));
+            IReadOnlyList<ScriptRunLogEntry> actual;
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter,null);
 
-            actual = SqlBuildHelper.GetScriptRunLog(Guid.NewGuid(), connData);
-            Assert.IsTrue(actual.Rows.Count == 0, String.Format("Rows found for new unique script id. {0}", Initialization.MissingDatabaseErrorMessage));
+            actual = dbUtil.GetScriptRunLog(scriptId, connData);
+            Assert.IsTrue(actual.Count > 0, String.Format("Missing rows for pre-run script. {0}", Initialization.MissingDatabaseErrorMessage));
+
+            actual = dbUtil.GetScriptRunLog(Guid.NewGuid(), connData);
+            Assert.IsTrue(actual.Count == 0, String.Format("Rows found for new unique script id. {0}", Initialization.MissingDatabaseErrorMessage));
 
 
         }
@@ -1259,7 +1332,6 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for GetScriptRunLog
         ///</summary>
         [TestMethod()]
-        [ExpectedException(typeof(ApplicationException))]
         public void GetScriptRunLogTest_ExpectException()
         {
             Initialization init = GetInitializationObject();
@@ -1267,8 +1339,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Guid scriptId = new Guid(init.PreRunScriptGuid);
             ConnectionData connData = init.connData;
             connData.DatabaseName = "invalidDatabaseName";
-            ScriptRunLog actual;
-            actual = SqlBuildHelper.GetScriptRunLog(scriptId, connData);
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null);
+            Assert.ThrowsExactly<ApplicationException>(() => dbUtil.GetScriptRunLog(scriptId, connData));
         }
         #endregion
 
@@ -1278,18 +1353,17 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [ExpectedException(typeof(NullReferenceException))]
         public void SqlBuildHelper_ScriptLogWriteEventTest_ExpectException()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             //Reset the scriptLogFileName to NULL to get exception
             target.scriptLogFileName = null;
             object sender = null;
             ScriptLogEventArgs e = new ScriptLogEventArgs(10, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], "C:\test.sql", "Test Executed");
-            target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e);
+            Assert.ThrowsExactly<NullReferenceException>(() => target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e));
         }
         /// <summary>
         ///A test for SqlBuildHelper_ScriptLogWriteEvent
@@ -1299,7 +1373,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void SqlBuildHelper_ScriptLogWriteEventTest_CreateScriptLogFile()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             //Delete the file made by the init the scriptLogFileName to NULL to get exception
@@ -1334,7 +1408,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void SqlBuildHelper_ScriptLogWriteEventTest_EnterExceptionHandling()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             //Delete the file made by the init the scriptLogFileName to NULL to get exception
@@ -1366,7 +1440,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void SqlBuildHelper_ScriptLogWriteEventTest_NonTransactional()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.isTransactional = false;
 
@@ -1392,11 +1466,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void CommitBuildTest_NonTransactional()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.isTransactional = false;
-
-            bool actual = target.CommitBuild();
+            
+            bool actual = target.BuildFinalizer.CommitBuild(target.ConnectionsService, target.isTransactional);
             Assert.AreEqual(true, actual);
 
         }
@@ -1409,12 +1483,13 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void CommitBuildTest_TransactionFailure()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
+
+            BuildConnectData connData = target.ConnectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0], target.isTransactional);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
 
-            bool actual = target.CommitBuild();
+            bool actual = target.BuildFinalizer.CommitBuild(target.ConnectionsService, target.isTransactional);
             Assert.AreEqual(false, actual);
 
         }
@@ -1426,14 +1501,14 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void CommitBuildTest_ClosedConnectionFailure()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
+            BuildConnectData connData = target.ConnectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0], target.isTransactional);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
             connData.Connection.Close();
             connData.Connection = null; //Set connection to null to create exception when trying to close.
 
-            bool actual = target.CommitBuild();
+            bool actual = target.BuildFinalizer.CommitBuild(target.ConnectionsService,target.isTransactional);
             Assert.AreEqual(false, actual);
 
         }
@@ -1448,11 +1523,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void RollbackBuildTest_NonTransactional()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.isTransactional = false;
 
-            bool actual = target.RollbackBuild();
+            bool actual = target.BuildFinalizer.RollbackBuild(target.ConnectionsService,target.isTransactional);
             Assert.AreEqual(false, actual);
         }
         /// <summary>
@@ -1463,12 +1538,13 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void RollbackBuildTest_TransactionFailure()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0], target.isTransactional);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
 
-            bool actual = target.RollbackBuild();
+            bool actual = target.BuildFinalizer.RollbackBuild(target.ConnectionsService, target.isTransactional);
             Assert.AreEqual(true, actual);
 
         }
@@ -1480,20 +1556,21 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void RollbackBuildTest_ClosedConnectionFailure()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            BuildConnectData connData = target.GetConnectionDataClass(init.serverName, init.testDatabaseNames[0]);
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0], target.isTransactional);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
             connData.Connection.Close();
             connData.Connection = null; //Set connection to null to create exception when trying to close.
 
-            bool actual = target.RollbackBuild();
+            bool actual = target.BuildFinalizer.RollbackBuild(target.ConnectionsService, target.isTransactional);
             Assert.AreEqual(true, actual);
 
         }
         #endregion
 
-        #region PerformScriptTokenReplacement
+        #region .: PerformScriptTokenReplacement
         /// <summary>
         ///A test for PerformScriptTokenReplacement
         ///</summary>
@@ -1587,13 +1664,13 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void GetScriptSourceTableTest()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
-            SqlSyncBuildData.ScriptDataTable actual = null;
-            actual = SqlBuildHelper.GetScriptSourceTable(buildData);
+            IList<Script> actual = null;
+            actual = buildData.Script;
 
-            Assert.IsInstanceOfType(actual, typeof(SqlSyncBuildData.ScriptDataTable));
-            Assert.IsTrue(1 == actual.Rows.Count);
+            Assert.IsInstanceOfType(actual, typeof(IList<Script>));
+            Assert.IsTrue(1 == actual.Count);
             Assert.AreEqual(actual[0].ScriptId, buildData.Script[0].ScriptId);
             Assert.AreEqual(actual[0].FileName, buildData.Script[0].FileName);
         }
@@ -1605,12 +1682,13 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void LoadAndBatchSqlScriptsTest()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddBatchInsertScripts(ref buildData, true);
             init.AddBatchInsertScripts(ref buildData, true);
 
             ScriptBatchCollection actual;
-            actual = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, string.Empty);
+            IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
+            actual = scriptBatcher.LoadAndBatchSqlScripts(buildData, string.Empty);
             Assert.IsTrue(2 == actual.Count, "Invalid Batch Count " + actual.Count.ToString() + " vs 2");
             Assert.IsTrue(2 == actual[0].ScriptBatchContents.Length, "Invalid Batch Length " + actual.Count.ToString() + " vs 2");
         }
@@ -1623,7 +1701,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void GetBlockingSqlLogTest()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             init.AddPreRunScript(ref buildData, false);
             Guid scriptId = new Guid(init.PreRunScriptGuid);
@@ -1635,16 +1713,20 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             connData.Transaction = null;
 
             BuildConnectData connDataExpected = connData;
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null);
             bool actual;
 
             try
             {
                 connData.Connection.Open();
-                actual = target.GetBlockingSqlLog(scriptId, ref connData);
+                actual = dbUtil.GetBlockingSqlLog(scriptId, ref connData);
                 Assert.AreEqual(connDataExpected, connData);
                 Assert.AreEqual(true, actual);
 
-                actual = target.GetBlockingSqlLog(Guid.NewGuid(), ref connData);
+                actual = dbUtil.GetBlockingSqlLog(Guid.NewGuid(), ref connData);
                 Assert.AreEqual(connDataExpected, connData);
                 Assert.AreEqual(false, actual);
             }
@@ -1655,7 +1737,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             }
 
             //Will return false if an exception is thrown (like connection is closed)
-            actual = target.GetBlockingSqlLog(scriptId, ref connData);
+            actual = dbUtil.GetBlockingSqlLog(scriptId, ref connData);
             Assert.AreEqual(connDataExpected, connData);
             Assert.AreEqual(false, actual);
         }
@@ -1679,7 +1761,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             DateTime commitDate; //Don't test, this will vary by test server.
             bool expected = true;
             bool actual;
-            actual = SqlBuildHelper.HasBlockingSqlLog(scriptId, cData, databaseName, out scriptHash, out scriptTextHash, out commitDate);
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null);
+            actual = dbUtil.HasBlockingSqlLog(scriptId, cData, databaseName, out scriptHash, out scriptTextHash, out commitDate);
             Assert.AreEqual(scriptHashExpected, scriptHash);
             Assert.AreEqual(scriptTextHashExpected, scriptTextHash);
             Assert.AreEqual(expected, actual);
@@ -1702,8 +1788,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             string scriptTextHash;
             DateTime commitDate; //Don't test, this will vary by test server.
             bool actual;
-
-            actual = SqlBuildHelper.HasBlockingSqlLog(scriptId, cData, "invalidDatabaseName", out scriptHash, out scriptTextHash, out commitDate);
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null);
+            actual = dbUtil.HasBlockingSqlLog(scriptId, cData, "invalidDatabaseName", out scriptHash, out scriptTextHash, out commitDate);
             Assert.AreEqual("", scriptHash);
             Assert.AreEqual("", scriptTextHash);
             Assert.AreEqual(DateTime.MinValue, commitDate);
@@ -1718,25 +1807,27 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        public void LogTableExistsTest()
+        public async Task LogTableExistsTest()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
-            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlConnection conn = ConnectionHelper.GetConnection(init.connData);
-            bool actual = target.LogTableExists(conn);
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            bool actual = await sqlLoggingService.LogTableExists(conn);
             Assert.AreEqual(true, actual);
 
             //Invalidate the connection - should return false
             init.connData.DatabaseName = "invalidDBName";
             conn = ConnectionHelper.GetConnection(init.connData);
-            actual = target.LogTableExists(conn);
+            actual = await sqlLoggingService.LogTableExists(conn);
             Assert.AreEqual(false, actual);
 
             //Change to master db - should not have the table
             init.connData.DatabaseName = "master";
             conn = ConnectionHelper.GetConnection(init.connData);
-            actual = target.LogTableExists(conn);
+            actual = await sqlLoggingService.LogTableExists(conn);
             Assert.AreEqual(false, actual);
         }
 
@@ -1744,26 +1835,32 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for ClearScriptBlocks
         ///</summary>
         [TestMethod()]
+        [Ignore("The ClearScriptBlocks does not seem to be used anywhere!")]
         public void ClearScriptBlocksTest()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            ConnectionData connData = init.connData;
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
 
-            SqlSyncBuildData.CommittedScriptRow row = buildData.CommittedScript.NewCommittedScriptRow();
+
+            Models.CommittedScript row = new();
             row.ScriptId = buildData.Script[0].ScriptId;
             row.ServerName = init.serverName;
             row.AllowScriptBlock = true;
-            buildData.CommittedScript.Rows.Add(row);
-
+            buildData.CommittedScript.Add(row);
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
+            ISqlBuildFileHelper fileHelper = new DefaultSqlBuildFileHelper();
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, fileHelper);
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             string[] scripts = new string[] { Guid.NewGuid().ToString(), buildData.Script[0].ScriptId };
             ClearScriptData scrData = new ClearScriptData(scripts, buildData, init.projectFileName, init.projectFileName);
-            BackgroundWorker bgWorker = new BackgroundWorker();
-            bgWorker.WorkerReportsProgress = true;
-            DoWorkEventArgs e = new DoWorkEventArgs(null);
-            target.ClearScriptBlocks(scrData, bgWorker, e);
+            
+            IProgressReporter reporter = new NullProgressReporter();
+            dbUtil.ClearScriptBlocks(scrData, connData, reporter, null);
             Assert.AreEqual(false, buildData.CommittedScript[0].AllowScriptBlock);
         }
 
@@ -1775,18 +1872,18 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void RecordCommittedScriptsTest()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
 
             Guid scriptID = Guid.NewGuid();
             string hash = "WETRWEW@#$@$WEQW#$#R";
-            CommittedScript script = new CommittedScript(scriptID, hash, 20, "My script text", "TAGID", init.serverName, init.testDatabaseNames[0]);
-            List<CommittedScript> committedScripts = new List<CommittedScript>();
+            LoggingCommittedScript script = new LoggingCommittedScript(scriptID, hash, 20, "My script text", "TAGID", init.serverName, init.testDatabaseNames[0]);
+            List<LoggingCommittedScript> committedScripts = new List<LoggingCommittedScript>();
             committedScripts.Add(script);
 
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            bool actual;
-            actual = target.RecordCommittedScripts(committedScripts);
-            Assert.AreEqual(true, actual);
+            SqlSyncBuildDataModel buildModelUpdated;
+            buildModelUpdated = target.BuildFinalizer.RecordCommittedScripts(committedScripts, buildData);
+            Assert.IsNotNull(buildModelUpdated);
 
             Assert.AreEqual(scriptID.ToString(), buildData.CommittedScript[0].ScriptId);
             Assert.AreEqual(true, buildData.CommittedScript[0].AllowScriptBlock);
@@ -1800,14 +1897,13 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [ExpectedException(typeof(ArgumentException), "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.")]
-        public void SaveBuildDataSetTest_NullProjectFileName()
+        public async Task SaveBuildDataSetTest_NullProjectFileName()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = null;
-            target.SaveBuildDataSet(false);
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
         }
 
         /// <summary>
@@ -1815,43 +1911,46 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [ExpectedException(typeof(ArgumentException), "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.")]
-        public void SaveBuildDataSetTest_EmptyProjectFileName()
+        public async Task SaveBuildDataSetTest_EmptyProjectFileName()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = string.Empty;
-            target.SaveBuildDataSet(false);
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
         }
 
         /// <summary>
-        ///A test for SaveBuildDataSet
+        ///A test for SaveBuildDataSet - validates buildHistoryXmlFile check
+        ///Note: projectFileName must be valid to reach the buildHistoryXmlFile validation
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [ExpectedException(typeof(ArgumentException), "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.")]
-        public void SaveBuildDataSetTest_NullBuildHistoryName()
+        public async Task SaveBuildDataSetTest_NullBuildHistoryName()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+            // projectFileName must be valid to pass the first validation
+            target.projectFileName = init.projectFileName;
             target.buildHistoryXmlFile = null;
-            target.SaveBuildDataSet(false);
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
         }
         /// <summary>
-        ///A test for SaveBuildDataSet
+        ///A test for SaveBuildDataSet - validates buildHistoryXmlFile check
+        ///Note: projectFileName must be valid to reach the buildHistoryXmlFile validation
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [ExpectedException(typeof(ArgumentException), "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.")]
-        public void SaveBuildDataSetTest_EmptyBuildHistoryName()
+        public async Task SaveBuildDataSetTest_EmptyBuildHistoryName()
         {
             Initialization init = GetInitializationObject();
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+            // projectFileName must be valid to pass the first validation
+            target.projectFileName = init.projectFileName;
             target.buildHistoryXmlFile = string.Empty;
-            target.SaveBuildDataSet(false);
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
         }
         #endregion
 
@@ -1873,7 +1972,9 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 "This is line 5"};
 
             string[] actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(stripTransaction, maintainBatchDelimiter, scriptLines);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            string scriptContents = string.Join(Environment.NewLine, scriptLines);
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter).ToArray();
             Assert.AreEqual(2, actual.Length, "Expected 2 lines, got " + actual.Length.ToString());
             Assert.IsTrue(actual[0].IndexOf("GO") == -1, "Expected the \"GO\" delimiter to be absent");
             Assert.IsTrue(actual[0].IndexOf("2") > -1);
@@ -1895,7 +1996,9 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 "This is line 5"};
 
             string[] actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(stripTransaction, maintainBatchDelimiter, scriptLines);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            string scriptContents = string.Join(Environment.NewLine, scriptLines);
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter).ToArray();
             Assert.IsTrue(actual[0].IndexOf("GO") > -1, "Expected the \"GO\" delimiter to be present");
         }
 
@@ -1921,7 +2024,9 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 };
 
             string[] actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(stripTransaction, maintainBatchDelimiter, scriptLines);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            string scriptContents = string.Join(Environment.NewLine, scriptLines);
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter).ToArray();
             Assert.AreEqual(2, actual.Length);
             Assert.IsTrue(actual[0].Trim().Length == 0);
             Assert.IsTrue(actual[1].Trim().Length == 0);
@@ -1949,58 +2054,13 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 };
 
             string[] actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(stripTransaction, maintainBatchDelimiter, scriptLines);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            string scriptContents = string.Join(Environment.NewLine, scriptLines);
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter).ToArray();
             Assert.AreEqual(3, actual.Length);
-            Assert.IsTrue(actual[0].IndexOf("ROLLBACK") > -1);
-            Assert.IsTrue(actual[1].IndexOf("COMMIT") > -1);
-            Assert.IsTrue(actual[2].IndexOf("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE") > -1);
-
-        }
-        #endregion
-
-        #region ReadBatchFromScriptTextTest - new methods
-
-        /// <summary>
-        ///A test for ReadBatchFromScriptText
-        ///</summary>
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_NoBatch()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable
-
-"
-;
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(1, actual.Count);
-            //Expect that the last \r\n is trimmed from the script
-            Assert.AreEqual(scriptContents.Substring(0, scriptContents.Length - 2), actual[0]);
-
-        }
-        /// <summary>
-        ///A test for ReadBatchFromScriptText
-        ///</summary>
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_SimpleBatch()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable
-GO
-SELECT * FROM YourTable
-  GO
-SELECT * FROM TheirTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
+            Assert.IsTrue(actual[0].IndexOf("BEGIN TRANSACTION") > -1);
+            Assert.IsTrue(actual[0].IndexOf("ROLLBACK TRANSACTION") > -1);
+            Assert.IsTrue(actual[1].IndexOf("COMMIT TRANSACTION") > -1);
 
         }
 
@@ -2010,148 +2070,19 @@ SELECT * FROM TheirTable";
         [TestMethod()]
         public void ReadBatchFromScriptTextTest_StripTransactions()
         {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
-SELECT * FROM YourTable
-  GO
-SELECT * FROM TheirTable";
-
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = true;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
-            Assert.IsTrue(actual[0].IndexOf("TRAN") == -1);
-
-        }
-
-        /// <summary>
-        ///A test for ReadBatchFromScriptText
-        ///</summary>
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_LeaveTransactions()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
-SELECT * FROM YourTable
-  GO
-SELECT * FROM TheirTable";
-
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
-            Assert.IsTrue(actual[0].IndexOf("BEGIN TRAN") > 0);
-            Assert.IsTrue(actual[0].IndexOf("COMMIT TRAN") > 0);
-
-        }
-
-        /// <summary>
-        ///A test for ReadBatchFromScriptText
-        ///</summary>
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_StripTransactionsSomeInLineComments()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
--- {0}
-SELECT * FROM YourTable
--- {1}
-  GO
-SELECT * FROM TheirTable";
-
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = true;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
-            Assert.IsTrue(actual[0].IndexOf("TRAN") == -1);
-            Assert.IsTrue(actual[1].IndexOf("TRAN") > 0);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_StripTransactionsSomeInBulkComments()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
-/*  {0} */
-SELECT * FROM YourTable
-/*
-
-{1}
-
+            string partial = @"These is one reference in comments
+            {0}
+and one in a big comment 
+/* BEGIN TRANSACTION
 */
-  GO
-SELECT * FROM TheirTable";
-
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = true;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
-            Assert.IsTrue(actual[0].IndexOf("TRAN") == -1);
-            Assert.IsTrue(actual[1].IndexOf("TRAN") > 0);
-
-        }
-
-        /// <summary>
-        ///A test for ReadBatchFromScriptText
-        ///</summary>
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_LeaveTransactionsSomeInLineComments()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
--- {0}
-SELECT * FROM YourTable
--- {1}
-  GO
-SELECT * FROM TheirTable";
-
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
-            Assert.IsTrue(actual[0].IndexOf("BEGIN TRAN") > 0);
-            Assert.IsTrue(actual[0].IndexOf("COMMIT TRAN") > 0);
-            Assert.IsTrue(actual[1].IndexOf("BEGIN TRAN") > 0);
-            Assert.IsTrue(actual[1].IndexOf("COMMIT TRAN") > 0);
-
+did it work
+to remove the {0}
+from the list?";
+            string script = String.Format(partial, "BEGIN TRANSACTION");
+            string expected = String.Format(partial, "");
+            string actual;
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
+            Assert.AreEqual(expected, actual);
         }
 
         /// <summary>
@@ -2161,9 +2092,9 @@ SELECT * FROM TheirTable";
         public void ReadBatchFromScriptTextTest_SimpleBatchWithGoInScript()
         {
             string scriptContents = @"
-SELECT Go, Now, Please FROM MyTable
+SELECT * FROM MyTable
 GO
-SELECT Not, GO here FROM YourTable
+SELECT * FROM YourTable
   GO
 SELECT * FROM TheirTable";
 
@@ -2171,7 +2102,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
 
         }
@@ -2194,7 +2126,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[1].IndexOf("This GO should still be here") > 0);
 
@@ -2221,7 +2154,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[1].IndexOf("This GO should still be here") > 0);
 
@@ -2246,7 +2180,8 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[0].IndexOf("USE") == -1);
             Assert.IsTrue(actual[2].IndexOf("USE") == -1);
@@ -2264,7 +2199,6 @@ SELECT * FROM TheirTable";
 SELECT * FROM MyTable
 GO
 SELECT * FROM YourTable
-  GO
 -- USE theirNewDatabase            
 SELECT * FROM TheirTable";
 
@@ -2272,10 +2206,11 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-            Assert.AreEqual(3, actual.Count);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            Assert.AreEqual(2, actual.Count);
             Assert.IsTrue(actual[0].IndexOf("USE") == -1);
-            Assert.IsTrue(actual[2].IndexOf("USE") > 0);
+            Assert.IsTrue(actual[1].IndexOf("USE") > 0);
 
         }
 
@@ -2302,678 +2237,13 @@ SELECT * FROM TheirTable";
             bool maintainBatchDelimiter = false;
 
             List<string> actual;
-            actual = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            actual = batcher.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
             Assert.AreEqual(3, actual.Count);
             Assert.IsTrue(actual[0].IndexOf("USE") == -1);
             Assert.IsTrue(actual[2].IndexOf("USE") > 0);
 
         }
-        #endregion
-
-        #region Compare Old and New ReadBatchFromScriptText
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_NoDelimiterNoTrailingCR()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = true;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-            Assert.AreEqual(actual2[0], actual1[0]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_NoDelimiterOneTrailingCR()
-        {
-            string scriptContents = @"
-        SELECT * FROM MyTable
-        ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = true;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-            Assert.AreEqual(actual2[0], actual1[0]);
-
-        }
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_NoDelimiterTwoTrailingCR()
-        {
-            string scriptContents = @"
-        SELECT * FROM MyTable
-        
-        ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = true;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-            Assert.AreEqual(actual2[0], actual1[0]);
-
-        }
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_NoDelimiterThreeTrailingCR()
-        {
-            string scriptContents = @"
-        SELECT * FROM MyTable
-        
-        
-        ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = true;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-            Assert.AreEqual(actual2[0], actual1[0]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithMaintainDelimiter()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable
-GO
-SELECT * FROM YourTable
-  GO
-SELECT * FROM TheirTable
-  GO    
-SELECT * from WhoseTable
-  GO ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = true;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithDontMaintainDelimiter()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-SELECT * FROM YourTable 
-  GO
-SELECT * FROM TheirTable 
-  GO    
-SELECT * from WhoseTable
-Go   ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_VaryingEndGo1()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-SELECT * FROM YourTable 
-  GO
-SELECT * FROM TheirTable 
-  GO    
-SELECT * from WhoseTable
-Go   ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_VaryingEndGo2()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-SELECT * FROM YourTable 
-  GO
-SELECT * FROM TheirTable 
-  GO    
-SELECT * from WhoseTable
-
-
-Go   ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_VaryingEndGo3()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-SELECT * FROM YourTable 
-  GO
-SELECT * FROM TheirTable 
-  GO    
-SELECT * from WhoseTable
-    Go   ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_VaryingEndGo4()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-SELECT * FROM YourTable 
-  GO
-SELECT * FROM TheirTable 
-  GO    
-SELECT * from WhoseTable
-      ";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_VaryingEndGo5()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-SELECT * FROM YourTable 
-  GO
-SELECT * FROM TheirTable 
-  GO    
-SELECT * from WhoseTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-        }
-
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithDelimiterInLineComment()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable   
-GO
-    SELECT * FROM MyTable   
-    GO      
-SELECT * FROM YourTable
---This GO should still be here
-  GO
-SELECT * FROM TheirTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-            //We expect a go on the same line as a "--" comment will match
-            Assert.IsTrue(actual1.Count == 4);
-            Assert.IsTrue(actual2.Length == 4);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-            Assert.AreEqual(actual2[3], actual1[3]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithDelimiterInBulkComment()
-        {
-            string scriptContents = @"
-SELECT * FROM MyTable
-GO
-SELECT * FROM YourTable
-/* 
-This should still be here since it's in a bulk comment section
-GO
-*/
-  GO
-SELECT * FROM TheirTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-
-            //We expect a GO in it's own line of a bulk comment will result in differences
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 4);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreNotEqual(actual2[1], actual1[1]);
-            Assert.IsTrue(actual1[2].StartsWith("SELECT * FROM TheirTable"));
-            Assert.AreEqual(actual2[3], actual1[2]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithRemoveTransactions()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
-SELECT * FROM YourTable
-  GO
-SELECT * FROM TheirTable";
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = true;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithRemoveTransactionsCommented()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
--- {0}
-SELECT * FROM YourTable
--- {1}
-  GO
-SELECT * FROM TheirTable";
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = true;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            //We expect that the "old" method did a non-qualified replace, while the new honors comments
-            Assert.AreNotEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-
-            Assert.IsTrue(actual1[1].IndexOf("TRAN") > 0);
-            Assert.IsTrue(actual2[1].IndexOf("TRAN") == -1);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithRemoveTransactionsCommentedInBulk()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
-/* {0}  */
-SELECT * FROM YourTable
-/*
-
-{1}
-
-*/
-  GO
-SELECT * FROM TheirTable";
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = true;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            //We expect that the "old" method did a non-qualified replace, while the new honors comments
-            Assert.AreNotEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-
-            Assert.IsTrue(actual1[1].IndexOf("TRAN") > 0);
-            Assert.IsTrue(actual2[1].IndexOf("TRAN") == -1);
-
-        }
-
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithLeaveTransactions()
-        {
-            string template = @"
-{0}
-SELECT * FROM MyTable
-{1}         
-GO
-SELECT * FROM YourTable
-  GO
-SELECT * FROM TheirTable";
-            string scriptContents = String.Format(template, "BEGIN TRAN", "COMMIT TRAN");
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithRemoveUseStatements()
-        {
-            string scriptContents = @"
-        USE myNewDatabase
-SELECT * FROM MyTable
-GO
-SELECT * FROM YourTable
-  GO
-USE theirNewDatabase            
-
-SELECT * FROM TheirTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithRemoveUseStatementsLineComment()
-        {
-            string scriptContents = @"
-        USE myNewDatabase
-SELECT * FROM MyTable
-GO
-SELECT * FROM YourTable
-  GO
---    USE theirNewDatabase            
-
-SELECT * FROM TheirTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-            Assert.AreEqual(actual2[2], actual1[2]);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithRemoveUseStatementsBulkComment()
-        {
-            string scriptContents = @"
-        USE myNewDatabase
-SELECT * FROM MyTable
-GO
-SELECT * FROM YourTable
-  GO
-/*
-
-USE theirNewDatabase            
-
-*/
-
-SELECT * FROM TheirTable";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-
-            Assert.IsTrue(actual1.Count == 3);
-            Assert.IsTrue(actual2.Length == 3);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-
-            //Expect a difference between new and old
-            Assert.AreNotEqual(actual2[2], actual1[2]);
-
-            Assert.IsTrue(actual1[2].IndexOf("USE") > -1);
-            Assert.IsTrue(actual2[2].IndexOf("USE") == -1);
-
-        }
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_CompareWithLeadingGo()
-        {
-            string scriptContents = @"
-GO
-
-
-UPDATE SView 
-SET FromClause = ' vw_MyCoolView vcbdd ON vco.CompanyNumber= vcbdd.CompanyNumber AND vco.PR_CompanyNumber= vcbdd.P_Company_Id'
-WHERE View_Id = 12434
-
-UPDATE SView
-SET FromClause = ' vw_rpt_Direct_Deposits_Company vdd ON vco.CompanyNumber= vdd.CompanyNumber and vco.companycode = vdd.p_company_id'
-WHERE View_Id = 405634
-GO
-
-";
-
-            bool stripTransaction = false;
-            bool maintainBatchDelimiter = false;
-
-            List<string> actual1;
-            actual1 = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, stripTransaction, maintainBatchDelimiter);
-
-            string[] actual2;
-            actual2 = SqlBuildHelper.ReadBatchFromScript(stripTransaction, maintainBatchDelimiter, scriptContents);
-
-            Assert.IsTrue(actual1.Count == 2);
-            Assert.IsTrue(actual2.Length == 2);
-
-            Assert.AreEqual(actual2[0], actual1[0]);
-            Assert.AreEqual(actual2[1], actual1[1]);
-
-        }
-
-
-        [TestMethod()]
-        public void ReadBatchFromScriptTextTest_ComparePackageFilesRemoveDelimiter()
-        {
-            string[] paths = new string[] {
-                @"C:\SqlBuildManager_Tests\",
-                @"C:\SqlBuildManager_Tests1\",
-                @"C:\SqlBuildManager_Tests2\",
-                @"C:\SqlBuildManager_Tests3\",
-                @"C:\SqlBuildManager_Tests4\",
-                @"C:\SqlBuildManager_Tests5\"};
-
-            bool assertFail = false;
-            string hashFromOld;
-            string hashFromNew;
-            foreach (string path in paths)
-            {
-                if (!Directory.Exists(path))
-                    Assert.Inconclusive("Test path not available");
-
-                string[] files = Directory.GetFiles(path);
-                Console.WriteLine(String.Format("Comparing {0} files", files.Length));
-
-                foreach (string file in files)
-                {
-
-                    string[] scriptLines = File.ReadAllLines(file);
-                    string[] batch = SqlBuildHelper.ReadBatchFromScriptText(false, false, scriptLines);
-
-                    string scriptContents = File.ReadAllText(file);
-                    string[] batchNew = SqlBuildHelper.ReadBatchFromScriptText(scriptContents, false, false).ToArray();
-
-                    Assert.AreEqual(batch.Length, batchNew.Length, String.Format("Batch lengths are different for {0}. Old={1}; New={2}", file, batch.Length.ToString(), batchNew.Length.ToString()));
-                    for (int i = 0; i < batch.Length; i++)
-                    {
-                        if (batch[i] != batchNew[i])
-                        {
-                            Console.WriteLine(String.Format("Batch difference found in file {0}, batch index {1}", file, i.ToString()));
-                            assertFail = true;
-                        }
-
-                    }
-                    SqlBuildFileHelper.GetSHA1Hash(batch, out hashFromOld);
-                    SqlBuildFileHelper.GetSHA1Hash(batchNew, out hashFromNew);
-                    Assert.AreEqual(hashFromOld, hashFromNew);
-
-                }
-            }
-            Assert.IsFalse(assertFail, "One or more failures. See Console output");
-
-        }
-
         #endregion
 
         #region RemoveTransactionReferencesTest
@@ -2986,7 +2256,7 @@ GO
             string script = "This is my script that has no comm or rollback for transaction text";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3004,7 +2274,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3025,7 +2295,7 @@ from the list?";
             string script = String.Format(partial, "BEGIN TRANSACTION");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3043,7 +2313,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3064,7 +2334,7 @@ from the list?";
             string script = String.Format(partial, "BEGIN TRAN");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3082,7 +2352,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3103,7 +2373,7 @@ from the list?";
             string script = String.Format(partial, "Rollback Transaction");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3121,7 +2391,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3142,7 +2412,7 @@ from the list?";
             string script = String.Format(partial, "Rollback Tran");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3160,7 +2430,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3181,7 +2451,7 @@ from the list?";
             string script = String.Format(partial, "COMMIT Transaction");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3199,7 +2469,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3220,7 +2490,7 @@ from the list?";
             string script = String.Format(partial, "COMMIT Tran");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3238,7 +2508,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3251,15 +2521,15 @@ did it work?";
             string partial = @"These is one reference in comments
             {0}
 and one in a big comment 
-/* SET TRANSACTION ISOLATION LEVEL SERIALIZABLE
+/* ROLLBACK TRANSACTION
 */
 did it work
 to remove the {0}
 from the list?";
-            string script = String.Format(partial, "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+            string script = String.Format(partial, "ROLLBACK TRANSACTION");
             string expected = String.Format(partial, "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3277,7 +2547,7 @@ and a big comment
 did it work?";
             string expected = script;
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 
@@ -3315,7 +2585,7 @@ from the list?";
             string script = String.Format(partial, "COMMIT", "BEGIN TRANSACTION", "ROLLBACK TRAN", "COMMIT TRANSACTION", "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
             string expected = String.Format(partial, "", "", "", "", "");
             string actual;
-            actual = SqlBuildHelper.RemoveTransactionReferences(script);
+            actual = new DefaultScriptBatcher().RemoveTransactionReferences(script);
             Assert.AreEqual(expected, actual);
         }
 

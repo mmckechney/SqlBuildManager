@@ -50,9 +50,21 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         {
             File.WriteAllText(Initialization.SqlScriptOverrideFileName, Properties.Resources.override_sql);
         }
-        public void CopyDbConfigFileLongToTestPath()
+        public void CopyDbConfigFile100ToTestPath()
         {
-            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_long);
+            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_100);
+        }
+        public void CopyDbConfigFile50ToTestPath()
+        {
+            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_50);
+        }
+        public void CopyDbConfigFile20ToTestPath()
+        {
+            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_20);
+        }
+        public void CopyDbConfigFile10ToTestPath()
+        {
+            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_10);
         }
         public void CopyDoubleDbConfigFileToTestPath()
         {

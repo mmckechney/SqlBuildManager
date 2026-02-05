@@ -1,5 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+#nullable enable
 using SqlSync.SqlBuild.MultiDb;
+using SqlSync.SqlBuild.Models;
+using System.Collections.Generic;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
@@ -14,23 +19,9 @@ namespace SqlSync.SqlBuild.UnitTest
     {
 
 
-        private TestContext testContextInstance;
+        public TestContext TestContext { get; set; } = null!;
 
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+        
 
         #region Additional test attributes
         // 
@@ -148,8 +139,13 @@ namespace SqlSync.SqlBuild.UnitTest
         public void BuildDataTest()
         {
             MultiDbData target = new MultiDbData();
-            SqlSyncBuildData expected = new SqlSyncBuildData();
-            SqlSyncBuildData actual;
+            SqlSyncBuildDataModel expected = new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: new List<SqlSyncBuildProject>(),
+                script: new List<Script>(),
+                build: new List<Build>(),
+                scriptRun: new List<ScriptRun>(),
+                committedScript: new List<CommittedScript>());
+            SqlSyncBuildDataModel actual;
             target.BuildData = expected;
             actual = target.BuildData;
             Assert.AreEqual(expected, actual);

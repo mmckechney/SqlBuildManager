@@ -1,7 +1,13 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlSync.SqlBuild.Models;
+using SqlSync.SqlBuild.Services;
+using SqlSync.SqlBuild.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+
+#nullable enable
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
 
@@ -15,25 +21,9 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
     {
 
 
-        private TestContext testContextInstance;
+        public TestContext TestContext { get; set; } = null!;
 
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
-        private static List<Initialization> initColl;
+        private static List<Initialization> initColl = new();
 
         [ClassInitialize()]
         public static void InitializeTests(TestContext testContext)
@@ -57,18 +47,18 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
 
         /// <summary>
-        ///A test for CreateShellSqlSyncBuildDataObject
+        ///A test for CreateShellSqlSyncBuildDataModel
         ///</summary>
         [TestMethod()]
-        public void CreateShellSqlSyncBuildDataObjectTest()
+        public void CreateShellSqlSyncBuildDataModelTest()
         {
 
-            SqlSyncBuildData actual;
-            actual = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
+            SqlSyncBuildDataModel actual;
+            actual = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             Assert.IsNotNull(actual);
-            Assert.AreEqual(1, actual.SqlSyncBuildProject.Rows.Count);
-            Assert.AreEqual(1, actual.Scripts.Rows.Count);
-            Assert.AreEqual(1, actual.Builds.Rows.Count);
+            Assert.AreEqual(1, actual.SqlSyncBuildProject.Count);
+            Assert.AreEqual(0, actual.Script.Count);
+            Assert.AreEqual(0, actual.Build.Count);
             Assert.AreEqual(false, actual.SqlSyncBuildProject[0].ScriptTagRequired);
 
         }
@@ -93,12 +83,9 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for UpdateObsoleteXmlNamespace
         ///</summary>
         [TestMethod()]
-        [ExpectedException(typeof(System.ArgumentException), "Empty path name is not legal.")]
         public void UpdateObsoleteXmlNamespace_TestEmptyFileName()
         {
-
-            bool actual = SqlBuildFileHelper.UpdateObsoleteXmlNamespace(string.Empty);
-
+            Assert.ThrowsExactly<System.ArgumentException>(() => SqlBuildFileHelper.UpdateObsoleteXmlNamespace(string.Empty));
         }
         /// <summary>
         ///A test for UpdateObsoleteXmlNamespace
@@ -179,7 +166,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for CalculateBuildPackageSHA1SignatureFromPath
         ///</summary>
         [TestMethod()]
-        public void CalculateBuildPackageSHA1SignatureFromPathTest_GetHashSuccessfully()
+        public async Task CalculateBuildPackageSHA1SignatureFromPathTest_GetHashSuccessfully()
         {
             //Set up directory and files...
             string projectFileExtractionPath = Path.GetTempPath() + Guid.NewGuid().ToString() + "\\";
@@ -196,26 +183,18 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             File.WriteAllText(projectFileExtractionPath + file3, Properties.Resources.LoggingTable);
 
 
-            SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            SqlSyncBuildData.ScriptRow row1 = buildData.Script.NewScriptRow();
-            row1.BuildOrder = 1;
-            row1.FileName = file1;
+            SqlSyncBuildDataModel buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            Script row1 = new Script { BuildOrder = 1, FileName = file1 };
+            Script row2 = new Script { BuildOrder = 2, FileName = file2 };
+            Script row3 = new Script { BuildOrder = 3, FileName = file3 };
 
-            SqlSyncBuildData.ScriptRow row2 = buildData.Script.NewScriptRow();
-            row2.BuildOrder = 2;
-            row2.FileName = file2;
-
-            SqlSyncBuildData.ScriptRow row3 = buildData.Script.NewScriptRow();
-            row3.BuildOrder = 3;
-            row3.FileName = file3;
-
-            buildData.Script.Rows.Add(row1);
-            buildData.Script.Rows.Add(row2);
-            buildData.Script.Rows.Add(row3);
+            buildData.Script.Add(row1);
+            buildData.Script.Add(row2);
+            buildData.Script.Add(row3);
 
             string expected = "4E0F54A4BA40DC62A78822B20C7D83713CE4F766";
             string actual;
-            actual = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
+            actual = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFileExtractionPath, buildData);
 
             if (Directory.Exists(projectFileExtractionPath))
                 Directory.Delete(projectFileExtractionPath, true);
@@ -228,7 +207,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for CalculateBuildPackageSHA1SignatureFromPath
         ///</summary>
         [TestMethod()]
-        public void CalculateBuildPackageSHA1SignatureFromPathTest_BuildOrderSwitch()
+        public async Task CalculateBuildPackageSHA1SignatureFromPathTest_BuildOrderSwitch()
         {
             //Set up directory and files...
             string projectFileExtractionPath = Path.GetTempPath() + Guid.NewGuid().ToString() + "\\";
@@ -245,59 +224,46 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             File.WriteAllText(projectFileExtractionPath + file3, Properties.Resources.LoggingTable);
 
 
-            SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            SqlSyncBuildData.ScriptRow row1 = buildData.Script.NewScriptRow();
-            row1.BuildOrder = 1;
-            row1.FileName = file1;
+            SqlSyncBuildDataModel buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            Script row1 = new Script { BuildOrder = 1, FileName = file1 };
+            Script row2 = new Script { BuildOrder = 2, FileName = file2 };
+            Script row3 = new Script { BuildOrder = 3, FileName = file3 };
 
-            SqlSyncBuildData.ScriptRow row2 = buildData.Script.NewScriptRow();
-            row2.BuildOrder = 2;
-            row2.FileName = file2;
+            buildData.Script.Add(row1);
+            buildData.Script.Add(row2);
+            buildData.Script.Add(row3);
 
-            SqlSyncBuildData.ScriptRow row3 = buildData.Script.NewScriptRow();
-            row3.BuildOrder = 3;
-            row3.FileName = file3;
-
-            buildData.Script.Rows.Add(row1);
-            buildData.Script.Rows.Add(row2);
-            buildData.Script.Rows.Add(row3);
-
-            string order123 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
+            string order123 = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFileExtractionPath, buildData);
 
             buildData.Script[0].BuildOrder = 1;
             buildData.Script[1].BuildOrder = 3;
             buildData.Script[2].BuildOrder = 2;
-            buildData.AcceptChanges();
 
-            string order132 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
+            string order132 = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFileExtractionPath, buildData);
 
             buildData.Script[0].BuildOrder = 2;
             buildData.Script[1].BuildOrder = 1;
             buildData.Script[2].BuildOrder = 3;
-            buildData.AcceptChanges();
 
-            string order213 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
+            string order213 = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFileExtractionPath, buildData);
 
             buildData.Script[0].BuildOrder = 2;
             buildData.Script[1].BuildOrder = 3;
             buildData.Script[2].BuildOrder = 1;
-            buildData.AcceptChanges();
 
-            string order231 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
+            string order231 = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFileExtractionPath, buildData);
 
             buildData.Script[0].BuildOrder = 3;
             buildData.Script[1].BuildOrder = 1;
             buildData.Script[2].BuildOrder = 2;
-            buildData.AcceptChanges();
 
-            string order312 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
+            string order312 = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFileExtractionPath, buildData);
 
             buildData.Script[0].BuildOrder = 3;
             buildData.Script[1].BuildOrder = 2;
             buildData.Script[2].BuildOrder = 1;
-            buildData.AcceptChanges();
 
-            string order321 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
+            string order321 = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFileExtractionPath, buildData);
 
             if (Directory.Exists(projectFileExtractionPath))
                 Directory.Delete(projectFileExtractionPath, true);
@@ -389,7 +355,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         #region CalculateBuildPackageSHA1_CompareMethodology
         [TestMethod()]
-        public void CalculateBuildPackageSHA1_CompareMethodologyTest()
+        public async Task CalculateBuildPackageSHA1_CompareMethodologyTest()
         {
             //Set up directory and files...
             string projectFileExtractionPath = Path.GetTempPath() + Guid.NewGuid().ToString() + "\\";
@@ -406,31 +372,20 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             File.WriteAllText(projectFileExtractionPath + file3, Properties.Resources.LoggingTable);
 
 
-            SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            SqlSyncBuildData.ScriptRow row1 = buildData.Script.NewScriptRow();
-            row1.BuildOrder = 1;
-            row1.FileName = file1;
-            row1.StripTransactionText = true;
+            SqlSyncBuildDataModel buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            Script row1 = new Script { BuildOrder = 1, FileName = file1, StripTransactionText = true };
+            Script row2 = new Script { BuildOrder = 2, FileName = file2, StripTransactionText = true };
+            Script row3 = new Script { BuildOrder = 3, FileName = file3, StripTransactionText = true };
 
-            SqlSyncBuildData.ScriptRow row2 = buildData.Script.NewScriptRow();
-            row2.BuildOrder = 2;
-            row2.FileName = file2;
-            row2.StripTransactionText = true;
-
-            SqlSyncBuildData.ScriptRow row3 = buildData.Script.NewScriptRow();
-            row3.BuildOrder = 3;
-            row3.FileName = file3;
-            row3.StripTransactionText = true;
-
-            buildData.Script.Rows.Add(row1);
-            buildData.Script.Rows.Add(row2);
-            buildData.Script.Rows.Add(row3);
+            buildData.Script.Add(row1);
+            buildData.Script.Add(row2);
+            buildData.Script.Add(row3);
 
 
-            string fromPath = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
+            string fromPath = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFileExtractionPath, buildData);
 
-
-            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
+            IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
+            ScriptBatchCollection batch = scriptBatcher.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
             string fromBatch = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             if (Directory.Exists(projectFileExtractionPath))
@@ -440,7 +395,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         }
         [TestMethod()]
-        public void CalculateBuildPackageSHA1_CompareMethodologyTest_WithTransactionsToRemove()
+        public async Task CalculateBuildPackageSHA1_CompareMethodologyTest_WithTransactionsToRemove()
         {
             //Set up directory and files...
             string projectFileExtractionPath = Path.GetTempPath() + Guid.NewGuid().ToString() + "\\";
@@ -464,31 +419,20 @@ BEGIN TRAN
 needs to be removed");
 
 
-            SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            SqlSyncBuildData.ScriptRow row1 = buildData.Script.NewScriptRow();
-            row1.BuildOrder = 1;
-            row1.FileName = file1;
-            row1.StripTransactionText = true;
+            SqlSyncBuildDataModel buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            Script row1 = new Script { BuildOrder = 1, FileName = file1, StripTransactionText = true };
+            Script row2 = new Script { BuildOrder = 2, FileName = file2, StripTransactionText = true };
+            Script row3 = new Script { BuildOrder = 3, FileName = file3, StripTransactionText = true };
 
-            SqlSyncBuildData.ScriptRow row2 = buildData.Script.NewScriptRow();
-            row2.BuildOrder = 2;
-            row2.FileName = file2;
-            row2.StripTransactionText = true;
-
-            SqlSyncBuildData.ScriptRow row3 = buildData.Script.NewScriptRow();
-            row3.BuildOrder = 3;
-            row3.FileName = file3;
-            row3.StripTransactionText = true;
-
-            buildData.Script.Rows.Add(row1);
-            buildData.Script.Rows.Add(row2);
-            buildData.Script.Rows.Add(row3);
+            buildData.Script.Add(row1);
+            buildData.Script.Add(row2);
+            buildData.Script.Add(row3);
 
 
-            string fromPath = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
+            string fromPath = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFileExtractionPath, buildData);
 
-
-            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
+            IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
+            ScriptBatchCollection batch = scriptBatcher.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
             string fromBatch = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             if (Directory.Exists(projectFileExtractionPath))
@@ -498,7 +442,7 @@ needs to be removed");
 
         }
         [TestMethod()]
-        public void CalculateBuildPackageSHA1_CompareMethodologyTest_WithTransactionsButKeep()
+        public async Task CalculateBuildPackageSHA1_CompareMethodologyTest_WithTransactionsButKeep()
         {
             //Set up directory and files...
             string projectFileExtractionPath = Path.GetTempPath() + Guid.NewGuid().ToString() + "\\";
@@ -522,31 +466,20 @@ BEGIN TRAN
 needs to be removed");
 
 
-            SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            SqlSyncBuildData.ScriptRow row1 = buildData.Script.NewScriptRow();
-            row1.BuildOrder = 1;
-            row1.FileName = file1;
-            row1.StripTransactionText = false;
+            SqlSyncBuildDataModel buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            Script row1 = new Script { BuildOrder = 1, FileName = file1, StripTransactionText = false };
+            Script row2 = new Script { BuildOrder = 2, FileName = file2, StripTransactionText = false };
+            Script row3 = new Script { BuildOrder = 3, FileName = file3, StripTransactionText = false };
 
-            SqlSyncBuildData.ScriptRow row2 = buildData.Script.NewScriptRow();
-            row2.BuildOrder = 2;
-            row2.FileName = file2;
-            row2.StripTransactionText = false;
-
-            SqlSyncBuildData.ScriptRow row3 = buildData.Script.NewScriptRow();
-            row3.BuildOrder = 3;
-            row3.FileName = file3;
-            row3.StripTransactionText = false;
-
-            buildData.Script.Rows.Add(row1);
-            buildData.Script.Rows.Add(row2);
-            buildData.Script.Rows.Add(row3);
+            buildData.Script.Add(row1);
+            buildData.Script.Add(row2);
+            buildData.Script.Add(row3);
 
 
-            string fromPath = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
+            string fromPath = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFileExtractionPath, buildData);
 
-
-            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
+            IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
+            ScriptBatchCollection batch = scriptBatcher.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
             string fromBatch = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             if (Directory.Exists(projectFileExtractionPath))
@@ -556,7 +489,7 @@ needs to be removed");
 
         }
         [TestMethod()]
-        public void CalculateBuildPackageSHA1_CompareMethodologyTest_OrderCheckingWithTransactionsToRemove()
+        public async Task CalculateBuildPackageSHA1_CompareMethodologyTest_OrderCheckingWithTransactionsToRemove()
         {
             //Set up directory and files...
             string projectFileExtractionPath = Path.GetTempPath() + Guid.NewGuid().ToString() + "\\";
@@ -580,40 +513,29 @@ BEGIN TRAN
 needs to be removed");
 
 
-            SqlSyncBuildData buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            SqlSyncBuildData.ScriptRow row1 = buildData.Script.NewScriptRow();
-            row1.BuildOrder = 1;
-            row1.FileName = file1;
-            row1.StripTransactionText = true;
+            SqlSyncBuildDataModel buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            Script row1 = new Script { BuildOrder = 1, FileName = file1, StripTransactionText = true };
+            Script row2 = new Script { BuildOrder = 2, FileName = file2, StripTransactionText = true };
+            Script row3 = new Script { BuildOrder = 3, FileName = file3, StripTransactionText = true };
 
-            SqlSyncBuildData.ScriptRow row2 = buildData.Script.NewScriptRow();
-            row2.BuildOrder = 2;
-            row2.FileName = file2;
-            row2.StripTransactionText = true;
-
-            SqlSyncBuildData.ScriptRow row3 = buildData.Script.NewScriptRow();
-            row3.BuildOrder = 3;
-            row3.FileName = file3;
-            row3.StripTransactionText = true;
-
-            buildData.Script.Rows.Add(row1);
-            buildData.Script.Rows.Add(row2);
-            buildData.Script.Rows.Add(row3);
+            buildData.Script.Add(row1);
+            buildData.Script.Add(row2);
+            buildData.Script.Add(row3);
 
 
-            string fromPath123 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
+            string fromPath123 = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFileExtractionPath, buildData);
 
-            ScriptBatchCollection batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
+            IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
+            ScriptBatchCollection batch = scriptBatcher.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
             string fromBatch123 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
             buildData.Script[0].BuildOrder = 2;
             buildData.Script[1].BuildOrder = 1;
             buildData.Script[2].BuildOrder = 3;
-            buildData.AcceptChanges();
 
-            string fromPath213 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPath(projectFileExtractionPath, buildData);
+            string fromPath213 = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(projectFileExtractionPath, buildData);
 
-            batch = SqlBuildHelper.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
+            batch = scriptBatcher.LoadAndBatchSqlScripts(buildData, projectFileExtractionPath);
             string fromBatch213 = SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromBatchCollection(batch);
 
 
@@ -660,11 +582,12 @@ CREATE TABLE [dbo].[SyncTestTable](
 ) ON [PRIMARY]
 END
 ";
-
-            string[] arrScripts = SqlBuildHelper.ReadBatchFromScriptText(script, true, false).ToArray();
+            IScriptBatcher batcher = new DefaultScriptBatcher();
+            ISqlBuildFileHelper fileHelper = new DefaultSqlBuildFileHelper();
+            string[] arrScripts = batcher.ReadBatchFromScriptText(script, true, false).ToArray();
             string hashFromArray;
-            SqlBuildFileHelper.GetSHA1Hash(arrScripts, out hashFromArray);
-            string hashFromString = SqlBuildFileHelper.GetSHA1Hash(script.ClearTrailingCarriageReturn());
+            hashFromArray = fileHelper.GetSHA1Hash(arrScripts);
+            string hashFromString = fileHelper.GetSHA1Hash(script.ClearTrailingCarriageReturn());
             Assert.AreEqual(hashFromString, hashFromArray);
         }
         #endregion
@@ -674,20 +597,18 @@ END
         ///A test for CleanProjectFileForRemoteExecution
         ///</summary>
         [TestMethod()]
-        public void CleanProjectFileForRemoteExecutionTest_FileNotExist()
+        public async Task CleanProjectFileForRemoteExecutionTest_FileNotExist()
         {
             string fileName = string.Empty;
             byte[] expected = new byte[0];
             byte[] actual;
-            SqlSyncBuildData cleanedBuildData;
-            actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(fileName, out cleanedBuildData);
+            SqlSyncBuildDataModel cleanedBuildData;
+            (actual, cleanedBuildData) = await SqlBuildFileHelper.CleanProjectFileForRemoteExecutionAsync(fileName);
             Assert.IsTrue(actual.Length == 0);
             Assert.AreEqual(expected.Length, actual.Length);
-            Assert.AreEqual(81, cleanedBuildData.GetXml().Length); //The size of an "empty" build data object
-
-            Assert.IsTrue(cleanedBuildData.ScriptRun.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.Build.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Rows.Count == 0);
+            // Validate the shell model was returned
+            Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
+            Assert.IsTrue(cleanedBuildData.Build.Count == 0);
 
 
         }
@@ -696,36 +617,32 @@ END
         ///A test for CleanProjectFileForRemoteExecution
         ///</summary>
         [TestMethod()]
-        public void CleanProjectFileForRemoteExecutionTest_NothingToClean()
+        public async Task CleanProjectFileForRemoteExecutionTest_NothingToClean()
         {
             Initialization init = GetInitializationObject();
 
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddFailureScript(ref buildData, true, true);
             init.AddFailureScript(ref buildData, true, true);
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (Script row in buildData.Script)
                 row.FileName = Path.GetFileName(row.FileName);
 
             string zipFileName = init.GetTrulyUniqueFile() + ".sbm";
-            string path = Path.GetDirectoryName(zipFileName);
+            string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
 
-            SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
+            await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(buildData, path, zipFileName, false);
 
             byte[] expected = File.ReadAllBytes(zipFileName);
             byte[] actual;
-            SqlSyncBuildData cleanedBuildData;
-            actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
-            Assert.IsTrue(cleanedBuildData.GetXml().ToString().Length > 100);
-            Assert.AreEqual(buildData.GetXml().ToString().Length, cleanedBuildData.GetXml().ToString().Length);
-            Assert.IsTrue(1500 <= actual.Length, string.Format("Actual length of cleaned XML {0}.\r\n{1}", actual.Length.ToString(), cleanedBuildData.GetXml())); //can't get exact length due to variations in guids and dates.
+            SqlSyncBuildDataModel cleanedBuildData;
+            (actual, cleanedBuildData) = await SqlBuildFileHelper.CleanProjectFileForRemoteExecutionAsync(zipFileName);
             Assert.IsTrue(expected.Length == actual.Length);
 
-            Assert.IsTrue(cleanedBuildData.ScriptRun.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.Build.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Rows.Count == 0);
-            Assert.AreEqual(buildData.Script.Rows.Count, cleanedBuildData.Script.Rows.Count);
+            Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
+            Assert.IsTrue(cleanedBuildData.Build.Count == 0);
+            Assert.AreEqual(buildData.Script.Count, cleanedBuildData.Script.Count);
 
         }
 
@@ -733,51 +650,35 @@ END
         ///A test for CleanProjectFileForRemoteExecution
         ///</summary>
         [TestMethod()]
-        public void CleanProjectFileForRemoteExecutionTest_CleanOutUnitTest()
+        public async Task CleanProjectFileForRemoteExecutionTest_CleanOutUnitTest()
         {
             Initialization init = GetInitializationObject();
 
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddFailureScript(ref buildData, true, true);
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (Script row in buildData.Script)
                 row.FileName = Path.GetFileName(row.FileName);
 
-            //Add in code review rows
-            buildData.CodeReview.AddCodeReviewRow(
-                Guid.NewGuid(),
-                buildData.Script[0],
-                DateTime.Now,
-                "Reviewer",
-                1,
-                "Comment",
-                "12345",
-                "AABBCCDD",
-                "EEFFGGHHII");
 
-            buildData.AcceptChanges();
 
             string zipFileName = init.GetTrulyUniqueFile();
 
-            string path = Path.GetDirectoryName(zipFileName);
+            string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
-            buildData.WriteXml(projectFileName);
-            SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
+            await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(buildData, path, zipFileName, false);
 
             byte[] expected = File.ReadAllBytes(zipFileName);
             byte[] actual;
 
-            SqlSyncBuildData cleanedBuildData;
-            actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
+            SqlSyncBuildDataModel cleanedBuildData;
+            (actual, cleanedBuildData) = await SqlBuildFileHelper.CleanProjectFileForRemoteExecutionAsync(zipFileName);
             Assert.IsTrue(actual.Length >= 1200);  //can't get exact length due to variations in guids and dates.
-            Assert.IsTrue(cleanedBuildData.GetXml().ToString().Length > 100);
-            Assert.IsTrue(buildData.GetXml().ToString().Length > cleanedBuildData.GetXml().ToString().Length);
 
-            Assert.IsTrue(cleanedBuildData.ScriptRun.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.Build.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Rows.Count == 0);
-            Assert.AreEqual(buildData.Script.Rows.Count, cleanedBuildData.Script.Rows.Count);
+            Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
+            Assert.IsTrue(cleanedBuildData.Build.Count == 0);
+            Assert.AreEqual(buildData.Script.Count, cleanedBuildData.Script.Count);
 
         }
 
@@ -785,44 +686,39 @@ END
         ///A test for CleanProjectFileForRemoteExecution
         ///</summary>
         [TestMethod()]
-        public void CleanProjectFileForRemoteExecutionTest_CleanOutBuildRowsTest()
+        public async Task CleanProjectFileForRemoteExecutionTest_CleanOutBuildRowsTest()
         {
             Initialization init = GetInitializationObject();
 
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
             init.AddFailureScript(ref buildData, true, true);
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (Script row in buildData.Script)
                 row.FileName = Path.GetFileName(row.FileName);
 
-            buildData.Builds.AddBuildsRow((SqlSyncBuildData.SqlSyncBuildProjectRow)buildData.SqlSyncBuildProject.Rows[0]);
-            buildData.Build.AddBuildRow("Script", "Development", DateTime.Now, DateTime.Now, "Server", "Committed", Guid.NewGuid().ToString(), "user", buildData.Builds[0]);
+            buildData.Build.Add(new Build() { Name = "Test" });
+            buildData.Build.Add(new Build("Script", "Development", DateTime.Now, DateTime.Now, "Server", BuildItemStatus.Committed, Guid.NewGuid().ToString(), "user"));
 
-            buildData.AcceptChanges();
 
             string zipFileName = init.GetTrulyUniqueFile();
 
-            string path = Path.GetDirectoryName(zipFileName);
+            string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
-            buildData.WriteXml(projectFileName);
-            SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(projectFileName, buildData);
+            await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(buildData, path, zipFileName, false);
 
             byte[] expected = File.ReadAllBytes(zipFileName);
             byte[] actual;
 
-            SqlSyncBuildData cleanedBuildData;
-            actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
-            Assert.IsTrue(cleanedBuildData.GetXml().ToString().Length > 100);
-            Assert.IsTrue(2000 <= actual.Length);  //can't get exact length due to variations in guids and dates.
-            Assert.IsTrue(buildData.GetXml().ToString().Length > cleanedBuildData.GetXml().ToString().Length);
+            SqlSyncBuildDataModel cleanedBuildData;
+            (actual, cleanedBuildData) = await SqlBuildFileHelper.CleanProjectFileForRemoteExecutionAsync(zipFileName);
 
-            Assert.IsTrue(cleanedBuildData.ScriptRun.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.Build.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Rows.Count == 0);
-            Assert.AreEqual(buildData.Script.Rows.Count, cleanedBuildData.Script.Rows.Count);
+            Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
+            Assert.IsTrue(cleanedBuildData.Build.Count == 0);
+            Assert.AreEqual(buildData.Script.Count, cleanedBuildData.Script.Count);
 
 
         }
@@ -831,46 +727,40 @@ END
         ///A test for CleanProjectFileForRemoteExecution
         ///</summary>
         [TestMethod()]
-        public void CleanProjectFileForRemoteExecutionTest_CleanOutScriptRunRowsTest()
+        public async Task CleanProjectFileForRemoteExecutionTest_CleanOutScriptRunRowsTest()
         {
             Initialization init = GetInitializationObject();
 
             //Create the build package...
-            SqlSyncBuildData buildData = init.CreateSqlSyncSqlBuildDataObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
             init.AddInsertScript(ref buildData, true);
             init.AddFailureScript(ref buildData, true, true);
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (Script row in buildData.Script)
                 row.FileName = Path.GetFileName(row.FileName);
 
-            buildData.Builds.AddBuildsRow((SqlSyncBuildData.SqlSyncBuildProjectRow)buildData.SqlSyncBuildProject.Rows[0]);
-            buildData.Build.AddBuildRow("Script", "Development", DateTime.Now, DateTime.Now, "Server", "Committed", Guid.NewGuid().ToString(), "user", buildData.Builds[0]);
-            buildData.ScriptRun.AddScriptRunRow("HASH", "Committed", "FileName", 2.2, DateTime.Now, DateTime.Now, true, "Database", Guid.NewGuid().ToString(), (SqlSyncBuildData.BuildRow)buildData.Build[0]);
-
-
-            buildData.AcceptChanges();
+            buildData.Build.Add(new Build() { Name = "Hello" });
+            buildData.Build.Add (new Build("Script", "Development", DateTime.Now, DateTime.Now, "Server",BuildItemStatus.Committed, Guid.NewGuid().ToString(), "user"));
+            buildData.ScriptRun.Add(new ScriptRun("HASH", "Committed", "FileName", 2.2, DateTime.Now, DateTime.Now, true, "Database", Guid.NewGuid().ToString(),"EWEW"));
 
             string zipFileName = init.GetTrulyUniqueFile();
 
-            string path = Path.GetDirectoryName(zipFileName);
+            string path = Path.GetDirectoryName(zipFileName) ?? Directory.GetCurrentDirectory();
             string projectFileName = Path.Combine(path, XmlFileNames.MainProjectFile);
-            buildData.WriteXml(projectFileName);
-            SqlBuildFileHelper.PackageProjectFileIntoZip(buildData, path, zipFileName, false);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(projectFileName, buildData);
+            await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(buildData, path, zipFileName, false);
 
             byte[] expected = File.ReadAllBytes(zipFileName);
             byte[] actual;
 
-            SqlSyncBuildData cleanedBuildData;
-            actual = SqlBuildFileHelper.CleanProjectFileForRemoteExecution(zipFileName, out cleanedBuildData);
+            SqlSyncBuildDataModel cleanedBuildData;
+            (actual, cleanedBuildData) = await SqlBuildFileHelper.CleanProjectFileForRemoteExecutionAsync(zipFileName);
             Assert.IsTrue(2000 <= actual.Length);  //can't get exact length due to variations in guids and dates.
-            Assert.IsTrue(cleanedBuildData.GetXml().ToString().Length > 100);
-            Assert.IsTrue(buildData.GetXml().ToString().Length > cleanedBuildData.GetXml().ToString().Length);
 
-            Assert.IsTrue(cleanedBuildData.ScriptRun.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.Build.Rows.Count == 0);
-            Assert.IsTrue(cleanedBuildData.CodeReview.Rows.Count == 0);
-            Assert.AreEqual(buildData.Script.Rows.Count, cleanedBuildData.Script.Rows.Count);
+            Assert.IsTrue(cleanedBuildData.ScriptRun.Count == 0);
+            Assert.IsTrue(cleanedBuildData.Build.Count == 0);
+            Assert.AreEqual(buildData.Script.Count, cleanedBuildData.Script.Count);
 
         }
 

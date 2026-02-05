@@ -89,7 +89,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(EventHubResourceOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.RunThreadedExecution);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.RunThreadedExecutionAsync);
                 cmd.IsHidden = true;
                 return cmd;
             }
@@ -294,7 +294,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.AddRange(EventHubResourceOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.QueryDatabases);
+                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.QueryDatabasesAsync);
                 cmd.IsHidden = true;
                 return cmd;
             }

@@ -127,7 +127,7 @@ namespace SqlBuildManager.Console
             return (tmp & decryptSuccess, cmdLine);
         }
 
-        internal static int QueryDatabases(CommandLineArgs cmdLine)
+        internal static async Task<int> QueryDatabasesAsync(CommandLineArgs cmdLine)
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
@@ -147,7 +147,7 @@ namespace SqlBuildManager.Console
 
             var query = File.ReadAllText(cmdLine.QueryFile.FullName);
             var runId = Guid.NewGuid().ToString().Replace("-", "");
-            var success = new ThreadedQuery().QueryDatabases(cmdLine,runId);
+            var success = await new ThreadedQuery().QueryDatabasesAsync(cmdLine, runId);
 
             if (success == 0 )
             {

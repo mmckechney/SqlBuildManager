@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.ScriptHandling.Tags;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,30 +15,26 @@ namespace SqlBuildManager.ScriptHandling
         /// <summary>
         /// Used to infer script tags for an entire build package
         /// </summary>
-        /// <param name="buildData" >The SqlSyncBuildData object for the current package</param>
+        /// <param name="buildDataModel">The SqlSyncBuildDataModel object for the current package</param>
         /// <param name="projectPath">The path that the SBM is unpacked to</param>
         /// <param name="regexFormats">The Regex formats that will be used to try to extract script tags</param>
         /// <param name="source">The enum designating where to get the tag from</param>
         /// <returns>Boolean as to whether the inference worked</returns>
-        public static bool InferScriptTags(ref SqlSyncBuildData buildData, string projectPath, List<string> regexFormats, TagInferenceSource source)
+        public static bool InferScriptTags(SqlSyncBuildDataModel buildDataModel, string projectPath, List<string> regexFormats, TagInferenceSource source)
         {
             bool atLeastOneUpdated = false;
             string tmpTag = string.Empty;
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (Script script in buildDataModel.Script)
             {
-                tmpTag = InferScriptTag(source, regexFormats, row.FileName, projectPath);
+                tmpTag = InferScriptTag(source, regexFormats, script.FileName ?? string.Empty, projectPath);
                 if (tmpTag.Length > 0)
                 {
-                    row.Tag = tmpTag;
+                    script.Tag = tmpTag;
                     atLeastOneUpdated = true;
                 }
             }
 
-            if (atLeastOneUpdated)
-                buildData.AcceptChanges();
-
             return atLeastOneUpdated;
-
         }
         internal static string InferScriptTagFromFileName(string scriptFileName, List<string> regexFormats)
         {

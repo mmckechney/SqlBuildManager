@@ -1,6 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -106,12 +107,10 @@ namespace SqlSync.SqlBuild.UnitTest
         ///A test for ImportMultiDbTextConfig
         ///</summary>
         [TestMethod()]
-        [ExpectedException(typeof(MultiDbConfigurationException), "Error in configuration file line #2. Missing \":\" separator. This is needed to separate server from database override values.")]
         public void ImportMultiDbTextConfigTest_BadConfuguration_MissingColon()
         {
             string[] fileContents = new string[] { "SERVER:default,target;default2,target2", "SERVER2 default,target;default2,target2" };
-            MultiDbData actual;
-            actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
+            Assert.ThrowsExactly<MultiDbConfigurationException>(() => MultiDbHelper.ImportMultiDbTextConfig(fileContents));
         }
 
         #endregion
@@ -465,6 +464,334 @@ ServerB:default5,override5
             Assert.AreEqual(cfg.Count, deserialized.Count);
 
         }
+
+        #region .: Additional Parsing Tests :.
+
+        [TestMethod]
+        public void ImportMultiDbTextConfig_WithConcurrencyTag_ParsesTagCorrectly()
+        {
+            // Arrange
+            string[] fileContents = new string[] { "SERVER:default,target#TagA" };
+
+            // Act
+            MultiDbData actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
+
+            // Assert
+            Assert.AreEqual("SERVER", actual[0].ServerName);
+            Assert.AreEqual("TagA", actual[0].Overrides[0].ConcurrencyTag);
+        }
+
+        [TestMethod]
+        public void ImportMultiDbTextConfig_WithOnlyOverrideDatabase_ParsesCorrectly()
+        {
+            // Arrange - no default, only override
+            string[] fileContents = new string[] { "SERVER:targetDb" };
+
+            // Act
+            MultiDbData actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
+
+            // Assert
+            Assert.AreEqual("SERVER", actual[0].ServerName);
+            Assert.AreEqual("", actual[0].Overrides[0].DefaultDbTarget);
+            Assert.AreEqual("targetDb", actual[0].Overrides[0].OverrideDbTarget);
+        }
+
+        [TestMethod]
+        public void ImportMultiDbTextConfig_WithSingleQuotesInDefault_StripsQuotes()
+        {
+            // Arrange
+            string[] fileContents = new string[] { "SERVER:'defaultDb',targetDb" };
+
+            // Act
+            MultiDbData actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
+
+            // Assert
+            Assert.AreEqual("defaultDb", actual[0].Overrides[0].DefaultDbTarget);
+            Assert.AreEqual("targetDb", actual[0].Overrides[0].OverrideDbTarget);
+        }
+
+        [TestMethod]
+        public void ImportMultiDbTextConfig_WithSpacesAroundValues_TrimsCorrectly()
+        {
+            // Arrange
+            string[] fileContents = new string[] { "  SERVER  :  default  ,  target  " };
+
+            // Act
+            MultiDbData actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
+
+            // Assert
+            Assert.AreEqual("SERVER", actual[0].ServerName);
+            Assert.AreEqual("default", actual[0].Overrides[0].DefaultDbTarget);
+            Assert.AreEqual("target", actual[0].Overrides[0].OverrideDbTarget);
+        }
+
+        [TestMethod]
+        public void ImportMultiDbTextConfig_WithMultipleOverridesPerLine_ParsesAll()
+        {
+            // Arrange
+            string[] fileContents = new string[] { "SERVER:db1,target1;db2,target2;db3,target3" };
+
+            // Act
+            MultiDbData actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
+
+            // Assert
+            Assert.AreEqual(3, actual[0].Overrides.Count);
+            Assert.AreEqual("db1", actual[0].Overrides[0].DefaultDbTarget);
+            Assert.AreEqual("target1", actual[0].Overrides[0].OverrideDbTarget);
+            Assert.AreEqual("db2", actual[0].Overrides[1].DefaultDbTarget);
+            Assert.AreEqual("target2", actual[0].Overrides[1].OverrideDbTarget);
+            Assert.AreEqual("db3", actual[0].Overrides[2].DefaultDbTarget);
+            Assert.AreEqual("target3", actual[0].Overrides[2].OverrideDbTarget);
+        }
+
+        [TestMethod]
+        public void ImportMultiDbTextConfig_WithHashButNoTag_HandlesGracefully()
+        {
+            // Arrange - hash with no actual tag value
+            string[] fileContents = new string[] { "SERVER:default,target#" };
+
+            // Act
+            MultiDbData actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
+
+            // Assert
+            Assert.AreEqual("SERVER", actual[0].ServerName);
+            Assert.AreEqual("default", actual[0].Overrides[0].DefaultDbTarget);
+            Assert.AreEqual("target", actual[0].Overrides[0].OverrideDbTarget);
+        }
+
+        #endregion
+
+        #region .: SaveMultiDbConfigToFile Tests :.
+
+        [TestMethod]
+        public void SaveMultiDbConfigToFile_AsJson_CreatesValidJsonFile()
+        {
+            // Arrange
+            string fileName = Path.GetTempFileName();
+            try
+            {
+                MultiDbData cfg = new MultiDbData
+                {
+                    new ServerData() { ServerName = "Server1", Overrides = new DbOverrides(new DatabaseOverride("Server1", "default", "target")) }
+                };
+
+                // Act
+                bool result = MultiDbHelper.SaveMultiDbConfigToFile(fileName, cfg, asXml: false);
+
+                // Assert
+                Assert.IsTrue(result);
+                Assert.IsTrue(File.Exists(fileName));
+                string content = File.ReadAllText(fileName);
+                Assert.IsTrue(content.Contains("\"ServerName\": \"Server1\"") || content.Contains("\"serverName\": \"Server1\""));
+            }
+            finally
+            {
+                if (File.Exists(fileName))
+                    File.Delete(fileName);
+            }
+        }
+
+        [TestMethod]
+        public void SaveMultiDbConfigToFile_AsXml_CreatesValidXmlFile()
+        {
+            // Arrange
+            string fileName = Path.GetTempFileName();
+            try
+            {
+                MultiDbData cfg = new MultiDbData
+                {
+                    new ServerData() { ServerName = "Server1", Overrides = new DbOverrides(new DatabaseOverride("Server1", "default", "target")) }
+                };
+
+                // Act
+                bool result = MultiDbHelper.SaveMultiDbConfigToFile(fileName, cfg, asXml: true);
+
+                // Assert
+                Assert.IsTrue(result);
+                Assert.IsTrue(File.Exists(fileName));
+                string content = File.ReadAllText(fileName);
+                Assert.IsTrue(content.Contains("<ServerName>Server1</ServerName>"));
+            }
+            finally
+            {
+                if (File.Exists(fileName))
+                    File.Delete(fileName);
+            }
+        }
+
+        #endregion
+
+        #region .: ConvertMultiDbDataToTextConfig Tests :.
+
+        [TestMethod]
+        public void ConvertMultiDbDataToTextConfig_WithConcurrencyTag_FormatsCorrectly()
+        {
+            // Arrange
+            MultiDbData cfg = new MultiDbData
+            {
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA", "default", "override", "TagA")) }
+            };
+
+            // Act
+            string actual = MultiDbHelper.ConvertMultiDbDataToTextConfig(cfg);
+
+            // Assert - the format includes the tag after the semicolon
+            Assert.IsTrue(actual.Contains("default,override"));
+            Assert.IsTrue(actual.StartsWith("ServerA:"));
+        }
+
+        [TestMethod]
+        public void ConvertMultiDbDataToTextConfig_WithEmptyConfig_ReturnsEmptyString()
+        {
+            // Arrange
+            MultiDbData cfg = new MultiDbData();
+
+            // Act
+            string actual = MultiDbHelper.ConvertMultiDbDataToTextConfig(cfg);
+
+            // Assert
+            Assert.AreEqual(string.Empty, actual);
+        }
+
+        [TestMethod]
+        public void ConvertMultiDbDataToTextConfig_WithMultipleServers_FormatsCorrectly()
+        {
+            // Arrange
+            MultiDbData cfg = new MultiDbData
+            {
+                new ServerData() { ServerName = "ServerA", Overrides = new DbOverrides(new DatabaseOverride("ServerA", "db1", "target1")) },
+                new ServerData() { ServerName = "ServerB", Overrides = new DbOverrides(new DatabaseOverride("ServerB", "db2", "target2")) }
+            };
+
+            // Act
+            string actual = MultiDbHelper.ConvertMultiDbDataToTextConfig(cfg);
+
+            // Assert
+            Assert.IsTrue(actual.Contains("ServerA:db1,target1"));
+            Assert.IsTrue(actual.Contains("ServerB:db2,target2"));
+        }
+
+        #endregion
+
+        #region .: DeserializeMultiDbConfigurationString Tests :.
+
+        [TestMethod]
+        public void DeserializeMultiDbConfigurationString_WithValidJson_DeserializesCorrectly()
+        {
+            // Arrange
+            string json = @"[{""ServerName"":""TestServer"",""Overrides"":[{""DefaultDbTarget"":""default"",""OverrideDbTarget"":""target"",""ConcurrencyTag"":""""}]}]";
+
+            // Act
+            MultiDbData actual = MultiDbHelper.DeserializeMultiDbConfigurationString(json);
+
+            // Assert
+            Assert.AreEqual(1, actual.Count);
+            Assert.AreEqual("TestServer", actual[0].ServerName);
+            Assert.AreEqual("default", actual[0].Overrides[0].DefaultDbTarget);
+            Assert.AreEqual("target", actual[0].Overrides[0].OverrideDbTarget);
+        }
+
+        [TestMethod]
+        public void DeserializeMultiDbConfigurationString_CaseInsensitive_ParsesLowercase()
+        {
+            // Arrange
+            string json = @"[{""servername"":""TestServer"",""overrides"":[{""defaultdbtarget"":""default"",""overridedbtarget"":""target""}]}]";
+
+            // Act
+            MultiDbData actual = MultiDbHelper.DeserializeMultiDbConfigurationString(json);
+
+            // Assert
+            Assert.AreEqual(1, actual.Count);
+            Assert.AreEqual("TestServer", actual[0].ServerName);
+        }
+
+        #endregion
+
+        #region .: ValidateMultiDatabaseData Additional Tests :.
+
+        [TestMethod]
+        public void ValidateMultiDatabaseData_WithEmptyConfiguration_ReturnsTrue()
+        {
+            // Arrange
+            MultiDbData dbData = new MultiDbData();
+
+            // Act
+            bool actual = MultiDbHelper.ValidateMultiDatabaseData(dbData);
+
+            // Assert
+            Assert.IsTrue(actual);
+        }
+
+        [TestMethod]
+        public void ValidateMultiDatabaseData_WithValidOverrides_ReturnsTrue()
+        {
+            // Arrange
+            MultiDbData dbData = new MultiDbData
+            {
+                new ServerData()
+                {
+                    ServerName = "server1",
+                    Overrides = new DbOverrides(new DatabaseOverride("server1", "default", "target"))
+                }
+            };
+
+            // Act
+            bool actual = MultiDbHelper.ValidateMultiDatabaseData(dbData);
+
+            // Assert
+            Assert.IsTrue(actual);
+        }
+
+        #endregion
+
+        #region .: SaveMultiDbQueryConfiguration and LoadMultiDbQueryConfiguration Tests :.
+
+        [TestMethod]
+        public void SaveAndLoadMultiDbQueryConfiguration_RoundTrip_PreservesData()
+        {
+            // Arrange
+            string fileName = Path.GetTempFileName();
+            try
+            {
+                var cfg = new MultiDbQueryConfig
+                {
+                    SourceServer = "SourceServer",
+                    Database = "SourceDb",
+                    Query = "SELECT ServerName, DatabaseName FROM Servers"
+                };
+
+                // Act
+                bool saveResult = MultiDbHelper.SaveMultiDbQueryConfiguration(fileName, cfg);
+                var loaded = MultiDbHelper.LoadMultiDbQueryConfiguration(fileName);
+
+                // Assert
+                Assert.IsTrue(saveResult);
+                Assert.IsNotNull(loaded);
+                Assert.AreEqual(cfg.SourceServer, loaded.SourceServer);
+                Assert.AreEqual(cfg.Database, loaded.Database);
+                Assert.AreEqual(cfg.Query, loaded.Query);
+            }
+            finally
+            {
+                if (File.Exists(fileName))
+                    File.Delete(fileName);
+            }
+        }
+
+        [TestMethod]
+        public void LoadMultiDbQueryConfiguration_WithNonExistentFile_ReturnsNull()
+        {
+            // Arrange
+            string fileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".xml");
+
+            // Act
+            var result = MultiDbHelper.LoadMultiDbQueryConfiguration(fileName);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        #endregion
 
 
     }

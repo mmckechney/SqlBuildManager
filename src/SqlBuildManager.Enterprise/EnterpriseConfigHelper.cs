@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace SqlBuildManager.Enterprise
@@ -69,6 +71,14 @@ namespace SqlBuildManager.Enterprise
 
         public static EnterpriseConfiguration LoadEnterpriseConfiguration(string configPath)
         {
+            return LoadEnterpriseConfigurationAsync(configPath).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Async version of LoadEnterpriseConfiguration.
+        /// </summary>
+        public static async Task<EnterpriseConfiguration> LoadEnterpriseConfigurationAsync(string configPath, CancellationToken cancellationToken = default)
+        {
             string localConfigPath = Path.Combine(SqlBuildManager.Logging.Configure.AppDataPath, "EnterpriseConfiguration.xml");
             string configuration = string.Empty;
             try
@@ -76,18 +86,18 @@ namespace SqlBuildManager.Enterprise
                 if (!configPath.ToLower().StartsWith("http"))
                 {
                     configPath = Path.GetFullPath(configPath);
-                    configuration = File.ReadAllText(configPath);
+                    configuration = await File.ReadAllTextAsync(configPath, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     var httpClient = new HttpClient();
-                    configuration = httpClient.GetStringAsync(configPath).GetAwaiter().GetResult();
+                    configuration = await httpClient.GetStringAsync(configPath, cancellationToken).ConfigureAwait(false);
                 }
                 //Write this file to the local path, in case it is unavailable next time.
                 if (File.Exists(localConfigPath))
                     File.SetAttributes(localConfigPath, FileAttributes.Normal);
 
-                File.WriteAllText(localConfigPath, configuration);
+                await File.WriteAllTextAsync(localConfigPath, configuration, cancellationToken).ConfigureAwait(false);
                 log.LogDebug($"Loaded Enterprise Configuration from {configPath} and saved to {localConfigPath}");
             }
             catch (Exception exe)
@@ -103,7 +113,7 @@ namespace SqlBuildManager.Enterprise
             if (File.Exists(localConfigPath))
             {
                 log.LogDebug($"Reading EnterpriseConfig from local path:{localConfigPath}");
-                configuration = File.ReadAllText(localConfigPath);
+                configuration = await File.ReadAllTextAsync(localConfigPath, cancellationToken).ConfigureAwait(false);
                 return DeserializeConfiguration(configuration);
             }
 

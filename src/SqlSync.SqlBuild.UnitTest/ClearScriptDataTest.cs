@@ -1,4 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlSync.SqlBuild.Models;
+
+#nullable enable
 namespace SqlSync.SqlBuild.UnitTest
 {
 
@@ -12,23 +15,9 @@ namespace SqlSync.SqlBuild.UnitTest
     {
 
 
-        private TestContext testContextInstance;
+        public TestContext TestContext { get; set; } = null!;
 
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+        
 
         #region Additional test attributes
         // 
@@ -68,12 +57,12 @@ namespace SqlSync.SqlBuild.UnitTest
         public void ClearScriptDataConstructorTest()
         {
             string[] selectedScriptIds = new string[] { "1", "3", "5" };
-            SqlSyncBuildData buildData = new SqlSyncBuildData();
+            var buildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             string projectFileName = "MyProjectFile";
             string buildZipFileName = "MyZipFileName.sbm";
-            ClearScriptData target = new ClearScriptData(selectedScriptIds, buildData, projectFileName, buildZipFileName);
+            ClearScriptData target = new ClearScriptData(selectedScriptIds, buildDataModel, projectFileName, buildZipFileName);
             Assert.AreEqual(selectedScriptIds, target.SelectedScriptIds);
-            Assert.AreEqual(buildData, target.BuildData);
+            Assert.AreEqual(buildDataModel, target.BuildDataModel);
             Assert.AreEqual(projectFileName, target.ProjectFileName);
             Assert.AreEqual(buildZipFileName, target.BuildZipFileName);
         }

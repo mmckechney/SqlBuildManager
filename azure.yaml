@@ -1,0 +1,27 @@
+# Azure Developer CLI (azd) configuration
+# For more information, see: https://learn.microsoft.com/azure/developer/azure-developer-cli/
+
+name: sqlbuildmanager
+metadata:
+  template: SqlBuildManager
+
+# Infrastructure configuration
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+# Environment variables shared across all services
+# These can be overridden per environment using `azd env set`
+
+# Hooks for custom scripts
+hooks:
+  # Pre-provision hook to set current user info and IP address
+  preprovision:
+    shell: pwsh
+    run: ./scripts/preprovision.ps1
+
+  # Post-provision hook to grant managed identity SQL permissions and optionally generate settings files
+  postprovision:
+    shell: pwsh
+    run: ./scripts/postprovision.ps1

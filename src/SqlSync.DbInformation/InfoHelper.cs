@@ -5,6 +5,7 @@ using SqlSync.Connection;
 using SqlSync.DbInformation.ChangeDates;
 using System;
 using System.Collections;
+using System.Globalization;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -453,17 +454,34 @@ namespace SqlSync.DbInformation
             return dbList;
         }
 
-        public static SizeAnalysisTable GetDatabaseSizeAnalysis(ConnectionData connData)
+        public static SqlSync.DbInformation.Models.SizeAnalysisModel GetDatabaseSizeAnalysis(ConnectionData connData)
         {
-
-            SizeAnalysisTable tbl = new SizeAnalysisTable();
+            var list = new List<SqlSync.DbInformation.Models.SizeAnalysis>();
             try
             {
                 SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
                 SqlCommand cmd = new SqlCommand(new ResourceHelper().GetFromResources("SqlSync.DbInformation.SizeAnalysis.sql"));
                 cmd.Connection = conn;
-                SqlDataAdapter adapt = new SqlDataAdapter(cmd);
-                adapt.Fill(tbl);
+                conn.Open();
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    var tableName = reader["Table Name"].ToString() ?? string.Empty;
+                    var rowCount = Convert.ToInt32(reader["Row Count"], CultureInfo.InvariantCulture);
+                    var dataSize = Convert.ToInt32(reader["Data Size"], CultureInfo.InvariantCulture);
+                    var indexSize = Convert.ToInt32(reader["Index Size"], CultureInfo.InvariantCulture);
+                    var unusedSize = Convert.ToInt32(reader["Unused Size"], CultureInfo.InvariantCulture);
+                    var totalReserved = Convert.ToInt32(reader["Total Reserved Size"], CultureInfo.InvariantCulture);
+                    list.Add(new SqlSync.DbInformation.Models.SizeAnalysis(
+                        TableName: tableName,
+                        RowCount: rowCount,
+                        DataSize: dataSize,
+                        IndexSize: indexSize,
+                        UnusedSize: unusedSize,
+                        TotalReservedSize: totalReserved,
+                        AverageDataRowSize: 0,
+                        AverageIndexRowSize: 0));
+                }
 
             }
             catch (SqlException ex)
@@ -471,13 +489,13 @@ namespace SqlSync.DbInformation
                 if (ex.ToString().IndexOf("does not exist in database") == -1)
                     throw;
             }
-            return tbl;
+            return new SqlSync.DbInformation.Models.SizeAnalysisModel(list, Array.Empty<SqlSync.DbInformation.Models.ServerSizeInfo>());
         }
 
-        public static ServerSizeSummary GetServerDatabaseInfo(ConnectionData connData)
+        public static SqlSync.DbInformation.Models.SizeAnalysisModel GetServerDatabaseInfo(ConnectionData connData)
         {
             Regex nums = new Regex(@"\d{1,9}");
-            ServerSizeSummary data = new ServerSizeSummary();
+            var data = new List<SqlSync.DbInformation.Models.ServerSizeInfo>();
             string location;
             Int64 dbSize;
             connData.DatabaseName = "master";
@@ -513,13 +531,13 @@ namespace SqlSync.DbInformation
                             reader.Read();
                             dbSize = Int64.Parse(nums.Match(reader[1].ToString()).ToString());
                         }
-                        data.AddServerSizeSummaryRow(dbName, location, dbSize, DateTime.MinValue);
+                        data.Add(new SqlSync.DbInformation.Models.ServerSizeInfo(dbName, location ?? string.Empty, dbSize, DateTime.MinValue));
                     }
 
                 }
                 catch
                 {
-                    data.AddServerSizeSummaryRow(dbName, string.Empty, 0, DateTime.MinValue);
+                    data.Add(new SqlSync.DbInformation.Models.ServerSizeInfo(dbName, string.Empty, 0, DateTime.MinValue));
                 }
                 finally
                 {
@@ -528,18 +546,15 @@ namespace SqlSync.DbInformation
                 }
             }
 
-            data.AcceptChanges();
-            AddDatabaseCreateDate(ref data, connData);
-            data.AcceptChanges();
-            return data;
+            AddDatabaseCreateDate(data, connData);
+            return new SqlSync.DbInformation.Models.SizeAnalysisModel(Array.Empty<SqlSync.DbInformation.Models.SizeAnalysis>(), data);
 
 
         }
-        private static void AddDatabaseCreateDate(ref ServerSizeSummary sizeSummary, ConnectionData connData)
+        private static void AddDatabaseCreateDate(List<SqlSync.DbInformation.Models.ServerSizeInfo> sizeSummary, ConnectionData connData)
         {
             string sql2000Cmd = "SELECT name, crdate FROM sysdatabases";
             string sql2005Cmd = "SELECT name, create_date FROM sys.databases";
-            string filter;
 
             connData.DatabaseName = "master";
             SqlCommand cmd = new SqlCommand();
@@ -557,9 +572,15 @@ namespace SqlSync.DbInformation
                     {
                         while (reader.Read())
                         {
-                            filter = sizeSummary.DatabaseNameColumn.ColumnName + "='" + reader[0].ToString() + "'";
-                            if (sizeSummary.Select(filter).Length > 0)
-                                ((ServerSizeSummaryRow)sizeSummary.Select(filter)[0]).DateCreated = reader.GetDateTime(1);
+                            var name = reader[0].ToString() ?? string.Empty;
+                            for (int i = 0; i < sizeSummary.Count; i++)
+                            {
+                                if (string.Equals(sizeSummary[i].DatabaseName, name, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    sizeSummary[i] = sizeSummary[i] with { DateCreated = reader.GetDateTime(1) };
+                                    break;
+                                }
+                            }
                         }
                     }
 
@@ -574,9 +595,15 @@ namespace SqlSync.DbInformation
                         {
                             while (reader.Read())
                             {
-                                filter = sizeSummary.DatabaseNameColumn.ColumnName + "='" + reader[0].ToString() + "'";
-                                if (sizeSummary.Select(filter).Length > 0)
-                                    ((ServerSizeSummaryRow)sizeSummary.Select(filter)[0]).DateCreated = reader.GetDateTime(1);
+                                var name = reader[0].ToString() ?? string.Empty;
+                                for (int i = 0; i < sizeSummary.Count; i++)
+                                {
+                                    if (string.Equals(sizeSummary[i].DatabaseName, name, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        sizeSummary[i] = sizeSummary[i] with { DateCreated = reader.GetDateTime(1) };
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }

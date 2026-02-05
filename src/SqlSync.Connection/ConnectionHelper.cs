@@ -8,7 +8,7 @@ namespace SqlSync.Connection
     /// <summary>
     /// Summary description for ConnectionHelper.
     /// </summary>
-    public class ConnectionHelper
+    public class ConnectionHelper : IConnectionHelper
     {
         public static string ConnectCryptoKey
         {
@@ -85,6 +85,10 @@ namespace SqlSync.Connection
                 case AuthenticationType.AzureADIntegrated:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryIntegrated;
                     builder.IntegratedSecurity = true;
+                    builder.TrustServerCertificate = true;
+                    break;
+                case AuthenticationType.AzureADDefault:
+                    builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault;
                     builder.TrustServerCertificate = true;
                     break;
                 case AuthenticationType.AzureADPassword:
@@ -168,6 +172,12 @@ namespace SqlSync.Connection
             }
             catch (Exception exe)
             {
+                //if(exe.Message.ToUpper().Contains("ManagedIdentityCredential authentication unavailable".ToUpper()))
+                //{
+                //    connData.AuthenticationType = AuthenticationType.AzureADIntegrated;
+                //    connData.ManagedIdentityClientId = "";
+                //    return TestDatabaseConnection(connData);
+                //}
                 log.LogWarning(exe, "TestConnection failed");
                 return false;
             }

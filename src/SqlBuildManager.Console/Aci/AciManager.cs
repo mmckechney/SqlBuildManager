@@ -210,6 +210,10 @@ namespace SqlBuildManager.Console.Aci
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.ServiceBusTopicConnectionString) { Value = cmdLine.ConnectionArgs.ServiceBusTopicConnectionString });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.PackageName) { Value = Path.GetFileName(cmdLine.BuildFileName) });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.Concurrency) { Value = cmdLine.Concurrency.ToString() });
+            if(cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.Password)
+            {
+                cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.ManagedIdentity;
+            }
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.AuthType) { Value = cmdLine.AuthenticationArgs.AuthenticationType.ToString() });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.ConcurrencyType) { Value = cmdLine.ConcurrencyType.ToString() });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.AllowObjectDelete) { Value = cmdLine.AllowObjectDelete.ToString() });

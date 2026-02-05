@@ -19,7 +19,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -73,9 +73,9 @@ namespace SqlBuildManager.Console.Dependent.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] dbconfig_doubledb {
+        public static byte[] dbconfig_10 {
             get {
-                object obj = ResourceManager.GetObject("dbconfig_doubledb", resourceCulture);
+                object obj = ResourceManager.GetObject("dbconfig-10", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -83,9 +83,39 @@ namespace SqlBuildManager.Console.Dependent.UnitTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] dbconfig_long {
+        public static byte[] dbconfig_100 {
             get {
-                object obj = ResourceManager.GetObject("dbconfig_long", resourceCulture);
+                object obj = ResourceManager.GetObject("dbconfig-100", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] dbconfig_20 {
+            get {
+                object obj = ResourceManager.GetObject("dbconfig-20", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] dbconfig_50 {
+            get {
+                object obj = ResourceManager.GetObject("dbconfig-50", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] dbconfig_doubledb {
+            get {
+                object obj = ResourceManager.GetObject("dbconfig_doubledb", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -131,7 +161,9 @@ namespace SqlBuildManager.Console.Dependent.UnitTest.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SELECT &apos;client&apos;, name FROM sys.Databases WHERE name like &apos;Sql%&apos;.
+        ///   Looks up a localized string similar to DECLARE @SERVER sql_variant 
+        ///SELECT @SERVER  = SERVERPROPERTY (&apos;ServerName&apos;)
+        ///SELECT @SERVER, &apos;client&apos;, name FROM sys.Databases WHERE name like &apos;Sql%&apos;.
         /// </summary>
         public static string override_sql {
             get {
@@ -206,15 +238,11 @@ namespace SqlBuildManager.Console.Dependent.UnitTest.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to BEGIN TRANSACTION
-        ///INSERT INTO dbo.TransactionTest VALUES (&apos;PROCESS LOCK&apos;, newid(), getdate())
-        ///DECLARE @Count INT
-        ///SET @Count=0
-        ///WHILE @Count &lt; {0}   --near infinite loop...
-        ///BEGIN  
-        ///       SELECT TOP 1 *  FROM dbo.TransactionTest WITH (TABLOCKX)
-        ///       SET @Count = @Count+1
-        ///END  
-        ///COMMIT TRANSACTION.
+        ///    SELECT TOP 1 * FROM dbo.TransactionTest WITH (TABLOCKX, HOLDLOCK)
+        ///    WHERE 0 = 1
+        ///    WAITFOR DELAY &apos;00:{0}&apos;
+        ///ROLLBACK TRANSACTION
+        ///.
         /// </summary>
         public static string TableLockingScript {
             get {

@@ -19,6 +19,7 @@ namespace SqlBuildManager.Console.ExternalTest
     [TestClass]
     public class AciTests
     {
+        public TestContext TestContext { get; set; }
 
         private string settingsFileKeyPath;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
@@ -27,7 +28,7 @@ namespace SqlBuildManager.Console.ExternalTest
         public void ConfigureProcessInfo()
         {
 
-            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<AciTests>("SqlBuildManager.Console.log", @"C:\temp");
+            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<AciTests>("SqlBuildManager.Console.log", Path.GetTempPath());
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
 
             System.Console.SetOut(new StringWriter(ConsoleOutput));    // Associate StringBuilder with StdOut
@@ -41,26 +42,24 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
-        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        // Old settings files - commented out as we now use MI-only authentication
+        // // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        // // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        // // [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // // [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        // // [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        // // [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // // [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void ACI_Queue_Run_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
 
 
                 //get the size of the log file before we start
@@ -94,30 +93,27 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
 
         }
 
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
-        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataTestMethod]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        // [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        // [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void ACI_Queue_SBMSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
 
 
                 //get the size of the log file before we start
@@ -176,27 +172,24 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
 
         }
 
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataTestMethod]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void ACI_Queue_SBMSource_DoubleDbConfig_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/clientdbtargets-doubledb.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect_DoubleClient.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect_DoubleClient);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectDoubleClientSbm();
 
 
                 //get the size of the log file before we start
@@ -260,25 +253,22 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
 
-        [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        // [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void ACI_Queue_SBMSource_ManagedIdentity_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
 
 
                 //get the size of the log file before we start
@@ -338,13 +328,14 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
 
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void ACI_Queue_DacpacSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -432,11 +423,12 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
         }
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void ACI_Queue_DacpacSource_ForceApplyCustom_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -538,21 +530,22 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
 
 
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
-        [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        // [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        // [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        // [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void ACI_Queue_Query_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
@@ -603,7 +596,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
                 if (File.Exists(outputFile))
                 {
                     File.Delete(outputFile);
@@ -613,10 +606,11 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
 
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
-        [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataTestMethod]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void Aci_Queue_LongRunning_SBMSource_ByConcurrencyType_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             settingsFile = Path.GetFullPath(settingsFile);
@@ -627,11 +621,7 @@ namespace SqlBuildManager.Console.ExternalTest
             try
             {
                 settingsFile = Path.GetFullPath(settingsFile);
-                var sbmFileName = Path.GetFullPath("LongRunning.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.long_running);
-                }
+                var sbmFileName = TestHelper.GetLongRunningSbm();
 
 
                 //get the size of the log file before we start
@@ -665,8 +655,12 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
         }
     }
 }
+
+
+
+

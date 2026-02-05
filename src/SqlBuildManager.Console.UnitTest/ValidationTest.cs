@@ -3,6 +3,8 @@ using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild.MultiDb;
 using System.IO;
+
+#nullable enable
 namespace SqlBuildManager.Console.UnitTest
 {
 
@@ -16,23 +18,7 @@ namespace SqlBuildManager.Console.UnitTest
     {
 
 
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; } = null!;
 
         #region Additional test attributes
 
@@ -92,7 +78,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureADIntegrated;
-            cmdLine.RootLoggingPath = @"C:\temp";
+            cmdLine.RootLoggingPath = Path.GetTempPath();
             cmdLine.Transactional = false;
             cmdLine.Trial = true;
             string[] errorMessages = null;
@@ -112,7 +98,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureADIntegrated;
-            cmdLine.RootLoggingPath = @"C:\temp";
+            cmdLine.RootLoggingPath = Path.GetTempPath();
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
             string[] errorMessages = null;
@@ -132,7 +118,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureADIntegrated;
-            cmdLine.RootLoggingPath = @"C:\temp";
+            cmdLine.RootLoggingPath = Path.GetTempPath();
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
             cmdLine.MultiDbRunConfigFileName = @"C:\temp\multicfg.multidb";
@@ -153,7 +139,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureADIntegrated;
-            cmdLine.RootLoggingPath = @"C:\temp";
+            cmdLine.RootLoggingPath = Path.GetTempPath();
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
             cmdLine.MultiDbRunConfigFileName = @"C:\temp\multicfg.cfg";
@@ -181,7 +167,7 @@ namespace SqlBuildManager.Console.UnitTest
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
             cmdLine.MultiDbRunConfigFileName = @"C:\temp\multicfg.BadExt";
-            cmdLine.ScriptSrcDir = @"C:\temp";
+            cmdLine.ScriptSrcDir = Path.GetTempPath();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureADIntegrated;
             string[] errorMessages = null;
             int expected = (int)ExecutionReturn.InvalidOverrideFlag;
@@ -241,7 +227,7 @@ namespace SqlBuildManager.Console.UnitTest
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
             cmdLine.MultiDbRunConfigFileName = multFile;
-            cmdLine.ScriptSrcDir = @"C:\temp";
+            cmdLine.ScriptSrcDir = Path.GetTempPath();
             string[] errorMessages = null;
             int expected = 0;
             int actual;

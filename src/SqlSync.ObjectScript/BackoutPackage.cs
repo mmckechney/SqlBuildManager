@@ -3,33 +3,39 @@ using SqlSync.Connection;
 using SqlSync.Constants;
 using SqlSync.DbInformation;
 using SqlSync.SqlBuild;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Objects;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 namespace SqlSync.ObjectScript
 {
     public class BackoutPackage
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public static bool CreateBackoutPackage(ConnectionData connData,
+        /// <summary>
+        /// Async version of CreateBackoutPackage. Creates a backout package from the source build file.
+        /// </summary>
+        public static async Task<bool> CreateBackoutPackageAsync(ConnectionData connData,
                                                 List<SqlBuild.Objects.ObjectUpdates> objectUpdates,
                                                 List<SqlBuild.Objects.ObjectUpdates> dontUpdate,
                                                 List<string> manualScriptsCanNotUpdate, string sourceBuildZipFileName,
                                                 string destinationBuildZipFileName, string sourceServer, string sourceDb,
                                                 bool removeNewObjectsFromPackage, bool markManualScriptsAsRunOnce,
-                                                bool dropNewRoutines, ref BackgroundWorker bg)
+                                                bool dropNewRoutines, IProgress<string> progress = null,
+                                                CancellationToken cancellationToken = default)
         {
-            //Copy the source straight over...
-            bool reportProgress = false;
-            if (bg != null && bg.WorkerReportsProgress)
+            void ReportProgress(string message)
             {
-                reportProgress = true;
-                bg.ReportProgress(-1, "Copying package to destination...");
+                progress?.Report(message);
             }
+
+            //Copy the source straight over...
+            ReportProgress("Copying package to destination...");
 
             if (!CopyOriginalToBackout(sourceBuildZipFileName, destinationBuildZipFileName))
                 return false;
@@ -39,19 +45,15 @@ namespace SqlSync.ObjectScript
             string projectPath = string.Empty;
             string projectFileName = string.Empty;
 
-            SqlBuildFileHelper.InitilizeWorkingDirectory(ref workingDir, ref projectPath, ref projectFileName);
+            (_, workingDir, projectPath, projectFileName) = await SqlBuildFileHelper.InitializeWorkingDirectoryAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             string message = $"Initialized working directory {workingDir}";
             log.LogDebug(message);
-            if (reportProgress)
-            {
-                bg.ReportProgress(-1, "Initialized working directory");
-            }
-
+            ReportProgress("Initialized working directory");
 
             //Extract destination package into working folder
             string result;
-            bool success = SqlBuildFileHelper.ExtractSqlBuildZipFile(destinationBuildZipFileName, ref workingDir,
-                                                                     ref projectPath, ref projectFileName, out result);
+            bool success;
+            (success, workingDir, projectPath, projectFileName, result) = await SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(destinationBuildZipFileName, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (success)
             {
                 log.LogDebug($"Successfully extracted build file {destinationBuildZipFileName} to {workingDir}");
@@ -63,9 +65,10 @@ namespace SqlSync.ObjectScript
             }
 
             //Load the build data 
-            SqlSyncBuildData buildData;
-            if (reportProgress) bg.ReportProgress(-1, "Loading project file for modification.");
-            bool successfulLoad = SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projectFileName, false);
+            SqlSyncBuildDataModel buildModel;
+            ReportProgress("Loading project file for modification.");
+            bool successfulLoad;
+            (successfulLoad, buildModel) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projectFileName, false, cancellationToken).ConfigureAwait(false);
             if (!successfulLoad)
             {
                 log.LogError("Unable to load SBM project data");
@@ -82,8 +85,8 @@ namespace SqlSync.ObjectScript
 
 
             //Get the updated scripts...
-            if (reportProgress) bg.ReportProgress(-1, "Generating updated scripts.");
-            List<UpdatedObject> lstScripts = ObjectScriptHelper.ScriptDatabaseObjects(objectUpdates, tmpData, ref bg);
+            ReportProgress("Generating updated scripts.");
+            List<UpdatedObject> lstScripts = ObjectScriptHelper.ScriptDatabaseObjects(objectUpdates, tmpData);
 
             //Log if some scripts were not updated properly...
             var notUpdated = from s in objectUpdates
@@ -107,24 +110,35 @@ namespace SqlSync.ObjectScript
             //Save the updated scripts...
             DateTime updateTime = DateTime.Now;
             bool errorWriting = false;
+            var scripts = buildModel.Script.ToList();
             if (lstScripts != null)
             {
                 foreach (UpdatedObject obj in lstScripts)
                 {
                     try
                     {
-                        File.WriteAllText(projectPath + obj.ScriptName, obj.ScriptContents);
+                        await File.WriteAllTextAsync(projectPath + obj.ScriptName, obj.ScriptContents, cancellationToken).ConfigureAwait(false);
 
-                        //Update the buildData object with the update date/time and user;
-                        var sr = from r in buildData.Script
-                                 where r.FileName == obj.ScriptName
-                                 select r;
-
-                        if (sr.Any())
+                        var idx = scripts.FindIndex(s => s.FileName == obj.ScriptName);
+                        if (idx >= 0)
                         {
-                            SqlSyncBuildData.ScriptRow row = sr.First();
-                            row.DateModified = updateTime;
-                            row.ModifiedBy = System.Environment.UserName;
+                            var existing = scripts[idx];
+                            scripts[idx] = new Script(
+                                fileName: existing.FileName,
+                                buildOrder: existing.BuildOrder,
+                                description: existing.Description,
+                                rollBackOnError: existing.RollBackOnError,
+                                causesBuildFailure: existing.CausesBuildFailure,
+                                dateAdded: existing.DateAdded,
+                                scriptId: existing.ScriptId,
+                                database: existing.Database,
+                                stripTransactionText: existing.StripTransactionText,
+                                allowMultipleRuns: existing.AllowMultipleRuns,
+                                addedBy: existing.AddedBy,
+                                scriptTimeOut: existing.ScriptTimeOut,
+                                dateModified: updateTime,
+                                modifiedBy: System.Environment.UserName,
+                                tag: existing.Tag);
                         }
 
                     }
@@ -144,13 +158,10 @@ namespace SqlSync.ObjectScript
                     try
                     {
                         //Update the buildData object with the update date/time and user;
-                        var sr = from r in buildData.Script
-                                 where r.FileName == obj.ShortFileName
-                                 select r;
-
-                        if (sr.Any())
+                        var idx = scripts.FindIndex(s => s.FileName == obj.ShortFileName);
+                        if (idx >= 0)
                         {
-                            SqlSyncBuildData.ScriptRow row = sr.First();
+                            var row = scripts[idx];
                             if (obj.ObjectType == DbScriptDescription.StoredProcedure ||
                                 obj.ObjectType == DbScriptDescription.UserDefinedFunction ||
                                 obj.ObjectType == DbScriptDescription.Trigger ||
@@ -164,28 +175,70 @@ namespace SqlSync.ObjectScript
                                     objName = arr[1];
 
                                     string str = CreateRoutineDropScript(schema, objName, obj.ObjectType);
-                                    File.WriteAllText(projectPath + "DROP " + row.FileName, str);
-                                    row.FileName = "DROP " + row.FileName;
-                                    row.DateModified = updateTime;
-                                    row.ModifiedBy = System.Environment.UserName;
+                                    var newFileName = "DROP " + row.FileName;
+                                    await File.WriteAllTextAsync(projectPath + newFileName, str, cancellationToken).ConfigureAwait(false);
+                                    row = new Script(
+                                        fileName: newFileName,
+                                        buildOrder: row.BuildOrder,
+                                        description: row.Description,
+                                        rollBackOnError: row.RollBackOnError,
+                                        causesBuildFailure: row.CausesBuildFailure,
+                                        dateAdded: row.DateAdded,
+                                        scriptId: row.ScriptId,
+                                        database: row.Database,
+                                        stripTransactionText: row.StripTransactionText,
+                                        allowMultipleRuns: row.AllowMultipleRuns,
+                                        addedBy: row.AddedBy,
+                                        scriptTimeOut: row.ScriptTimeOut,
+                                        dateModified: updateTime,
+                                        modifiedBy: System.Environment.UserName,
+                                        tag: row.Tag);
                                 }
                                 else
                                 {
-                                    row.AllowMultipleRuns = false;
-                                    row.DateModified = updateTime;
-                                    row.ModifiedBy = System.Environment.UserName;
+                                    row = new Script(
+                                        fileName: row.FileName,
+                                        buildOrder: row.BuildOrder,
+                                        description: row.Description,
+                                        rollBackOnError: row.RollBackOnError,
+                                        causesBuildFailure: row.CausesBuildFailure,
+                                        dateAdded: row.DateAdded,
+                                        scriptId: row.ScriptId,
+                                        database: row.Database,
+                                        stripTransactionText: row.StripTransactionText,
+                                        allowMultipleRuns: false,
+                                        addedBy: row.AddedBy,
+                                        scriptTimeOut: row.ScriptTimeOut,
+                                        dateModified: updateTime,
+                                        modifiedBy: System.Environment.UserName,
+                                        tag: row.Tag);
                                 }
                             }
                             else if (removeNewObjectsFromPackage)
                             {
-                                buildData.Script.RemoveScriptRow(row);
+                                scripts.RemoveAt(idx);
                             }
                             else
                             {
-                                row.AllowMultipleRuns = false;
-                                row.DateModified = updateTime;
-                                row.ModifiedBy = System.Environment.UserName;
+                                row = new Script(
+                                    fileName: row.FileName,
+                                    buildOrder: row.BuildOrder,
+                                    description: row.Description,
+                                    rollBackOnError: row.RollBackOnError,
+                                    causesBuildFailure: row.CausesBuildFailure,
+                                    dateAdded: row.DateAdded,
+                                    scriptId: row.ScriptId,
+                                    database: row.Database,
+                                    stripTransactionText: row.StripTransactionText,
+                                    allowMultipleRuns: false,
+                                    addedBy: row.AddedBy,
+                                    scriptTimeOut: row.ScriptTimeOut,
+                                    dateModified: updateTime,
+                                    modifiedBy: System.Environment.UserName,
+                                    tag: row.Tag);
                             }
+                            if (idx < scripts.Count)
+                                scripts[idx] = row;
                         }
 
                     }
@@ -211,22 +264,29 @@ namespace SqlSync.ObjectScript
                 {
                     try
                     {
-                        //Update the buildData object with the update date/time and user;
-                        var sr = from r in buildData.Script
-                                 where r.FileName == scr
-                                 select r;
-
-                        if (sr.Any())
+                        var idx = scripts.FindIndex(s => s.FileName == scr);
+                        if (idx >= 0 && markManualScriptsAsRunOnce)
                         {
-                            if (markManualScriptsAsRunOnce)
+                            var row = scripts[idx];
+                            if ((row.BuildOrder ?? 0) < 1000)
                             {
-                                SqlSyncBuildData.ScriptRow row = sr.First();
-                                if (row.BuildOrder < 1000)
-                                {
-                                    row.AllowMultipleRuns = false;
-                                    row.DateModified = updateTime;
-                                    row.ModifiedBy = System.Environment.UserName;
-                                }
+                                row = new Script(
+                                    fileName: row.FileName,
+                                    buildOrder: row.BuildOrder,
+                                    description: row.Description,
+                                    rollBackOnError: row.RollBackOnError,
+                                    causesBuildFailure: row.CausesBuildFailure,
+                                    dateAdded: row.DateAdded,
+                                    scriptId: row.ScriptId,
+                                    database: row.Database,
+                                    stripTransactionText: row.StripTransactionText,
+                                    allowMultipleRuns: false,
+                                    addedBy: row.AddedBy,
+                                    scriptTimeOut: row.ScriptTimeOut,
+                                    dateModified: updateTime,
+                                    modifiedBy: System.Environment.UserName,
+                                    tag: row.Tag);
+                                scripts[idx] = row;
                             }
                         }
 
@@ -242,10 +302,15 @@ namespace SqlSync.ObjectScript
 
             if (errorWriting)
                 return false;
-            if (reportProgress) bg.ReportProgress(-1, "Saving backout package.");
+            ReportProgress("Saving backout package.");
 
-            buildData.AcceptChanges();
-            SqlBuildFileHelper.SaveSqlBuildProjectFile(ref buildData, projectFileName, destinationBuildZipFileName);
+            buildModel = new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: buildModel.SqlSyncBuildProject,
+                script: scripts,
+                build: buildModel.Build,
+                scriptRun: buildModel.ScriptRun,
+                committedScript: buildModel.CommittedScript);
+            await SqlBuildFileHelper.SaveSqlBuildProjectFileAsync(buildModel, projectFileName, destinationBuildZipFileName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
 
             return true;
@@ -256,22 +321,14 @@ namespace SqlSync.ObjectScript
         /// <summary>
         /// This method should only really be used with a command line, unattended execution.
         /// </summary>
-        /// <param name="connData"></param>
-        /// <param name="objectUpdates"></param>
-        /// <param name="dontUpdate"></param>
-        /// <param name="manualScriptsCanNotUpdate"></param>
-        /// <param name="sourceBuildZipFileName"></param>
-        /// <param name="sourceServer"></param>
-        /// <param name="sourceDb"></param>
-        /// <returns></returns>
-        public static string CreateDefaultBackoutPackage(ConnectionData connData, string sourceBuildZipFileName, string sourceServer, string sourceDb)
+        public static async Task<string> CreateDefaultBackoutPackageAsync(ConnectionData connData, string sourceBuildZipFileName, string sourceServer, string sourceDb, IProgress<string> progress = null, CancellationToken cancellationToken = default)
         {
             /*How to create a backout package:
              * 
              * 1. Extract the package and load the BuildData
              * 2. Get the list of sriptable objects and manually created scripts
              * 3. Targeting your "old" source, and see what scriptable objects are not there (i.e. are "new" in the package)
-             * 
+             *
              */
             List<string> manualScriptsCanNotUpdate;
             List<ObjectUpdates> initialCanUpdateList;
@@ -279,17 +336,16 @@ namespace SqlSync.ObjectScript
             string projectFilePath = string.Empty;
             string projectFileName = string.Empty;
             string result;
-            SqlSyncBuildData buildData;
-            BackgroundWorker bg = new BackgroundWorker();
-            bg.WorkerReportsProgress = true;
+            SqlSyncBuildDataModel buildData;
 
             //Extract and load the build data...
             log.LogDebug($"Extracting SBM zip file for {sourceBuildZipFileName}");
-            bool success = SqlBuildFileHelper.ExtractSqlBuildZipFile(sourceBuildZipFileName, ref workingDirectory, ref projectFilePath, ref projectFileName, out result);
+            bool success;
+            (success, workingDirectory, projectFilePath, projectFileName, result) = await SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(sourceBuildZipFileName, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (success)
             {
                 log.LogDebug($"Loading SqlSyncBuldData object from {projectFileName}");
-                success = SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildData, projectFileName, false);
+                (success, buildData) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projectFileName, false, cancellationToken).ConfigureAwait(false);
                 if (!success)
                     return string.Empty;
             }
@@ -300,7 +356,7 @@ namespace SqlSync.ObjectScript
 
             //Get the scriptable objects
             log.LogDebug($"Getting the scriptable objects from {sourceBuildZipFileName}");
-            SqlBuildFileHelper.GetFileDataForObjectUpdates(ref buildData, projectFileName, out initialCanUpdateList, out manualScriptsCanNotUpdate);
+            SqlBuildFileHelper.GetFileDataForObjectUpdates(buildData, projectFileName, out initialCanUpdateList, out manualScriptsCanNotUpdate);
 
             //Get object that are also on the target (ie are "existing") -- only these will be updated
             log.LogDebug($"Getting list of objects can be rolled back from {sourceServer}:{sourceDb}");
@@ -316,12 +372,12 @@ namespace SqlSync.ObjectScript
 
             //Create the package!!
             log.LogDebug($"Creating backout package {backoutPackageName} from source package {sourceBuildZipFileName}");
-            success = CreateBackoutPackage(connData, canUpdate, notPresentOnTarget, manualScriptsCanNotUpdate,
+            success = await CreateBackoutPackageAsync(connData, canUpdate, notPresentOnTarget, manualScriptsCanNotUpdate,
                                                 sourceBuildZipFileName, backoutPackageName,
-                                                sourceServer, sourceDb, true, true, true, ref bg);
+                                                sourceServer, sourceDb, true, true, true, progress, cancellationToken).ConfigureAwait(false);
 
             //Cleanup all the temp files created
-            SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDirectory);
+            await SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectoryAsync(workingDirectory, cancellationToken).ConfigureAwait(false);
 
             if (!success)
             {

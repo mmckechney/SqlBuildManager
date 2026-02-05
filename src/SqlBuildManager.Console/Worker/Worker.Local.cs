@@ -7,18 +7,23 @@ using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
+using SqlSync.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using SqlSync.SqlBuild;
 using sqlB = SqlSync.SqlBuild;
+using sqlM = SqlSync.SqlBuild.Models;
+using Cryptography = SqlBuildManager.Console.CommandLine.Cryptography;
+using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console
 {
     internal partial class Worker
     {
-        internal static int RunLocalBuildAsync(CommandLineArgs cmdLine)
+        internal static async Task<int> RunLocalBuildAsync(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Worker>(Program.applicationLogFileName, cmdLine.RootLoggingPath);
@@ -65,7 +70,7 @@ namespace SqlBuildManager.Console
                 }
                 else if (string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
                 {
-                    cmdLine.ManualOverRideSets = sqlB.SqlBuildFileHelper.InferOverridesFromPackage(cmdLine.BuildFileName, cmdLine.Database);
+                    cmdLine.ManualOverRideSets = await sqlB.SqlBuildFileHelper.InferOverridesFromPackageAsync(cmdLine.BuildFileName, cmdLine.Database).ConfigureAwait(false);
                     var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
                     var def = ovrRide.Split(':')[1].Split(',')[0];
                     var target = ovrRide.Split(':')[1].Split(',')[1];
@@ -85,20 +90,27 @@ namespace SqlBuildManager.Console
                     cmdLine.RootLoggingPath = Directory.GetCurrentDirectory();
                 }
 
-                string projFilePath = "", projectFileName = "";
-                sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFile(cmdLine.BuildFileName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
+                var extractResult = await sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(cmdLine.BuildFileName, workingDirectory: workingDir, resetWorkingDirectory: true, overwriteExistingProjectFiles: true).ConfigureAwait(false);
+                if (!extractResult.success)
+                {
+                    log.LogError($"Unable to extract build file: {cmdLine.BuildFileName}. {extractResult.result}");
+                    return -1;
+                }
+                workingDir = extractResult.workingDirectory;
+                string projFilePath = extractResult.projectFilePath;
+                string projectFileName = extractResult.projectFileName;
 
-                bool success = sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sqlB.SqlSyncBuildData buildData, projectFileName, true);
+                var (success, buildModel) = await sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projectFileName, validateSchema: true).ConfigureAwait(false);
                 if (!success)
                 {
                     log.LogError($"Unable to load and extract build file: {cmdLine.BuildFileName}");
                     return -1;
                 }
 
-                sqlB.SqlBuildRunData sqlBuildRunData = new sqlB.SqlBuildRunData()
+                sqlM.SqlBuildRunData sqlBuildRunData = new sqlM.SqlBuildRunData()
                 {
                     ForceCustomDacpac = false,
-                    BuildData = buildData,
+                    BuildDataModel = buildModel,
                     IsTransactional = cmdLine.Transactional,
                     BuildDescription = cmdLine.Description,
                     BuildRevision = cmdLine.BuildRevision,
@@ -120,19 +132,33 @@ namespace SqlBuildManager.Console
                     ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId
                 };
                 sqlB.SqlBuildHelper helper = new sqlB.SqlBuildHelper(connData, true, "", cmdLine.Transactional);
-                BackgroundWorker bg = new BackgroundWorker()
-                {
-                    WorkerReportsProgress = true,
-                };
-                bg.ProgressChanged += Bg_ProgressChanged;
-                DoWorkEventArgs workArgs = new DoWorkEventArgs(sqlBuildRunData);
-                LocalRunInfo.Sq1SyncBuildData = buildData;
+                LocalRunInfo.Sq1SyncBuildData = buildModel;
                 LocalRunInfo.BuildZipFileName = cmdLine.BuildFileName;
                 LocalRunInfo.WorkingDirectory = workingDir;
 
                 if (multiDbData == null)
                 {
-                    helper.ProcessBuild(sqlBuildRunData, cmdLine.TimeoutRetryCount, bg, workArgs);
+                    var runDataModel = new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
+                        buildDataModel: sqlBuildRunData.BuildDataModel ?? buildModel,
+                        buildType: sqlBuildRunData.BuildType,
+                        server: sqlBuildRunData.Server,
+                        buildDescription: sqlBuildRunData.BuildDescription,
+                        startIndex: sqlBuildRunData.StartIndex,
+                        projectFileName: sqlBuildRunData.ProjectFileName,
+                        isTrial: sqlBuildRunData.IsTrial,
+                        runItemIndexes: sqlBuildRunData.RunItemIndexes,
+                        runScriptOnly: sqlBuildRunData.RunScriptOnly,
+                        buildFileName: sqlBuildRunData.BuildFileName,
+                        logToDatabaseName: sqlBuildRunData.LogToDatabaseName,
+                        isTransactional: sqlBuildRunData.IsTransactional,
+                        platinumDacPacFileName: sqlBuildRunData.PlatinumDacPacFileName,
+                        targetDatabaseOverrides: sqlBuildRunData.TargetDatabaseOverrides,
+                        forceCustomDacpac: sqlBuildRunData.ForceCustomDacpac,
+                        buildRevision: sqlBuildRunData.BuildRevision,
+                        defaultScriptTimeout: sqlBuildRunData.DefaultScriptTimeout,
+                        allowObjectDelete: sqlBuildRunData.AllowObjectDelete);
+
+                    await helper.ProcessBuildAsync(runData: runDataModel, allowableTimeoutRetries: cmdLine.TimeoutRetryCount);
                 }
                 else
                 {
@@ -140,13 +166,14 @@ namespace SqlBuildManager.Console
                     multiDbData.RunAsTrial = cmdLine.Trial;
                     multiDbData.BuildFileName = cmdLine.BuildFileName;
                     multiDbData.BuildDescription = cmdLine.Description;
-                    multiDbData.BuildData = buildData;
-                    helper.ProcessMultiDbBuild(multiDbData, projectFileName, bg, workArgs);
+                    multiDbData.BuildData = buildModel;
+                    var res = await helper.ProcessMultiDbBuildAsync(multiDbData, projectFileName);
+                    log.LogInformation(res.ToString());
                 }
             }
             finally
             {
-                sqlB.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDir);
+                await sqlB.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectoryAsync(workingDir).ConfigureAwait(false);
             }
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
@@ -186,7 +213,7 @@ namespace SqlBuildManager.Console
                 log.LogInformation("Saving updated build file to disk");
                 try
                 {
-                    sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(LocalRunInfo.Sq1SyncBuildData, LocalRunInfo.WorkingDirectory, LocalRunInfo.BuildZipFileName);
+                    sqlB.SqlBuildFileHelper.PackageProjectFileIntoZipAsync(LocalRunInfo.Sq1SyncBuildData, LocalRunInfo.WorkingDirectory, LocalRunInfo.BuildZipFileName, includeHistoryAndLogs: true).GetAwaiter().GetResult();
                     log.LogInformation("Build file saved to disk");
                 }
                 catch (Exception exe)
@@ -200,7 +227,12 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static int RunThreadedExecution(CommandLineArgs cmdLine, bool unittest = false)
+        internal static Task<int> RunThreadedExecutionAsync(CommandLineArgs cmdLine, bool unittest)
+        {
+            return RunThreadedExecutionAsync(cmdLine, unittest, null);
+        }
+
+        internal static async Task<int> RunThreadedExecutionAsync(CommandLineArgs cmdLine, bool unittest, BuildExecutionContext context)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             if (string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
@@ -226,8 +258,8 @@ namespace SqlBuildManager.Console
             log.LogDebug(cmdLine.ToStringExtension(StringType.Basic));
             log.LogDebug(cmdLine.ToStringExtension(StringType.Batch));
             log.LogInformation("Running Threaded Execution...");
-            ThreadedManager tManager = new ThreadedManager(cmdLine);
-            int retVal = tManager.Execute();
+            ThreadedManager tManager = new ThreadedManager(cmdLine, null, context);
+            int retVal = await tManager.ExecuteAsync();
             ExecutionReturn exeResult;
             if (Enum.TryParse<ExecutionReturn>(retVal.ToString(), out exeResult))
             {
@@ -258,8 +290,7 @@ namespace SqlBuildManager.Console
             if (!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
                 log.LogInformation("Writing log files to storage...");
-                var blobTask = StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, cmdLine.RootLoggingPath);
-                blobTask.Wait();
+                await StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, cmdLine.RootLoggingPath);
             }
 
             log.LogDebug("Exiting Threaded Execution");
@@ -269,7 +300,7 @@ namespace SqlBuildManager.Console
 
         private static class LocalRunInfo
         {
-            public static sqlB.SqlSyncBuildData Sq1SyncBuildData { get; set; }
+            public static sqlM.SqlSyncBuildDataModel Sq1SyncBuildData { get; set; }
             public static string WorkingDirectory { get; set; }
             public static string BuildZipFileName { get; set; }
             public static bool Success { get; set; } = true;

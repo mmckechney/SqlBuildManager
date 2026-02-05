@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
+using SqlSync.SqlBuild.Models;
+
+#nullable enable
 
 namespace SqlSync.SqlBuild.MultiDb
 {
@@ -17,7 +20,7 @@ namespace SqlSync.SqlBuild.MultiDb
         [XmlIgnore()]
         public string ProjectFileName { get; set; } = string.Empty;
         [XmlIgnore()]
-        public SqlSyncBuildData BuildData { get; set; } = null;
+        public SqlSyncBuildDataModel? BuildData { get; set; } = null;
         [XmlIgnore()]
         public string MultiRunId { get; set; } = string.Empty;
         [XmlIgnore()]

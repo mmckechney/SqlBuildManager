@@ -1,29 +1,25 @@
 ﻿using System.Data;
+using System.Linq;
+using SqlSync.SqlBuild.Models;
 
 namespace SqlSync.SqlBuild
 {
     public class BuildDataHelper
     {
-        public static void GetLastBuildNumberAndDb(SqlSyncBuildData buildData, out double lastbuildNumber, out string lastDatabase)
+        public static void GetLastBuildNumberAndDb(SqlSyncBuildDataModel buildData, out double lastbuildNumber, out string lastDatabase)
         {
-            //Use the dataset to get the last build number and Db
-            if (buildData != null && buildData.Script.Rows.Count > 0)
+            if (buildData != null && buildData.Script.Count > 0)
             {
-                DataView view = buildData.Script.DefaultView;
-                view.RowFilter = buildData.Script.BuildOrderColumn.ColumnName + " < " + ((int)ResequenceIgnore.StartNumber).ToString();
-                view.Sort = buildData.Script.BuildOrderColumn + " DESC";
-                if (view.Count > 0)
+                var scripts = buildData.Script
+                    .Where(s => s.BuildOrder.HasValue && s.BuildOrder.Value < (int)ResequenceIgnore.StartNumber)
+                    .OrderByDescending(s => s.BuildOrder.Value)
+                    .ToList();
+                if (scripts.Count > 0)
                 {
-                    lastbuildNumber = ((SqlSyncBuildData.ScriptRow)view[0].Row).BuildOrder;
-                    lastDatabase = ((SqlSyncBuildData.ScriptRow)view[0].Row).Database;
+                    lastbuildNumber = scripts[0].BuildOrder!.Value;
+                    lastDatabase = scripts[0].Database ?? string.Empty;
+                    return;
                 }
-                else
-                {
-                    lastbuildNumber = 0;
-                    lastDatabase = "";
-                }
-
-                return;
             }
 
             lastbuildNumber = 0;

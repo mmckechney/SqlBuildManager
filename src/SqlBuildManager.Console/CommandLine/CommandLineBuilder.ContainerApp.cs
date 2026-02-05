@@ -30,11 +30,7 @@ namespace SqlBuildManager.Console.CommandLine
                 IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
                 cmd.AddRange(ConnectionAndSecretsOptions);
                 cmd.AddRange(EventHubResourceOptions);
-                ////TODO: Enable Managed Identity. For now, ManagedIdentity for SQL Auth is not available on Container Apps...
-                //cmd.AddRange(DatabaseAuthArgs);
-                cmd.Add(usernameOption);
-                cmd.Add(passwordOption);
-                //end
+                cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.SaveAndEncryptContainerAppSettings);

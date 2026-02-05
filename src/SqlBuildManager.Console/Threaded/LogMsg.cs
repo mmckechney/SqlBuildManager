@@ -13,6 +13,19 @@ namespace SqlBuildManager.Console.Threaded
         public LogMsg()
         {
         }
+        
+        /// <summary>
+        /// Creates a LogMsg with the specified runId and sourceDacPac.
+        /// </summary>
+        public LogMsg(string runId, string sourceDacPac = null)
+        {
+            this.runId = runId ?? string.Empty;
+            if (!string.IsNullOrEmpty(sourceDacPac))
+            {
+                this.sourceDacPac = Path.GetFileName(sourceDacPac);
+            }
+        }
+        
         [JsonPropertyName("_typeTag")]
         public string TypeTag { get; set; } = null;
         
@@ -31,49 +44,23 @@ namespace SqlBuildManager.Console.Threaded
         [JsonPropertyName("RunId")]
         public string RunId
         {
-            get
-            {
-                if (runId == string.Empty && !string.IsNullOrWhiteSpace(ThreadedManager.RunID))
-                {
-                    runId = ThreadedManager.RunID;
-                }
-                return runId;
-            }
-            set
-            {
-                runId = value;
-            }
+            get => runId;
+            set => runId = value ?? string.Empty;
         }
         
         [JsonConverter(typeof(JsonStringEnumConverter))]
         [JsonPropertyName("LogType")]
         public LogType LogType
         {
-            get
-            {
-                return logType;
-            }
-            set
-            {
-                logType = value;
-            }
+            get => logType;
+            set => logType = value;
         }
    
         [JsonPropertyName("SourceDacPac")]
         public string SourceDacPac
         {
-            get
-            {
-                if (sourceDacPac == string.Empty && !string.IsNullOrWhiteSpace(ThreadedManager.PlatinumDacPacFileName))
-                {
-                    sourceDacPac = Path.GetFileName(ThreadedManager.PlatinumDacPacFileName);
-                }
-                return sourceDacPac;
-            }
-            set
-            {
-                sourceDacPac = Path.GetFileName(value);
-            }
+            get => sourceDacPac;
+            set => sourceDacPac = string.IsNullOrEmpty(value) ? string.Empty : Path.GetFileName(value);
         }
 
         [JsonPropertyName("ComputeHostName")]

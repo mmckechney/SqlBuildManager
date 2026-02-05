@@ -1,22 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net8.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.5" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.9.0" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.9.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="4.1.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="4.1.0" />
     <PackageReference Include="coverlet.collector" Version="6.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlSync.Compare\SqlSync.Compare.csproj" />
+    <Compile Include="AutoScriptingConfigModelTest.cs" />
+    <Compile Include="Initialization.cs" />
+    <Compile Include="ObjectScriptHelperTest.cs" />
+    <Compile Include="XmlSerializerCompatibilityTest.cs" />
+    <Compile Include="SanitizerExtensionsTest.cs" />
+    <Compile Include="ObjectSyncDataTest.cs" />
+    <Compile Include="BackoutPackageTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
     <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj" />
     <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />

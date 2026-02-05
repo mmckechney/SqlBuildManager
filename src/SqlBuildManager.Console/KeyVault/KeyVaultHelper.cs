@@ -120,9 +120,20 @@ namespace SqlBuildManager.Console.KeyVault
                 return (true, cmdLine);
             }
             
+            // Check if using Managed Identity mode - secrets from Key Vault are not needed
+            bool usingManagedIdentity = ( cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity ||
+                cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault );
+            if (usingManagedIdentity)
+            {
+                log.LogInformation("Using Managed Identity authentication - Key Vault secrets not required");
+                log.LogInformation("Services will authenticate using DefaultAzureCredential/Managed Identity");
+                cmdLine.KeyVaultSecretsRetrieved = true;
+                return (true, cmdLine);
+            }
+
             if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
-                log.LogInformation("No Key Vault name supplied. Unable to retrieve secrets");
+                log.LogInformation("No Key Vault name supplied. Assuming Managed Identity mode for Azure services");
                 return (true, cmdLine);
             }
             var retrieved = new List<string>();
@@ -137,10 +148,10 @@ namespace SqlBuildManager.Console.KeyVault
                 cmdLine.StorageAccountKey = tmp;
                 retrieved.Add(KeyVaultHelper.StorageAccountKey);
             }
-            else
+            else if (!usingManagedIdentity)
             {
-                //short circuit. Storage key is always needed.
-                return (false, cmdLine);
+                // Only require storage key if NOT using managed identity
+                log.LogWarning("StorageAccountKey not found in Key Vault. Will attempt Managed Identity authentication for Storage.");
             }
 
             tmp = GetSecret(kvName, KeyVaultHelper.EventHubConnectionString);
@@ -177,7 +188,7 @@ namespace SqlBuildManager.Console.KeyVault
             }
 
             //Only get password and user name if not using managed identity
-            if (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity)
+            if (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault)
             {
                 tmp = GetSecret(kvName, KeyVaultHelper.UserName);
                 if (!string.IsNullOrWhiteSpace(tmp))

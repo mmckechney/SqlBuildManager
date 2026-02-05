@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using Microsoft.Extensions.Logging;
@@ -15,7 +15,6 @@ using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild.Status;
 using Azure.Messaging.ServiceBus;
-using Azure.ResourceManager.Resources.Models;
 
 namespace SqlBuildManager.Console.Threaded
 {
@@ -25,7 +24,8 @@ namespace SqlBuildManager.Console.Threaded
         private QueueManager qManager = null;
         private ThreadedLogging threadLogger;
         private string runId;
-        internal int QueryDatabases(CommandLineArgs cmdLine, string runId)
+        
+        internal async Task<int> QueryDatabasesAsync(CommandLineArgs cmdLine, string runId, CancellationToken cancellationToken = default)
         {
             this.runId = runId;
             threadLogger = new ThreadedLogging(cmdLine, runId);
@@ -47,11 +47,7 @@ namespace SqlBuildManager.Console.Threaded
                 if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
                 {
                     log.LogInformation($"Sourcing targets from Service Bus topic with Concurrency Type: {cmdLine.ConcurrencyType} and Concurency setting: {cmdLine.Concurrency}");
-                    Task<int> queueTask = ExecuteQueryFromQueue(cmdLine, connData, query, System.Environment.UserName);
-                    log.LogInformation($"Waiting for ExeuteQueryFromQueue to complete...");
-                    queueTask.Wait();
-                    log.LogInformation($"ExeuteQueryFromQueue wait completed. Task status is {queueTask.Status}");
-                    return queueTask.Result;
+                    return await ExecuteQueryFromQueueAsync(cmdLine, connData, query, System.Environment.UserName, cancellationToken);
                 }
                 else
                 {
@@ -62,15 +58,8 @@ namespace SqlBuildManager.Console.Threaded
                     multiData.RunAsTrial = cmdLine.Trial;
                     multiData.BuildRevision = cmdLine.BuildRevision;
                     log.LogInformation($"Sourcing targets from target override file with Concurrency Type: {cmdLine.ConcurrencyType} and Concurency setting: {cmdLine.Concurrency}");
-                    var success = ExecuteQueryFromOverrides(cmdLine,multiData, connData, query);
-                    if(success)
-                    {
-                        return 0;
-                    }
-                    else
-                    {
-                        return 1; 
-                    }
+                    var success = ExecuteQueryFromOverrides(cmdLine, multiData, connData, query);
+                    return success ? 0 : 1;
                 }
             }
             finally
@@ -83,13 +72,12 @@ namespace SqlBuildManager.Console.Threaded
                 //Make sure these logs are fully written
                 threadLogger.Flush();
             }
-
-    
-
         }
-        private async Task<int> ExecuteQueryFromQueue(CommandLineArgs cmdLine, ConnectionData connData, string query, string userName)
+        private async Task<int> ExecuteQueryFromQueueAsync(CommandLineArgs cmdLine, ConnectionData connData, string query, string userName, CancellationToken cancellationToken = default)
         {
-            int waitMs = 5000;
+            const int QueuePollDelayMs = 5000;
+            const int MaxNoMessageRetries = 4;
+            
             log.LogInformation("Executing database queries from queued targets.");
             var resultCode = 0;
             var listResultsTempFiles = new List<string>();
@@ -102,7 +90,7 @@ namespace SqlBuildManager.Console.Threaded
             }
             bool messagesSinceLastLoop = true;
             int noMessagesCounter = 0;
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 var messages = await qManager.GetDatabaseTargetFromQueue(cmdLine.Concurrency, cmdLine.ConcurrencyType);
 
@@ -110,8 +98,8 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     if (cmdLine.RunningAsContainer)
                     {
-                        log.LogInformation($"No messages found in Service Bus Topic. Waiting {waitMs / 1000} seconds to check again...");
-                        var msg = new LogMsg() { RunId = ThreadedManager.RunID, Message = $"Waiting for additional Service Bus messages on {Environment.MachineName}", LogType = LogType.Message };
+                        log.LogInformation($"No messages found in Service Bus Topic. Waiting {QueuePollDelayMs / 1000} seconds to check again...");
+                        var msg = new LogMsg() { RunId = this.runId, Message = $"Waiting for additional Service Bus messages on {Environment.MachineName}", LogType = LogType.Message };
                         threadLogger.WriteToLog(msg);
                         if (messagesSinceLastLoop)
                         {
@@ -120,15 +108,15 @@ namespace SqlBuildManager.Console.Threaded
                         }
                         else
                         {
-                            if (noMessagesCounter == 4)
+                            if (noMessagesCounter == MaxNoMessageRetries)
                             {
-                                log.LogInformation("No messages found in Service Bus Topic after 4 retries. Terminating Container.");
+                                log.LogInformation($"No messages found in Service Bus Topic after {MaxNoMessageRetries} retries. Terminating Container.");
                                 break;
                             }
                             noMessagesCounter++;
                         }
                         messagesSinceLastLoop = false;
-                        System.Threading.Thread.Sleep(waitMs);
+                        await Task.Delay(QueuePollDelayMs, cancellationToken);
                     }
                     else
                     {
@@ -150,12 +138,12 @@ namespace SqlBuildManager.Console.Threaded
                         {
                             target.ServerName = target.DbOverrideSequence[0].Server;
                         }
-                        var runner = new QueryCollectionRunner(target.ServerName, targetDb, query, new List<QueryRowItem>(), ReportType.CSV, tmpOutput,cmdLine.DefaultScriptTimeout, connData);
+                        var runner = new QueryCollectionRunner(target.ServerName, targetDb, query, new List<QueryRowItem>(), ReportType.CSV, tmpOutput, cmdLine.DefaultScriptTimeout, connData);
                         var msg = new LogMsg() { DatabaseName = targetDb, ServerName = target.ServerName, RunId = this.runId, Message = "Queuing up thread", LogType = LogType.Message, ConcurrencyTag = target.ConcurrencyTag };
                         threadLogger.WriteToLog(msg);
-                        tasks.Add(ProcessThreadedQueryWithQueue(runner, message));
+                        tasks.Add(ProcessThreadedQueryWithQueueAsync(runner, message, cancellationToken));
                     }
-                    Task.WaitAll(tasks.ToArray());
+                    await Task.WhenAll(tasks);
                     listResultsTempFiles.AddRange(tasks.Select(t => t.Result.Item2).ToList());
                     resultCode += tasks.Sum(t => t.Result.Item1);
                 }
@@ -166,7 +154,7 @@ namespace SqlBuildManager.Console.Threaded
 
             return resultCode;
         }
-        private async Task<(int, string)> ProcessThreadedQueryWithQueue(QueryCollectionRunner runner, ServiceBusReceivedMessage message)
+        private async Task<(int, string)> ProcessThreadedQueryWithQueueAsync(QueryCollectionRunner runner, ServiceBusReceivedMessage message, CancellationToken cancellationToken = default)
         {
             var target = message.As<TargetMessage>();
             target.DbOverrideSequence[0].ConcurrencyTag = target.ConcurrencyTag;

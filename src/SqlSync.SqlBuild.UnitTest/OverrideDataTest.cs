@@ -1,6 +1,9 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
+using SqlSync.SqlBuild.Models;
 using System.Collections.Generic;
+
+#nullable enable
 namespace SqlSync.SqlBuild.UnitTest
 {
 
@@ -14,23 +17,7 @@ namespace SqlSync.SqlBuild.UnitTest
     {
 
 
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; } = null!;
 
         #region Additional test attributes
         // 

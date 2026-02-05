@@ -1,11 +1,13 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
+using SqlSync.Connection;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
 
 using System.IO;
+using static SqlBuildManager.Console.CommandLine.CommandLineArgs;
 
 namespace SqlBuildManager.Console.ExternalTest
 {
@@ -50,10 +52,14 @@ namespace SqlBuildManager.Console.ExternalTest
             string randomColumnName = "R" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10);
             string createTable = $"CREATE TABLE {randomTableName} ( {randomColumnName} VARCHAR(10) ) ";
 
+            //var connStr = new SqlConnectionStringBuilder()
+            //{
+            //    UserID = cmdLine.AuthenticationArgs.UserName,
+            //    Password = cmdLine.AuthenticationArgs.Password,
+            //};
             var connStr = new SqlConnectionStringBuilder()
             {
-                UserID = cmdLine.AuthenticationArgs.UserName,
-                Password = cmdLine.AuthenticationArgs.Password,
+                Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault,
             };
 
             foreach (var line in overrideLines)
@@ -83,14 +89,15 @@ namespace SqlBuildManager.Console.ExternalTest
 
         internal static string CreateDacpac(CommandLineArgs cmdLine, string server, string database)
         {
-            var log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<BatchTests>("SqlBuildManager.Console.log", @"C:\temp");
+            var log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<BatchTests>("SqlBuildManager.Console.log", Path.GetTempPath());
             log.LogInformation("Creating DACPAC for tests");
             string fullname = Path.GetFullPath($"TestConfig/{database}.dacpac");
 
             var args = new string[]{
                 "dacpac",
-                "--username", cmdLine.AuthenticationArgs.UserName,
-                "--password", cmdLine.AuthenticationArgs.Password,
+                "--authtype" , AuthenticationType.AzureADDefault.ToString(),
+                //"--username", cmdLine.AuthenticationArgs.UserName,
+                //"--password", cmdLine.AuthenticationArgs.Password,
                 "--dacpacname", fullname,
                 "--database", database,
                 "--server", server };

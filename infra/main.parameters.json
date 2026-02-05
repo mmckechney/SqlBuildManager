@@ -1,0 +1,45 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "namePrefix": {
+      "value": "${AZURE_ENV_NAME}"
+    },
+    "location": {
+      "value": "${AZURE_LOCATION}"
+    },
+    "currentIpAddress": {
+      "value": "${CURRENT_IP_ADDRESS}"
+    },
+    "userIdGuid": {
+      "value": "${AZURE_PRINCIPAL_ID}"
+    },
+    "userLoginName": {
+      "value": "${AZURE_PRINCIPAL_NAME}"
+    },
+    "deployBatchAccount": {
+      "value": true
+    },
+    "deployContainerRegistry": {
+      "value": true
+    },
+    "deployContainerAppEnv": {
+      "value": true
+    },
+    "deployAks": {
+      "value": true
+    },
+    "testDbCountPerServer": {
+      "value": 10
+    },
+    "eventhubSku": {
+      "value": "Standard"
+    },
+    "skuCapacity": {
+      "value": 1
+    },
+    "usePrivateEndpoint": {
+      "value": true
+    }
+  }
+}

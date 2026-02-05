@@ -21,8 +21,8 @@ on:
     - cron: '37 9 * * 2'
 
 env:
-  DOTNET_VERSION: 'net8.0'
-  DOTNET_FRAMEWORK_VERSION: '8.x'  
+  DOTNET_VERSION: 'net10.0'
+  DOTNET_FRAMEWORK_VERSION: '10.x'  
 
 jobs:
   analyze:
@@ -39,11 +39,11 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v6
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      uses: github/codeql-action/init@v4
       with:
         languages: ${{ matrix.language }}
         # If you wish to specify custom queries, you can do so here or in a config file.
@@ -52,7 +52,7 @@ jobs:
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
     - name: Setup .NET ${{ env.DOTNET_FRAMEWORK_VERSION }}
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: ${{ env.DOTNET_FRAMEWORK_VERSION }}
 
@@ -60,15 +60,10 @@ jobs:
     - name: Clean
       run: dotnet clean ./src/SqlBuildManager.Console/sbm.csproj --configuration Release && dotnet nuget locals all --clear
 
-    - name: Clean
-      run: dotnet clean ./src/SqlSync/SQLSync.csproj --configuration Release && dotnet nuget locals all --clear
-    
     - name: Restore and build console app
       run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f ${{ env.DOTNET_VERSION }}
 
-    - name: Restore and build desktop app
-      run: dotnet build ./src/SqlSync/SQLSync.csproj --configuration Release -f ${{ env.DOTNET_VERSION }}-windows
-
+   
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
 
@@ -81,4 +76,4 @@ jobs:
     #   make release
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v4

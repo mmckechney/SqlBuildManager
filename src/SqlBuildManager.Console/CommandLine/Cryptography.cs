@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
-using sqlB = SqlSync.SqlBuild;
+using sqlB = SqlSync.SqlBuild.Utilities;
 namespace SqlBuildManager.Console.CommandLine
 {
 
@@ -67,6 +67,13 @@ namespace SqlBuildManager.Console.CommandLine
 
         public static (bool, CommandLineArgs) DecryptSensitiveFields(CommandLineArgs cmdLine, bool suppressLog = false)
         {
+            if(cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity ||
+                cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault)
+            {
+                log.LogInformation("EntraID will be used for all authentication. No need to decrypt secrets.");
+                return (true, cmdLine);
+            }
+                
             if (cmdLine.Decrypted)
             {
                 log.LogDebug("Command line arguments already decrypted.");

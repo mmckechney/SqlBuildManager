@@ -1,0 +1,10 @@
+**/obj
+**/bin
+**/TestConfig
+**/TestResults
+!obj/Docker/publish/*
+!obj/Docker/empty/
+**/.git
+**/.vs
+*.user
+*.vsidx
