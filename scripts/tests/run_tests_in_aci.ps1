@@ -263,10 +263,18 @@ if ($testFilter) {
 # Upload entire TestResults directory (includes TRX and log attachments)
 $uploadCmd = "az storage blob upload-batch --account-name $storageAccountName --destination $blobContainerName --source /tests/TestResults --destination-path $blobPath --auth-mode login --overwrite"
 
+# Build Kubernetes pre-requisite commands if test filter contains "Kubernetes"
+$aksPreCmd = ""
+if ($testFilter -like "*Kubernetes*") {
+    $aksClusterName = "$($prefix)aks"
+    $aksPreCmd = "az aks install-cli; az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName --overwrite-existing; "
+    Write-Host "Kubernetes tests detected - will install kubectl and get AKS credentials" -ForegroundColor DarkGreen
+}
+
 # Create results directory first, then run tests, capture exit code, login and upload
 # Use PIPESTATUS to get the exit code of dotnet vstest (not tee)
 # Exit with the test exit code so the container terminates with the correct status
-$shellCmd = "mkdir -p /tests/TestResults; $testCmd; TEST_EXIT_CODE=`${PIPESTATUS[0]}; echo TEST_EXIT_CODE=`$TEST_EXIT_CODE; az login --identity --client-id `$AZURE_CLIENT_ID; $uploadCmd; exit `$TEST_EXIT_CODE"
+$shellCmd = "mkdir -p /tests/TestResults; az login --identity --client-id `$AZURE_CLIENT_ID; $aksPreCmd$testCmd; TEST_EXIT_CODE=`${PIPESTATUS[0]}; echo TEST_EXIT_CODE=`$TEST_EXIT_CODE;  $uploadCmd; exit `$TEST_EXIT_CODE"
 
 $commandYaml = @"
       - /bin/bash

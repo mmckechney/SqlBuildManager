@@ -69,6 +69,37 @@ resource contributor 'Microsoft.Authorization/roleAssignments@2020-04-01-preview
   }
 }
 
+
+resource kubernetesClusterAdmin 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid(resourceGroupName, 'kubernetesClusterAdmin', identityName)
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', '0ab0b1a8-8aac-4efd-b8c2-3ee1fb270be8')
+    principalId: identityResource.properties.principalId
+    principalType: 'ServicePrincipal'
+
+  }
+}
+
+resource kubernetesRbacAdmin 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid(resourceGroupName, 'kubernetesRbacAdmin', identityName)
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', '3498e952-d568-435e-9b2c-8d77e338d7f7')
+    principalId: identityResource.properties.principalId
+    principalType: 'ServicePrincipal'
+
+  }
+}
+
+resource kubernetesServiceAdmin 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid(resourceGroupName, 'kubernetesServiceAdmin', identityName)
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', 'a7ffa36f-339b-4b5c-8bdf-e2c188b2c0eb')
+    principalId: identityResource.properties.principalId
+    principalType: 'ServicePrincipal'
+
+  }
+}
+
 output clientId string = identityResource.properties.clientId
 output tenantId string = identityResource.properties.tenantId
 output principalId string = identityResource.properties.principalId
