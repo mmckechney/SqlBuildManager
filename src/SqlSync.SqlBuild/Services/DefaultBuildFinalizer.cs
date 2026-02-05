@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
 
 namespace SqlSync.SqlBuild.Services
@@ -122,7 +123,7 @@ namespace SqlSync.SqlBuild.Services
             return model;
         }
 
-        public void SaveBuildDataModel(ISqlBuildRunnerProperties context, bool fireSavedEvent)
+        public async Task SaveBuildDataModelAsync(ISqlBuildRunnerProperties context, bool fireSavedEvent)
         {
             log.LogInformation("Saving Build File Updates");
 
@@ -133,7 +134,7 @@ namespace SqlSync.SqlBuild.Services
                 throw new ArgumentException(message);
             }
 
-            SqlBuildFileHelper.SaveSqlBuildProjectFile(context.BuildDataModel, context.ProjectFileName, context.BuildFileName, includeHistoryAndLogs: true);
+            await SqlBuildFileHelper.SaveSqlBuildProjectFileAsync(context.BuildDataModel, context.ProjectFileName, context.BuildFileName, includeHistoryAndLogs: true).ConfigureAwait(false);
 
 
             if (context.BuildHistoryXmlFile == null || context.BuildHistoryXmlFile.Length == 0)
@@ -143,11 +144,11 @@ namespace SqlSync.SqlBuild.Services
                 throw new ArgumentException(message);
             }
 
-            SqlSyncBuildDataXmlSerializer.Save(context.BuildHistoryXmlFile, context.BuildDataModel);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(context.BuildHistoryXmlFile, context.BuildDataModel).ConfigureAwait(false);
 
             log.LogInformation("Build Data saved successfully.");
         }
-        public (Build updatedBuild, SqlSyncBuildDataModel updatedModel, BuildResultStatus buildResult) PerformRunScriptFinalization(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, IBuildFinalizerContext finalizerContext, bool buildFailure, Build myBuild)
+        public async Task<(Build updatedBuild, SqlSyncBuildDataModel updatedModel, BuildResultStatus buildResult)> PerformRunScriptFinalizationAsync(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, IBuildFinalizerContext finalizerContext, bool buildFailure, Build myBuild)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
@@ -155,101 +156,65 @@ namespace SqlSync.SqlBuild.Services
             var updatedDataModel = context.BuildDataModel;
             BuildResultStatus finalBuildResult;
             DateTime end = DateTime.Now;
-            myBuild = new Build(
-                name: myBuild.Name,
-                buildType: myBuild.BuildType,
-                buildStart: myBuild.BuildStart,
-                buildEnd: end,
-                serverName: myBuild.ServerName,
-                finalStatus: myBuild.FinalStatus,
-                buildId: context.BuildPackageHash,
-                userId: myBuild.UserId);
+            myBuild.BuildId = context.BuildPackageHash;
+            myBuild.BuildEnd = end;
+       
 
             if (buildFailure)
             {
                 finalizationErrorOccurred = true;
                 if (context.IsTransactional)
-                    myBuild = new Build(
-                        name: myBuild.Name,
-                        buildType: myBuild.BuildType,
-                        buildStart: myBuild.BuildStart,
-                        buildEnd: myBuild.BuildEnd,
-                        serverName: myBuild.ServerName,
-                        finalStatus: BuildItemStatus.RolledBack,
-                        buildId: myBuild.BuildId,
-                        userId: myBuild.UserId);
+                    myBuild.FinalStatus = BuildItemStatus.RolledBack;
                 else
-                    myBuild = new Build(
-                        name: myBuild.Name,
-                        buildType: myBuild.BuildType,
-                        buildStart: myBuild.BuildStart,
-                        buildEnd: myBuild.BuildEnd,
-                        serverName: myBuild.ServerName,
-                        finalStatus: BuildItemStatus.FailedNoTransaction,
-                        buildId: myBuild.BuildId,
-                        userId: myBuild.UserId);
+                    myBuild.FinalStatus = BuildItemStatus.FailedNoTransaction;
+               
 
 
                 if (!context.IsTransactional)
                 {
                     updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
-                    sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData);
+                    await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
                 }
             }
             else
             {
                 if (!context.IsTrialBuild)
                 {
+                    bool commitSuccess = true;
                     if (context.IsTransactional)
                     {
                         log.LogInformation("Attempting to Commit Build");
-                        bool commitSuccess = CommitBuild(connectionsService, context.IsTransactional);
-                        if (commitSuccess)
-                            log.LogInformation("Commit Successful");
+                        commitSuccess = CommitBuild(connectionsService, context.IsTransactional);
+                        //    if (commitSuccess)
+                        //        log.LogInformation("Commit Successful");  -- Not needed since each connection will show a commit or not
                     }
-
-                    myBuild = new Build(
-                        name: myBuild.Name,
-                        buildType: myBuild.BuildType,
-                        buildStart: myBuild.BuildStart,
-                        buildEnd: myBuild.BuildEnd,
-                        serverName: myBuild.ServerName,
-                        finalStatus: BuildItemStatus.Committed,
-                        buildId: myBuild.BuildId,
-                        userId: myBuild.UserId);
-
-                    updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
-                    sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData);
-                    //TODO: figure out eventing here
-                    finalizerContext.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
+                    if (commitSuccess)
+                    {
+                        myBuild.FinalStatus = BuildItemStatus.Committed;
+                        updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
+                        await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
+                        finalizerContext.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
+                    }
+                    else
+                    {
+                        myBuild.FinalStatus = BuildItemStatus.RolledBack;
+                        //updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
+                        //await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
+                        finalizerContext.RaiseBuildErrorRollBackEvent(context);
+                    }
                 }
                 else
                 {
                     if (context.IsTransactional)
                     {
+                       
                         RollbackBuild(connectionsService, context.IsTransactional);
-                        myBuild = new Build(
-                            name: myBuild.Name,
-                            buildType: myBuild.BuildType,
-                            buildStart: myBuild.BuildStart,
-                            buildEnd: myBuild.BuildEnd,
-                            serverName: myBuild.ServerName,
-                            finalStatus: BuildItemStatus.TrialRolledBack,
-                            buildId: myBuild.BuildId,
-                            userId: myBuild.UserId);
+                        myBuild.FinalStatus = BuildItemStatus.TrialRolledBack;
                         finalizerContext.RaiseBuildSuccessTrialRolledBackEvent(context);
                     }
                     else
                     {
-                        myBuild = new Build(
-                            name: myBuild.Name,
-                            buildType: myBuild.BuildType,
-                            buildStart: myBuild.BuildStart,
-                            buildEnd: myBuild.BuildEnd,
-                            serverName: myBuild.ServerName,
-                            finalStatus: BuildItemStatus.Committed,
-                            buildId: myBuild.BuildId,
-                            userId: myBuild.UserId);
+                        myBuild.FinalStatus = BuildItemStatus.Committed;
                     }
                 }
             }
@@ -260,7 +225,7 @@ namespace SqlSync.SqlBuild.Services
                 finalizerContext.RaiseBuildErrorRollBackEvent(context);
             }
 
-            SaveBuildDataModel(context, true);
+            await SaveBuildDataModelAsync(context, true);
 
             if (buildFailure)
             {
@@ -343,6 +308,26 @@ namespace SqlSync.SqlBuild.Services
             }
 
             return BuildResultStatus.UNKNOWN;
+        }
+
+        public BuildResultStatus ConvertBuildItemStatusToResultStatus(BuildItemStatus? itemStatus, bool isTransactional, bool isTrialBuild)
+        {
+            return itemStatus switch
+            {
+                BuildItemStatus.Committed or BuildItemStatus.CommittedWithTimeoutRetries or BuildItemStatus.CommittedWithCustomDacpac => 
+                    BuildResultStatus.BUILD_COMMITTED,
+                BuildItemStatus.RolledBack or BuildItemStatus.RolledBackAfterRetries => 
+                    BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK,
+                BuildItemStatus.TrialRolledBack => 
+                    BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL,
+                BuildItemStatus.FailedNoTransaction => 
+                    BuildResultStatus.BUILD_FAILED_NO_TRANSACTION,
+                BuildItemStatus.PendingRollBack => 
+                    isTransactional ? BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK : BuildResultStatus.BUILD_FAILED_NO_TRANSACTION,
+                BuildItemStatus.AlreadyInSync => 
+                    BuildResultStatus.BUILD_COMMITTED,
+                _ => BuildResultStatus.UNKNOWN
+            };
         }
     }
 }

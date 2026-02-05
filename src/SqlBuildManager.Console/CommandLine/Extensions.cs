@@ -83,7 +83,7 @@ namespace SqlBuildManager.Console.CommandLine
                   }
                   else
                   {
-                     if (cmd.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity)
+                     if (cmd.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity || cmd.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault)
                      {
                         args.AddRange(new string[] { "--authtype", "ManagedIdentity".Quoted() });
                      }

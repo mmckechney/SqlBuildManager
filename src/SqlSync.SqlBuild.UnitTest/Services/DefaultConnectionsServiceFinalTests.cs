@@ -6,6 +6,7 @@ using SqlSync.Connection;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SqlSync.SqlBuild.UnitTest.Services
 {
@@ -33,14 +34,14 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         #region GetBuildConnectionDataClass Tests
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void GetBuildConnectionDataClass_WithNonExistentKey_ThrowsArgumentNullException()
         {
             // Arrange
             var service = new DefaultConnectionsService();
 
-            // Act
-            service.GetBuildConnectionDataClass("NonExistentServer", "NonExistentDb", false);
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
+                service.GetBuildConnectionDataClass("NonExistentServer", "NonExistentDb", false));
         }
 
         [TestMethod]
@@ -280,11 +281,14 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void EnsureLogTablePresence_WithEmptyDictionary_ReturnsEmptyString()
+        public async Task EnsureLogTablePresence_WithEmptyDictionary_ReturnsEmptyString()
         {
             // Arrange
             var mockConnectionsService = new Mock<IConnectionsService>();
             var mockProgressReporter = new Mock<IProgressReporter>();
+            
+            // Set up Connections property to return an empty dictionary
+            mockConnectionsService.Setup(x => x.Connections).Returns(new Dictionary<string, BuildConnectData>());
             
             // Create instance using internal constructor
             var serviceType = typeof(DefaultConnectionsService).Assembly.GetType("SqlSync.SqlBuild.Services.DefaultSqlLoggingService");
@@ -293,7 +297,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var emptyConnections = new Dictionary<string, BuildConnectData>();
 
             // Act
-            var result = service.EnsureLogTablePresence(emptyConnections, string.Empty);
+            var result = await service.EnsureLogTablePresence(emptyConnections, string.Empty);
 
             // Assert
             Assert.AreEqual(string.Empty, result);

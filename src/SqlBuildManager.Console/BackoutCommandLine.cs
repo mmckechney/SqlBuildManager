@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
+using System.Threading.Tasks;
 namespace SqlBuildManager.Console
 {
     class BackoutCommandLine
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        internal static string CreateBackoutPackage(CommandLineArgs cmdLine)
+        internal static async Task<string> CreateBackoutPackage(CommandLineArgs cmdLine)
         {
 
             if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
@@ -35,7 +36,7 @@ namespace SqlBuildManager.Console
                 connectionData.AuthenticationType = AuthenticationType.Windows;
             }
 
-            return SqlSync.ObjectScript.BackoutPackage.CreateDefaultBackoutPackage(connectionData, sourcePackageName, cmdLine.Server, cmdLine.Database);
+            return await SqlSync.ObjectScript.BackoutPackage.CreateDefaultBackoutPackageAsync(connectionData, sourcePackageName, cmdLine.Server, cmdLine.Database).ConfigureAwait(false);
         }
     }
 }

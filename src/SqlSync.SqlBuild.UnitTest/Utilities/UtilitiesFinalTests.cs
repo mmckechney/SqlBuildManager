@@ -399,25 +399,23 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void SplitIntoChunks_WithZeroChunks_ThrowsArgumentException()
         {
             // Arrange
             var list = Enumerable.Range(1, 10).ToList();
 
-            // Act
-            list.SplitIntoChunks(0).ToList();
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentException>(() => list.SplitIntoChunks(0).ToList());
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void SplitIntoChunks_WithNegativeChunks_ThrowsArgumentException()
         {
             // Arrange
             var list = Enumerable.Range(1, 10).ToList();
 
-            // Act
-            list.SplitIntoChunks(-1).ToList();
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentException>(() => list.SplitIntoChunks(-1).ToList());
         }
 
         [TestMethod]

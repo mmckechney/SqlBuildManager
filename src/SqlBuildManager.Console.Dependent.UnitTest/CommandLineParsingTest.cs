@@ -20,8 +20,8 @@ namespace SqlBuildManager.Console.UnitTest
     [TestClass()]
     public partial class CommandLineParsingTest
     {
-        [DataRow("TestConfig/settingsfile-batch-linux.json")]
-        [DataTestMethod]
+        [DataRow("TestConfig/settingsfile-batch-linux-mi-only.json")]
+        [TestMethod]
         public void SettingsFile_basic(string settingsFile)
         {
             settingsFile = Path.GetFullPath(settingsFile);
@@ -40,8 +40,8 @@ namespace SqlBuildManager.Console.UnitTest
             Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.ScriptErrors));
         }
 
-        [DataRow("TestConfig/settingsfile-batch-linux.json")]
-        [DataTestMethod]
+        [DataRow("TestConfig/settingsfile-batch-linux-mi-only.json")]
+        [TestMethod]
         public void SettingsFile_old_style_EventHubLogging(string settingsFile)
         {
             settingsFile = Path.GetFullPath(settingsFile);
@@ -61,8 +61,8 @@ namespace SqlBuildManager.Console.UnitTest
         }
 
 
-        [DataRow("TestConfig/settingsfile-batch-linux.json")]
-        [DataTestMethod]
+        [DataRow("TestConfig/settingsfile-batch-linux-mi-only.json")]
+        [TestMethod]
         public void Batch_CompileCommandLine(string settingsFile)
         {
             settingsFile = Path.GetFullPath(settingsFile);

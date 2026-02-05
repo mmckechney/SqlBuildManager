@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using SqlSync.SqlBuild;
 using sqlB = SqlSync.SqlBuild;
 using sqlM = SqlSync.SqlBuild.Models;
@@ -52,7 +53,7 @@ namespace SqlBuildManager.Console
             return 0;
         }
 
-        internal static int CreateFromDacpacDiff(CommandLineArgs cmdLine)
+        internal static async Task<int> CreateFromDacpacDiff(CommandLineArgs cmdLine)
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
@@ -80,7 +81,7 @@ namespace SqlBuildManager.Console
             if (status == sqlB.DacpacDeltasStatus.Success)
             {
                 File.Move(name, cmdLine.OutputSbm);
-                ListPackageScripts(new FileInfo[] { new FileInfo(cmdLine.OutputSbm) }, true);
+                await ListPackageScriptsAsync(new FileInfo[] { new FileInfo(cmdLine.OutputSbm) }, true).ConfigureAwait(false);
                 log.LogInformation($"SBM package successfully created at {cmdLine.OutputSbm}");
             }
             else
@@ -93,7 +94,7 @@ namespace SqlBuildManager.Console
 
 
 
-        internal static void SyncronizeDatabase(CommandLineArgs cmdLine)
+        internal static async Task SyncronizeDatabaseAsync(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
@@ -105,7 +106,7 @@ namespace SqlBuildManager.Console
                 return;
             }
 
-            bool success = Synchronize.SyncDatabases(cmdLine);
+            bool success = await Synchronize.SyncDatabasesAsync(cmdLine).ConfigureAwait(false);
             if (success)
                 System.Environment.Exit(0);
             else
@@ -130,7 +131,7 @@ namespace SqlBuildManager.Console
             System.Environment.Exit(0);
         }
 
-        internal static void CreateBackout(CommandLineArgs cmdLine)
+        internal static async Task CreateBackout(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
@@ -142,7 +143,7 @@ namespace SqlBuildManager.Console
                 return;
             }
 
-            string packageName = BackoutCommandLine.CreateBackoutPackage(cmdLine);
+            string packageName = await BackoutCommandLine.CreateBackoutPackage(cmdLine).ConfigureAwait(false);
             if (!String.IsNullOrEmpty(packageName))
             {
                 log.LogInformation(packageName);
@@ -154,7 +155,7 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static int AddScriptsToPackage(CommandLineArgs cmdLine)
+        internal static async Task<int> AddScriptsToPackage(CommandLineArgs cmdLine)
         {
             if (!File.Exists(cmdLine.OutputSbm))
             {
@@ -173,8 +174,8 @@ namespace SqlBuildManager.Console
                 log.LogInformation("Creating Base Build File XML");
                 var buildModel = sqlB.SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
                 var projFile = Path.Combine(workingDir, sqlB.XmlFileNames.MainProjectFile);
-                sqlM.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
-                sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(buildModel, workingDir, sbxFileName, includeHistoryAndLogs: true);
+                await sqlM.SqlSyncBuildDataXmlSerializer.SaveAsync(projFile, buildModel).ConfigureAwait(false);
+                await sqlB.SqlBuildFileHelper.PackageProjectFileIntoZipAsync(buildModel, workingDir, sbxFileName, includeHistoryAndLogs: true).ConfigureAwait(false);
                 var counter = 1.0;
                 foreach (var file in cmdLine.Scripts)
                 {
@@ -182,18 +183,20 @@ namespace SqlBuildManager.Console
                     {
                         File.Copy(file.FullName, Path.Combine(workingDir, file.Name));
                     }
-                    buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuild(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "");
+                    buildModel = await sqlB.SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "").ConfigureAwait(false);
                     counter++;
                 }
-                // Note: AddScriptFileToBuild with saveToZip=true already persists the project file and packages the zip.
+                // Note: AddScriptFileToBuildAsync with saveToZip=true already persists the project file and packages the zip.
                 // Avoid overwriting the .sbx zip with plain XML.
-                sqlM.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
+                await sqlM.SqlSyncBuildDataXmlSerializer.SaveAsync(projFile, buildModel).ConfigureAwait(false);
             }
             else
             {
                 string workingDir = "", projFilePath = "", projectFileName = "";
-                sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFile(cmdLine.OutputSbm, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
-                bool success = sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFile(out sqlM.SqlSyncBuildDataModel buildModel, projectFileName, true);
+                (_, workingDir, projFilePath, projectFileName, _) = await sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(cmdLine.OutputSbm, null, true, true).ConfigureAwait(false);
+                var loadResult = await sqlB.SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projectFileName, true).ConfigureAwait(false);
+                bool success = loadResult.Item1;
+                sqlM.SqlSyncBuildDataModel buildModel = loadResult.Item2;
                 if (success)
                 {
                     List<string> copied = new List<string>();
@@ -209,9 +212,9 @@ namespace SqlBuildManager.Console
                     foreach (var file in cmdLine.Scripts)
                     {
                         lastBuildNumber++;
-                        buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuild(buildModel, projectFileName, file.Name, lastBuildNumber, "", true, true, "client", true, cmdLine.OutputSbm, true, true, Environment.UserName, 500, Guid.NewGuid(), "");
+                        buildModel = await sqlB.SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel, projectFileName, file.Name, lastBuildNumber, "", true, true, "client", true, cmdLine.OutputSbm, true, true, Environment.UserName, 500, Guid.NewGuid(), "").ConfigureAwait(false);
                     }
-                    sqlB.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectory(workingDir);
+                    await sqlB.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectoryAsync(workingDir).ConfigureAwait(false);
                 }
                 else
                 {
@@ -221,21 +224,21 @@ namespace SqlBuildManager.Console
             }
             log.LogInformation($"Added {cmdLine.Scripts.Count()} scripts to '{cmdLine.OutputSbm}'");
             var fi = new FileInfo(cmdLine.OutputSbm);
-            ListPackageScripts(new FileInfo[] { fi }, true);
+            await ListPackageScriptsAsync(new FileInfo[] { fi }, true).ConfigureAwait(false);
             return 0;
 
         }
 
-        internal static int CreatePackageFromDacpacs(string outputSbm, FileInfo platinumDacpac, FileInfo targetDacpac, bool allowObjectDelete)
+        internal static async Task<int> CreatePackageFromDacpacs(string outputSbm, FileInfo platinumDacpac, FileInfo targetDacpac, bool allowObjectDelete)
         {
             var outputSbmFile = Path.GetFullPath(outputSbm);
-            var res = sqlB.DacPacHelper.CreateSbmFromDacPacDifferences(platinumDacpac.FullName, targetDacpac.FullName, true, string.Empty, 500, allowObjectDelete, out string tmpSbm);
+            var (res, tmpSbm) = await sqlB.DacPacHelper.CreateSbmFromDacPacDifferencesAsync(platinumDacpac.FullName, targetDacpac.FullName, true, string.Empty, 500, allowObjectDelete).ConfigureAwait(false);
 
             if (res == sqlB.DacpacDeltasStatus.Success)
             {
                 File.Move(tmpSbm, outputSbmFile, true);
                 log.LogInformation($"Created SBM package:  {outputSbmFile}");
-                ListPackageScripts(new FileInfo[] { new FileInfo(outputSbmFile) }, true);
+                await ListPackageScriptsAsync(new FileInfo[] { new FileInfo(outputSbmFile) }, true).ConfigureAwait(false);
                 return 0;
             }
             else
@@ -254,7 +257,7 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static int CreatePackageFromDiff(CommandLineArgs cmdLine)
+        internal static async Task<int> CreatePackageFromDiff(CommandLineArgs cmdLine)
         {
             string sbmFileName = Path.GetFullPath(cmdLine.OutputSbm);
             if (File.Exists(sbmFileName))
@@ -290,7 +293,7 @@ namespace SqlBuildManager.Console
                 log.LogInformation($"Temporary DACPAC created from {cmdLine.Server} : {cmdLine.Database} saved to -- {targetTmp}");
             }
 
-            var res = sqlB.DacPacHelper.CreateSbmFromDacPacDifferences(goldTmp, targetTmp, true, string.Empty, 500, cmdLine.AllowObjectDelete, out string tmpSbm);
+            var (res, tmpSbm) = await sqlB.DacPacHelper.CreateSbmFromDacPacDifferencesAsync(goldTmp, targetTmp, true, string.Empty, 500, cmdLine.AllowObjectDelete).ConfigureAwait(false);
             log.LogInformation("Cleaning up temporary files");
             File.Delete(goldTmp);
             File.Delete(targetTmp);
@@ -299,7 +302,7 @@ namespace SqlBuildManager.Console
             {
                 File.Move(tmpSbm, sbmFileName);
                 log.LogInformation($"Created SBM package:  {sbmFileName}");
-                ListPackageScripts(new FileInfo[] { new FileInfo(sbmFileName) }, true);
+                await ListPackageScriptsAsync(new FileInfo[] { new FileInfo(sbmFileName) }, true).ConfigureAwait(false);
                 return 0;
             }
             else
@@ -318,14 +321,14 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static void ListPackageScripts(FileInfo[] packages, bool withHash)
+        internal static async Task ListPackageScriptsAsync(FileInfo[] packages, bool withHash)
         {
             string workingDir = "", projFilePath = "", projectFileName = "";
 
             foreach (var file in packages)
             {
-                sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFile(file.FullName, ref workingDir, ref projFilePath, ref projectFileName, true, true, out string result);
-                var buildModel = sqlM.SqlSyncBuildDataXmlSerializer.Load(projectFileName);
+                (_, workingDir, projFilePath, projectFileName, _) = await sqlB.SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(file.FullName, null, true, true).ConfigureAwait(false);
+                var buildModel = await sqlM.SqlSyncBuildDataXmlSerializer.LoadAsync(projectFileName).ConfigureAwait(false);
                 List<string[]> contents = new List<string[]>();
                 string dateformat = "yyyy-MM-dd hh:mm:ss";
                 if (!withHash)
@@ -367,7 +370,7 @@ namespace SqlBuildManager.Console
                 string hash = "";
                 if (withHash)
                 {
-                    hash = $" (Package Hash: {sqlB.SqlBuildFileHelper.CalculateSha1HashFromPackage(file.FullName)})";
+                    hash = $" (Package Hash: {await sqlB.SqlBuildFileHelper.CalculateSha1HashFromPackageAsync(file.FullName).ConfigureAwait(false)})";
                 }
                 System.Console.WriteLine();
                 System.Console.WriteLine(file.FullName + hash);
@@ -376,7 +379,13 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static int CreatePackageFromScripts(CommandLineArgs cmdLine)
+        // Wrapper for CLI handler compatibility
+        internal static Task ListPackageScripts(FileInfo[] packages, bool withHash)
+        {
+            return ListPackageScriptsAsync(packages, withHash);
+        }
+
+        internal static async Task<int> CreatePackageFromScripts(CommandLineArgs cmdLine)
         {
 
             if (File.Exists(cmdLine.OutputSbm))
@@ -401,8 +410,8 @@ namespace SqlBuildManager.Console
                 log.LogInformation("Creating Base Build File XML");
                 var buildModel = sqlB.SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
                 var projFile = Path.Combine(workingDir, sqlB.XmlFileNames.MainProjectFile);
-                    sqlM.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
-                sqlB.SqlBuildFileHelper.PackageProjectFileIntoZip(buildModel, workingDir, sbxFileName, includeHistoryAndLogs: true);
+                await sqlM.SqlSyncBuildDataXmlSerializer.SaveAsync(projFile, buildModel).ConfigureAwait(false);
+                await sqlB.SqlBuildFileHelper.PackageProjectFileIntoZipAsync(buildModel, workingDir, sbxFileName, includeHistoryAndLogs: true).ConfigureAwait(false);
                 var counter = 1.0;
                 foreach (var file in cmdLine.Scripts)
                 {
@@ -410,10 +419,10 @@ namespace SqlBuildManager.Console
                     {
                         File.Copy(file.FullName, Path.Combine(workingDir, file.Name));
                     }
-                    buildModel = sqlB.SqlBuildFileHelper.AddScriptFileToBuild(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "");
+                    buildModel = await sqlB.SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "").ConfigureAwait(false);
                     counter++;
                 }
-                    sqlM.SqlSyncBuildDataXmlSerializer.Save(projFile, buildModel);
+                await sqlM.SqlSyncBuildDataXmlSerializer.SaveAsync(projFile, buildModel).ConfigureAwait(false);
 
             }
             else
@@ -428,20 +437,20 @@ namespace SqlBuildManager.Console
                     }
                 });
 
-                bool success = sqlB.SqlBuildFileHelper.SaveSqlFilesToNewBuildFile(cmdLine.OutputSbm, cmdLine.Scripts.Select(f => f.FullName).ToList(), "client", 500, false);
+                bool success = await sqlB.SqlBuildFileHelper.SaveSqlFilesToNewBuildFileAsync(cmdLine.OutputSbm, cmdLine.Scripts.Select(f => f.FullName).ToList(), "client", 500, false).ConfigureAwait(false);
                 copied.ForEach(f => File.Delete(f));
                 if (!success)
                 {
                     log.LogError("Unable to create the build file!");
                     return -425;
                 }
-                ListPackageScripts(new FileInfo[] { new FileInfo(cmdLine.OutputSbm) }, true);
+                await ListPackageScriptsAsync(new FileInfo[] { new FileInfo(cmdLine.OutputSbm) }, true).ConfigureAwait(false);
             }
             log.LogInformation($"Successfully created build file '{cmdLine.OutputSbm}' with {cmdLine.Scripts.Count()} scripts");
             return 0;
         }
 
-        internal static void GetPackageHash(CommandLineArgs cmdLine)
+        internal static async Task GetPackageHash(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
@@ -460,7 +469,7 @@ namespace SqlBuildManager.Console
 
             }
             string packageName = cmdLine.BuildFileName;
-            string hash = sqlB.SqlBuildFileHelper.CalculateSha1HashFromPackage(packageName);
+            string hash = await sqlB.SqlBuildFileHelper.CalculateSha1HashFromPackageAsync(packageName).ConfigureAwait(false);
             if (!String.IsNullOrEmpty(hash))
             {
                 //log.LogInformation(hash);
@@ -473,7 +482,7 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static void ExecutePolicyCheck(CommandLineArgs cmdLine)
+        internal static async Task ExecutePolicyCheck(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
@@ -494,8 +503,7 @@ namespace SqlBuildManager.Console
             }
             string packageName = cmdLine.BuildFileName;
             PolicyHelper helper = new PolicyHelper();
-            bool passed;
-            List<string[]> policyMessages = helper.CommandLinePolicyCheck(packageName, out passed);
+            var (policyMessages, passed) = await helper.CommandLinePolicyCheckAsync(packageName).ConfigureAwait(false);
             if (policyMessages.Count > 0)
             {
                 List<string[]> tmp = new List<string[]>();
@@ -523,7 +531,7 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static void PackageSbxFilesIntoSbmFiles(CommandLineArgs cmdLine)
+        internal static async Task PackageSbxFilesIntoSbmFilesAsync(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
 
@@ -542,8 +550,7 @@ namespace SqlBuildManager.Console
                 System.Environment.Exit(9835);
             }
             string directory = cmdLine.Directory;
-            string message;
-            List<string> sbmFiles = sqlB.SqlBuildFileHelper.PackageSbxFilesIntoSbmFiles(directory, out message);
+            List<string> sbmFiles = await sqlB.SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(directory).ConfigureAwait(false);
             if (sbmFiles.Count > 0)
             {
                 foreach (string sbm in sbmFiles)
@@ -551,14 +558,10 @@ namespace SqlBuildManager.Console
 
                 System.Environment.Exit(0);
             }
-            else if (message.Length > 0)
-            {
-                log.LogWarning(message);
-                System.Environment.Exit(604);
-            }
             else
             {
-                System.Environment.Exit(0);
+                log.LogWarning("No SBX files found or packaged in directory: " + directory);
+                System.Environment.Exit(604);
             }
         }
 
@@ -597,7 +600,7 @@ namespace SqlBuildManager.Console
         }
 
 
-        internal static void UnpackSbmFile(DirectoryInfo directory, FileInfo package)
+        internal static async Task UnpackSbmFile(DirectoryInfo directory, FileInfo package)
         {
             var projectFileName = "";
             var projectFilePath = "";
@@ -607,7 +610,8 @@ namespace SqlBuildManager.Console
             {
                 Directory.CreateDirectory(dir);
             }
-            bool success = SqlSync.SqlBuild.SqlBuildFileHelper.ExtractSqlBuildZipFile(package.FullName, ref dir, ref projectFilePath, ref projectFileName, false, true, out result);
+            bool success;
+            (success, dir, projectFilePath, projectFileName, result) = await SqlSync.SqlBuild.SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(package.FullName, dir, false, true).ConfigureAwait(false);
             if (File.Exists(Path.Combine(dir, projectFileName)))
             {
                 var sbmName = Path.GetFileNameWithoutExtension(package.FullName) + ".sbx";

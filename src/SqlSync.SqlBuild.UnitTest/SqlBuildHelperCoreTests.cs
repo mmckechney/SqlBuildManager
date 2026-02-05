@@ -33,7 +33,6 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.IsNotNull(helper.ProgressReporter);
             Assert.IsNotNull(helper.FileHelper);
             Assert.IsNotNull(helper.RetryPolicy);
-            Assert.IsNotNull(helper.LegacyAdapter);
             Assert.IsNotNull(helper.RunnerFactory);
             Assert.IsNotNull(helper.ScriptLogWriter);
             Assert.IsNotNull(helper.BuildHistoryTracker);
@@ -857,7 +856,7 @@ namespace SqlSync.SqlBuild.UnitTest
         #region RunBuildScripts Tests
 
         [TestMethod]
-        public void RunBuildScripts_WithInjectedFactory_UsesFactory()
+        public async Task RunBuildScripts_WithInjectedFactory_UsesFactory()
         {
             var expectedBuild = new BuildModels.Build(
                 name: "test",
@@ -882,7 +881,6 @@ namespace SqlSync.SqlBuild.UnitTest
                 progressReporter: null,
                 fileHelper: null,
                 retryPolicy: null,
-                legacyAdapter: null,
                 databaseUtility: null,
                 connectionsService: null,
                 buildFinalizer: null,
@@ -891,7 +889,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var scripts = new List<BuildModels.Script>();
             var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            var result = helper.RunBuildScripts(scripts, expectedBuild, "srv", false, null, buildData);
+            var result = await helper.RunBuildScriptsAsync(scripts, expectedBuild, "srv", false, null, buildData);
 
             Assert.AreEqual(expectedBuild.BuildId, result.BuildId);
             Assert.IsTrue(fakeFactory.CreateCalled);
@@ -920,15 +918,16 @@ namespace SqlSync.SqlBuild.UnitTest
                 _result = result;
             }
 
-            public override BuildModels.Build Run(
+            public override Task<BuildModels.Build> RunAsync(
                 IList<BuildModels.Script> scripts,
                 BuildModels.Build myBuild,
                 string serverName,
                 bool isMultiDbRun,
                 ScriptBatchCollection scriptBatchColl,
-                BuildModels.SqlSyncBuildDataModel buildDataModel)
+                BuildModels.SqlSyncBuildDataModel buildDataModel,
+                CancellationToken cancellationToken = default)
             {
-                return _result;
+                return Task.FromResult(_result);
             }
         }
 
@@ -1040,18 +1039,6 @@ namespace SqlSync.SqlBuild.UnitTest
                 databaseUtility: mockUtility.Object);
 
             Assert.AreSame(mockUtility.Object, helper.DatabaseUtility);
-        }
-
-        [TestMethod]
-        public void Constructor_WithCustomLegacyAdapter_UsesInjectedAdapter()
-        {
-            var mockAdapter = new Mock<ILegacyBuildDataAdapter>();
-            var helper = new SqlBuildHelper(
-                data: new ConnectionData("srv", "db"),
-                createScriptRunLogFile: false,
-                legacyAdapter: mockAdapter.Object);
-
-            Assert.AreSame(mockAdapter.Object, helper.LegacyAdapter);
         }
 
         [TestMethod]

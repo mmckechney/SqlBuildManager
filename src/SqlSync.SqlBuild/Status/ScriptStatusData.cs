@@ -1,3 +1,4 @@
+using SqlSync.SqlBuild.Models;
 using System;
 
 namespace SqlSync.SqlBuild.Status {
@@ -28,6 +29,13 @@ namespace SqlSync.SqlBuild.Status {
          
         }
         
+        public virtual bool Fill(Script script)
+        {
+            ScriptName = script.FileName ?? string.Empty;
+            ScriptId = script.ScriptId ?? string.Empty;
+            DatabaseName = script.Database ?? string.Empty;
+            return true;
+        }
         
         public virtual bool Fill(System.Data.DataRow sourceDataRow) {
             try {

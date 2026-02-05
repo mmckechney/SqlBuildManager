@@ -3,6 +3,7 @@ using SqlBuildManager.Console.CommandLine;
 using SqlSync.SqlBuild.Synchronizer;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 namespace SqlBuildManager.Console
 {
     public class Synchronize
@@ -40,7 +41,7 @@ namespace SqlBuildManager.Console
         }
 
 
-        public static bool SyncDatabases(CommandLineArgs cmdLine)
+        public static async Task<bool> SyncDatabasesAsync(CommandLineArgs cmdLine)
         {
             cmdLine = ValidateFlags(cmdLine);
             if (cmdLine == null)
@@ -51,8 +52,8 @@ namespace SqlBuildManager.Console
             DatabaseSyncer dbSync = new DatabaseSyncer();
             dbSync.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(dbSync_SyncronizationInfoEvent);
 
-            return dbSync.SyncronizeDatabases(cmdLine.SynchronizeArgs.GoldServer, cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.Server,
-                                       cmdLine.Database, cmdLine.ContinueOnFailure);
+            return await dbSync.SyncronizeDatabasesAsync(cmdLine.SynchronizeArgs.GoldServer, cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.Server,
+                                       cmdLine.Database, cmdLine.ContinueOnFailure).ConfigureAwait(false);
 
         }
 

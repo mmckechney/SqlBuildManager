@@ -8,6 +8,8 @@ using System.IO.Compression;
 using System.Xml.Linq;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Identity.Client;
+using System.Threading;
+using System.Threading.Tasks;
 
 #nullable enable
 
@@ -37,6 +39,29 @@ namespace SqlSync.SqlBuild.Models
 
             stream.Position = 0;
             return Load(XDocument.Load(stream));
+        }
+
+        public static async Task<SqlSyncBuildDataModel> LoadAsync(string path, CancellationToken cancellationToken = default)
+        {
+            await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true);
+            var buffer = new byte[stream.Length];
+            await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
+            
+            using var memStream = new MemoryStream(buffer);
+            if (LooksLikeZip(memStream))
+            {
+                memStream.Position = 0;
+                using var archive = new ZipArchive(memStream, ZipArchiveMode.Read, leaveOpen: true);
+                var entry = archive.GetEntry(XmlFileNames.MainProjectFile)
+                           ?? archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
+                if (entry == null)
+                    throw new InvalidOperationException($"Zip package '{path}' does not contain a project XML file.");
+                using var entryStream = entry.Open();
+                return Load(XDocument.Load(entryStream));
+            }
+
+            memStream.Position = 0;
+            return Load(XDocument.Load(memStream));
         }
 
         private static bool LooksLikeZip(Stream stream)
@@ -71,7 +96,6 @@ namespace SqlSync.SqlBuild.Models
             var buildRows = new List<Build>();
             var scriptRuns = new List<ScriptRun>();
             var committedScripts = new List<CommittedScript>();
-            var codeReviews = new List<CodeReview>();
 
             int nextProjectId = 0;
             int nextScriptsId = 0;
@@ -141,13 +165,7 @@ namespace SqlSync.SqlBuild.Models
                 }
             }
 
-            // CodeReview entries at root level
-            foreach (var cr in doc.Root.Elements(ns + "CodeReview"))
-            {
-                codeReviews.Add(ParseCodeReview(cr));
-            }
-
-            return new SqlSyncBuildDataModel(projects, scriptRows, buildRows, scriptRuns, committedScripts, codeReviews);
+            return new SqlSyncBuildDataModel(projects, scriptRows, buildRows, scriptRuns, committedScripts);
         }
 
         private static Script ParseScript(XElement el, int scriptsId)
@@ -210,29 +228,18 @@ namespace SqlSync.SqlBuild.Models
                 sqlSyncBuildProjectId: projectId);
         }
 
-        private static CodeReview ParseCodeReview(XElement el)
+        public static async Task SaveAsync(string path, SqlSyncBuildDataModel model)
         {
-            return new CodeReview(
-                codeReviewId: ParseGuidOrNull((string?)el.Element(Ns + "CodeReviewId")),
-                scriptId: (string?)el.Element(Ns + "ScriptId"),
-                reviewDate: ParseDateTimeOrNull((string?)el.Element(Ns + "ReviewDate")),
-                reviewBy: (string?)el.Element(Ns + "ReviewBy"),
-                reviewStatus: ParseShortOrNull((string?)el.Element(Ns + "ReviewStatus")),
-                comment: (string?)el.Element(Ns + "Comment"),
-                reviewNumber: (string?)el.Element(Ns + "ReviewNumber"),
-                checkSum: (string?)el.Element(Ns + "CheckSum"),
-                validationKey: (string?)el.Element(Ns + "ValidationKey"));
-        }
-
-        public static void Save(string path, SqlSyncBuildDataModel model)
-        {
-            var doc = BuildDocument(model);
-            using var writer = XmlWriter.Create(path, new XmlWriterSettings
+            await Task.Run(() =>
             {
-                Indent = true,
-                Encoding = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true),
+                var doc = BuildDocument(model);
+                using var writer = XmlWriter.Create(path, new XmlWriterSettings
+                {
+                    Indent = true,
+                    Encoding = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true),
+                });
+                doc.Save(writer);
             });
-            doc.Save(writer);
         }
 
         public static XDocument BuildDocument(SqlSyncBuildDataModel model)
@@ -333,21 +340,6 @@ namespace SqlSync.SqlBuild.Models
                 }
 
                 root.Add(projEl);
-            }
-
-            foreach (var cr in model.CodeReview)
-            {
-                var crEl = new XElement(Ns + "CodeReview");
-                if (cr.CodeReviewId.HasValue) crEl.Add(new XElement(Ns + "CodeReviewId", cr.CodeReviewId.Value.ToString("D")));
-                if (cr.ScriptId is not null) crEl.Add(new XElement(Ns + "ScriptId", cr.ScriptId));
-                if (cr.ReviewDate.HasValue) crEl.Add(new XElement(Ns + "ReviewDate", FormatDate(cr.ReviewDate.Value)));
-                if (cr.ReviewBy is not null) crEl.Add(new XElement(Ns + "ReviewBy", cr.ReviewBy));
-                if (cr.ReviewStatus.HasValue) crEl.Add(new XElement(Ns + "ReviewStatus", cr.ReviewStatus.Value.ToString(CultureInfo.InvariantCulture)));
-                if (cr.Comment is not null) crEl.Add(new XElement(Ns + "Comment", cr.Comment));
-                if (cr.ReviewNumber is not null) crEl.Add(new XElement(Ns + "ReviewNumber", cr.ReviewNumber));
-                if (cr.CheckSum is not null) crEl.Add(new XElement(Ns + "CheckSum", cr.CheckSum));
-                if (cr.ValidationKey is not null) crEl.Add(new XElement(Ns + "ValidationKey", cr.ValidationKey));
-                root.Add(crEl);
             }
 
             var doc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), root);

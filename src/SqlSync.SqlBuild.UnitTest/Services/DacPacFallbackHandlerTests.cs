@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
+using System.Threading.Tasks;
 using BuildModels = SqlSync.SqlBuild.Models;
 
 namespace SqlSync.SqlBuild.UnitTest.Services
@@ -42,7 +43,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void TryDacPacFallback_ReturnsNotAttempted_WhenNoDacPacFile()
+        public async Task TryDacPacFallbackAsync_ReturnsNotAttempted_WhenNoDacPacFile()
         {
             var handler = new DefaultDacPacFallbackHandler();
             var context = new DacPacFallbackContext
@@ -69,7 +70,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             };
             var buildResult = new BuildModels.Build("test", "type", System.DateTime.Now, null, "srv", BuildItemStatus.RolledBack, "id", "user");
 
-            var result = handler.TryDacPacFallback(context, buildResult);
+            var result = await handler.TryDacPacFallbackAsync(context, buildResult);
 
             Assert.IsFalse(result.WasAttempted);
             Assert.IsNull(result.NewStatus);

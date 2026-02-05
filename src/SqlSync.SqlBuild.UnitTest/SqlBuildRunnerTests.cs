@@ -34,8 +34,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 committedScript: new List<BuildModels.CommittedScript>
                 {
                     new BuildModels.CommittedScript(ScriptId, serverName: null, committedDate: null, allowScriptBlock: null, scriptHash: null, sqlSyncBuildProjectId: null)
-                },
-                codeReview: model.CodeReview);
+                });
 
             var result = runner.ShouldSkipDueToCommittedScripts(ScriptId, model);
 
@@ -43,25 +42,25 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void LoadBatchScripts_PrefersPreBatchedScripts()
+        public async Task LoadBatchScriptsAsync_PrefersPreBatchedScripts()
         {
             var ctx = new FakeRunnerContext();
             var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
             var coll = new ScriptBatchCollection();
             coll.Add(new ScriptBatch("file.sql", new[] { "SELECT 1;" }, ScriptId));
 
-            var result = runner.LoadBatchScripts(ScriptId, "file.sql", stripTransaction: false, scriptBatchColl: coll);
+            var result = await runner.LoadBatchScriptsAsync(ScriptId, "file.sql", stripTransaction: false, scriptBatchColl: coll, default);
 
             CollectionAssert.AreEqual(new[] { "SELECT 1;" }, result);
         }
 
         [TestMethod]
-        public void LoadBatchScripts_ReadsViaContext_WhenNoPreBatch()
+        public async Task LoadBatchScriptsAsync_ReadsViaContext_WhenNoPreBatch()
         {
             var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "SELECT 2;" } };
             var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
 
-            var result = runner.LoadBatchScripts(ScriptId, "file.sql", stripTransaction: false, scriptBatchColl: null);
+            var result = await runner.LoadBatchScriptsAsync(ScriptId, "file.sql", stripTransaction: false, scriptBatchColl: null, default);
 
             CollectionAssert.AreEqual(new[] { "SELECT 2;" }, result);
         }

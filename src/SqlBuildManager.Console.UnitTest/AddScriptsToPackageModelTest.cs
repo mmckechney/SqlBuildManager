@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console;
 using SqlBuildManager.Console.CommandLine;
@@ -12,7 +13,7 @@ namespace SqlBuildManager.Console.UnitTest
     public class AddScriptsToPackageModelTest
     {
         [TestMethod]
-        public void AddScriptsToPackage_PocoPipeline_AddsScripts()
+        public async Task AddScriptsToPackage_PocoPipeline_AddsScripts()
         {
             var tempDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
             var script1 = Path.Combine(tempDir.FullName, "s1.sql");
@@ -27,7 +28,7 @@ namespace SqlBuildManager.Console.UnitTest
                 Scripts = new[] { new FileInfo(script1) }
             };
 
-            var rc = Worker.AddScriptsToPackage(args);
+            var rc = await Worker.AddScriptsToPackage(args);
 
             Assert.AreEqual(0, rc);
             Assert.IsTrue(File.Exists(outputSbm));

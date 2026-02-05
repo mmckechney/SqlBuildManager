@@ -27,8 +27,7 @@ namespace SqlSync.SqlBuild.Services
                 script: _buildHistoryModel.Script,
                 build: _buildHistoryModel.Build,
                 scriptRun: _buildHistoryModel.ScriptRun.Concat(new[] { run }).ToList(),
-                committedScript: _buildHistoryModel.CommittedScript,
-                codeReview: _buildHistoryModel.CodeReview);
+                committedScript: _buildHistoryModel.CommittedScript);
 
             // Add the build if not already present
             if (!_buildHistoryModel.Build.Contains(build))
@@ -38,8 +37,7 @@ namespace SqlSync.SqlBuild.Services
                     script: _buildHistoryModel.Script,
                     build: _buildHistoryModel.Build.Concat(new[] { build }).ToList(),
                     scriptRun: _buildHistoryModel.ScriptRun,
-                    committedScript: _buildHistoryModel.CommittedScript,
-                    codeReview: _buildHistoryModel.CodeReview);
+                    committedScript: _buildHistoryModel.CommittedScript);
             }
         }
 

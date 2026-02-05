@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
 using System;
@@ -107,12 +107,10 @@ namespace SqlSync.SqlBuild.UnitTest
         ///A test for ImportMultiDbTextConfig
         ///</summary>
         [TestMethod()]
-        [ExpectedException(typeof(MultiDbConfigurationException), "Error in configuration file line #2. Missing \":\" separator. This is needed to separate server from database override values.")]
         public void ImportMultiDbTextConfigTest_BadConfuguration_MissingColon()
         {
             string[] fileContents = new string[] { "SERVER:default,target;default2,target2", "SERVER2 default,target;default2,target2" };
-            MultiDbData actual;
-            actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
+            Assert.ThrowsExactly<MultiDbConfigurationException>(() => MultiDbHelper.ImportMultiDbTextConfig(fileContents));
         }
 
         #endregion

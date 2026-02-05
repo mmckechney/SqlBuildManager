@@ -18,7 +18,7 @@ namespace SqlSync.SqlBuild.UnitTest
     public class SqlBuildHelperRunnerFactoryTests
     {
         [TestMethod]
-        public void RunBuildScripts_UsesInjectedRunnerFactory()
+        public async Task RunBuildScripts_UsesInjectedRunnerFactory()
         {
             // Arrange
             var expectedBuild = new BuildModels.Build(
@@ -45,7 +45,6 @@ namespace SqlSync.SqlBuild.UnitTest
                 progressReporter: null,
                 fileHelper: null,
                 retryPolicy: null,
-                legacyAdapter: null,
                 databaseUtility: null,
                 connectionsService: null,
                 buildFinalizer: null,
@@ -55,7 +54,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = helper.RunBuildScripts(scripts, expectedBuild, "srv", false, null, buildData);
+            var result = await helper.RunBuildScriptsAsync(scripts, expectedBuild, "srv", false, null, buildData);
 
             // Assert
             Assert.AreEqual(expectedBuild.BuildId, result.BuildId);
@@ -85,15 +84,16 @@ namespace SqlSync.SqlBuild.UnitTest
                 _result = result;
             }
 
-            public override BuildModels.Build Run(
+            public override Task<BuildModels.Build> RunAsync(
                 IList<BuildModels.Script> scripts,
                 BuildModels.Build myBuild,
                 string serverName,
                 bool isMultiDbRun,
                 ScriptBatchCollection scriptBatchColl,
-                BuildModels.SqlSyncBuildDataModel buildDataModel)
+                BuildModels.SqlSyncBuildDataModel buildDataModel,
+                CancellationToken cancellationToken = default)
             {
-                return _result;
+                return Task.FromResult(_result);
             }
         }
 

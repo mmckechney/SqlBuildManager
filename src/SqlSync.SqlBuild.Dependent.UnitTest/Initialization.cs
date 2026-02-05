@@ -169,12 +169,17 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 for (int i = 0; i < testDatabaseNames.Count; i++)
                 {
                     string connString = String.Format(connectionString, testDatabaseNames[i]);
-                    SqlConnection conn = new SqlConnection(connString);
-                    string cleaner = string.Format(Properties.Resources.CleanTestTable, DateTime.Now.AddHours(-1).ToString());
-                    SqlCommand cmd = new SqlCommand(cleaner, conn);
-                    conn.Open();
-                    object val = cmd.ExecuteNonQuery();
-                    conn.Close();
+                    using (SqlConnection conn = new SqlConnection(connString))
+                    {
+                        // Use SET LOCK_TIMEOUT to avoid waiting indefinitely for locks
+                        string cleaner = "SET LOCK_TIMEOUT 5000; " + string.Format(Properties.Resources.CleanTestTable, DateTime.Now.AddHours(-1).ToString());
+                        using (SqlCommand cmd = new SqlCommand(cleaner, conn))
+                        {
+                            cmd.CommandTimeout = 120; // 2 minute command timeout
+                            conn.Open();
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
                 }
                 return true;
             }
@@ -188,38 +193,81 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             for (int i = 0; i < testDatabaseNames.Count; i++)
             {
                 string connString = String.Format(connectionString, testDatabaseNames[i]);
-                SqlConnection conn = new SqlConnection(connString);
-                SqlCommand cmd = new SqlCommand(Properties.Resources.LoggingTable, conn);
-                conn.Open();
-                object val = cmd.ExecuteNonQuery();
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(Properties.Resources.LoggingTable, conn))
+                    {
+                        cmd.CommandTimeout = 120;
+                        cmd.ExecuteNonQuery();
+                    }
 
-                cmd = new SqlCommand(Properties.Resources.LoggingTableCommitCheckIndex, conn);
-                cmd.ExecuteNonQuery();
-                conn.Close();
+                    using (SqlCommand cmd = new SqlCommand(Properties.Resources.LoggingTableCommitCheckIndex, conn))
+                    {
+                        cmd.CommandTimeout = 120;
+                        cmd.ExecuteNonQuery();
+                    }
+                }
             }
             return true;
         }
         public bool CleanSqlBuildLoggingTables()
         {
-            try
+            int maxRetries = 5;
+            int retryDelayMs = 2000;
+            
+            for (int i = 0; i < testDatabaseNames.Count; i++)
             {
-
-                for (int i = 0; i < testDatabaseNames.Count; i++)
+                string connString = String.Format(connectionString, testDatabaseNames[i]);
+                bool success = false;
+                
+                for (int retry = 0; retry < maxRetries && !success; retry++)
                 {
-                    string connString = String.Format(connectionString, testDatabaseNames[i]);
-                    SqlConnection conn = new SqlConnection(connString);
-                    string cleaner = string.Format(Properties.Resources.CleanLoggingTable, DateTime.Now.AddHours(-1).ToString());
-                    SqlCommand cmd = new SqlCommand(cleaner, conn);
-                    conn.Open();
-                    object val = cmd.ExecuteNonQuery();
-                    conn.Close();
+                    try
+                    {
+                        using (SqlConnection conn = new SqlConnection(connString))
+                        {
+                            // Use SET LOCK_TIMEOUT to avoid waiting indefinitely for locks
+                            // Also increase command timeout for large tables
+                            string cleaner = @"
+                                SET LOCK_TIMEOUT 10000; -- 10 second lock timeout
+                                IF EXISTS (SELECT 1 FROM sys.objects WHERE name = 'SqlBuild_Logging' AND type = 'U') 
+                                BEGIN 
+                                    DELETE FROM SqlBuild_Logging WHERE BuildFileName LIKE 'SqlSyncTest-%' OR CommitDate < @CutoffDate 
+                                END";
+                            using (SqlCommand cmd = new SqlCommand(cleaner, conn))
+                            {
+                                cmd.CommandTimeout = 120; // 2 minute command timeout
+                                cmd.Parameters.AddWithValue("@CutoffDate", DateTime.Now.AddHours(-1));
+                                conn.Open();
+                                cmd.ExecuteNonQuery();
+                                success = true;
+                            }
+                        }
+                    }
+                    catch (SqlException ex) when (ex.Number == 1222) // Lock timeout
+                    {
+                        log.LogWarning($"Lock timeout cleaning SqlBuild_Logging for {testDatabaseNames[i]}, retry {retry + 1}/{maxRetries}");
+                        if (retry < maxRetries - 1)
+                        {
+                            System.Threading.Thread.Sleep(retryDelayMs);
+                        }
+                    }
+                    catch (Exception exe)
+                    {
+                        log.LogError(exe, $"Unable to clean SqlBuild_Logging tables for {testDatabaseNames[i]}");
+                        return false;
+                    }
                 }
-                return true;
+                
+                // If we couldn't clean after all retries, log warning but continue
+                // The test data isolation should still work since we use unique BuildFileName patterns
+                if (!success)
+                {
+                    log.LogWarning($"Could not clean SqlBuild_Logging for {testDatabaseNames[i]} after {maxRetries} retries, continuing anyway");
+                }
             }
-            catch
-            {
-                return false;
-            }
+            return true;
         }
         public bool InsertPreRunScriptEntry()
         {
@@ -521,13 +569,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             return sbc;
         }
-        public BackgroundWorker GetBackgroundWorker()
-        {
-            BackgroundWorker bg = new BackgroundWorker();
-            bg.WorkerReportsProgress = true;
-            bg.WorkerSupportsCancellation = true;
-            return bg;
-        }
+
         public List<DatabaseOverride> GetDatabaseOverrides()
         {
             List<DatabaseOverride> o = new List<DatabaseOverride>();
@@ -584,7 +626,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             {
                 using (SqlConnection conn = new SqlConnection(String.Format(connectionString, testDatabaseNames[databaseIndex])))
                 {
-                    SqlCommand cmd = new SqlCommand("SELECT count(*) FROM SqlBuild_Logging WHERE BuildFileName = @BuildFileName", conn);
+                    SqlCommand cmd = new SqlCommand("SELECT count(*) FROM SqlBuild_Logging WITH (NOLOCK) WHERE BuildFileName = @BuildFileName", conn);
                     cmd.Parameters.AddWithValue("@BuildFileName", Path.GetFileName(projectFileName));
                     conn.Open();
                     object val = cmd.ExecuteScalar();

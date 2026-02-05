@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using SqlSync.SqlBuild.Status;
-using SqlSync.SqlBuild.Legacy;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Services;
 using System;
@@ -433,16 +433,23 @@ namespace SqlSync.SqlBuild.UnitTest.Status
     [TestClass]
     public class StatusReportingExtendedTests
     {
+        private static SqlSyncBuildDataModel CreateEmptyModel() => new SqlSyncBuildDataModel(
+            new List<SqlSyncBuildProject>(),
+            new List<Script>(),
+            new List<Build>(),
+            new List<ScriptRun>(),
+            new List<CommittedScript>());
+
         [TestMethod]
         public void StatusReporting_Constructor_WithValidParameters_CreatesInstance()
         {
             // Arrange
             var dbUtilMock = new Mock<IDatabaseUtility>();
-            var buildData = new SqlSyncBuildData();
+            var buildDataModel = CreateEmptyModel();
             var multiDbData = new MultiDbData();
 
             // Act
-            var reporting = new StatusReporting(dbUtilMock.Object, buildData, multiDbData, @"C:\Test", "build.sbm");
+            var reporting = new StatusReporting(dbUtilMock.Object, buildDataModel, multiDbData, @"C:\Test", "build.sbm");
 
             // Assert
             Assert.IsNotNull(reporting);

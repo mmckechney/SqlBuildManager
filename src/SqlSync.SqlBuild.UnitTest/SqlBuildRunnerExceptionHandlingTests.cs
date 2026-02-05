@@ -23,7 +23,7 @@ namespace SqlSync.SqlBuild.UnitTest
     {
         [TestMethod]
         [Ignore("SqlException created via reflection doesn't properly set Message property, so timeout detection via error message doesn't work. Error number check also doesn't work with the reflection-created exception. This test needs to be updated to either use a real SqlException or a different mocking approach.")]
-        public void Run_MarksTimeoutFailure_WhenSqlExceptionTimeout()
+        public async Task RunAsync_MarksTimeoutFailure_WhenSqlExceptionTimeout()
         {
             var bg = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
             var ctx = new FakeRunnerContext(bg) { IsTransactionalValue = true };
@@ -71,10 +71,9 @@ namespace SqlSync.SqlBuild.UnitTest
                 script: scripts,
                 build: baseModel.Build,
                 scriptRun: baseModel.ScriptRun,
-                committedScript: baseModel.CommittedScript,
-                codeReview: baseModel.CodeReview);
+                committedScript: baseModel.CommittedScript);
 
-            var result = runner.Run(scripts, myBuild, "srv", isMultiDbRun: false, scriptBatchColl: new ScriptBatchCollection { new ScriptBatch("file.sql", new[] { "SELECT 1;" }, "abc") }, buildDataModel: model);
+            var result = await runner.RunAsync(scripts, myBuild, "srv", isMultiDbRun: false, scriptBatchColl: new ScriptBatchCollection { new ScriptBatch("file.sql", new[] { "SELECT 1;" }, "abc") }, buildDataModel: model);
 
             Assert.AreEqual(BuildItemStatus.FailedDueToScriptTimeout, result.FinalStatus);
             Assert.IsTrue(ctx.ErrorOccured);

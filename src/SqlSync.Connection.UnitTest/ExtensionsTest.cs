@@ -118,19 +118,19 @@ namespace SqlSync.Connection.UnitTest
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void GetValueFromDescription_InvalidDescription_ShouldThrowArgumentException()
         {
             string description = "NonExistentAuthType";
 
-            Extensions.GetValueFromDescription<AuthenticationType>(description);
+            Assert.ThrowsExactly<ArgumentException>(() =>
+                Extensions.GetValueFromDescription<AuthenticationType>(description));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void GetValueFromDescription_NonEnumType_ShouldThrowInvalidOperationException()
         {
-            Extensions.GetValueFromDescription<int>("test");
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
+                Extensions.GetValueFromDescription<int>("test"));
         }
 
         #endregion

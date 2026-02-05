@@ -3,6 +3,7 @@ using SqlSync.Connection;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
@@ -60,7 +61,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod]
         public void ScriptDacPacDelta_Test()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
@@ -78,7 +79,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod]
         public void ScriptDacPacDelta_InSync_Test()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
 
@@ -93,7 +94,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [TestMethod]
         public void ScriptDacPacDelta_WithAllowObjectDelete_Works()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
@@ -111,7 +112,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [Ignore("Large schema comparison - takes long time")]
         public void ScriptDacPacDelta_TestFull()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema.dacpac");
 
@@ -129,9 +130,9 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         #region CreateSbmFromDacPacDifferences Tests
 
         [TestMethod]
-        public void CreateSbmFromDacPacDifferences_Success_Test()
+        public async Task CreateSbmFromDacPacDifferences_Success_Test()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
@@ -142,17 +143,17 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             string buildFileName = Path.GetTempFileName();
             _tempFiles.Add(buildFileName);
 
-            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, tarnishedPath, false, string.Empty, 500, false, out buildFileName);
+            var (result, buildFileNameResult) = await DacPacHelper.CreateSbmFromDacPacDifferencesAsync(platinumPath, tarnishedPath, false, string.Empty, 500, false);
 
             Assert.AreEqual(DacpacDeltasStatus.Success, result);
-            Assert.IsTrue(File.ReadAllBytes(buildFileName).Length > 0);
-            _tempFiles.Add(buildFileName);
+            Assert.IsTrue(File.ReadAllBytes(buildFileNameResult).Length > 0);
+            _tempFiles.Add(buildFileNameResult);
         }
 
         [TestMethod]
-        public void CreateSbmFromDacPacDifferences_WithBatchScripts_Works()
+        public async Task CreateSbmFromDacPacDifferences_WithBatchScripts_Works()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
@@ -160,9 +161,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             File.WriteAllBytes(platinumPath, Properties.Resources.PlatinumSchema_simple);
             File.WriteAllBytes(tarnishedPath, Properties.Resources.TarnishedSchema_simple);
-            string buildFileName;
 
-            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, tarnishedPath, true, string.Empty, 500, false, out buildFileName);
+            var (result, buildFileName) = await DacPacHelper.CreateSbmFromDacPacDifferencesAsync(platinumPath, tarnishedPath, true, string.Empty, 500, false);
 
             Assert.AreEqual(DacpacDeltasStatus.Success, result);
             if (!string.IsNullOrEmpty(buildFileName))
@@ -173,9 +173,9 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
 
         [TestMethod]
-        public void CreateSbmFromDacPacDifferences_WithBuildRevision_IncludesVersion()
+        public async Task CreateSbmFromDacPacDifferences_WithBuildRevision_IncludesVersion()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
@@ -183,9 +183,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             File.WriteAllBytes(platinumPath, Properties.Resources.PlatinumSchema_simple);
             File.WriteAllBytes(tarnishedPath, Properties.Resources.TarnishedSchema_simple);
-            string buildFileName;
 
-            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, tarnishedPath, false, "1.0.0.1", 500, false, out buildFileName);
+            var (result, buildFileName) = await DacPacHelper.CreateSbmFromDacPacDifferencesAsync(platinumPath, tarnishedPath, false, "1.0.0.1", 500, false);
 
             Assert.AreEqual(DacpacDeltasStatus.Success, result);
             if (!string.IsNullOrEmpty(buildFileName))
@@ -195,9 +194,9 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
 
         [TestMethod]
-        public void CreateSbmFromDacPacDifferences1_Success_Test()
+        public async Task CreateSbmFromDacPacDifferences1_Success_Test()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema1.dacpac");
             string tarnishedPath = Path.Combine(workingDir, "TarnishedSchema1.dacpac");
             _tempFiles.Add(platinumPath);
@@ -205,9 +204,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             File.WriteAllBytes(platinumPath, Properties.Resources.Platinumschema1);
             File.WriteAllBytes(tarnishedPath, Properties.Resources.TarnishedSchema1);
-            string buildFileName = Path.GetTempFileName();
 
-            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, tarnishedPath, false, string.Empty, 500, false, out buildFileName);
+            var (result, buildFileName) = await DacPacHelper.CreateSbmFromDacPacDifferencesAsync(platinumPath, tarnishedPath, false, string.Empty, 500, false);
 
             Assert.AreEqual(DacpacDeltasStatus.Success, result);
             Assert.IsTrue(File.ReadAllBytes(buildFileName).Length > 0);
@@ -215,34 +213,30 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
 
         [TestMethod]
-        public void CreateSbmFromDacPacDifferences_InSync_Test()
+        public async Task CreateSbmFromDacPacDifferences_InSync_Test()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema_simple.dacpac");
             _tempFiles.Add(platinumPath);
 
             File.WriteAllBytes(platinumPath, Properties.Resources.PlatinumSchema_simple);
-            string buildFileName = Path.GetTempFileName();
-            _tempFiles.Add(buildFileName);
 
-            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, platinumPath, false, string.Empty, 500, false, out buildFileName);
+            var (result, buildFileName) = await DacPacHelper.CreateSbmFromDacPacDifferencesAsync(platinumPath, platinumPath, false, string.Empty, 500, false);
 
             Assert.AreEqual(DacpacDeltasStatus.InSync, result);
             Assert.IsTrue(string.IsNullOrEmpty(buildFileName));
         }
 
         [TestMethod]
-        public void CreateSbmFromDacPacDifferences1_InSync_Test()
+        public async Task CreateSbmFromDacPacDifferences1_InSync_Test()
         {
-            string workingDir = @"C:\temp";
+            string workingDir = Path.GetTempPath();
             string platinumPath = Path.Combine(workingDir, "PlatinumSchema1.dacpac");
             _tempFiles.Add(platinumPath);
 
             File.WriteAllBytes(platinumPath, Properties.Resources.Platinumschema1);
-            string buildFileName = Path.GetTempFileName();
-            _tempFiles.Add(buildFileName);
 
-            var result = DacPacHelper.CreateSbmFromDacPacDifferences(platinumPath, platinumPath, false, string.Empty, 500, false, out buildFileName);
+            var (result, buildFileName) = await DacPacHelper.CreateSbmFromDacPacDifferencesAsync(platinumPath, platinumPath, false, string.Empty, 500, false);
 
             Assert.AreEqual(DacpacDeltasStatus.InSync, result);
             Assert.IsTrue(string.IsNullOrEmpty(buildFileName));

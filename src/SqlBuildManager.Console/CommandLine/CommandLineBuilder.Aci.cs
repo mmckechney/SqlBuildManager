@@ -24,7 +24,7 @@ namespace SqlBuildManager.Console.CommandLine
                     subscriptionIdOption,
                     //Key value option
                     sectionPlaceholderOption,
-                    keyVaultNameOption.Copy(true),
+                    keyVaultNameOption,
                     storageaccountnameOption,
                     storageaccountkeyOption,
                     eventhubconnectionOption,

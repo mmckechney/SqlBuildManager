@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.SqlBuild.Legacy;
+using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Services;
 using SqlSync.SqlBuild.Status;
@@ -26,19 +26,26 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             _mockDbUtil = new Mock<IDatabaseUtility>();
         }
 
+        private SqlSyncBuildDataModel CreateEmptyModel() => new SqlSyncBuildDataModel(
+            new List<SqlSyncBuildProject>(),
+            new List<Script>(),
+            new List<Build>(),
+            new List<ScriptRun>(),
+            new List<CommittedScript>());
+
         #region StatusReporting Constructor Tests
 
         [TestMethod]
         public void StatusReporting_Constructor_WithValidParameters_CreatesInstance()
         {
             // Arrange
-            var buildData = new SqlSyncBuildData();
+            var buildDataModel = CreateEmptyModel();
             var multiDbData = new MultiDbData();
             string projectFilePath = @"C:\Test\Project";
             string buildZipFileName = "build.sbm";
 
             // Act
-            var reporting = new StatusReporting(_mockDbUtil.Object, buildData, multiDbData, projectFilePath, buildZipFileName);
+            var reporting = new StatusReporting(_mockDbUtil.Object, buildDataModel, multiDbData, projectFilePath, buildZipFileName);
 
             // Assert
             Assert.IsNotNull(reporting);
@@ -53,7 +60,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             string buildZipFileName = "build.sbm";
 
             // Act
-            var reporting = new StatusReporting(_mockDbUtil.Object, null, multiDbData, projectFilePath, buildZipFileName);
+            var reporting = new StatusReporting(_mockDbUtil.Object, null!, multiDbData, projectFilePath, buildZipFileName);
 
             // Assert
             Assert.IsNotNull(reporting);
@@ -63,11 +70,11 @@ namespace SqlSync.SqlBuild.UnitTest.Status
         public void StatusReporting_Constructor_WithEmptyPaths_CreatesInstance()
         {
             // Arrange
-            var buildData = new SqlSyncBuildData();
+            var buildDataModel = CreateEmptyModel();
             var multiDbData = new MultiDbData();
 
             // Act
-            var reporting = new StatusReporting(_mockDbUtil.Object, buildData, multiDbData, string.Empty, string.Empty);
+            var reporting = new StatusReporting(_mockDbUtil.Object, buildDataModel, multiDbData, string.Empty, string.Empty);
 
             // Assert
             Assert.IsNotNull(reporting);
@@ -81,9 +88,9 @@ namespace SqlSync.SqlBuild.UnitTest.Status
         public void GetScriptStatus_WithEmptyMultiDbData_WorksWithoutThrowing()
         {
             // Arrange
-            var buildData = new SqlSyncBuildData();
+            var buildDataModel = CreateEmptyModel();
             var multiDbData = new MultiDbData();
-            var reporting = new StatusReporting(_mockDbUtil.Object, buildData, multiDbData, @"C:\Test", "build.sbm");
+            var reporting = new StatusReporting(_mockDbUtil.Object, buildDataModel, multiDbData, @"C:\Test", "build.sbm");
 
             // Act & Assert - Just verify the object can be created and method exists
             // The actual method requires proper BackgroundWorker setup, so we just test construction

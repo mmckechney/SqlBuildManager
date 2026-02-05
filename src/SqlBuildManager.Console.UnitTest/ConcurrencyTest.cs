@@ -196,7 +196,7 @@ namespace SqlBuildManager.Console.UnitTest
         [DataRow(34, 37, new int[] { 512, 68, 299, 503, 442, 170, 200, 336, 435, 507, 124, 264, 509, 449, 18, 406, 238, 491, 42, 485, 240, 152, 388, 468, 510, 536, 380, 336, 371, 404, 334, 365, 161, 274, 135, 19, 153 })] //Actual:<31>
         [DataRow(32, 36, new int[] { 429, 295, 251, 206, 436, 155, 285, 203, 214, 89, 53, 70, 232, 194, 298, 87, 315, 298, 377, 412, 231, 270, 392, 286, 354, 299, 320, 235, 98, 87, 130, 75, 247, 56, 141, 441 })] //Actual:<30>
         [DataRow(21, 22, new int[] { 259, 68, 318, 114, 406, 462, 159, 322, 233, 288, 382, 151, 397, 294, 76, 347, 337, 282, 398, 444, 207, 128 })] //Actual:<19>
-        [DataTestMethod]
+        [TestMethod]
         public void MatchDefinedServersToFixedBucket(int targetBuckets, int serverCount, int[] dbsPerServer)
         {
             string tmpFile = string.Empty;
@@ -310,7 +310,7 @@ namespace SqlBuildManager.Console.UnitTest
         [DataRow(10)]
         [DataRow(100)]
         [DataRow(234)]
-        [DataTestMethod]
+        [TestMethod]
         public void DbOverrideSimpleBatchTest(int concurrencyCount)
         {
 
@@ -459,7 +459,7 @@ namespace SqlBuildManager.Console.UnitTest
         [DataRow(5, 25, 90, 16)]
         [DataRow(10, 50, 45, 6)]
         [DataRow(20, 100, 23, 1)]
-        [DataTestMethod]
+        [TestMethod]
         public void DbOverrideMaxConcurrencyByServerTest(int concurrency, int totalChunks, int firstCount, int lastCount)
         {
             string tmpFile = string.Empty;
@@ -509,7 +509,7 @@ namespace SqlBuildManager.Console.UnitTest
         [DataRow(7, 411)]
         [DataRow(10, 364)]
         [DataRow(10, 51)]
-        [DataTestMethod]
+        [TestMethod]
         public void ChunkAlgoTest(int numberOfChunks, int listSize)
         {
             double max = Math.Ceiling((double)listSize / (double)numberOfChunks);

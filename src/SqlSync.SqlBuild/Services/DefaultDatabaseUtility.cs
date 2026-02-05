@@ -291,8 +291,7 @@ namespace SqlSync.SqlBuild.Services
                 script: model.Script,
                 build: model.Build,
                 scriptRun: model.ScriptRun,
-                committedScript: updatedCommitted,
-                codeReview: model.CodeReview);
+                committedScript: updatedCommitted);
         }
 
     }

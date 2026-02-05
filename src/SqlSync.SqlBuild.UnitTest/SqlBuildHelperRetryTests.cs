@@ -35,7 +35,6 @@ namespace SqlSync.SqlBuild.UnitTest
                 progressReporter: null,
                 fileHelper: null,
                 retryPolicy: null,
-                legacyAdapter: null,
                 databaseUtility: null,
                 connectionsService: null,
                 buildFinalizer: null,
@@ -66,15 +65,14 @@ namespace SqlSync.SqlBuild.UnitTest
                 },
                 build: baseModel.Build,
                 scriptRun: baseModel.ScriptRun,
-                committedScript: baseModel.CommittedScript,
-                codeReview: baseModel.CodeReview);
+                committedScript: baseModel.CommittedScript);
             var runData = new BuildModels.SqlBuildRunDataModel(
                 buildDataModel: buildDataModel,
                 buildType: "type",
                 server: "srv",
                 buildDescription: "desc",
                 startIndex: 0,
-                projectFileName: null,
+                projectFileName: System.IO.Path.Combine(System.IO.Path.GetTempPath(), "test_project.sbm"),
                 isTrial: false,
                 runItemIndexes: System.Array.Empty<double>(),
                 runScriptOnly: false,
@@ -94,7 +92,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var bgWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
             var e = new DoWorkEventArgs(null);
 
-            var result = await helper.ProcessBuild(runData, allowableTimeoutRetries: 3, buildRequestedBy: string.Empty, scriptBatchColl: scriptBatchColl);
+            var result = await helper.ProcessBuildAsync(runData, allowableTimeoutRetries: 3, buildRequestedBy: string.Empty, scriptBatchColl: scriptBatchColl);
 
             Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries, result.FinalStatus);
         }
@@ -115,16 +113,17 @@ namespace SqlSync.SqlBuild.UnitTest
             private readonly Queue<BuildItemStatus> _statuses;
             public TestSqlBuildRunner(ISqlBuildRunnerContext ctx, Queue<BuildItemStatus> statuses) : base(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object) => _statuses = statuses;
 
-            public override BuildModels.Build Run(
+            public override Task<BuildModels.Build> RunAsync(
                 System.Collections.Generic.IList<BuildModels.Script> scripts,
                 BuildModels.Build myBuild,
                 string serverName,
                 bool isMultiDbRun,
                 ScriptBatchCollection scriptBatchColl,
-                BuildModels.SqlSyncBuildDataModel buildDataModel)
+                BuildModels.SqlSyncBuildDataModel buildDataModel,
+                System.Threading.CancellationToken cancellationToken = default)
             {
                 var status = _statuses.Count > 0 ? _statuses.Dequeue() : BuildItemStatus.Committed;
-                return new BuildModels.Build(
+                return Task.FromResult(new BuildModels.Build(
                     name: myBuild.Name,
                     buildType: myBuild.BuildType,
                     buildStart: myBuild.BuildStart,
@@ -132,7 +131,7 @@ namespace SqlSync.SqlBuild.UnitTest
                     serverName: myBuild.ServerName,
                     finalStatus: status,
                     buildId: myBuild.BuildId,
-                    userId: myBuild.UserId);
+                    userId: myBuild.UserId));
             }
         }
     }

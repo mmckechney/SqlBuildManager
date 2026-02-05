@@ -31,27 +31,27 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_WithNullContext_ThrowsArgumentNullException()
         {
             // Arrange
             var connectionsService = MockFactory.CreateMockConnectionsService().Object;
             var finalizerContext = new Mock<IBuildFinalizerContext>().Object;
 
-            // Act
-            new SqlBuildRunner(connectionsService, null, finalizerContext);
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
+                new SqlBuildRunner(connectionsService, null, finalizerContext));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_WithNullFinalizerContext_ThrowsArgumentNullException()
         {
             // Arrange
             var connectionsService = MockFactory.CreateMockConnectionsService().Object;
             var ctx = new FakeRunnerContext();
 
-            // Act
-            new SqlBuildRunner(connectionsService, ctx, null);
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
+                new SqlBuildRunner(connectionsService, ctx, null));
         }
 
         [TestMethod]
@@ -102,8 +102,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 committedScript: new List<BuildModels.CommittedScript>
                 {
                     new BuildModels.CommittedScript(scriptId, serverName: null, committedDate: null, allowScriptBlock: null, scriptHash: null, sqlSyncBuildProjectId: null)
-                },
-                codeReview: model.CodeReview);
+                });
 
             // Act
             var result = runner.ShouldSkipDueToCommittedScripts(scriptId, model);
@@ -157,8 +156,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 committedScript: new List<BuildModels.CommittedScript>
                 {
                     new BuildModels.CommittedScript(scriptId.ToUpper(), serverName: null, committedDate: null, allowScriptBlock: null, scriptHash: null, sqlSyncBuildProjectId: null)
-                },
-                codeReview: model.CodeReview);
+                });
 
             // Act
             var result = runner.ShouldSkipDueToCommittedScripts(scriptId.ToLower(), model);
@@ -169,10 +167,10 @@ namespace SqlSync.SqlBuild.UnitTest
 
         #endregion
 
-        #region LoadBatchScripts Tests
+        #region LoadBatchScriptsAsync Tests
 
         [TestMethod]
-        public void LoadBatchScripts_ReturnsFromScriptBatchCollection_WhenPresent()
+        public async Task LoadBatchScriptsAsync_ReturnsFromScriptBatchCollection_WhenPresent()
         {
             // Arrange
             var ctx = new FakeRunnerContext();
@@ -183,14 +181,14 @@ namespace SqlSync.SqlBuild.UnitTest
             coll.Add(new ScriptBatch("test.sql", expectedScripts, scriptId));
 
             // Act
-            var result = runner.LoadBatchScripts(scriptId, "test.sql", false, coll);
+            var result = await runner.LoadBatchScriptsAsync(scriptId, "test.sql", false, coll, default);
 
             // Assert
             CollectionAssert.AreEqual(expectedScripts, result);
         }
 
         [TestMethod]
-        public void LoadBatchScripts_ReturnsFromContext_WhenNoBatchCollection()
+        public async Task LoadBatchScriptsAsync_ReturnsFromContext_WhenNoBatchCollection()
         {
             // Arrange
             var expectedScripts = new[] { "SELECT 3;" };
@@ -198,14 +196,14 @@ namespace SqlSync.SqlBuild.UnitTest
             var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
 
             // Act
-            var result = runner.LoadBatchScripts("id", "file.sql", false, null);
+            var result = await runner.LoadBatchScriptsAsync("id", "file.sql", false, null, default);
 
             // Assert
             CollectionAssert.AreEqual(expectedScripts, result);
         }
 
         [TestMethod]
-        public void LoadBatchScripts_ReturnsFromContext_WhenScriptIdNotInCollection()
+        public async Task LoadBatchScriptsAsync_ReturnsFromContext_WhenScriptIdNotInCollection()
         {
             // Arrange
             var expectedScripts = new[] { "SELECT 4;" };
@@ -215,25 +213,7 @@ namespace SqlSync.SqlBuild.UnitTest
             coll.Add(new ScriptBatch("other.sql", new[] { "OTHER" }, "other-id"));
 
             // Act
-            var result = runner.LoadBatchScripts("non-existent-id", "file.sql", false, coll);
-
-            // Assert
-            CollectionAssert.AreEqual(expectedScripts, result);
-        }
-
-        [TestMethod]
-        public async Task LoadBatchScriptsAsync_ReturnsFromScriptBatchCollection_WhenPresent()
-        {
-            // Arrange
-            var ctx = new FakeRunnerContext();
-            var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
-            var scriptId = "async-test-id";
-            var expectedScripts = new[] { "SELECT ASYNC 1;" };
-            var coll = new ScriptBatchCollection();
-            coll.Add(new ScriptBatch("async.sql", expectedScripts, scriptId));
-
-            // Act
-            var result = await runner.LoadBatchScriptsAsync(scriptId, "async.sql", false, coll, CancellationToken.None);
+            var result = await runner.LoadBatchScriptsAsync("non-existent-id", "file.sql", false, coll, default);
 
             // Assert
             CollectionAssert.AreEqual(expectedScripts, result);
@@ -244,7 +224,7 @@ namespace SqlSync.SqlBuild.UnitTest
         #region Run Method Tests
 
         [TestMethod]
-        public void Run_WithEmptyScripts_SetsErrorOccurredFlag()
+        public async Task RunAsync_WithEmptyScripts_SetsErrorOccurredFlag()
         {
             // Arrange - ValidateScriptsInput throws, which gets caught and handled
             var ctx = new FakeRunnerContext();
@@ -262,14 +242,14 @@ namespace SqlSync.SqlBuild.UnitTest
             var emptyScripts = new List<BuildModels.Script>();
 
             // Act
-            var result = runner.Run(emptyScripts, build, "srv", false, null, model);
+            var result = await runner.RunAsync(emptyScripts, build, "srv", false, null, model);
 
             // Assert - Should complete but context should have error
             Assert.IsNotNull(result);
         }
 
         [TestMethod]
-        public void Run_WithNullScripts_SetsErrorOccurredFlag()
+        public async Task RunAsync_WithNullScripts_SetsErrorOccurredFlag()
         {
             // Arrange
             var ctx = new FakeRunnerContext();
@@ -286,14 +266,14 @@ namespace SqlSync.SqlBuild.UnitTest
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = runner.Run(null, build, "srv", false, null, model);
+            var result = await runner.RunAsync(null, build, "srv", false, null, model);
 
             // Assert - Should complete but return build with failure state
             Assert.IsNotNull(result);
         }
 
         [TestMethod]
-        public void Run_WithValidScript_ReturnsCompletedBuild()
+        public async Task RunAsync_WithValidScript_ReturnsCompletedBuild()
         {
             // Arrange
             var ctx = new LocalFakeRunnerContext();
@@ -312,7 +292,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = runner.Run(scripts, build, "srv", false, 
+            var result = await runner.RunAsync(scripts, build, "srv", false, 
                 new ScriptBatchCollection { new ScriptBatch("test.sql", new[] { "SELECT 1" }, "script-1") }, 
                 model);
 
@@ -323,7 +303,7 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void Run_SkipsPreRunScript_WhenNotAllowMultipleRunsAndAlreadyCommitted()
+        public async Task RunAsync_SkipsPreRunScript_WhenNotAllowMultipleRunsAndAlreadyCommitted()
         {
             // Arrange
             var ctx = new LocalFakeRunnerContext();
@@ -348,8 +328,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 committedScript: new List<BuildModels.CommittedScript>
                 {
                     new BuildModels.CommittedScript(scriptId, null, null, null, null, null)
-                },
-                codeReview: baseModel.CodeReview);
+                });
 
             var scripts = new List<BuildModels.Script>
             {
@@ -373,7 +352,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var build = CreateTestBuild();
 
             // Act
-            var result = runner.Run(scripts, build, "srv", false,
+            var result = await runner.RunAsync(scripts, build, "srv", false,
                 new ScriptBatchCollection { new ScriptBatch("skip.sql", new[] { "SELECT 1" }, scriptId) },
                 model);
 
@@ -408,36 +387,6 @@ namespace SqlSync.SqlBuild.UnitTest
 
             // Assert - Should complete, errors are handled internally
             Assert.IsNotNull(result);
-        }
-
-        [TestMethod]
-        public async Task RunAsync_WithValidScript_ReturnsCompletedBuild()
-        {
-            // Arrange
-            var ctx = new LocalFakeRunnerContext();
-            var exec = new SuccessfulExecutor();
-            var runner = new SqlBuildRunner(
-                MockFactory.CreateMockConnectionsService().Object,
-                ctx,
-                new Mock<IBuildFinalizerContext>().Object,
-                exec,
-                null,
-                MockFactory.CreateMockBuildFinalizer().Object,
-                MockFactory.CreateMockSqlLoggingService().Object,
-                new NoopProgressReporter());
-            var scripts = new List<BuildModels.Script> { CreateTestScript("test.sql", "script-1") };
-            var build = CreateTestBuild();
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-
-            // Act
-            var result = await runner.RunAsync(scripts, build, "srv", false,
-                new ScriptBatchCollection { new ScriptBatch("test.sql", new[] { "SELECT 1" }, "script-1") },
-                model, CancellationToken.None);
-
-            // Assert
-            Assert.IsNotNull(result);
-            // Build completes - actual FinalStatus depends on transactional context and mock behavior
-            Assert.IsNotNull(result.FinalStatus);
         }
 
         #endregion

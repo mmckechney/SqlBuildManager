@@ -1,6 +1,6 @@
 
 
-You are an AI assistant working on a .NET 8 C# solution that currently uses legacy ADO.NET data structures based on `System.Data`, including:
+You are an AI assistant working on a .NET 10 C# solution that currently uses legacy ADO.NET data structures based on `System.Data`, including:
 
 - `System.Data.DataSet`, `System.Data.DataTable`, `System.Data.DataColumn`, and `System.Data.DataRow`
 - Inherited, strongly-typed variants of these objects (e.g., typed `DataSet`, typed `DataTable`, typed `DataRow` classes generated from XSD schemas or design-time tools)
@@ -15,7 +15,7 @@ Modernize this solution by:
 3. Ensuring behavior is preserved and validated by unit tests.
 4. Keeping a running, human-readable log of your plan, tasks, and status updates as you work.
 
-Assume the target runtime is .NET 8.0 and use modern C# language features (nullable reference types, async/await, pattern matching, etc.) where appropriate.
+Assume the target runtime is .NET 10.0 and use modern C# language features (nullable reference types, async/await, pattern matching, etc.) where appropriate.
 
 ---
 

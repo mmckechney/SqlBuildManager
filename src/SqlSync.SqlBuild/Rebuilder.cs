@@ -101,7 +101,8 @@ namespace SqlSync.SqlBuild
             return data;
 
         }
-        internal static bool RebuildBuildManagerFile(int defaultTimeout, string buildFileName, List<RebuilderData> rebuildData)
+
+        internal static async System.Threading.Tasks.Task<bool> RebuildBuildManagerFileAsync(int defaultTimeout, string buildFileName, List<RebuilderData> rebuildData, System.Threading.CancellationToken cancellationToken = default)
         {
             string tempPath = System.IO.Path.GetTempPath() + System.Guid.NewGuid();
             Directory.CreateDirectory(tempPath);
@@ -111,12 +112,12 @@ namespace SqlSync.SqlBuild
 
                 for (int i = 0; i < rebuildData.Count; i++)
                 {
-                    File.WriteAllText(Path.Combine(tempPath, rebuildData[i].ScriptFileName), rebuildData[i].ScriptText);
+                    await File.WriteAllTextAsync(Path.Combine(tempPath, rebuildData[i].ScriptFileName), rebuildData[i].ScriptText, cancellationToken).ConfigureAwait(false);
                 }
 
                 var buildModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-                if (!SqlBuildFileHelper.PackageProjectFileIntoZip(buildModel, tempPath, buildFileName, true))
+                if (!await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(buildModel, tempPath, buildFileName, true, cancellationToken).ConfigureAwait(false))
                 {
                     return false;
                 }
@@ -128,7 +129,8 @@ namespace SqlSync.SqlBuild
 
                 for (int i = 0; i < rebuildData.Count; i++)
                 {
-                    buildModel = SqlBuildFileHelper.AddScriptFileToBuild(buildModel,
+                    cancellationToken.ThrowIfCancellationRequested();
+                    buildModel = await SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel,
                         projFileName,
                         rebuildData[i].ScriptFileName,
                         rebuildData[i].Sequence + 1,
@@ -143,10 +145,11 @@ namespace SqlSync.SqlBuild
                         System.Environment.UserName,
                         defaultTimeout,
                         rebuildData[i].ScriptId,
-                        rebuildData[i].Tag);
+                        rebuildData[i].Tag,
+                        cancellationToken).ConfigureAwait(false);
                 }
 
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(buildModel, projFileName, buildFileName);
+                await SqlBuildFileHelper.SaveSqlBuildProjectFileAsync(buildModel, projFileName, buildFileName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 return true;
             }
@@ -156,10 +159,10 @@ namespace SqlSync.SqlBuild
                     Directory.Delete(tempPath, true);
             }
         }
-        public bool RebuildBuildManagerFile(int defaultTimeout)
+        public async System.Threading.Tasks.Task<bool> RebuildBuildManagerFileAsync(int defaultTimeout)
         {
             List<RebuilderData> rebuildData = RetreiveBuildData();
-            return RebuildBuildManagerFile(defaultTimeout, newBuildFileName, rebuildData);
+            return await RebuildBuildManagerFileAsync(defaultTimeout, newBuildFileName, rebuildData);
         }
 
         #region .: Discovery Methods :.

@@ -220,10 +220,9 @@ namespace SqlSync.SqlBuild.UnitTest
             var builds = new List<Build>();
             var scriptRuns = new List<ScriptRun>();
             var committedScripts = new List<CommittedScript>();
-            var codeReviews = new List<CodeReview>();
 
             // Act
-            var model = new SqlSyncBuildDataModel(projects, scripts, builds, scriptRuns, committedScripts, codeReviews);
+            var model = new SqlSyncBuildDataModel(projects, scripts, builds, scriptRuns, committedScripts);
 
             // Assert
             Assert.IsNotNull(model.SqlSyncBuildProject);
@@ -231,37 +230,6 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.IsNotNull(model.Build);
             Assert.IsNotNull(model.ScriptRun);
             Assert.IsNotNull(model.CommittedScript);
-            Assert.IsNotNull(model.CodeReview);
-            Assert.AreEqual(1, model.SqlSyncBuildProject.Count);
-        }
-
-        [TestMethod]
-        public void SqlSyncBuildDataModel_ToDataSet_CreatesValidDataSet()
-        {
-            // Arrange
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-
-            // Act
-            var dataSet = model.ToDataSet();
-
-            // Assert
-            Assert.IsNotNull(dataSet);
-            Assert.IsNotNull(dataSet.SqlSyncBuildProject);
-            Assert.IsNotNull(dataSet.Script);
-        }
-
-        [TestMethod]
-        public void SqlSyncBuildDataModel_FromDataSet_CreatesValidModel()
-        {
-            // Arrange
-            var dataSet = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-
-            // Act
-            var model = dataSet.ToModel();
-
-            // Assert
-            Assert.IsNotNull(model);
-            Assert.IsNotNull(model.SqlSyncBuildProject);
             Assert.AreEqual(1, model.SqlSyncBuildProject.Count);
         }
 
@@ -282,41 +250,6 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.AreEqual(123, project.SqlSyncBuildProjectId);
             Assert.AreEqual("My Project", project.ProjectName);
             Assert.IsTrue(project.ScriptTagRequired);
-        }
-
-        #endregion
-
-        #region CodeReview Tests
-
-        [TestMethod]
-        public void CodeReview_Constructor_SetsProperties()
-        {
-            // Arrange
-            var reviewDate = DateTime.Now;
-            var codeReviewId = Guid.NewGuid();
-
-            // Act - use correct constructor signature
-            var review = new CodeReview(
-                codeReviewId: codeReviewId,
-                scriptId: "script-1",
-                reviewDate: reviewDate,
-                reviewBy: "Reviewer",
-                reviewStatus: 1,
-                comment: "Looks good",
-                reviewNumber: "1",
-                checkSum: "CHECK123",
-                validationKey: "key-123");
-
-            // Assert
-            Assert.AreEqual(codeReviewId, review.CodeReviewId);
-            Assert.AreEqual("script-1", review.ScriptId);
-            Assert.AreEqual("Reviewer", review.ReviewBy);
-            Assert.AreEqual(reviewDate, review.ReviewDate);
-            Assert.AreEqual("1", review.ReviewNumber);
-            Assert.AreEqual("Looks good", review.Comment);
-            Assert.AreEqual("CHECK123", review.CheckSum);
-            Assert.AreEqual((short)1, review.ReviewStatus);
-            Assert.AreEqual("key-123", review.ValidationKey);
         }
 
         #endregion

@@ -11,6 +11,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using sqlLog = SqlSync.SqlBuild.SqlLogging;
 
 namespace SqlSync.SqlBuild.Services
@@ -22,27 +23,87 @@ namespace SqlSync.SqlBuild.Services
         private readonly IConnectionsService connectionsService;
         private readonly IProgressReporter progressReporter;
 
+        // Static cache for verified logging tables (server:database combinations that have been confirmed)
+        private static readonly HashSet<string> _verifiedLoggingTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly object _cacheLock = new object();
+
         public DefaultSqlLoggingService(IConnectionsService connectionsService, IProgressReporter progressReporter) 
         {
             this.connectionsService = connectionsService;
             this.progressReporter = progressReporter;
         }
 
-        /// <summary>
-        /// Ensures that the SqlBuild_Logging table exists and that it is setup properly. Self-heals if it is not. 
-        /// </summary>
-        public string EnsureLogTablePresence(Dictionary<string, BuildConnectData> connectDictionary, string logToDatabaseName)
+        private static string GetCacheKey(string serverName, string databaseName) => $"{serverName}:{databaseName}";
+
+        private static bool IsLoggingTableVerified(string serverName, string databaseName)
         {
+            lock (_cacheLock)
+            {
+                return _verifiedLoggingTables.Contains(GetCacheKey(serverName, databaseName));
+            }
+        }
+
+        private static void MarkLoggingTableVerified(string serverName, string databaseName)
+        {
+            lock (_cacheLock)
+            {
+                _verifiedLoggingTables.Add(GetCacheKey(serverName, databaseName));
+            }
+        }
+
+        /// <summary>
+        /// Clears the static cache of verified logging tables. Useful for testing.
+        /// </summary>
+        internal static void ClearLoggingTableCache()
+        {
+            lock (_cacheLock)
+            {
+                _verifiedLoggingTables.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Ensures that the SqlBuild_Logging table exists and that it is setup properly. Self-heals if it is not.
+        /// </summary>
+        public async Task<string> EnsureLogTablePresence(Dictionary<string, BuildConnectData> connectDictionary, string logToDatabaseName)
+        {
+            // Check connections that haven't been confirmed yet
+            var unconfirmedLogTable = connectionsService.Connections
+                .Where(c => !c.Value.HasLoggingTable)
+                .ToDictionary();
+
+            if(unconfirmedLogTable.Count == 0)
+            {
+                return "";
+            }
             //Self healing: add the table if needed
             sqlInfoMessage = string.Empty;
             SqlCommand createTableCmd = new SqlCommand(Properties.Resources.LoggingTable);
-            Dictionary<string, BuildConnectData>.KeyCollection keys = connectDictionary.Keys;
+            SqlCommand createCommitIndex = new SqlCommand(Properties.Resources.LoggingTableCommitCheckIndex);
+            Dictionary<string, BuildConnectData>.KeyCollection keys = unconfirmedLogTable.Keys;
             foreach (string key in keys)
             {
+                var connData = (BuildConnectData)connectDictionary[key];
+                var serverName = connData.Connection.DataSource;
+                var databaseName = connData.Connection.Database;
+
+                // Check static cache first - if already verified in this session, skip
+                if (IsLoggingTableVerified(serverName, databaseName))
+                {
+                    connData.HasLoggingTable = true;
+                    continue;
+                }
+
+                if(await LogTableExists(connData.Connection))
+                {
+                    connData.HasLoggingTable = true;
+                    MarkLoggingTableVerified(serverName, databaseName);
+                    continue;
+                }
                 try
                 {
 
-                    createTableCmd.Connection = ((BuildConnectData)connectDictionary[key]).Connection;
+                    createTableCmd.Connection = connData.Connection;
                     createTableCmd.Connection.InfoMessage += new SqlInfoMessageEventHandler(Connection_InfoMessage);
 
                     //If there is an alternate target for logging, check to see if this connection is for that database, if not, skip it.
@@ -52,29 +113,14 @@ namespace SqlSync.SqlBuild.Services
                     if (createTableCmd.Connection.State == ConnectionState.Closed)
                         createTableCmd.Connection.Open();
 
-                    if (((BuildConnectData)connectDictionary[key]).Transaction != null)
-                        createTableCmd.Transaction = ((BuildConnectData)connectDictionary[key]).Transaction;
+                    if (connData.Transaction != null)
+                        createTableCmd.Transaction = connData.Transaction;
 
-                    createTableCmd.ExecuteNonQuery();
+                    await createTableCmd.ExecuteNonQueryAsync();
                     log.LogDebug($"EnsureLogTablePresence Table Sql Messages for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}:\r\n{sqlInfoMessage}");
-                }
-                catch (Exception e)
-                {
-                    log.LogError(e, $"Error ensuring log table presence for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}");
-                }
-                finally
-                {
-                    createTableCmd.Connection.InfoMessage -= new SqlInfoMessageEventHandler(Connection_InfoMessage);
-                }
-            }
-            //SqlCommand createCommitIndex = new SqlCommand(GetFromResources("SqlSync.SqlBuild.SqlLogging.LoggingTableCommitCheckIndex.sql"));
-            SqlCommand createCommitIndex = new SqlCommand(Properties.Resources.LoggingTableCommitCheckIndex);
-            foreach (string key in keys)
-            {
-                sqlInfoMessage = string.Empty;
-                try
-                {
-                    createCommitIndex.Connection = ((BuildConnectData)connectDictionary[key]).Connection;
+
+                    //Ensure the indexes are there
+                    createCommitIndex.Connection = connData.Connection;
                     createCommitIndex.Connection.InfoMessage += new SqlInfoMessageEventHandler(Connection_InfoMessage);
 
                     //If there is an alternate target for logging, check to see if this connection is for that database, if not, skip it.
@@ -85,21 +131,27 @@ namespace SqlSync.SqlBuild.Services
                     if (createCommitIndex.Connection.State == ConnectionState.Closed)
                         createCommitIndex.Connection.Open();
 
-                    if (((BuildConnectData)connectDictionary[key]).Transaction != null)
-                        createCommitIndex.Transaction = ((BuildConnectData)connectDictionary[key]).Transaction;
+                    if (connData.Transaction != null)
+                        createCommitIndex.Transaction = connData.Transaction;
 
-                    createCommitIndex.ExecuteNonQuery();
-                    log.LogDebug($"EnsureLogTablePresence Index Sql Messages for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}:\r\n{sqlInfoMessage}");
+                    await createCommitIndex.ExecuteNonQueryAsync();
+                    log.LogDebug($"EnsureLogTablePresence Index Sql Messages for {createCommitIndex.Connection.DataSource}.{createCommitIndex.Connection.Database}:\r\n{sqlInfoMessage}");
 
+                    //If we made it this far, the logging table exists. Set it to true so it doesn't go through here again.
+                    connData.HasLoggingTable = true;
+                    MarkLoggingTableVerified(serverName, databaseName);
                 }
                 catch (Exception e)
                 {
-                    log.LogError(e, $"Error ensuring log table commit check index for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}");
-                }finally
+                    log.LogError(e, $"Error ensuring log table presence/indexes for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}");
+                }
+                finally
                 {
+                    createTableCmd.Connection.InfoMessage -= new SqlInfoMessageEventHandler(Connection_InfoMessage);
                     createCommitIndex.Connection.InfoMessage -= new SqlInfoMessageEventHandler(Connection_InfoMessage);
                 }
             }
+            
             log.LogDebug($"sqlInfoMessage value: {sqlInfoMessage}");
             log.LogDebug("Exiting EnsureLogPresence method");
             return sqlInfoMessage;
@@ -109,7 +161,7 @@ namespace SqlSync.SqlBuild.Services
         /// </summary>
         /// <param name="conn">Connection object to the target database</param>
         /// <returns></returns>
-        public bool LogTableExists(SqlConnection conn)
+        public async Task<bool> LogTableExists(SqlConnection conn)
         {
             try
             {
@@ -117,7 +169,7 @@ namespace SqlSync.SqlBuild.Services
                 if (cmd.Connection.State == ConnectionState.Closed)
                     cmd.Connection.Open();
 
-                object result = cmd.ExecuteScalar();
+                object result = await cmd.ExecuteScalarAsync();
                 if (result == null || result == System.DBNull.Value)
                     return false;
                 else
@@ -134,7 +186,7 @@ namespace SqlSync.SqlBuild.Services
         /// <param name="committedScripts">List of CommittedScript objects</param>
         /// <param name="multiDbRunData">The MultiDbRun data for the run</param>
         /// <returns>True if the commit was successful</returns>
-        public bool LogCommittedScriptsToDatabase(List<sqlLog.CommittedScript> committedScripts, ISqlBuildRunnerProperties runnerProperties, MultiDbData multiDbRunData)
+        public async Task<bool> LogCommittedScriptsToDatabase(List<sqlLog.CommittedScript> committedScripts, ISqlBuildRunnerProperties runnerProperties, MultiDbData multiDbRunData)
         {
             bool returnValue = true;
             //If using an alternate database to log the commits to, we need to initiate the connection objects 
@@ -151,128 +203,212 @@ namespace SqlSync.SqlBuild.Services
                     BuildConnectData tmp = connectionsService.GetOrAddBuildConnectionDataClass(runnerProperties.ConnectionData, servers[i], runnerProperties.LogToDatabaseName, runnerProperties.IsTransactional);
                 }
             }
-            EnsureLogTablePresence(connectionsService.Connections, runnerProperties.LogToDatabaseName);
 
-            //Get date from the server
-            DateTime commitDate;
-            SqlCommand cmd = null;
-            string oldDb = runnerProperties.ConnectionData.DatabaseName;
-            runnerProperties.ConnectionData.DatabaseName = "master";
-            try
+           await EnsureLogTablePresence(connectionsService.Connections, runnerProperties.LogToDatabaseName);
+
+            // Use local UTC time instead of server getdate() to avoid extra connection overhead
+            DateTime commitDate = DateTime.UtcNow;
+
+            // Build a dictionary for fast script lookup by ScriptId
+            var scriptLookup = runnerProperties.BuildDataModel.Script?
+                .Where(s => !string.IsNullOrEmpty(s.ScriptId))
+                .ToDictionary(s => s.ScriptId, StringComparer.OrdinalIgnoreCase)
+                ?? new Dictionary<string, Script>();
+
+            // Common parameters that are the same for all scripts
+            string buildFileName = !String.IsNullOrEmpty(runnerProperties.BuildFileName) 
+                ? runnerProperties.BuildFileName 
+                : Path.GetFileName(runnerProperties.ProjectFileName);
+            string userId = System.Environment.UserName;
+            string runWithVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            string buildProjectHash = runnerProperties.BuildPackageHash;
+            string buildRequestedBy = string.IsNullOrEmpty(runnerProperties.BuildRequestedBy) 
+                ? System.Environment.UserDomainName + "\\" + System.Environment.UserName 
+                : runnerProperties.BuildRequestedBy;
+            string description = runnerProperties.BuildDescription ?? string.Empty;
+
+            // Group scripts by their target connection (server:database)
+            var scriptsByConnection = new Dictionary<string, List<(sqlLog.CommittedScript script, Script row)>>(StringComparer.OrdinalIgnoreCase);
+            
+            foreach (var script in committedScripts)
             {
-                cmd = new SqlCommand("SELECT getdate()", SqlSync.Connection.ConnectionHelper.GetConnection(runnerProperties.ConnectionData));
-                cmd.Connection.Open();
-                commitDate = (DateTime)cmd.ExecuteScalar();
+                if (!scriptLookup.TryGetValue(script.ScriptId.ToString(), out var row))
+                    continue;
+
+                string targetDb = runnerProperties.LogToDatabaseName.Length > 0 
+                    ? runnerProperties.LogToDatabaseName 
+                    : script.DatabaseTarget;
+                string connectionKey = $"{script.ServerName}:{targetDb}";
+
+                if (!scriptsByConnection.ContainsKey(connectionKey))
+                    scriptsByConnection[connectionKey] = new List<(sqlLog.CommittedScript, Script)>();
+                
+                scriptsByConnection[connectionKey].Add((script, row));
             }
-            catch
+
+            // Process each connection's batch of scripts
+            foreach (var kvp in scriptsByConnection)
             {
-                commitDate = DateTime.Now;
-                log.LogInformation($"Unable to getdate() from server/database {runnerProperties.ConnectionData.SQLServerName}-{runnerProperties.ConnectionData.DatabaseName}");
+                var scriptsForConnection = kvp.Value;
+                if (scriptsForConnection.Count == 0) continue;
+
+                var firstScript = scriptsForConnection[0].script;
+                string targetDb = runnerProperties.LogToDatabaseName.Length > 0 
+                    ? runnerProperties.LogToDatabaseName 
+                    : firstScript.DatabaseTarget;
+
+                BuildConnectData tmpConnDat = connectionsService.GetOrAddBuildConnectionDataClass(
+                    runnerProperties.ConnectionData, firstScript.ServerName, targetDb, runnerProperties.IsTransactional);
+
+                log.LogInformation($"Batch logging {scriptsForConnection.Count} script(s) to {tmpConnDat.ServerName}:{tmpConnDat.DatabaseName}");
+
+                try
+                {
+                    await ExecuteBatchInsertAsync(
+                        tmpConnDat, 
+                        scriptsForConnection, 
+                        buildFileName, 
+                        userId, 
+                        commitDate, 
+                        runWithVersion, 
+                        buildProjectHash, 
+                        buildRequestedBy, 
+                        description);
+                }
+                catch (Exception ex)
+                {
+                    log.LogError(ex, $"Batch insert failed for {tmpConnDat.ServerName}:{tmpConnDat.DatabaseName}, falling back to individual inserts");
+                    // Fallback to individual inserts if batch fails
+                    returnValue = await FallbackIndividualInsertsAsync(
+                        tmpConnDat, 
+                        scriptsForConnection, 
+                        buildFileName, 
+                        userId, 
+                        commitDate, 
+                        runWithVersion, 
+                        buildProjectHash, 
+                        buildRequestedBy, 
+                        description);
+                }
             }
-            finally
+
+            return returnValue;
+        }
+
+        private async Task ExecuteBatchInsertAsync(
+            BuildConnectData connData,
+            List<(sqlLog.CommittedScript script, Script row)> scripts,
+            string buildFileName,
+            string userId,
+            DateTime commitDate,
+            string runWithVersion,
+            string buildProjectHash,
+            string buildRequestedBy,
+            string description)
+        {
+            if (connData.Connection.State == ConnectionState.Closed)
+                await connData.Connection.OpenAsync();
+
+            // Build multi-row INSERT statement
+            var sql = new StringBuilder();
+            sql.AppendLine("INSERT INTO SqlBuild_Logging([BuildFileName],[ScriptFileName],[ScriptId],[ScriptFileHash],[CommitDate],[Sequence],[UserId],[AllowScriptBlock],[ScriptText],[Tag],[TargetDatabase],[RunWithVersion],[BuildProjectHash],[BuildRequestedBy],[ScriptRunStart],[ScriptRunEnd],[Description]) VALUES");
+
+            var cmd = new SqlCommand();
+            cmd.Connection = connData.Connection;
+            if (connData.Transaction != null)
+                cmd.Transaction = connData.Transaction;
+
+            for (int i = 0; i < scripts.Count; i++)
             {
-                if (cmd != null && cmd.Connection != null)
-                    cmd.Connection.Close();
+                var (script, row) = scripts[i];
+                
+                if (i > 0) sql.Append(",");
+                sql.AppendLine($"(@BuildFileName{i},@ScriptFileName{i},@ScriptId{i},@ScriptFileHash{i},@CommitDate{i},@Sequence{i},@UserId{i},1,@ScriptText{i},@Tag{i},@TargetDatabase{i},@RunWithVersion{i},@BuildProjectHash{i},@BuildRequestedBy{i},@ScriptRunStart{i},@ScriptRunEnd{i},@Description{i})");
 
-                runnerProperties.ConnectionData.DatabaseName = oldDb;
+                cmd.Parameters.AddWithValue($"@BuildFileName{i}", buildFileName);
+                cmd.Parameters.AddWithValue($"@ScriptFileName{i}", row.FileName);
+                cmd.Parameters.AddWithValue($"@ScriptId{i}", script.ScriptId);
+                cmd.Parameters.AddWithValue($"@ScriptFileHash{i}", script.FileHash);
+                cmd.Parameters.AddWithValue($"@CommitDate{i}", commitDate);
+                cmd.Parameters.AddWithValue($"@Sequence{i}", script.Sequence);
+                cmd.Parameters.AddWithValue($"@UserId{i}", userId);
+                cmd.Parameters.AddWithValue($"@ScriptText{i}", script.ScriptText);
+                cmd.Parameters.AddWithValue($"@Tag{i}", script.Tag ?? "");
+                cmd.Parameters.AddWithValue($"@TargetDatabase{i}", script.DatabaseTarget);
+                cmd.Parameters.AddWithValue($"@RunWithVersion{i}", runWithVersion);
+                cmd.Parameters.AddWithValue($"@BuildProjectHash{i}", buildProjectHash);
+                cmd.Parameters.AddWithValue($"@BuildRequestedBy{i}", buildRequestedBy);
+                cmd.Parameters.AddWithValue($"@ScriptRunStart{i}", script.RunStart);
+                cmd.Parameters.AddWithValue($"@ScriptRunEnd{i}", script.RunEnd);
+                cmd.Parameters.AddWithValue($"@Description{i}", description);
             }
 
-            //Add the commited scripts to the log
-            SqlCommand logCmd = new SqlCommand(Properties.Resources.LogScript);
-            if (!String.IsNullOrEmpty(runnerProperties.BuildFileName))
-                logCmd.Parameters.AddWithValue("@BuildFileName", runnerProperties.BuildFileName);
-            else
-                logCmd.Parameters.AddWithValue("@BuildFileName", Path.GetFileName(runnerProperties.ProjectFileName));
+            cmd.CommandText = sql.ToString();
+            await cmd.ExecuteNonQueryAsync();
+        }
 
-            logCmd.Parameters.AddWithValue("@UserId", System.Environment.UserName);
-            logCmd.Parameters.AddWithValue("@CommitDate", commitDate);
-            logCmd.Parameters.AddWithValue("@RunWithVersion", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
-            logCmd.Parameters.AddWithValue("@BuildProjectHash", runnerProperties.BuildPackageHash);
-            if (runnerProperties.BuildRequestedBy == string.Empty)
-                logCmd.Parameters.AddWithValue("@BuildRequestedBy", System.Environment.UserDomainName + "\\" + System.Environment.UserName);
-            else
-                logCmd.Parameters.AddWithValue("@BuildRequestedBy", runnerProperties.BuildRequestedBy);
+        private async Task<bool> FallbackIndividualInsertsAsync(
+            BuildConnectData connData,
+            List<(sqlLog.CommittedScript script, Script row)> scripts,
+            string buildFileName,
+            string userId,
+            DateTime commitDate,
+            string runWithVersion,
+            string buildProjectHash,
+            string buildRequestedBy,
+            string description)
+        {
+            bool success = true;
+            
+            if (connData.Connection.State == ConnectionState.Closed)
+                await connData.Connection.OpenAsync();
 
-            if (runnerProperties.BuildDescription == null)
-                logCmd.Parameters.AddWithValue("@Description", string.Empty);
-            else
-                logCmd.Parameters.AddWithValue("@Description", runnerProperties.BuildDescription);
+            var cmd = new SqlCommand(Properties.Resources.LogScript);
+            cmd.Connection = connData.Connection;
+            if (connData.Transaction != null)
+                cmd.Transaction = connData.Transaction;
 
-            logCmd.Parameters.Add("@ScriptFileName", SqlDbType.VarChar);
-            logCmd.Parameters.Add("@ScriptId", SqlDbType.UniqueIdentifier);
-            logCmd.Parameters.Add("@ScriptFileHash", SqlDbType.VarChar);
-            logCmd.Parameters.Add("@Sequence", SqlDbType.Int);
-            logCmd.Parameters.Add("@ScriptText", SqlDbType.Text);
-            logCmd.Parameters.Add("@Tag", SqlDbType.VarChar);
-            logCmd.Parameters.Add("@TargetDatabase", SqlDbType.VarChar);
-            logCmd.Parameters.Add("@ScriptRunStart", SqlDbType.DateTime);
-            logCmd.Parameters.Add("@ScriptRunEnd", SqlDbType.DateTime);
+            cmd.Parameters.AddWithValue("@BuildFileName", buildFileName);
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@CommitDate", commitDate);
+            cmd.Parameters.AddWithValue("@RunWithVersion", runWithVersion);
+            cmd.Parameters.AddWithValue("@BuildProjectHash", buildProjectHash);
+            cmd.Parameters.AddWithValue("@BuildRequestedBy", buildRequestedBy);
+            cmd.Parameters.AddWithValue("@Description", description);
+            cmd.Parameters.Add("@ScriptFileName", SqlDbType.VarChar);
+            cmd.Parameters.Add("@ScriptId", SqlDbType.UniqueIdentifier);
+            cmd.Parameters.Add("@ScriptFileHash", SqlDbType.VarChar);
+            cmd.Parameters.Add("@Sequence", SqlDbType.Int);
+            cmd.Parameters.Add("@ScriptText", SqlDbType.Text);
+            cmd.Parameters.Add("@Tag", SqlDbType.VarChar);
+            cmd.Parameters.Add("@TargetDatabase", SqlDbType.VarChar);
+            cmd.Parameters.Add("@ScriptRunStart", SqlDbType.DateTime);
+            cmd.Parameters.Add("@ScriptRunEnd", SqlDbType.DateTime);
 
-
-            for (int i = 0; i < committedScripts.Count; i++)
+            foreach (var (script, row) in scripts)
             {
                 try
                 {
+                    cmd.Parameters["@ScriptFileName"].Value = row.FileName;
+                    cmd.Parameters["@ScriptId"].Value = script.ScriptId;
+                    cmd.Parameters["@ScriptFileHash"].Value = script.FileHash;
+                    cmd.Parameters["@Sequence"].Value = script.Sequence;
+                    cmd.Parameters["@ScriptText"].Value = script.ScriptText;
+                    cmd.Parameters["@Tag"].Value = script.Tag ?? "";
+                    cmd.Parameters["@TargetDatabase"].Value = script.DatabaseTarget;
+                    cmd.Parameters["@ScriptRunStart"].Value = script.RunStart;
+                    cmd.Parameters["@ScriptRunEnd"].Value = script.RunEnd;
 
-                    var script = committedScripts[i];
-                    var row = runnerProperties.BuildDataModel.Script.FirstOrDefault(s => string.Equals(s.ScriptId, script.ScriptId.ToString(), StringComparison.OrdinalIgnoreCase));
-                    if (row != null)
-                    {
-
-
-                        //progressReporter.ReportProgress(0, new GeneralStatusEventArgs("Recording Commited Script: " + row.FileName));
-
-                        BuildConnectData tmpConnDat;
-                        if (runnerProperties.LogToDatabaseName.Length > 0)
-                            tmpConnDat = connectionsService.GetBuildConnectionDataClass(script.ServerName, runnerProperties.LogToDatabaseName, runnerProperties.IsTransactional);
-                        else
-                            tmpConnDat = connectionsService.GetBuildConnectionDataClass(script.ServerName, script.DatabaseTarget, runnerProperties.IsTransactional);
-
-                        log.LogInformation($"Recording Commited Script: {row.FileName} to {tmpConnDat.ServerName}:{tmpConnDat.DatabaseName}");
-
-                        logCmd.Connection = tmpConnDat.Connection;
-                        logCmd.Parameters["@ScriptFileName"].Value = row.FileName;
-                        logCmd.Parameters["@ScriptId"].Value = script.ScriptId;
-                        logCmd.Parameters["@ScriptFileHash"].Value = script.FileHash;
-                        logCmd.Parameters["@Sequence"].Value = script.Sequence;
-                        logCmd.Parameters["@ScriptText"].Value = script.ScriptText;
-                        logCmd.Parameters["@Tag"].Value = script.Tag ?? "";
-                        logCmd.Parameters["@TargetDatabase"].Value = script.DatabaseTarget;
-                        logCmd.Parameters["@ScriptRunStart"].Value = script.RunStart;
-                        logCmd.Parameters["@ScriptRunEnd"].Value = script.RunEnd;
-                        if (logCmd.Connection.State == ConnectionState.Closed)
-                            logCmd.Connection.Open();
-
-                        if (tmpConnDat.Transaction != null)
-                            logCmd.Transaction = tmpConnDat.Transaction;
-
-                        logCmd.ExecuteNonQuery();
-                    }
+                    await cmd.ExecuteNonQueryAsync();
                 }
-                catch (Exception sqlexe)
+                catch (Exception ex)
                 {
-                    log.LogError(sqlexe, $"Unable to log full text value for script {logCmd.Parameters["@ScriptFileName"].Value?.ToString()}. Inserting \"Error\" instead");
-                    try
-                    {
-                        logCmd.Parameters["@ScriptText"].Value = "Error";
-                        if (logCmd.Connection.State == ConnectionState.Closed)
-                            logCmd.Connection.Open();
-
-                        logCmd.ExecuteNonQuery();
-                    }
-                    catch (Exception exe)
-                    {
-                        log.LogError(exe, $"Unable to log commit for script {logCmd.Parameters["@ScriptFileName"].Value?.ToString()}.");
-                        returnValue = false;
-                    }
+                    log.LogError(ex, $"Unable to log script {row.FileName}");
+                    success = false;
                 }
             }
 
-            if (logCmd.Transaction != null)
-            {
-                logCmd.Transaction.Commit();
-            }
-            return returnValue;
+            return success;
         }
 
         private void Connection_InfoMessage(object sender, SqlInfoMessageEventArgs e)

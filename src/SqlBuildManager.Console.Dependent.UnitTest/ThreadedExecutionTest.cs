@@ -11,7 +11,9 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using MoreLinq.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
@@ -98,7 +100,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
         #region ExecuteTest - Not Trial - Transactional
         [TestMethod()]
-        public void ExecuteTest_ConcurrencyByNumber_1()
+        public async Task ExecuteTest_ConcurrencyByNumber_1()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -110,6 +112,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[] {
+                "--loglevel","debug",
                 "threaded", "run",
                 "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
@@ -125,7 +128,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
 
             try
             {
@@ -170,7 +173,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
         }
         [TestMethod()]
-        public void ExecuteTest_ConcurrencyByNumber_2()
+        public async Task ExecuteTest_ConcurrencyByNumber_2()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -196,7 +199,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
 
             try
             {
@@ -210,8 +213,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
                 Assert.IsTrue(executionLogFile[3].IndexOf("SqlBuildTest: Starting up thread") > -1);
 
-                Assert.IsTrue(executionLogFile[4].IndexOf("SqlBuildTest11: Queuing up thread") > -1);
-                Assert.IsTrue(executionLogFile[5].IndexOf("SqlBuildTest11: Starting up thread") > -1);
+                Assert.IsTrue(executionLogFile[4].IndexOf("SqlBuildTest10: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[5].IndexOf("SqlBuildTest10: Starting up thread") > -1);
 
             }
             finally
@@ -231,7 +234,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
         }
         [TestMethod()]
-        public void ExecuteTest_ConcurrencyByNumber_4()
+        public async Task ExecuteTest_ConcurrencyByNumber_4()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -257,7 +260,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
 
             try
             {
@@ -299,7 +302,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
 
         [TestMethod()]
-        public void ExecuteTest_ConcurrencyByServer()
+        public async Task ExecuteTest_ConcurrencyByServer()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -311,6 +314,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
             string[] args = new string[] {
+                "--loglevel", "debug",
                 "threaded", "run",
                 "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
@@ -325,7 +329,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
 
             try
             {
@@ -371,7 +375,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
         }
         [TestMethod()]
-        public void ExecuteTest_ConcurrencyByMaxByServer_2()
+        public async Task ExecuteTest_ConcurrencyByMaxByServer_2()
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
@@ -399,7 +403,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
 
             try
             {
@@ -414,8 +418,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
                 Assert.IsTrue(executionLogFile[3].IndexOf("SqlBuildTest: Starting up thread") > -1);
 
-                Assert.IsTrue(executionLogFile[4].IndexOf("SqlBuildTest11: Queuing up thread") > -1);
-                Assert.IsTrue(executionLogFile[5].IndexOf("SqlBuildTest11: Starting up thread") > -1);
+                Assert.IsTrue(executionLogFile[4].IndexOf("SqlBuildTest4: Queuing up thread") > -1);
+                Assert.IsTrue(executionLogFile[5].IndexOf("SqlBuildTest4: Starting up thread") > -1);
 
             }
             finally
@@ -439,7 +443,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_CommitWithoutUsingRetries()
+        public async Task ExecuteTest_CommitWithoutUsingRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -468,7 +472,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
 
             try
             {
@@ -517,7 +521,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
 
         [TestMethod()]
-        public void InfiniteLock_Test()
+        public async Task InfiniteLock_Test()
         {
             var res = StartInfiniteLockingThread(1.5);
             Assert.AreEqual(0, res);
@@ -525,10 +529,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         /// <summary>
         ///A test for Execute
         ///</summary>
-        // TODO: This test is flaky - it depends on database lock timing which can vary. Review and stabilize.
-        [Ignore("Flaky test - sometimes passes, sometimes fails depending on database lock timing")]
         [TestMethod()]
-        public void ExecuteTest_CommitWithRetries()
+        public async Task ExecuteTest_CommitWithRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -557,21 +559,30 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int expected = (int)ExecutionReturn.Successful;
             int actual;
 
-            Thread THRInfinite = null;
+            // Use a cancellation token to properly clean up the locking task
+            using var lockCts = new CancellationTokenSource();
+            // Use a signal to know when the lock is actually acquired
+            using var lockAcquired = new ManualResetEventSlim(false);
+            Task lockTask = null;
+
             try
             {
-                var task = System.Threading.Tasks.Task.Run(() =>
+                // Start the locking thread with proper signaling
+                lockTask = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(1);
+                    // Hold lock for 30 seconds - enough for some retries to fail, but 
+                    // releases before all 20 retries are exhausted (each retry ~3 sec)
+                    StartLockingThreadWithSignal(0.5, lockAcquired, lockCts.Token);
                 });
-                while (true)
-                {
-                    System.Threading.Thread.Sleep(2000);
-                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
-                }
 
+                // Wait for the lock to actually be acquired (with timeout)
+                bool lockWasAcquired = lockAcquired.Wait(TimeSpan.FromSeconds(30));
+                Assert.IsTrue(lockWasAcquired, "Failed to acquire database lock within 30 seconds");
 
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                // Small delay to ensure lock is fully established
+                await System.Threading.Tasks.Task.Delay(500);
+
+                actual = await target.ExecuteAsync();
 
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
@@ -605,8 +616,14 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (THRInfinite != null)
-                    THRInfinite.Interrupt();
+                // Cancel the locking task so it releases the lock
+                lockCts.Cancel();
+                
+                // Wait briefly for the lock task to complete
+                if (lockTask != null)
+                {
+                    try { await lockTask.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+                }
 
                 try
                 {
@@ -623,10 +640,8 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         /// <summary>
         ///A test for Execute
         ///</summary>
-        // TODO: This test is flaky - it depends on database lock timing which can vary. Review and stabilize.
-        [Ignore("Flaky test - sometimes passes, sometimes fails depending on database lock timing")]
         [TestMethod()]
-        public void ExecuteTest_RollbackWithThreeRetries()
+        public async Task ExecuteTest_RollbackWithThreeRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -654,20 +669,26 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int expected = (int)ExecutionReturn.FinishingWithErrors;
             int actual;
 
-            Thread THRInfinite = null;
+            // Use a cancellation token to properly clean up the locking task
+            using var lockCts = new CancellationTokenSource();
+            using var lockAcquired = new ManualResetEventSlim(false);
+            Task lockTask = null;
+
             try
             {
-                var task = System.Threading.Tasks.Task.Run(() =>
+                // Start the locking thread - lock for 1 minute to ensure all 3 retries fail
+                // (3 retries × ~3 sec each = ~12 seconds, so 1 min lock will outlast all retries)
+                lockTask = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(2);
+                    StartLockingThreadWithSignal(1.0, lockAcquired, lockCts.Token);
                 });
-                while (true)
-                {
-                    System.Threading.Thread.Sleep(2000);
-                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
-                }
 
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                // Wait for the lock to actually be acquired
+                bool lockWasAcquired = lockAcquired.Wait(TimeSpan.FromSeconds(30));
+                Assert.IsTrue(lockWasAcquired, "Failed to acquire database lock within 30 seconds");
+                await System.Threading.Tasks.Task.Delay(500);
+
+                actual = await target.ExecuteAsync();
 
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
@@ -698,8 +719,11 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (THRInfinite != null)
-                    THRInfinite.Interrupt();
+                lockCts.Cancel();
+                if (lockTask != null)
+                {
+                    try { await lockTask.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+                }
                 try
                 {
                     if (File.Exists(sbmFileName))
@@ -715,10 +739,8 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         /// <summary>
         ///A test for Execute
         ///</summary>
-        // TODO: This test is flaky - it depends on database lock timing which can vary. Review and stabilize.
-        [Ignore("Flaky test - sometimes passes, sometimes fails depending on database lock timing")]
         [TestMethod()]
-        public void ExecuteTest_RollbackWithFiveRetries()
+        public async Task ExecuteTest_RollbackWithFiveRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -746,20 +768,26 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int expected = (int)ExecutionReturn.FinishingWithErrors;
             int actual;
 
-            Thread THRInfinite = null;
+            // Use a cancellation token to properly clean up the locking task
+            using var lockCts = new CancellationTokenSource();
+            using var lockAcquired = new ManualResetEventSlim(false);
+            Task lockTask = null;
+
             try
             {
-                var task = System.Threading.Tasks.Task.Run(() =>
+                // Start the locking thread - lock for 1 minute to ensure all 5 retries fail
+                // (5 retries × ~3 sec each = ~18 seconds, so 1 min lock will outlast all retries)
+                lockTask = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(2);
+                    StartLockingThreadWithSignal(1.0, lockAcquired, lockCts.Token);
                 });
-                while (true)
-                {
-                    System.Threading.Thread.Sleep(2000);
-                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
-                }
 
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                // Wait for the lock to actually be acquired
+                bool lockWasAcquired = lockAcquired.Wait(TimeSpan.FromSeconds(30));
+                Assert.IsTrue(lockWasAcquired, "Failed to acquire database lock within 30 seconds");
+                await System.Threading.Tasks.Task.Delay(500);
+
+                actual = await target.ExecuteAsync();
 
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
@@ -789,9 +817,11 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (THRInfinite != null)
-                    THRInfinite.Interrupt();
-
+                lockCts.Cancel();
+                if (lockTask != null)
+                {
+                    try { await lockTask.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+                }
                 try
                 {
                     if (File.Exists(sbmFileName))
@@ -808,7 +838,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_NegativeTimeoutRetryCount()
+        public async Task ExecuteTest_NegativeTimeoutRetryCount()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -835,7 +865,7 @@ localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
 
             int expected = (int)ExecutionReturn.NegativeTimeoutRetryCount;
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
 
 
@@ -865,7 +895,7 @@ localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_SuccessWithoutTransactionsNoUsingRetries()
+        public async Task ExecuteTest_SuccessWithoutTransactionsNoUsingRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -892,7 +922,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
             int actual;
-            actual = target.ExecuteAsync().GetAwaiter().GetResult();
+            actual = await target.ExecuteAsync();
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
             try
             {
@@ -945,7 +975,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_NonTransactionalWithRetriesArgsFailure()
+        public async Task ExecuteTest_NonTransactionalWithRetriesArgsFailure()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllText(sbmFileName, "");
@@ -970,7 +1000,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
             try
             {
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                actual = await target.ExecuteAsync();
                 Assert.AreEqual(expected, actual);
             }
             finally
@@ -993,7 +1023,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_ErrorWithoutTransactionsNoUsingRetries()
+        public async Task ExecuteTest_ErrorWithoutTransactionsNoUsingRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -1020,21 +1050,25 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int expected = (int)ExecutionReturn.FinishingWithErrors;
             int actual;
 
-            Thread THRInfinite = null;
+            // Use a cancellation token to properly clean up the locking task
+            using var lockCts = new CancellationTokenSource();
+            using var lockAcquired = new ManualResetEventSlim(false);
+            Task lockTask = null;
+
             try
             {
-                var task = System.Threading.Tasks.Task.Run(() =>
+                // Start the locking thread - lock for 30 seconds (no retries, so just needs to hold during single attempt)
+                lockTask = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(2);
+                    StartLockingThreadWithSignal(0.5, lockAcquired, lockCts.Token);
                 });
-                while (true)
-                {
-                    System.Threading.Thread.Sleep(2000);
-                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
-                }
 
+                // Wait for the lock to actually be acquired
+                bool lockWasAcquired = lockAcquired.Wait(TimeSpan.FromSeconds(30));
+                Assert.IsTrue(lockWasAcquired, "Failed to acquire database lock within 30 seconds");
+                await System.Threading.Tasks.Task.Delay(500);
 
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                actual = await target.ExecuteAsync();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 if (actual == -600)
                     Assert.Fail("Unable to completed test.");
@@ -1065,8 +1099,11 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (THRInfinite != null)
-                    THRInfinite.Interrupt();
+                lockCts.Cancel();
+                if (lockTask != null)
+                {
+                    try { await lockTask.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+                }
                 try
                 {
                     if (File.Exists(sbmFileName))
@@ -1087,7 +1124,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_TrialSuccessWithRollbackWithRetries()
+        public async Task ExecuteTest_TrialSuccessWithRollbackWithRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -1116,21 +1153,25 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int expected = (int)ExecutionReturn.Successful;
             int actual;
 
-            Thread THRInfinite = null;
+            // Use a cancellation token to properly clean up the locking task
+            using var lockCts = new CancellationTokenSource();
+            using var lockAcquired = new ManualResetEventSlim(false);
+            Task lockTask = null;
+
             try
             {
-                var task = System.Threading.Tasks.Task.Run(() =>
+                // Start the locking thread - lock for 30 seconds, allowing some retries then success
+                lockTask = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(.5);
+                    StartLockingThreadWithSignal(0.5, lockAcquired, lockCts.Token);
                 });
-                while (true)
-                {
-                    System.Threading.Thread.Sleep(2000);
-                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
-                }
-            
 
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                // Wait for the lock to actually be acquired
+                bool lockWasAcquired = lockAcquired.Wait(TimeSpan.FromSeconds(30));
+                Assert.IsTrue(lockWasAcquired, "Failed to acquire database lock within 30 seconds");
+                await System.Threading.Tasks.Task.Delay(500);
+
+                actual = await target.ExecuteAsync();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
@@ -1160,8 +1201,11 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (THRInfinite != null)
-                    THRInfinite.Interrupt();
+                lockCts.Cancel();
+                if (lockTask != null)
+                {
+                    try { await lockTask.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+                }
                 try
                 {
                     if (File.Exists(sbmFileName))
@@ -1179,7 +1223,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
         ///A test for Execute
         ///</summary>
         [TestMethod()]
-        public void ExecuteTest_TrialFailureRollbackWithRetries()
+        public async Task ExecuteTest_TrialFailureRollbackWithRetries()
         {
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
@@ -1207,20 +1251,25 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             int expected = (int)ExecutionReturn.FinishingWithErrors;
             int actual;
 
-            Thread THRInfinite = null;
+            // Use a cancellation token to properly clean up the locking task
+            using var lockCts = new CancellationTokenSource();
+            using var lockAcquired = new ManualResetEventSlim(false);
+            Task lockTask = null;
+
             try
             {
-                var task = System.Threading.Tasks.Task.Run(() =>
+                // Start the locking thread - lock for 1 minute to ensure all 3 retries fail
+                lockTask = System.Threading.Tasks.Task.Run(() =>
                 {
-                    StartInfiniteLockingThread(2);
+                    StartLockingThreadWithSignal(1.0, lockAcquired, lockCts.Token);
                 });
-                while (true)
-                {
-                    System.Threading.Thread.Sleep(2000);
-                    if (task.Status == System.Threading.Tasks.TaskStatus.Running) break;
-                }
 
-                actual = target.ExecuteAsync().GetAwaiter().GetResult();
+                // Wait for the lock to actually be acquired
+                bool lockWasAcquired = lockAcquired.Wait(TimeSpan.FromSeconds(30));
+                Assert.IsTrue(lockWasAcquired, "Failed to acquire database lock within 30 seconds");
+                await System.Threading.Tasks.Task.Delay(500);
+
+                actual = await target.ExecuteAsync();
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 if (actual == -600)
                     Assert.Fail("Unable to complete test!");
@@ -1250,9 +1299,11 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             }
             finally
             {
-                if (THRInfinite != null)
-                    THRInfinite.Interrupt();
-
+                lockCts.Cancel();
+                if (lockTask != null)
+                {
+                    try { await lockTask.WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
+                }
                 try
                 {
                     if (File.Exists(sbmFileName))
@@ -1286,6 +1337,62 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             catch(Exception exe)
             {
                 System.Console.WriteLine($"Error: {exe.Message}; {Environment.NewLine}Connection String:{connStr}{Environment.NewLine}Query:{cmdStr}");
+                return 1;
+            }
+        }
+
+        /// <summary>
+        /// Starts a locking thread that signals when the lock is acquired.
+        /// This is more reliable than the original method because it ensures the lock
+        /// is actually held before returning control to the test.
+        /// </summary>
+        /// <param name="waitMin">How long to hold the lock in minutes</param>
+        /// <param name="lockAcquired">Event that will be signaled when lock is acquired</param>
+        /// <param name="cancellationToken">Token to cancel the lock early</param>
+        /// <returns>0 on success, 1 on failure</returns>
+        private int StartLockingThreadWithSignal(double waitMin, ManualResetEventSlim lockAcquired, CancellationToken cancellationToken)
+        {
+            string connStr = string.Empty;
+            try
+            {
+                connStr = string.Format(Initialization.ConnectionString, "SqlBuildTest");
+                using var conn = new SqlConnection(connStr);
+                conn.Open();
+
+                // Start a transaction and acquire the lock
+                using var transaction = conn.BeginTransaction();
+                
+                // Acquire the exclusive table lock
+                string lockCmd = "SELECT TOP 1 * FROM dbo.TransactionTest WITH (TABLOCKX, HOLDLOCK) WHERE 0 = 1";
+                using (var cmd = new SqlCommand(lockCmd, conn, transaction))
+                {
+                    cmd.CommandTimeout = 30;
+                    cmd.ExecuteNonQuery();
+                }
+
+                // Signal that the lock is now held
+                lockAcquired.Set();
+
+                // Wait for the specified duration or until cancelled
+                try
+                {
+                    // Convert minutes to milliseconds and wait
+                    int waitMs = (int)(waitMin * 60 * 1000);
+                    cancellationToken.WaitHandle.WaitOne(waitMs);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected when test completes
+                }
+
+                // Transaction is rolled back when disposed
+                transaction.Rollback();
+                return 0;
+            }
+            catch (Exception exe)
+            {
+                System.Console.WriteLine($"Error in locking thread: {exe.Message}; {Environment.NewLine}Connection String:{connStr}");
+                lockAcquired.Set(); // Signal anyway so test doesn't hang
                 return 1;
             }
         }

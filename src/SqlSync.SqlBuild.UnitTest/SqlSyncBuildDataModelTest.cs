@@ -3,6 +3,7 @@ using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Models;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace SqlSync.SqlBuild.UnitTest
 {
@@ -20,7 +21,7 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void SaveAndLoadModel_RoundTrips()
+        public async Task SaveAndLoadModel_RoundTrips()
         {
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             var oldProj = model.SqlSyncBuildProject[0];
@@ -33,8 +34,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 script: model.Script,
                 build: model.Build,
                 scriptRun: model.ScriptRun,
-                committedScript: model.CommittedScript,
-                codeReview: model.CodeReview);
+                committedScript: model.CommittedScript);
 
             var tmpDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tmpDir);
@@ -42,8 +42,8 @@ namespace SqlSync.SqlBuild.UnitTest
             var zipFile = Path.Combine(tmpDir, "proj.zip");
             try
             {
-                SqlBuildFileHelper.SaveSqlBuildProjectFile(model, projFile, zipFile, includeHistoryAndLogs: false);
-                var ok = SqlBuildFileHelper.LoadSqlBuildProjectFile(out SqlSyncBuildDataModel loaded, projFile, validateSchema: false);
+                await SqlBuildFileHelper.SaveSqlBuildProjectFileAsync(model, projFile, zipFile, includeHistoryAndLogs: false);
+                var (ok, loaded) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projFile, validateSchema: false);
                 Assert.IsTrue(ok);
                 Assert.AreEqual("TestProj", loaded.SqlSyncBuildProject[0].ProjectName);
             }
@@ -51,39 +51,6 @@ namespace SqlSync.SqlBuild.UnitTest
             {
                 if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, true);
             }
-        }
-
-        [TestMethod, Ignore("Known stack overflow; ToDataSet recursion under investigation.")]
-        public void GetScriptSourceTable_FromModel_Works()
-        {
-            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var script = new Script(
-                fileName: "file.sql",
-                buildOrder: 1,
-                description: null,
-                rollBackOnError: false,
-                causesBuildFailure: false,
-                dateAdded: DateTime.UtcNow,
-                scriptId: Guid.NewGuid().ToString(),
-                database: "db",
-                stripTransactionText: false,
-                allowMultipleRuns: false,
-                addedBy: "tester",
-                scriptTimeOut: 30,
-                dateModified: null,
-                modifiedBy: null,
-                tag: null);
-            model = new SqlSyncBuildDataModel(
-                sqlSyncBuildProject: model.SqlSyncBuildProject,
-                script: new[] { script },
-                build: model.Build,
-                scriptRun: model.ScriptRun,
-                committedScript: model.CommittedScript,
-                codeReview: model.CodeReview);
-
-            var table = model.Script;
-            Assert.IsNotNull(table);
-            Assert.AreEqual(1, table.Count);
         }
     }
 }

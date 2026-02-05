@@ -5,7 +5,6 @@ using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Services;
@@ -104,14 +103,14 @@ namespace SqlBuildManager.Console.Threaded
             }
             //Determine where to get the scripts from (SBM, DACPAC, generated DACPAC, scripts?)
             int success;
-            (success, cmdLine) = ConfigureScriptSource(cmdLine);
+            (success, cmdLine) = await ConfigureScriptSource(cmdLine);
             if (success != 0)
             {
                 return success;
             }
 
             //This will set the static variable for the script collection
-            var prep = PrepBuildAndScripts(_context.BuildZipFileName, buildRequestedBy, cmdLine.DacPacArgs.ForceCustomDacPac);
+            var prep = await PrepBuildAndScriptsAsync(_context.BuildZipFileName, buildRequestedBy, cmdLine.DacPacArgs.ForceCustomDacPac).ConfigureAwait(false);
             if (prep != 0)
             {
                 return prep;
@@ -286,12 +285,12 @@ namespace SqlBuildManager.Console.Threaded
         /// </summary>
         /// <param name="cmdLine"></param>
         /// <returns></returns>
-        private (int, CommandLineArgs) ConfigureScriptSource(CommandLineArgs cmdLine)
+        private async Task<(int, CommandLineArgs)> ConfigureScriptSource(CommandLineArgs cmdLine)
         {
             //If we don't have a pre-constructed build file, but rather a script source directory, we'll build one from there...
             if (!string.IsNullOrWhiteSpace(cmdLine.ScriptSrcDir))
             {
-                ConstructBuildFileFromScriptDirectory(cmdLine.ScriptSrcDir);
+                await ConstructBuildFileFromScriptDirectory(cmdLine.ScriptSrcDir);
             }
             else if (!string.IsNullOrWhiteSpace(cmdLine.BuildFileName)) //using SBM as a source
             {
@@ -348,7 +347,7 @@ namespace SqlBuildManager.Console.Threaded
             return (0, cmdLine);
         }
 
-        private int PrepBuildAndScripts(string buildZipFileName, string buildRequestedBy, bool forceCustomDacpac)
+        private async Task<int> PrepBuildAndScriptsAsync(string buildZipFileName, string buildRequestedBy, bool forceCustomDacpac)
         {
             _context.BuildZipFileName = buildZipFileName;
             this.buildRequestedBy = buildRequestedBy;
@@ -357,9 +356,12 @@ namespace SqlBuildManager.Console.Threaded
 
             if (!forceCustomDacpac)
             {
-                SqlSyncBuildDataModel dataModel;
-                ExtractAndLoadBuildFile(_context.BuildZipFileName, out dataModel);
-                _context.BuildDataModel = dataModel;
+                var extractResult = await ExtractAndLoadBuildFileAsync(_context.BuildZipFileName).ConfigureAwait(false);
+                if (extractResult.returnCode != 0)
+                {
+                    return extractResult.returnCode;
+                }
+                _context.BuildDataModel = extractResult.model;
                 if (_context.BuildDataModel == null)
                 {
                     var msg = new LogMsg()
@@ -493,32 +495,31 @@ namespace SqlBuildManager.Console.Threaded
             return returnVal;
         }
 
-        private int ExtractAndLoadBuildFile(string sqlBuildProjectFileName, out SqlSyncBuildDataModel model)
+        private async Task<(int returnCode, SqlSyncBuildDataModel model)> ExtractAndLoadBuildFileAsync(string sqlBuildProjectFileName)
         {
             log.LogInformation($"Extracting build file '{sqlBuildProjectFileName}' to working directory '{_context.WorkingDirectory}'");
 
-            model = null;
-
-            Directory.CreateDirectory(_context.WorkingDirectory);
+            await Task.Run(() => Directory.CreateDirectory(_context.WorkingDirectory)).ConfigureAwait(false);
 
             string workDir = _context.WorkingDirectory;
-            string projFileName = _context.ProjectFileName;
-            string result;
-            if (!SqlBuildFileHelper.ExtractSqlBuildZipFile(sqlBuildProjectFileName, ref workDir, ref projectFilePath, ref projFileName, false, true, out result))
+            var extractResult = await SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(sqlBuildProjectFileName, workingDirectory: workDir, resetWorkingDirectory: false, overwriteExistingProjectFiles: true).ConfigureAwait(false);
+            if (!extractResult.success)
             {
                 var msg = new LogMsg()
                 {
-                    Message = $"Zip extraction error. Unable to Extract Sql Build file at '{sqlBuildProjectFileName}'. Do you need to specify a full directory path? {result}",
+                    Message = $"Zip extraction error. Unable to Extract Sql Build file at '{sqlBuildProjectFileName}'. Do you need to specify a full directory path? {extractResult.result}",
                     LogType = LogType.Error
                 };
                 threadedLog.WriteToLog(msg);
-                return (int)ExecutionReturn.BuildFileExtractionError;
+                return ((int)ExecutionReturn.BuildFileExtractionError, null);
 
             }
-            _context.WorkingDirectory = workDir;
-            _context.ProjectFileName = projFileName;
+            _context.WorkingDirectory = extractResult.workingDirectory;
+            _context.ProjectFileName = extractResult.projectFileName;
+            projectFilePath = extractResult.projectFilePath;
 
-            if (!SqlBuildFileHelper.LoadSqlBuildProjectFile(out model, _context.ProjectFileName, false))
+            var (loadSuccess, model) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(_context.ProjectFileName, validateSchema: false).ConfigureAwait(false);
+            if (!loadSuccess)
             {
                 var msg = new LogMsg()
                 {
@@ -526,13 +527,13 @@ namespace SqlBuildManager.Console.Threaded
                     LogType = LogType.Error
                 };
                 threadedLog.WriteToLog(msg);
-                return (int)ExecutionReturn.LoadProjectFileError;
+                return ((int)ExecutionReturn.LoadProjectFileError, null);
             }
 
-            return 0;
+            return (0, model);
         }
 
-        private void ConstructBuildFileFromScriptDirectory(string directoryName)
+        private async Task ConstructBuildFileFromScriptDirectory(string directoryName)
         {
             log.LogInformation("Constructing build file from script directory");
             string shortFileName = string.Empty;
@@ -547,7 +548,7 @@ namespace SqlBuildManager.Console.Threaded
                 shortFileName = Path.GetFileName(fileList[i]);
                 File.Copy(fileList[i], Path.Combine(_context.WorkingDirectory, shortFileName), true);
 
-                localBuildData = SqlBuildFileHelper.AddScriptFileToBuild(localBuildData,
+                localBuildData = await SqlBuildFileHelper.AddScriptFileToBuildAsync(localBuildData,
                     projFileName,
                     shortFileName,
                     i,
@@ -562,7 +563,7 @@ namespace SqlBuildManager.Console.Threaded
                     System.Environment.UserDomainName + @"/" + System.Environment.UserName,
                     20,
                     Guid.NewGuid(),
-                    "");
+                    "").ConfigureAwait(false);
             }
 
         }

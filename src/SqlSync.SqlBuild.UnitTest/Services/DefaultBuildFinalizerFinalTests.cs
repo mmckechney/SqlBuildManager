@@ -8,6 +8,7 @@ using SqlBuildManager.Interfaces.Console;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
 using CommittedScript = SqlSync.SqlBuild.Models.CommittedScript;
 
@@ -49,34 +50,33 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         #region SaveBuildDataModel Tests
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void SaveBuildDataModel_WithNullProjectFileName_ThrowsArgumentException()
+        public async Task SaveBuildDataModel_WithNullProjectFileName_ThrowsArgumentException()
         {
             // Arrange
             var mockContext = new Mock<ISqlBuildRunnerProperties>();
             mockContext.Setup(x => x.ProjectFileName).Returns((string)null);
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
-            // Act
-            _finalizer.SaveBuildDataModel(mockContext.Object, true);
+            // Act & Assert
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() =>
+                _finalizer.SaveBuildDataModelAsync(mockContext.Object, true));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void SaveBuildDataModel_WithEmptyProjectFileName_ThrowsArgumentException()
+        public async Task SaveBuildDataModel_WithEmptyProjectFileName_ThrowsArgumentException()
         {
             // Arrange
             var mockContext = new Mock<ISqlBuildRunnerProperties>();
             mockContext.Setup(x => x.ProjectFileName).Returns(string.Empty);
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
-            // Act
-            _finalizer.SaveBuildDataModel(mockContext.Object, true);
+            // Act & Assert
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() =>
+                _finalizer.SaveBuildDataModelAsync(mockContext.Object, true));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void SaveBuildDataModel_WithNullBuildHistoryXmlFile_ThrowsArgumentException()
+        public async Task SaveBuildDataModel_WithNullBuildHistoryXmlFile_ThrowsArgumentException()
         {
             // Arrange
             string projFileName = Path.Combine(_testDir, "test.xml");
@@ -88,13 +88,13 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.BuildHistoryXmlFile).Returns((string)null);
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
-            // Act
-            _finalizer.SaveBuildDataModel(mockContext.Object, true);
+            // Act & Assert
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() =>
+                _finalizer.SaveBuildDataModelAsync(mockContext.Object, true));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void SaveBuildDataModel_WithEmptyBuildHistoryXmlFile_ThrowsArgumentException()
+        public async Task SaveBuildDataModel_WithEmptyBuildHistoryXmlFile_ThrowsArgumentException()
         {
             // Arrange
             string projFileName = Path.Combine(_testDir, "test.xml");
@@ -106,8 +106,9 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.BuildHistoryXmlFile).Returns(string.Empty);
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
-            // Act
-            _finalizer.SaveBuildDataModel(mockContext.Object, true);
+            // Act & Assert
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() =>
+                _finalizer.SaveBuildDataModelAsync(mockContext.Object, true));
         }
 
         #endregion
@@ -115,20 +116,20 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         #region PerformRunScriptFinalization Tests
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void PerformRunScriptFinalization_WithNullContext_ThrowsArgumentNullException()
+        public async Task PerformRunScriptFinalization_WithNullContext_ThrowsArgumentNullException()
         {
             // Arrange
             var mockConnectionsService = new Mock<IConnectionsService>();
             var mockFinalizerContext = new Mock<IBuildFinalizerContext>();
             var build = new Build("Test", null, DateTime.Now, null, null, null, null, null);
 
-            // Act
-            _finalizer.PerformRunScriptFinalization(null, mockConnectionsService.Object, mockFinalizerContext.Object, false, build);
+            // Act & Assert
+            await Assert.ThrowsExactlyAsync<ArgumentNullException>(() =>
+                _finalizer.PerformRunScriptFinalizationAsync(null, mockConnectionsService.Object, mockFinalizerContext.Object, false, build));
         }
 
         [TestMethod]
-        public void PerformRunScriptFinalization_WithBuildFailure_Transactional_ReturnsRolledBackStatus()
+        public async Task PerformRunScriptFinalization_WithBuildFailure_Transactional_ReturnsRolledBackStatus()
         {
             // Arrange
             var context = CreateMockContext(isTransactional: true, isTrialBuild: false);
@@ -137,7 +138,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var build = new Build("Test", "Full", DateTime.Now, null, "Server", BuildItemStatus.Pending, "BUILD1", "User");
 
             // Act
-            var (updatedBuild, _, result) = _finalizer.PerformRunScriptFinalization(
+            var (updatedBuild, _, result) = await _finalizer.PerformRunScriptFinalizationAsync(
                 context.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: true, build);
 
             // Assert
@@ -146,7 +147,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void PerformRunScriptFinalization_WithBuildFailure_NonTransactional_ReturnsFailedNoTransaction()
+        public async Task PerformRunScriptFinalization_WithBuildFailure_NonTransactional_ReturnsFailedNoTransaction()
         {
             // Arrange
             var context = CreateMockContext(isTransactional: false, isTrialBuild: false);
@@ -155,7 +156,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var build = new Build("Test", "Full", DateTime.Now, null, "Server", BuildItemStatus.Pending, "BUILD1", "User");
 
             // Act
-            var (updatedBuild, _, result) = _finalizer.PerformRunScriptFinalization(
+            var (updatedBuild, _, result) = await _finalizer.PerformRunScriptFinalizationAsync(
                 context.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: true, build);
 
             // Assert
@@ -164,7 +165,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void PerformRunScriptFinalization_WithSuccess_ReturnsCommitted()
+        public async Task PerformRunScriptFinalization_WithSuccess_ReturnsCommitted()
         {
             // Arrange
             var context = CreateMockContext(isTransactional: true, isTrialBuild: false);
@@ -173,7 +174,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var build = new Build("Test", "Full", DateTime.Now, null, "Server", BuildItemStatus.Pending, "BUILD1", "User");
 
             // Act
-            var (updatedBuild, _, result) = _finalizer.PerformRunScriptFinalization(
+            var (updatedBuild, _, result) = await _finalizer.PerformRunScriptFinalizationAsync(
                 context.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: false, build);
 
             // Assert
@@ -182,7 +183,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void PerformRunScriptFinalization_TrialBuild_Transactional_ReturnsRolledBackForTrial()
+        public async Task PerformRunScriptFinalization_TrialBuild_Transactional_ReturnsRolledBackForTrial()
         {
             // Arrange
             var context = CreateMockContext(isTransactional: true, isTrialBuild: true);
@@ -191,7 +192,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var build = new Build("Test", "Full", DateTime.Now, null, "Server", BuildItemStatus.Pending, "BUILD1", "User");
 
             // Act
-            var (updatedBuild, _, result) = _finalizer.PerformRunScriptFinalization(
+            var (updatedBuild, _, result) = await _finalizer.PerformRunScriptFinalizationAsync(
                 context.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: false, build);
 
             // Assert
@@ -200,7 +201,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void PerformRunScriptFinalization_TrialBuild_NonTransactional_ReturnsCommitted()
+        public async Task PerformRunScriptFinalization_TrialBuild_NonTransactional_ReturnsCommitted()
         {
             // Arrange
             var context = CreateMockContext(isTransactional: false, isTrialBuild: true);
@@ -209,7 +210,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var build = new Build("Test", "Full", DateTime.Now, null, "Server", BuildItemStatus.Pending, "BUILD1", "User");
 
             // Act
-            var (updatedBuild, _, result) = _finalizer.PerformRunScriptFinalization(
+            var (updatedBuild, _, result) = await _finalizer.PerformRunScriptFinalizationAsync(
                 context.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: false, build);
 
             // Assert
@@ -218,7 +219,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void PerformRunScriptFinalization_RunScriptOnly_ReturnsScriptGenerationComplete()
+        public async Task PerformRunScriptFinalization_RunScriptOnly_ReturnsScriptGenerationComplete()
         {
             // Arrange
             var context = CreateMockContext(isTransactional: true, isTrialBuild: false, runScriptOnly: true);
@@ -227,7 +228,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var build = new Build("Test", "Full", DateTime.Now, null, "Server", BuildItemStatus.Pending, "BUILD1", "User");
 
             // Act
-            var (_, _, result) = _finalizer.PerformRunScriptFinalization(
+            var (_, _, result) = await _finalizer.PerformRunScriptFinalizationAsync(
                 context.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: false, build);
 
             // Assert
@@ -235,7 +236,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void PerformRunScriptFinalization_RaisesBuildCommittedEvent_OnSuccess()
+        public async Task PerformRunScriptFinalization_RaisesBuildCommittedEvent_OnSuccess()
         {
             // Arrange
             var context = CreateMockContext(isTransactional: true, isTrialBuild: false);
@@ -244,7 +245,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var build = new Build("Test", "Full", DateTime.Now, null, "Server", BuildItemStatus.Pending, "BUILD1", "User");
 
             // Act
-            _finalizer.PerformRunScriptFinalization(
+            await _finalizer.PerformRunScriptFinalizationAsync(
                 context.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: false, build);
 
             // Assert
@@ -252,7 +253,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void PerformRunScriptFinalization_RaisesBuildErrorRollBackEvent_OnFailure()
+        public async Task PerformRunScriptFinalization_RaisesBuildErrorRollBackEvent_OnFailure()
         {
             // Arrange
             var context = CreateMockContext(isTransactional: true, isTrialBuild: false);
@@ -261,7 +262,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var build = new Build("Test", "Full", DateTime.Now, null, "Server", BuildItemStatus.Pending, "BUILD1", "User");
 
             // Act
-            _finalizer.PerformRunScriptFinalization(
+            await _finalizer.PerformRunScriptFinalizationAsync(
                 context.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: true, build);
 
             // Assert
@@ -269,7 +270,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void PerformRunScriptFinalization_ClearsConnections()
+        public async Task PerformRunScriptFinalization_ClearsConnections()
         {
             // Arrange
             var context = CreateMockContext(isTransactional: true, isTrialBuild: false);
@@ -278,7 +279,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var build = new Build("Test", "Full", DateTime.Now, null, "Server", BuildItemStatus.Pending, "BUILD1", "User");
 
             // Act
-            _finalizer.PerformRunScriptFinalization(
+            await _finalizer.PerformRunScriptFinalizationAsync(
                 context.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: false, build);
 
             // Assert - Verify connections were cleared (by checking it was accessed)

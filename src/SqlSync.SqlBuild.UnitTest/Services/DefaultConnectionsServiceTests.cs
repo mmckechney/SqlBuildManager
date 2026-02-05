@@ -42,7 +42,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var service = new DefaultConnectionsService();
 
             // Act & Assert
-            Assert.ThrowsException<ArgumentNullException>(() =>
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
                 service.GetBuildConnectionDataClass("ServerName", "DatabaseName", false));
         }
 

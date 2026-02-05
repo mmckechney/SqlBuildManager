@@ -328,7 +328,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             };
 
             // Act & Assert - There's a bug in the implementation where it uses buildDataModel instead of model
-            Assert.ThrowsException<NullReferenceException>(() => 
+            Assert.ThrowsExactly<NullReferenceException>(() => 
                 _finalizer.RecordCommittedScripts(committedScripts, null));
         }
 
@@ -461,7 +461,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             List<BuildResultStatus> results = null;
 
             // Act & Assert - should throw NullReferenceException since .All() is called
-            Assert.ThrowsException<NullReferenceException>(() => _finalizer.CalculateFinalStatus(results));
+            Assert.ThrowsExactly<NullReferenceException>(() => _finalizer.CalculateFinalStatus(results));
         }
 
         [TestMethod]

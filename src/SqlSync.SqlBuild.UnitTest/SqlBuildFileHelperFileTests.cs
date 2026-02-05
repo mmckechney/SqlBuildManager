@@ -1,6 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
@@ -41,14 +40,13 @@ namespace SqlSync.SqlBuild.UnitTest
         public void CopyIndividualScriptsToFolder_NullScriptCollection_ReturnsFalse()
         {
             // Arrange
-            var buildData = new SqlSyncBuildData();
-            // Don't add any scripts
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
             bool result = SqlBuildFileHelper.CopyIndividualScriptsToFolder(
-                ref buildData, _testDirectory, _testDirectory, false, false);
+                model, _testDirectory, _testDirectory, false, false);
 
-            // Assert
+            // Assert - empty script list returns false
             Assert.IsFalse(result);
         }
 
@@ -56,41 +54,37 @@ namespace SqlSync.SqlBuild.UnitTest
         public void CopyIndividualScriptsToFolder_EmptyScriptCollection_ReturnsFalse()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            // Clear scripts
-            buildData.Script.Clear();
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
             bool result = SqlBuildFileHelper.CopyIndividualScriptsToFolder(
-                ref buildData, _testDirectory, _testDirectory, false, false);
+                model, _testDirectory, _testDirectory, false, false);
 
             // Assert
             Assert.IsFalse(result);
         }
 
         [TestMethod]
-        public void CopyIndividualScriptsToFolder_WithScripts_CopiesFiles()
+        public async Task CopyIndividualScriptsToFolder_WithScripts_CopiesFiles()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var scriptsRow = (SqlSyncBuildData.ScriptsRow)buildData.Scripts.Rows[0];
-            
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+
             // Create a test script file
             string scriptFileName = "test_script.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 1");
-            
-            buildData.Script.AddScriptRow(
-                scriptFileName, 1, "desc", true, true, DateTime.Now, 
-                Guid.NewGuid().ToString(), "TestDb", false, true, 
-                "user", 30, DateTime.MinValue, "", scriptsRow, "");
-            buildData.AcceptChanges();
+
+            // Add script to model
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
+                model, Path.Combine(_testDirectory, "test.xml"),
+                scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             string destFolder = Path.Combine(_testDirectory, "dest");
             Directory.CreateDirectory(destFolder);
 
             // Act
             bool result = SqlBuildFileHelper.CopyIndividualScriptsToFolder(
-                ref buildData, destFolder, _testDirectory, false, false);
+                model, destFolder, _testDirectory, false, false);
 
             // Assert
             Assert.IsTrue(result);
@@ -98,27 +92,24 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void CopyIndividualScriptsToFolder_WithSequence_AddsSequencePrefix()
+        public async Task CopyIndividualScriptsToFolder_WithSequence_AddsSequencePrefix()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var scriptsRow = (SqlSyncBuildData.ScriptsRow)buildData.Scripts.Rows[0];
-            
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+
             string scriptFileName = "test.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 1");
-            
-            buildData.Script.AddScriptRow(
-                scriptFileName, 1, "desc", true, true, DateTime.Now, 
-                Guid.NewGuid().ToString(), "TestDb", false, true, 
-                "user", 30, DateTime.MinValue, "", scriptsRow, "");
-            buildData.AcceptChanges();
+
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
+                model, Path.Combine(_testDirectory, "test.xml"),
+                scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             string destFolder = Path.Combine(_testDirectory, "dest");
             Directory.CreateDirectory(destFolder);
 
             // Act
             bool result = SqlBuildFileHelper.CopyIndividualScriptsToFolder(
-                ref buildData, destFolder, _testDirectory, false, true);
+                model, destFolder, _testDirectory, false, true);
 
             // Assert
             Assert.IsTrue(result);
@@ -129,27 +120,24 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void CopyIndividualScriptsToFolder_WithUse_AddsUseStatement()
+        public async Task CopyIndividualScriptsToFolder_WithUse_AddsUseStatement()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var scriptsRow = (SqlSyncBuildData.ScriptsRow)buildData.Scripts.Rows[0];
-            
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+
             string scriptFileName = "test.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 1");
-            
-            buildData.Script.AddScriptRow(
-                scriptFileName, 1, "desc", true, true, DateTime.Now, 
-                Guid.NewGuid().ToString(), "TestDb", false, true, 
-                "user", 30, DateTime.MinValue, "", scriptsRow, "");
-            buildData.AcceptChanges();
+
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
+                model, Path.Combine(_testDirectory, "test.xml"),
+                scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             string destFolder = Path.Combine(_testDirectory, "dest");
             Directory.CreateDirectory(destFolder);
 
             // Act
             bool result = SqlBuildFileHelper.CopyIndividualScriptsToFolder(
-                ref buildData, destFolder, _testDirectory, true, false);
+                model, destFolder, _testDirectory, true, false);
 
             // Assert
             Assert.IsTrue(result);
@@ -165,14 +153,14 @@ namespace SqlSync.SqlBuild.UnitTest
         public void CopyScriptsToSingleFile_NullScriptCollection_ReturnsFalse()
         {
             // Arrange
-            var buildData = new SqlSyncBuildData();
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
             bool result = SqlBuildFileHelper.CopyScriptsToSingleFile(
-                ref buildData, 
-                Path.Combine(_testDirectory, "output.sql"), 
-                _testDirectory, 
-                "build.sbm", 
+                model,
+                Path.Combine(_testDirectory, "output.sql"),
+                _testDirectory,
+                "build.sbm",
                 false);
 
             // Assert
@@ -180,26 +168,23 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void CopyScriptsToSingleFile_WithScripts_CreatesSingleFile()
+        public async Task CopyScriptsToSingleFile_WithScripts_CreatesSingleFile()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var scriptsRow = (SqlSyncBuildData.ScriptsRow)buildData.Scripts.Rows[0];
-            
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+
             string scriptFileName = "test.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 1");
-            
-            buildData.Script.AddScriptRow(
-                scriptFileName, 1, "desc", true, true, DateTime.Now, 
-                Guid.NewGuid().ToString(), "TestDb", false, true, 
-                "user", 30, DateTime.MinValue, "", scriptsRow, "");
-            buildData.AcceptChanges();
+
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
+                model, Path.Combine(_testDirectory, "test.xml"),
+                scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             string outputFile = Path.Combine(_testDirectory, "combined.sql");
 
             // Act
             bool result = SqlBuildFileHelper.CopyScriptsToSingleFile(
-                ref buildData, outputFile, _testDirectory, "build.sbm", false);
+                model, outputFile, _testDirectory, "build.sbm", false);
 
             // Assert
             Assert.IsTrue(result);
@@ -217,12 +202,11 @@ namespace SqlSync.SqlBuild.UnitTest
         public async Task CopyIndividualScriptsToFolderAsync_EmptyScripts_ReturnsFalse()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            buildData.Script.Clear();
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var (success, _) = await SqlBuildFileHelper.CopyIndividualScriptsToFolderAsync(
-                buildData, _testDirectory, _testDirectory, false, false);
+            var success = await SqlBuildFileHelper.CopyIndividualScriptsToFolderAsync(
+                model, _testDirectory, _testDirectory, false, false);
 
             // Assert
             Assert.IsFalse(success);
@@ -232,24 +216,21 @@ namespace SqlSync.SqlBuild.UnitTest
         public async Task CopyIndividualScriptsToFolderAsync_WithScripts_CopiesFiles()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var scriptsRow = (SqlSyncBuildData.ScriptsRow)buildData.Scripts.Rows[0];
-            
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+
             string scriptFileName = "async_test.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 2");
-            
-            buildData.Script.AddScriptRow(
-                scriptFileName, 1, "desc", true, true, DateTime.Now, 
-                Guid.NewGuid().ToString(), "TestDb", false, true, 
-                "user", 30, DateTime.MinValue, "", scriptsRow, "");
-            buildData.AcceptChanges();
+
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
+                model, Path.Combine(_testDirectory, "test.xml"),
+                scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             string destFolder = Path.Combine(_testDirectory, "async_dest");
             Directory.CreateDirectory(destFolder);
 
             // Act
-            var (success, _) = await SqlBuildFileHelper.CopyIndividualScriptsToFolderAsync(
-                buildData, destFolder, _testDirectory, false, false);
+            var success = await SqlBuildFileHelper.CopyIndividualScriptsToFolderAsync(
+                model, destFolder, _testDirectory, false, false);
 
             // Assert
             Assert.IsTrue(success);
@@ -259,17 +240,14 @@ namespace SqlSync.SqlBuild.UnitTest
         public async Task CopyIndividualScriptsToFolderAsync_WithCancellation_HandlesCancelledToken()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var scriptsRow = (SqlSyncBuildData.ScriptsRow)buildData.Scripts.Rows[0];
-            
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+
             // Add a script
             string scriptFileName = "script_cancel.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 1");
-            buildData.Script.AddScriptRow(
-                scriptFileName, 1, "desc", true, true, DateTime.Now, 
-                Guid.NewGuid().ToString(), "TestDb", false, true, 
-                "user", 30, DateTime.MinValue, "", scriptsRow, "");
-            buildData.AcceptChanges();
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
+                model, Path.Combine(_testDirectory, "test.xml"),
+                scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             string destFolder = Path.Combine(_testDirectory, "cancel_dest");
             Directory.CreateDirectory(destFolder);
@@ -281,14 +259,14 @@ namespace SqlSync.SqlBuild.UnitTest
             try
             {
                 await SqlBuildFileHelper.CopyIndividualScriptsToFolderAsync(
-                    buildData, destFolder, _testDirectory, false, false, cts.Token);
+                    model, destFolder, _testDirectory, false, false, cts.Token);
                 // If script count is 0, it might just return false without throwing
             }
             catch (OperationCanceledException)
             {
                 // Expected when scripts are present
             }
-            
+
             // Assert - test passed if we got here (either returned or threw)
             Assert.IsTrue(true);
         }
@@ -301,15 +279,14 @@ namespace SqlSync.SqlBuild.UnitTest
         public async Task CopyScriptsToSingleFileAsync_EmptyScripts_ReturnsFalse()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            buildData.Script.Clear();
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var (success, _) = await SqlBuildFileHelper.CopyScriptsToSingleFileAsync(
-                buildData, 
-                Path.Combine(_testDirectory, "output.sql"), 
-                _testDirectory, 
-                "build.sbm", 
+            var success = await SqlBuildFileHelper.CopyScriptsToSingleFileAsync(
+                model,
+                Path.Combine(_testDirectory, "output.sql"),
+                _testDirectory,
+                "build.sbm",
                 false);
 
             // Assert
@@ -320,23 +297,20 @@ namespace SqlSync.SqlBuild.UnitTest
         public async Task CopyScriptsToSingleFileAsync_WithScripts_CreatesSingleFile()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var scriptsRow = (SqlSyncBuildData.ScriptsRow)buildData.Scripts.Rows[0];
-            
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+
             string scriptFileName = "async_single.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 3");
-            
-            buildData.Script.AddScriptRow(
-                scriptFileName, 1, "desc", true, true, DateTime.Now, 
-                Guid.NewGuid().ToString(), "TestDb", false, true, 
-                "user", 30, DateTime.MinValue, "", scriptsRow, "");
-            buildData.AcceptChanges();
+
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
+                model, Path.Combine(_testDirectory, "test.xml"),
+                scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             string outputFile = Path.Combine(_testDirectory, "combined_async.sql");
 
             // Act
-            var (success, _) = await SqlBuildFileHelper.CopyScriptsToSingleFileAsync(
-                buildData, outputFile, _testDirectory, "build.sbm", false);
+            var success = await SqlBuildFileHelper.CopyScriptsToSingleFileAsync(
+                model, outputFile, _testDirectory, "build.sbm", false);
 
             // Assert
             Assert.IsTrue(success);
@@ -348,61 +322,55 @@ namespace SqlSync.SqlBuild.UnitTest
         #region RemoveScriptFilesFromBuild Tests
 
         [TestMethod]
-        public void RemoveScriptFilesFromBuild_RemovesSpecifiedScripts()
+        public async Task RemoveScriptFilesFromBuild_RemovesSpecifiedScripts()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var scriptsRow = (SqlSyncBuildData.ScriptsRow)buildData.Scripts.Rows[0];
-            
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+
             string scriptFileName = "to_remove.sql";
             File.WriteAllText(Path.Combine(_testDirectory, scriptFileName), "SELECT 1");
-            
-            buildData.Script.AddScriptRow(
-                scriptFileName, 1, "desc", true, true, DateTime.Now, 
-                Guid.NewGuid().ToString(), "TestDb", false, true, 
-                "user", 30, DateTime.MinValue, "", scriptsRow, "");
-            buildData.AcceptChanges();
 
-            var rowsToRemove = buildData.Script.Cast<SqlSyncBuildData.ScriptRow>().ToArray();
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
+                model, Path.Combine(_testDirectory, "test.xml"),
+                scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
+
+            var scriptsToRemove = model.Script.ToArray();
             string projFileName = Path.Combine(_testDirectory, XmlFileNames.MainProjectFile);
             string zipFileName = Path.Combine(_testDirectory, "test.sbm");
 
             // Act
-            bool result = SqlBuildFileHelper.RemoveScriptFilesFromBuild(
-                ref buildData, projFileName, zipFileName, rowsToRemove, false);
+            var updatedModel = await SqlBuildFileHelper.RemoveScriptFilesFromBuildAsync(
+                model, projFileName, zipFileName, scriptsToRemove, false);
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.AreEqual(0, buildData.Script.Count);
+            Assert.IsNotNull(updatedModel);
+            Assert.AreEqual(0, updatedModel.Script.Count);
         }
 
         [TestMethod]
-        public void RemoveScriptFilesFromBuild_WithDeleteFiles_DeletesPhysicalFiles()
+        public async Task RemoveScriptFilesFromBuild_WithDeleteFiles_DeletesPhysicalFiles()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var scriptsRow = (SqlSyncBuildData.ScriptsRow)buildData.Scripts.Rows[0];
-            
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+
             string scriptFileName = "delete_me.sql";
             string scriptPath = Path.Combine(_testDirectory, scriptFileName);
             File.WriteAllText(scriptPath, "SELECT 1");
-            
-            buildData.Script.AddScriptRow(
-                scriptFileName, 1, "desc", true, true, DateTime.Now, 
-                Guid.NewGuid().ToString(), "TestDb", false, true, 
-                "user", 30, DateTime.MinValue, "", scriptsRow, "");
-            buildData.AcceptChanges();
 
-            var rowsToRemove = buildData.Script.Cast<SqlSyncBuildData.ScriptRow>().ToArray();
+            model = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
+                model, Path.Combine(_testDirectory, "test.xml"),
+                scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
+
+            var scriptsToRemove = model.Script.ToArray();
             string projFileName = Path.Combine(_testDirectory, XmlFileNames.MainProjectFile);
             string zipFileName = Path.Combine(_testDirectory, "test.sbm");
 
             // Act
-            bool result = SqlBuildFileHelper.RemoveScriptFilesFromBuild(
-                ref buildData, projFileName, zipFileName, rowsToRemove, true);
+            var updatedModel = await SqlBuildFileHelper.RemoveScriptFilesFromBuildAsync(
+                model, projFileName, zipFileName, scriptsToRemove, true);
 
             // Assert
-            Assert.IsTrue(result);
+            Assert.IsNotNull(updatedModel);
             Assert.IsFalse(File.Exists(scriptPath));
         }
 
@@ -411,13 +379,12 @@ namespace SqlSync.SqlBuild.UnitTest
         #region ImportSqlScriptFile Tests
 
         [TestMethod]
-        public void ImportSqlScriptFile_EmptyImportData_ReturnsNoRowsImported()
+        public async Task ImportSqlScriptFile_EmptyImportData_ReturnsNoRowsImported()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var importData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            importData.Script.Clear();
-            importData.AcceptChanges();
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var importModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            // importModel already has empty scripts
 
             string projFileName = Path.Combine(_testDirectory, XmlFileNames.MainProjectFile);
             string zipFileName = Path.Combine(_testDirectory, "test.sbm");
@@ -425,9 +392,9 @@ namespace SqlSync.SqlBuild.UnitTest
             Directory.CreateDirectory(importWorkingDir);
 
             // Act
-            double result = SqlBuildFileHelper.ImportSqlScriptFile(
-                ref buildData, importData, importWorkingDir, 0, 
-                _testDirectory, projFileName, zipFileName, false, out string[] addedFileNames);
+            var (result, _, addedFileNames) = await SqlBuildFileHelper.ImportSqlScriptFileAsync(
+                model, importModel, importWorkingDir, 0,
+                _testDirectory, projFileName, zipFileName, false);
 
             // Assert
             Assert.AreEqual((double)ImportFileStatus.NoRowsImported, result);
@@ -435,31 +402,28 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        public void ImportSqlScriptFile_WithScripts_ImportsSuccessfully()
+        public async Task ImportSqlScriptFile_WithScripts_ImportsSuccessfully()
         {
             // Arrange
-            var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var importData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataObject();
-            var scriptsRow = (SqlSyncBuildData.ScriptsRow)importData.Scripts.Rows[0];
-            
+            var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var importModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+
             string scriptFileName = "import_script.sql";
             string importWorkingDir = Path.Combine(_testDirectory, "import");
             Directory.CreateDirectory(importWorkingDir);
             File.WriteAllText(Path.Combine(importWorkingDir, scriptFileName), "SELECT 1");
-            
-            importData.Script.AddScriptRow(
-                scriptFileName, 1, "desc", true, true, DateTime.Now, 
-                Guid.NewGuid().ToString(), "TestDb", false, true, 
-                "user", 30, DateTime.MinValue, "", scriptsRow, "");
-            importData.AcceptChanges();
+
+            importModel = await SqlBuildFileHelper.AddScriptFileToBuildAsync(
+                importModel, Path.Combine(importWorkingDir, "test.xml"),
+                scriptFileName, 1, "desc", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
             string projFileName = Path.Combine(_testDirectory, XmlFileNames.MainProjectFile);
             string zipFileName = Path.Combine(_testDirectory, "test.sbm");
 
             // Act
-            double result = SqlBuildFileHelper.ImportSqlScriptFile(
-                ref buildData, importData, importWorkingDir, 0, 
-                _testDirectory, projFileName, zipFileName, false, out string[] addedFileNames);
+            var (result, _, addedFileNames) = await SqlBuildFileHelper.ImportSqlScriptFileAsync(
+                model, importModel, importWorkingDir, 0,
+                _testDirectory, projFileName, zipFileName, false);
 
             // Assert
             Assert.AreEqual(1.0, result);
@@ -478,7 +442,7 @@ namespace SqlSync.SqlBuild.UnitTest
             string logFile1 = "archive_test1.log";
             string logPath1 = Path.Combine(_testDirectory, logFile1);
             File.WriteAllText(logPath1, "Log content 1");
-            
+
             // The archive method uses basePath as current directory context
             // Test that method returns false for non-existent archive (expected behavior)
             string archiveName = Path.Combine(_testDirectory, "archive_test.zip");

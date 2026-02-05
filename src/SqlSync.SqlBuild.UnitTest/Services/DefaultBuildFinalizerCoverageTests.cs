@@ -40,8 +40,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript>(),
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript>());
 
             var committedScripts = new List<LoggingCommittedScript>
             {
@@ -68,8 +67,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript>(),
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript>());
 
             var committedScripts = new List<LoggingCommittedScript>
             {
@@ -101,8 +99,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript> { existingScript },
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript> { existingScript });
 
             var newScript = new LoggingCommittedScript(Guid.NewGuid(), "NEWHASH", 1, "SELECT 1", "tag", "NewServer", "NewDb");
 
@@ -241,7 +238,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockConnectionsService.Setup(x => x.Connections).Returns((Dictionary<string, BuildConnectData>)null);
 
             // Act & Assert
-            Assert.ThrowsException<NullReferenceException>(() =>
+            Assert.ThrowsExactly<NullReferenceException>(() =>
                 _finalizer.CommitBuild(mockConnectionsService.Object, isTransactional: true));
         }
 
@@ -286,7 +283,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockConnectionsService.Setup(x => x.Connections).Returns((Dictionary<string, BuildConnectData>)null);
 
             // Act & Assert
-            Assert.ThrowsException<NullReferenceException>(() =>
+            Assert.ThrowsExactly<NullReferenceException>(() =>
                 _finalizer.RollbackBuild(mockConnectionsService.Object, isTransactional: true));
         }
 
@@ -362,7 +359,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         public void RecordCommittedScripts_BothNull_ThrowsNullReferenceException()
         {
             // Act & Assert
-            Assert.ThrowsException<NullReferenceException>(() =>
+            Assert.ThrowsExactly<NullReferenceException>(() =>
                 _finalizer.RecordCommittedScripts(new List<LoggingCommittedScript>(), null));
         }
 

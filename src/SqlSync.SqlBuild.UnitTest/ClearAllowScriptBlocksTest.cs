@@ -31,8 +31,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 {
                     new CommittedScript("id-1","ServerA", DateTime.UtcNow, true, "hash", 1),
                     new CommittedScript("id-2","ServerB", DateTime.UtcNow, true, "hash", 1),
-                },
-                codeReview: Array.Empty<CodeReview>()
+                }
             );
             IProgressReporter progressReporter = new NullProgressReporter();
             IConnectionsService connectionsService = new DefaultConnectionsService();

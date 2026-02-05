@@ -19,6 +19,7 @@ namespace SqlBuildManager.Console.ExternalTest
     [TestClass]
     public class KubernetesTests
     {
+        public TestContext TestContext { get; set; }
 
         private string settingsFileKeyPath;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
@@ -26,7 +27,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
-            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<KubernetesTests>("SqlBuildManager.Console.log", @"C:\temp");
+            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<KubernetesTests>("SqlBuildManager.Console.log", Path.GetTempPath());
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
 
             System.Console.SetOut(new StringWriter(ConsoleOutput));    // Associate StringBuilder with StdOut
@@ -42,7 +43,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Run_Queue_SBMSource_Success(string settingsFile)
         {
             try
@@ -50,11 +51,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var prc = new ProcessHelper();
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
                 string jobName = TestHelper.GetUniqueJobName("k8s");
 
 
@@ -95,7 +92,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -104,7 +101,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Run_LongRunning_Queue_SBMSource_Success(string settingsFile)
         {
             settingsFile = Path.GetFullPath(settingsFile);
@@ -115,11 +112,7 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 var prc = new ProcessHelper();
                 settingsFile = Path.GetFullPath(settingsFile);
-                var sbmFileName = Path.GetFullPath("LongRunning.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.long_running);
-                }
+                var sbmFileName = TestHelper.GetLongRunningSbm();
                 string jobName = TestHelper.GetUniqueJobName("k8s-long");
 
 
@@ -160,7 +153,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -169,7 +162,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Query_Queue_SBMSource_Success(string settingsFile)
         {
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
@@ -228,7 +221,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
  
                 if (File.Exists(outputFile))
                 {
@@ -243,7 +236,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Run_Queue_SBMSource_BadTarget_Fail(string settingsFile)
         {
             try
@@ -252,11 +245,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 settingsFile = Path.GetFullPath(settingsFile);
                 System.Console.WriteLine(File.ReadAllText(settingsFile));
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets-badtargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
                 string jobName = TestHelper.GetUniqueJobName("k8s");
 
 
@@ -298,7 +287,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -308,7 +297,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Run_Queue_DoubleDbConfig_SBMSource_Success(string settingsFile)
         {
             try
@@ -316,11 +305,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var prc = new ProcessHelper();
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/clientdbtargets-doubledb.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect_DoubleClient.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect_DoubleClient);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectDoubleClientSbm();
                 string jobName = TestHelper.GetUniqueJobName("k8s");
 
 
@@ -359,7 +344,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -372,7 +357,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json", ConcurrencyType.MaxPerTag, 5)]
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json", ConcurrencyType.MaxPerTag, 3)]
         // [DataRow("TestConfig/settingsfile-k8s-sec.json", ConcurrencyType.MaxPerServer, 5)]
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Run_Queue_Concurrency_SBMSource_Success(string settingsFile, ConcurrencyType concurType, int concurrencyCount)
         {
             try
@@ -383,11 +368,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var overrideFileTags = Path.GetFullPath("TestConfig/databasetargets-tag.cfg");
                 var overrideFile = concurType == ConcurrencyType.Tag || concurType == ConcurrencyType.MaxPerTag ? overrideFileTags : overrideFilePlain;
 
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect_DoubleClient);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
                 string jobName = TestHelper.GetUniqueJobName("k8s");
 
 
@@ -429,13 +410,13 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
 
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Run_Queue_DacpacSource_ForceApplyCustom_Success(string settingsFile)
         {
             try
@@ -443,11 +424,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var prc = new ProcessHelper();
 
                 var settingsFileKeyString = File.ReadAllText(settingsFileKeyPath);
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
                 string jobName = TestHelper.GetUniqueJobName("k8s");
 
                 var overrideFile = Path.GetFullPath("TestConfig/clientdbtargets.cfg");
@@ -517,14 +494,14 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
 
         }
 
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
-        [DataTestMethod]
+        [TestMethod]
         public async Task Kubernetes_Yaml_Queue_DacpacSource_Success(string settingsFile)
         {
             try
@@ -533,7 +510,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 settingsFile = Path.GetFullPath(settingsFile);
                 var cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingsFile), SettingsFileKey = settingsFileKeyPath };
                 (var x, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-                if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity)
+                if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault)
                 {
                     (x, cmdLine) = SqlBuildManager.Console.KeyVault.KeyVaultHelper.GetSecrets(cmdLine);
                 }
@@ -656,13 +633,13 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
         }
 
 
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
-        [DataTestMethod]
+        [TestMethod]
         public async Task Kubernetes_Yaml_Queue_DacpacSource_ForceApplyCustom_Success(string settingsFile)
         {
             try
@@ -671,7 +648,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 settingsFile = Path.GetFullPath(settingsFile);
                 var cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingsFile), SettingsFileKey = settingsFileKeyPath };
                 (var x, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
-                if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity)
+                if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault)
                 {
                     (x, cmdLine) = SqlBuildManager.Console.KeyVault.KeyVaultHelper.GetSecrets(cmdLine);
                 }
@@ -802,7 +779,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
 

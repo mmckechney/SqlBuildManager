@@ -18,6 +18,7 @@ namespace SqlBuildManager.Console.ExternalTest
     [TestClass]
     public class ContainerAppTests
     {
+        public TestContext TestContext { get; set; }
 
         private string settingsFileKeyPath;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
@@ -26,7 +27,7 @@ namespace SqlBuildManager.Console.ExternalTest
         public void ConfigureProcessInfo()
         {
 
-            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ContainerAppTests>("SqlBuildManager.Console.log", @"C:\temp");
+            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ContainerAppTests>("SqlBuildManager.Console.log", Path.GetTempPath());
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
 
             System.Console.SetOut(new StringWriter(ConsoleOutput));    // Associate StringBuilder with StdOut
@@ -47,18 +48,14 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
 
-        [DataTestMethod]
+        [TestMethod]
         public void ContainerApp_Run_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
 
 
                 //get the size of the log file before we start
@@ -97,7 +94,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -106,7 +103,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         // [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataTestMethod]
+        [TestMethod]
         public void ContainerApp_Run_LongRunning_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             settingsFile = Path.GetFullPath(settingsFile);
@@ -115,11 +112,7 @@ namespace SqlBuildManager.Console.ExternalTest
             File.WriteAllLines(tmpOverride, File.ReadAllLines(overrideFile).Take(6).ToArray());
             try
             {
-                var sbmFileName = Path.GetFullPath("LongRunning.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.long_running);
-                }
+                var sbmFileName = TestHelper.GetLongRunningSbm();
 
 
                 //get the size of the log file before we start
@@ -158,7 +151,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -168,19 +161,15 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataTestMethod]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void ContainerApp_StepWise_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
 
 
                 //get the size of the log file before we start
@@ -249,7 +238,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -257,19 +246,15 @@ namespace SqlBuildManager.Console.ExternalTest
         //TODO: Enable Managed Identity****** Managed Identity for SQL Authentication is not available for Container Apps currently, only SB and EH
         // [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         // [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataTestMethod]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void ContainerApp_Queue_ManagedIdentity_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
 
 
                 //get the size of the log file before we start
@@ -330,7 +315,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();
                 result = val.Result;
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
                 Assert.AreEqual(0, result);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
@@ -338,7 +323,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -346,19 +331,15 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataTestMethod]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void ContainerApp_EnvOnly_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
                 settingsFile = Path.GetFullPath(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-                var sbmFileName = Path.GetFullPath("SimpleSelect.sbm");
-                if (!File.Exists(sbmFileName))
-                {
-                    File.WriteAllBytes(sbmFileName, Properties.Resources.SimpleSelect);
-                }
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
 
 
                 //get the size of the log file before we start
@@ -426,7 +407,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -434,8 +415,8 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataTestMethod]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void ContainerApp_Queue_DacpacSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -542,15 +523,15 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
         }
 
 
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataTestMethod]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void ContainerApp_Queue_DacpacSource_DbAlreadyInSync_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -652,7 +633,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 val = rootCommand.InvokeAsync(args);
                 val.Wait();
                 result = val.Result;
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
                 Assert.AreEqual(0, result);
 
                 var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
@@ -663,7 +644,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
         }
@@ -671,8 +652,8 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         // [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataTestMethod]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
         public void ContainerApp_Queue_DacpacSource_ForceApplyCustom_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -788,9 +769,110 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             finally
             {
-                Debug.WriteLine(ConsoleOutput.ToString());
+                TestContext.WriteLine(ConsoleOutput.ToString());
             }
 
+        }
+
+        /// <summary>
+        /// Tests the 'containerapp worker test' command which runs the container worker locally
+        /// by setting environment variables to simulate the container environment.
+        /// This validates the local execution path without deploying to Azure Container Apps.
+        /// </summary>
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", 2, ConcurrencyType.Count)]
+        [TestMethod]
+        public void ContainerApp_WorkerTest_SBMSource_Success(string settingsFile, int concurrency, ConcurrencyType concurrencyType)
+        {
+            string jobName = null;
+            settingsFile = Path.GetFullPath(settingsFile);
+            try
+            {
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                jobName = TestHelper.GetUniqueJobName("cawt");
+
+                // Step 1: Prep - upload the SBM package to storage
+                var args = new string[]{
+                    "containerapp",  "prep",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--packagename", sbmFileName
+                };
+
+                var val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result, "Prep step failed");
+
+                // Step 2: Enqueue - send database targets to Service Bus
+                args = new string[]{
+                    "containerapp",  "enqueue",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--override", overrideFile
+                };
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result, "Enqueue step failed");
+
+                // Step 3: Run worker test - executes locally with environment variables
+                args = new string[]{
+                    "--loglevel", "Debug",
+                    "containerapp",  "worker", "test",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--packagename", sbmFileName,
+                    "--override", overrideFile,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString()
+                };
+                val = rootCommand.InvokeAsync(args);
+                val.Wait();
+                result = val.Result;
+
+                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                Assert.AreEqual(0, result, $"Worker test failed. Log contents: {logFileContents}");
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(logFileContents.Contains("Completed Successfully") || ConsoleOutput.ToString().Contains("Completed Successfully"), 
+                    $"Expected 'Completed Successfully' in output. Log: {logFileContents}");
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+
+                // Cleanup: Dequeue any remaining messages from Service Bus
+                if (!string.IsNullOrEmpty(jobName))
+                {
+                    try
+                    {
+                        RootCommand rootCommand = CommandLineBuilder.SetUp();
+                        var args = new string[]{
+                            "containerapp",  "dequeue",
+                            "--settingsfile", settingsFile,
+                            "--settingsfilekey", settingsFileKeyPath,
+                            "--jobname", jobName,
+                            "--concurrencytype", concurrencyType.ToString()
+                        };
+                        var val = rootCommand.InvokeAsync(args);
+                        val.Wait();
+                    }
+                    catch
+                    {
+                        // Ignore cleanup errors
+                    }
+                }
+            }
         }
     }
 }

@@ -47,194 +47,6 @@ namespace SqlSync.SqlBuild
 
         }
 
-        public virtual BuildModels.Build Run(
-            IList<BuildModels.Script> scripts,
-            BuildModels.Build myBuild,
-            string serverName,
-            bool isMultiDbRun,
-            ScriptBatchCollection scriptBatchColl,
-            BuildModels.SqlSyncBuildDataModel buildDataModel)
-        {
-            var progress = _ctx.ProgressReporter ?? new DefaultProgressReporter();
-            var log = _ctx.Log;
-            var committedScripts = _ctx.CommittedScripts;
-
-            log.LogInformation("Proceeding with Build");
-            log.LogDebug($"Processing with build for build Package hash = {_ctx.BuildPackageHash}");
-
-            int overallIndex = 0;
-            int runSequence = 0;
-            bool buildFailure = false;
-            bool failureDueToScriptTimeout = false;
-            var dbTargets = new List<string>();
-
-            try
-            {
-                ValidateScriptsInput(scripts);
-
-                for (int i = 0; i < scripts.Count; i++)
-                {
-                    var script = scripts[i];
-                    var scriptId = script.ScriptId ?? Guid.NewGuid().ToString();
-                    var fileName = script.FileName ?? string.Empty;
-                    var stripTransaction = script.StripTransactionText ?? false;
-                    var rollBackOnError = script.RollBackOnError ?? true;
-                    var causesBuildFailure = script.CausesBuildFailure ?? true;
-                    var allowMultipleRuns = script.AllowMultipleRuns ?? true;
-                    var scriptTimeout = script.ScriptTimeOut ?? _ctx.DefaultScriptTimeout;
-                    var targetDatabase = _ctx.GetTargetDatabase(script.Database ?? string.Empty);
-                    dbTargets.Add(targetDatabase);
-
-                    var batchScripts = LoadBatchScripts(scriptId, fileName, stripTransaction, scriptBatchColl);
-
-                    if (!allowMultipleRuns && ShouldSkipDueToCommittedScripts(scriptId, buildDataModel))
-                    {
-                        log.LogInformation($"Skipping pre-run script {fileName}");
-                        progress.ReportProgress(0, new ScriptRunStatusEventArgs("Skipped Pre-Run script", TimeSpan.Zero));
-                        continue;
-                    }
-
-                    BuildConnectData cData;
-                    var scriptRunRowId = Guid.NewGuid();
-                    try
-                    {
-
-                        cData = _connectionsService.GetOrAddBuildConnectionDataClass(_ctx.ConnectionData, serverName, targetDatabase, _ctx.IsTransactional);
-                    }
-                    catch (Exception e)
-                    {
-                        log.LogError(e, $"Database connection to {serverName}.{targetDatabase} failed");
-                        var currentRunFail = BuildScriptRunFailure(fileName, i + 1, targetDatabase, scriptRunRowId, myBuild.BuildId, e.Message);
-                        _ctx.AddScriptRunToHistory(currentRunFail, myBuild);
-                        _ctx.PublishScriptLog(true, new ScriptLogEventArgs(overallIndex, "Database connection failed", targetDatabase, fileName, e.Message + "\r\n" + _ctx.SqlInfoMessage));
-                        _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);
-                        progress.ReportProgress(0, new ScriptRunStatusEventArgs("Build Rolled Back", TimeSpan.Zero));
-                        buildFailure = true;
-                        break;
-                    }
-
-                    var currentRun = new BuildModels.ScriptRun(
-                        fileHash: null,
-                        results: string.Empty,
-                        fileName: fileName,
-                        runOrder: i + 1,
-                        runStart: DateTime.Now,
-                        runEnd: null,
-                        success: null,
-                        database: targetDatabase,
-                        scriptRunId: scriptRunRowId.ToString(),
-                        buildId: myBuild.BuildId);
-
-                    // hash & commit staging
-                    string textHash = _fileHelper.GetSHA1Hash(batchScripts);
-                    currentRun.FileHash = textHash;
-                    var scriptText = SqlBuildFileHelper.JoinBatchedScripts(batchScripts);
-                    var tmpCommitted = new LoggingCommittedScript(new Guid(scriptId), currentRun.FileHash, runSequence++, scriptText, script.Tag, cData.ServerName, cData.DatabaseName);
-
-                    var savePointName = scriptId.Replace("-", "");
-                    TryCreateSavePoint(cData, savePointName, serverName, targetDatabase, fileName);
-
-                    var start = DateTime.Now;
-                    for (int x = 0; x < batchScripts.Length; x++)
-                    {
-                        //if (bgWorker.CancellationPending)
-                        //{
-                        //    log.LogInformation("Encountered cancellation pending directive. Breaking out of build");
-                        //    workEventArgs.Cancel = true;
-                        //    break;
-                        //}
-
-                        batchScripts[x] = _ctx.PerformScriptTokenReplacement(batchScripts[x]);
-                        overallIndex++;
-
-                        try
-                        {
-                            if (_ctx.RunScriptOnly)
-                            {
-                                _ctx.PublishScriptLog(false, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, fileName, "Scripted"));
-                                continue;
-                            }
-
-                            var execResult = _executor.Execute(batchScripts[x], scriptTimeout, cData, _ctx.IsTransactional);
-                            failureDueToScriptTimeout = failureDueToScriptTimeout || execResult.TimeoutDetected;
-                            currentRun.Success = true;
-                            currentRun.Results = (currentRun.Results ?? string.Empty) + execResult.Results;
-                            _ctx.PublishScriptLog(false, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, fileName, currentRun.Results + _ctx.SqlInfoMessage));
-                        }
-                        catch (SqlException e)
-                        {
-                            var (handledBuildFailure, timeoutDetected) = HandleSqlException(e, fileName, batchScripts[x], targetDatabase, savePointName, start, rollBackOnError, causesBuildFailure, cData, ref currentRun);
-                            failureDueToScriptTimeout = failureDueToScriptTimeout || timeoutDetected;
-                            buildFailure = buildFailure || handledBuildFailure;
-                        }
-
-                        if (buildFailure) { _ctx.ErrorOccured = true; break; }
-                        if (rollBackOnError && currentRun.Success == false) break;
-                    }
-
-                    //if (workEventArgs.Cancel)
-                    //{
-                    //        progress.ReportProgress(0, new ScriptRunStatusEventArgs("Build Cancelled", TimeSpan.Zero));
-                    //    buildFailure = true;
-                    //}else
-                    if (currentRun.Success == true)
-                    {
-                        var span = DateTime.Now - currentRun.RunStart!.Value;
-                        tmpCommitted.RunStart = currentRun.RunStart ?? DateTime.MinValue;
-                        tmpCommitted.RunEnd = DateTime.Now;
-                        committedScripts.Add(tmpCommitted);
-                        progress.ReportProgress(0, new ScriptRunStatusEventArgs($"Script Successful against {currentRun.Database}", span));
-                    }
-
-                    currentRun.RunEnd = DateTime.Now;
-                    _ctx.AddScriptRunToHistory(currentRun, myBuild);
-                    if (buildFailure) { _ctx.ErrorOccured = true; break; }
-                    if (_ctx.RunScriptOnly)
-                        progress.ReportProgress(0, new ScriptRunStatusEventArgs("Scripted", TimeSpan.Zero));
-                }
-            }
-            catch (Exception e)
-            {
-                log.LogError(e, "General build failure");
-                _ctx.ErrorOccured = true;
-                buildFailure = true;
-                progress.ReportProgress(100, e);
-            }
-            finally
-            {
-                _buildFinalizer.SaveBuildDataModel(_ctx, false);
-                WriteFinalScriptLog(dbTargets, buildFailure, isTransactional: _ctx.IsTransactional, isTrialBuild: _ctx.IsTrialBuild);
-            }
-
-            bool finalizationError = false;
-            // finalize
-            if (buildFailure)
-            {
-                log.LogError("Build failure. Check execution logs for details");
-                if (!isMultiDbRun)
-                {
-                    (myBuild, buildDataModel, _) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
-                }
-                else
-                {
-                    myBuild.FinalStatus = _ctx.IsTransactional ? BuildItemStatus.PendingRollBack : BuildItemStatus.FailedNoTransaction;
-                }
-                if (_ctx.IsTransactional && failureDueToScriptTimeout)
-                {
-                    myBuild.FinalStatus = BuildItemStatus.FailedDueToScriptTimeout;
-                }
-            }
-            else
-            {
-                if (isMultiDbRun)
-                    myBuild.FinalStatus = BuildItemStatus.Pending;
-                else
-                    (myBuild, buildDataModel, _) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild); //TODO: Don't swallow the BuildResultStatus?
-                log.LogDebug("Build Successful!");
-            }
-            return myBuild;
-        }
-
         public virtual async Task<BuildModels.Build> RunAsync(
             IList<BuildModels.Script> scripts,
             BuildModels.Build myBuild,
@@ -276,7 +88,7 @@ namespace SqlSync.SqlBuild
                     var targetDatabase = _ctx.GetTargetDatabase(script.Database ?? string.Empty);
                     dbTargets.Add(targetDatabase);
 
-                    var batchScripts = LoadBatchScripts(scriptId, fileName, stripTransaction, scriptBatchColl);
+                    var batchScripts = await LoadBatchScriptsAsync(scriptId, fileName, stripTransaction, scriptBatchColl, cancellationToken).ConfigureAwait(false);
 
                     if (!allowMultipleRuns && ShouldSkipDueToCommittedScripts(scriptId, buildDataModel))
                     {
@@ -290,7 +102,7 @@ namespace SqlSync.SqlBuild
                     BuildModels.ScriptRun currentRun = null;
                     try
                     {
-                        cData = _connectionsService.GetBuildConnectionDataClass(serverName, targetDatabase, _ctx.IsTransactional);
+                        cData = _connectionsService.GetOrAddBuildConnectionDataClass(_ctx.ConnectionData, serverName, targetDatabase, _ctx.IsTransactional);
                         currentRun = new BuildModels.ScriptRun(
                             fileHash: null,
                             results: string.Empty,
@@ -400,7 +212,7 @@ namespace SqlSync.SqlBuild
             }
             finally
             {
-                _buildFinalizer.SaveBuildDataModel(_ctx, false);
+                await _buildFinalizer.SaveBuildDataModelAsync(_ctx, false).ConfigureAwait(false);
                 WriteFinalScriptLog(dbTargets, buildFailure, isTransactional: _ctx.IsTransactional, isTrialBuild: _ctx.IsTrialBuild);
                 if (buildFailure)
                 {
@@ -409,7 +221,14 @@ namespace SqlSync.SqlBuild
                 }
             }
 
-            (myBuild, buildDataModel, _) = _buildFinalizer.PerformRunScriptFinalization(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild);
+            (myBuild, buildDataModel, _) = await _buildFinalizer.PerformRunScriptFinalizationAsync(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild).ConfigureAwait(false);
+            
+            // If build failed due to a timeout, set the status to allow retry mechanism to work
+            if (buildFailure && failureDueToScriptTimeout)
+            {
+                myBuild.FinalStatus = BuildItemStatus.FailedDueToScriptTimeout;
+            }
+            
             return myBuild;
         }
 
@@ -417,13 +236,6 @@ namespace SqlSync.SqlBuild
         {
             var csList = buildDataModel?.CommittedScript ?? new List<BuildModels.CommittedScript>();
             return csList.Any(cs => string.Equals(cs.ScriptId, scriptId, StringComparison.OrdinalIgnoreCase));
-        }
-
-        internal string[] LoadBatchScripts(string scriptId, string fileName, bool stripTransaction, ScriptBatchCollection scriptBatchColl)
-        {
-
-            var batchScripts = LoadBatchScriptsAsync(scriptId, fileName, stripTransaction, scriptBatchColl, default).GetAwaiter().GetResult();
-            return batchScripts;
         }
 
         internal async Task<string[]> LoadBatchScriptsAsync(string scriptId, string fileName, bool stripTransaction, ScriptBatchCollection scriptBatchColl, CancellationToken cancellationToken)

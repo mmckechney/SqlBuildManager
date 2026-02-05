@@ -144,8 +144,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: new List<CommittedScript>(),
-                codeReview: new List<CodeReview>());
+                committedScript: new List<CommittedScript>());
             SqlSyncBuildDataModel actual;
             target.BuildData = expected;
             actual = target.BuildData;

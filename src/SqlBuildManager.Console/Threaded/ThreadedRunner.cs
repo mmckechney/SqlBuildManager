@@ -192,7 +192,7 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     runDataModel.ForceCustomDacpac = true;
                     //This will set the BuildData and BuildFileName and ProjectFileName properties on runData
-                    (var status, runDataModel) = DacPacHelper.UpdateBuildRunDataForDacPacSync(runDataModel, server, targetDatabase, authType, username, password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout, cmdArgs.AllowObjectDelete, cmdArgs.IdentityArgs.ClientId);
+                    (var status, runDataModel) = await DacPacHelper.UpdateBuildRunDataForDacPacSyncAsync(runDataModel, server, targetDatabase, authType, username, password, loggingDirectory, cmdArgs.BuildRevision, cmdArgs.DefaultScriptTimeout, cmdArgs.AllowObjectDelete, cmdArgs.IdentityArgs.ClientId, cancellationToken).ConfigureAwait(false);
                     switch (status)
                     {
                         case DacpacDeltasStatus.Success:
@@ -221,7 +221,7 @@ namespace SqlBuildManager.Console.Threaded
 
                     runDataModel.BuildDataModel = cloned;
                     runDataModel.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(_context.ProjectFileName));
-                    SqlSyncBuildDataXmlSerializer.Save(runDataModel.ProjectFileName, cloned);
+                    await SqlSyncBuildDataXmlSerializer.SaveAsync(runDataModel.ProjectFileName, cloned);
                     runDataModel.BuildFileName = _context.BuildZipFileName;
                 }
 
@@ -267,7 +267,7 @@ namespace SqlBuildManager.Console.Threaded
 
                 if(runDataModel.BuildDataModel == null) runDataModel.BuildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-                var result = await helper.ProcessBuild(runDataModel, cmdArgs.TimeoutRetryCount, buildRequestedBy, _context.BatchCollection);
+                var result = await helper.ProcessBuildAsync(runDataModel, cmdArgs.TimeoutRetryCount, buildRequestedBy, _context.BatchCollection);
                 returnValue = result.FinalStatus.Value.ToRunnerReturn();
 
 

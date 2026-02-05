@@ -1,15 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
 using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Legacy;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Objects;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.XPath;
@@ -286,41 +286,34 @@ namespace SqlBuildManager.Enterprise.Policy
         }
 
 
-        public Package CreateScriptPolicyPackage(SqlSyncBuildData buildData, string extractedProjectPath)
+        public Package CreateScriptPolicyPackage(SqlSyncBuildDataModel buildDataModel, string extractedProjectPath)
         {
             Package scriptPackage = new Package();
             Script scriptItem;
-            foreach (SqlSyncBuildData.ScriptRow row in buildData.Script)
+            foreach (var script in buildDataModel.Script)
             {
                 try
                 {
-                    string scriptContents = File.ReadAllText(Path.Combine(extractedProjectPath, row.FileName));
-                    scriptItem = ValidateScriptAgainstPolicies(row.FileName, row.ScriptId, scriptContents, row.Database, 80);
+                    string scriptContents = File.ReadAllText(Path.Combine(extractedProjectPath, script.FileName ?? string.Empty));
+                    scriptItem = ValidateScriptAgainstPolicies(script.FileName ?? string.Empty, script.ScriptId ?? string.Empty, scriptContents, script.Database ?? string.Empty, 80);
                     if (scriptItem == null)
                     {
-                        row.PolicyCheckState = ScriptStatusType.PolicyPass;
+                        script.PolicyCheckState = ScriptStatusType.PolicyPass;
                     }
                     else
                     {
-                        scriptItem.LastChangeDate = (row.DateModified == DateTime.MinValue) ? row.DateAdded.ToString() : row.DateModified.ToString();
-                        scriptItem.LastChangeUserId = (row.ModifiedBy.Length == 0) ? row.AddedBy : row.ModifiedBy;
+                        scriptItem.LastChangeDate = (script.DateModified == null || script.DateModified == DateTime.MinValue) ? (script.DateAdded?.ToString() ?? string.Empty) : script.DateModified.Value.ToString();
+                        scriptItem.LastChangeUserId = (string.IsNullOrEmpty(script.ModifiedBy)) ? (script.AddedBy ?? string.Empty) : script.ModifiedBy;
                         scriptPackage.Add(scriptItem);
-                        row.PolicyCheckState = ScriptStatusType.PolicyFail;
+                        script.PolicyCheckState = ScriptStatusType.PolicyFail;
                     }
                 }
                 catch (Exception exe)
                 {
-                    log.LogError(exe, $"Unable to read file '{extractedProjectPath + row.FileName}' for policy check validation");
+                    log.LogError(exe, $"Unable to read file '{extractedProjectPath + script.FileName}' for policy check validation");
                 }
             }
             return scriptPackage;
-
-        }
-
-        public Package CreateScriptPolicyPackage(SqlSyncBuildDataModel buildDataModel, string extractedProjectPath)
-        {
-            var ds = buildDataModel.ToDataSet();
-            return CreateScriptPolicyPackage(ds, extractedProjectPath);
         }
         public static string TransformViolationstoXml(Package currentViolations)
         {
@@ -400,15 +393,19 @@ namespace SqlBuildManager.Enterprise.Policy
             return line;
         }
 
-        public List<string[]> CommandLinePolicyCheck(string buildPackageName, out bool passed)
+        /// <summary>
+        /// Async version of CommandLinePolicyCheck.
+        /// </summary>
+        /// <returns>Tuple of (policy violations list, passed bool)</returns>
+        public async Task<(List<string[]> policyReturns, bool passed)> CommandLinePolicyCheckAsync(string buildPackageName, CancellationToken cancellationToken = default)
         {
             string highSeverity = ViolationSeverity.High.ToString();
-            passed = true;
+            bool passed = true;
             List<string[]> policyReturns = new List<string[]>();
             SqlSyncBuildDataModel buildModel = null;
 
             if (String.IsNullOrEmpty(buildPackageName))
-                return policyReturns;
+                return (policyReturns, passed);
 
             string projFileName = string.Empty;
             string projectFilePath = string.Empty;
@@ -418,18 +415,15 @@ namespace SqlBuildManager.Enterprise.Policy
             switch ((extension))
             {
                 case ".sbm":
-                    string result;
-                    SqlBuildFileHelper.ExtractSqlBuildZipFile(buildPackageName, ref workingDirectory, ref projectFilePath,
-                                           ref projFileName,
-                                           out result);
-                    SqlBuildFileHelper.LoadSqlBuildProjectFile(out buildModel, projFileName, false);
+                    (_, workingDirectory, projectFilePath, projFileName, _) = await SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(buildPackageName, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    (_, buildModel) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projFileName, false, cancellationToken).ConfigureAwait(false);
                     break;
                 case ".sbx":
                     projectFilePath = Path.GetDirectoryName(buildPackageName);
-                    buildModel = SqlSyncBuildDataXmlSerializer.Load(buildPackageName);
+                    buildModel = await SqlSyncBuildDataXmlSerializer.LoadAsync(buildPackageName, cancellationToken).ConfigureAwait(false);
                     break;
                 default:
-                    return policyReturns;
+                    return (policyReturns, passed);
             }
 
             if (buildModel != null)
@@ -445,11 +439,11 @@ namespace SqlBuildManager.Enterprise.Policy
                 {
                     policyReturns.Add(new string[] { violation.Severity, violation.ScriptName, violation.Message });
                 }
-                return policyReturns;
+                return (policyReturns, passed);
             }
             else
             {
-                return policyReturns;
+                return (policyReturns, passed);
             }
         }
 

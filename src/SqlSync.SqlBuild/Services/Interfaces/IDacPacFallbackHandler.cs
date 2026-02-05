@@ -2,7 +2,10 @@ using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.Models;
+using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlSync.SqlBuild.Services
 {
@@ -17,11 +20,12 @@ namespace SqlSync.SqlBuild.Services
         bool IsCandidateForDacPacFallback(BuildItemStatus status);
 
         /// <summary>
-        /// Attempts to execute a DacPac-based build recovery.
+        /// Attempts to execute a DacPac-based build recovery asynchronously.
         /// </summary>
-        DacPacFallbackResult TryDacPacFallback(
+        Task<DacPacFallbackResult> TryDacPacFallbackAsync(
             DacPacFallbackContext context,
-            Build buildResult);
+            Build buildResult,
+            CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -39,19 +43,19 @@ namespace SqlSync.SqlBuild.Services
         public string ProjectFilePath { get; set; }
         
         /// <summary>
-        /// Callback to recursively execute a build with updated run data.
+        /// Async callback to recursively execute a build with updated run data.
         /// </summary>
-        public System.Func<SqlBuildRunDataModel, string, bool, ScriptBatchCollection, int, Build> ProcessBuildCallback { get; set; }
+        public Func<SqlBuildRunDataModel, int, string, ScriptBatchCollection, CancellationToken, Task<Build>> ProcessBuildCallbackAsync { get; set; }
         
         /// <summary>
         /// Callback to get the target database with overrides.
         /// </summary>
-        public System.Func<string, string> GetTargetDatabaseCallback { get; set; }
+        public Func<string, string> GetTargetDatabaseCallback { get; set; }
         
         /// <summary>
         /// Event to raise when build is committed.
         /// </summary>
-        public System.Action<RunnerReturn> RaiseBuildCommittedEvent { get; set; }
+        public Action<RunnerReturn> RaiseBuildCommittedEvent { get; set; }
     }
 
     /// <summary>

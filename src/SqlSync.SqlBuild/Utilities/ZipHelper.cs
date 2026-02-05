@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,7 +35,7 @@ namespace SqlSync.SqlBuild.Utilities
 
             try
             {
-                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName), @"~" + retryCount.ToString() + "~" + Path.GetFileName(zipFileName));
+                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName), @"~" + Guid.NewGuid().ToString("N") + "~" + Path.GetFileName(zipFileName));
                 using (ZipArchive newFile = ZipFile.Open(tempName, ZipArchiveMode.Create))
                 {
                     foreach (string file in fullPathFilesToZip)
@@ -138,6 +139,7 @@ namespace SqlSync.SqlBuild.Utilities
                 }
                 using (ZipArchive archive = ZipFile.Open(zipFileName, ZipArchiveMode.Read))
                 {
+                    log.LogDebug($"Archive contains {archive.Entries.Count} entries: {string.Join(", ", archive.Entries.Select(e => e.FullName))}");
                     foreach (ZipArchiveEntry file in archive.Entries)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
@@ -214,7 +216,7 @@ namespace SqlSync.SqlBuild.Utilities
         {
             try
             {
-                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName), @"~" + retryCount.ToString() + "~" + Path.GetFileName(zipFileName));
+                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName), @"~" + Guid.NewGuid().ToString("N") + "~" + Path.GetFileName(zipFileName));
                 await using (var zipFs = new FileStream(tempName, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan))
                 using (var archive = new ZipArchive(zipFs, ZipArchiveMode.Create, leaveOpen: false))
                 {

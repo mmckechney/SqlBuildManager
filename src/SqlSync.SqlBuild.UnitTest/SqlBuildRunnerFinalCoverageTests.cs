@@ -40,25 +40,25 @@ namespace SqlSync.SqlBuild.UnitTest
         #region Constructor Tests
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_WithNullContext_ThrowsArgumentNullException()
         {
-            // Act
-            new SqlBuildRunner(
-                new DefaultConnectionsService(),
-                null,
-                new Mock<IBuildFinalizerContext>().Object);
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
+                new SqlBuildRunner(
+                    new DefaultConnectionsService(),
+                    null,
+                    new Mock<IBuildFinalizerContext>().Object));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_WithNullFinalizerContext_ThrowsArgumentNullException()
         {
-            // Act
-            new SqlBuildRunner(
-                new DefaultConnectionsService(),
-                new FakeRunnerContext(),
-                null);
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
+                new SqlBuildRunner(
+                    new DefaultConnectionsService(),
+                    new FakeRunnerContext(),
+                    null));
         }
 
         [TestMethod]
@@ -94,8 +94,7 @@ namespace SqlSync.SqlBuild.UnitTest
                     new CommittedScript("script-1", null, null, null, null, null),
                     new CommittedScript("script-2", null, null, null, null, null),
                     new CommittedScript("script-3", null, null, null, null, null)
-                },
-                new List<CodeReview>());
+                });
 
             var result = runner.ShouldSkipDueToCommittedScripts("script-2", model);
 
@@ -116,8 +115,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 new List<CommittedScript>
                 {
                     new CommittedScript("script-1", null, null, null, null, null)
-                },
-                new List<CodeReview>());
+                });
 
             var result = runner.ShouldSkipDueToCommittedScripts("", model);
 
@@ -129,7 +127,7 @@ namespace SqlSync.SqlBuild.UnitTest
         #region LoadBatchScripts Extended Tests
 
         [TestMethod]
-        public void LoadBatchScripts_WithNullBatchContentsInCollection_ReadsFromContext()
+        public async Task LoadBatchScriptsAsync_WithNullBatchContentsInCollection_ReadsFromContext()
         {
             var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "FROM CONTEXT" } };
             var runner = new SqlBuildRunner(new DefaultConnectionsService(), ctx, new Mock<IBuildFinalizerContext>().Object);
@@ -138,13 +136,13 @@ namespace SqlSync.SqlBuild.UnitTest
                 new ScriptBatch("file.sql", null, "script-id")
             };
 
-            var result = runner.LoadBatchScripts("script-id", "file.sql", stripTransaction: false, scriptBatchColl: coll);
+            var result = await runner.LoadBatchScriptsAsync("script-id", "file.sql", stripTransaction: false, scriptBatchColl: coll, default);
 
             CollectionAssert.AreEqual(new[] { "FROM CONTEXT" }, result);
         }
 
         [TestMethod]
-        public void LoadBatchScripts_WithMultipleBatchesInCollection_FindsCorrectOne()
+        public async Task LoadBatchScriptsAsync_WithMultipleBatchesInCollection_FindsCorrectOne()
         {
             var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "WRONG" } };
             var runner = new SqlBuildRunner(new DefaultConnectionsService(), ctx, new Mock<IBuildFinalizerContext>().Object);
@@ -155,7 +153,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 new ScriptBatch("file3.sql", new[] { "BATCH 3" }, "script-3")
             };
 
-            var result = runner.LoadBatchScripts("script-2", "file2.sql", stripTransaction: false, scriptBatchColl: coll);
+            var result = await runner.LoadBatchScriptsAsync("script-2", "file2.sql", stripTransaction: false, scriptBatchColl: coll, default);
 
             CollectionAssert.AreEqual(new[] { "BATCH 2" }, result);
         }
