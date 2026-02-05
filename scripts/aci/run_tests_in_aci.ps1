@@ -230,16 +230,6 @@ $subnetId = az network vnet subnet show `
 #############################################
 # Build container command with test filter
 #############################################
-# Build test arguments - filter will be passed via environment variable
-$testArgs = "vstest SqlBuildManager.Console.ExternalTest.dll --logger:trx;LogFileName=TestResults.trx --logger:console;verbosity=detailed"
-
-# Build environment variables list
-$envVars = "AZURE_CLIENT_ID=$($identity.clientId)"
-if ($testFilter) {
-    $envVars += " TEST_FILTER=$testFilter"
-    $testArgs += ' --TestCaseFilter:$TEST_FILTER'
-}
-
 Write-Host "Test filter: $testFilter" -ForegroundColor DarkGray
 
 #############################################
@@ -254,39 +244,95 @@ Write-Host "Image: $fullImageName" -ForegroundColor DarkGreen
 Write-Host "Deploying to VNet subnet for network access..." -ForegroundColor DarkGreen
 Write-Host ""
 
-# Create container with managed identity in VNet
-# Command runs tests then keeps container alive for debugging/TRX retrieval
-# The shell script uses environment variable for test filter to avoid quoting issues
+# Build command array for YAML - override entrypoint to capture exit code and upload results
+$blobContainerName = "testresults"
+$timestamp = Get-Date -Format 'yyyy-MM-dd-HHmmss'
+$blobPath = "$testContainerName/$timestamp"
+
+# Build the test command with filter - quote arguments containing semicolons
+# Use --ResultsDirectory to capture all test output including logs
+# Use html logger to capture per-test output, and --Diag for diagnostics
+# Use --Blame to capture per-test diagnostic data and crash dumps
+# Use tee to capture console output to a log file while still displaying it
 if ($testFilter) {
-    $shellCmd = 'dotnet vstest SqlBuildManager.Console.ExternalTest.dll --logger:trx;LogFileName=TestResults.trx --logger:console;verbosity=detailed --TestCaseFilter:$TEST_FILTER; echo TEST_EXIT_CODE=$?; tail -f /dev/null'
+    $testCmd = "dotnet vstest SqlBuildManager.Console.ExternalTest.dll '--logger:trx;LogFileName=TestResults.trx' '--logger:html;LogFileName=TestResults.html' '--logger:console;verbosity=detailed' '--TestCaseFilter:$testFilter' --ResultsDirectory:/tests/TestResults --Diag:/tests/TestResults/diag.log 2>&1 | tee /tests/TestResults/console-output.log"
 } else {
-    $shellCmd = 'dotnet vstest SqlBuildManager.Console.ExternalTest.dll --logger:trx;LogFileName=TestResults.trx --logger:console;verbosity=detailed; echo TEST_EXIT_CODE=$?; tail -f /dev/null'
+    $testCmd = "dotnet vstest SqlBuildManager.Console.ExternalTest.dll '--logger:trx;LogFileName=TestResults.trx' '--logger:html;LogFileName=TestResults.html' '--logger:console;verbosity=detailed' --ResultsDirectory:/tests/TestResults --Diag:/tests/TestResults/diag.log 2>&1 | tee /tests/TestResults/console-output.log"
 }
 
-# Build az container create command with proper environment variable handling
-$azArgs = @(
-    "container", "create",
-    "--name", $testContainerName,
-    "--resource-group", $resourceGroupName,
-    "--image", $fullImageName,
-    "--os-type", "Linux",
-    "--cpu", "2",
-    "--memory", "4",
-    "--restart-policy", "Never",
-    "--assign-identity", $identity.id,
-    "--acr-identity", $identity.id,
-    "--subnet", $subnetId,
-    "--command-line", "/bin/sh -c '$shellCmd'",
-    "--environment-variables", "AZURE_CLIENT_ID=$($identity.clientId)"
-)
+# Upload entire TestResults directory (includes TRX and log attachments)
+$uploadCmd = "az storage blob upload-batch --account-name $storageAccountName --destination $blobContainerName --source /tests/TestResults --destination-path $blobPath --auth-mode login --overwrite"
+
+# Create results directory first, then run tests, capture exit code, login and upload
+# Use PIPESTATUS to get the exit code of dotnet vstest (not tee)
+$shellCmd = "mkdir -p /tests/TestResults; $testCmd; TEST_EXIT_CODE=`${PIPESTATUS[0]}; echo TEST_EXIT_CODE=`$TEST_EXIT_CODE; az login --identity --client-id `$AZURE_CLIENT_ID; $uploadCmd; tail -f /dev/null"
+
+$commandYaml = @"
+      - /bin/bash
+      - -c
+      - "$shellCmd"
+"@
+
+# Build environment variables for YAML
+$envVarsYaml = @"
+      - name: AZURE_CLIENT_ID
+        value: $($identity.clientId)
+"@
 
 if ($testFilter) {
-    $azArgs += "TEST_FILTER=$testFilter"
+    $envVarsYaml += @"
+
+      - name: TEST_FILTER
+        value: $testFilter
+"@
 }
 
-$azArgs += @("-o", "none")
+# Generate YAML deployment file
+$location = az group show --name $resourceGroupName --query location -o tsv
+$aciYaml = @"
+apiVersion: 2021-09-01
+location: $location
+name: $testContainerName
+identity:
+  type: UserAssigned
+  userAssignedIdentities:
+    $($identity.id): {}
+properties:
+  imageRegistryCredentials:
+  - server: $acrLoginServer
+    identity: $($identity.id)
+  containers:
+  - name: $testContainerName
+    properties:
+      image: $fullImageName
+      command:
+$commandYaml
+      environmentVariables:
+$envVarsYaml
+      resources:
+        requests:
+          cpu: 2
+          memoryInGb: 4
+  osType: Linux
+  restartPolicy: Never
+  subnetIds:
+  - id: $subnetId
+"@
 
-& az @azArgs
+# Write YAML to temp file
+$yamlFilePath = Join-Path $env:TEMP "aci-test-runner-$(Get-Date -Format 'yyyyMMddHHmmss').yaml"
+$aciYaml | Set-Content -Path $yamlFilePath -Encoding UTF8
+
+Write-Host "Generated ACI YAML deployment file: $yamlFilePath" -ForegroundColor DarkGray
+Write-Host "YAML Contents:" -ForegroundColor DarkGray
+Write-Host $aciYaml -ForegroundColor DarkGray
+Write-Host ""
+Write-Host "Deploying test container to ACI..." -ForegroundColor DarkGreen
+# Deploy using YAML file
+az container create --resource-group $resourceGroupName --file $yamlFilePath -o none
+
+# Clean up temp YAML file
+Remove-Item $yamlFilePath -Force -ErrorAction SilentlyContinue
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Failed to create test container" -ForegroundColor Red
