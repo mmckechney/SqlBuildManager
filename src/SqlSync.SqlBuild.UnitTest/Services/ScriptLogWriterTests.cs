@@ -98,7 +98,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var args = new ScriptLogEventArgs(1, "SELECT 1;", "TestDb", "test.sql", "Success", false);
 
             // Act & Assert
-            Assert.ThrowsException<NullReferenceException>(() => writer.WriteLog(context, false, args));
+            Assert.ThrowsExactly<NullReferenceException>(() => writer.WriteLog(context, false, args));
         }
     }
 }

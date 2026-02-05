@@ -479,7 +479,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             cts.Cancel();
 
             // Act & Assert - TaskCanceledException derives from OperationCanceledException
-            await Assert.ThrowsExceptionAsync<TaskCanceledException>(async () =>
+            await Assert.ThrowsExactlyAsync<TaskCanceledException>(async () =>
                 await ZipHelper.CreateZipPackageAsync(new List<string> { file1 }, zipPath, keepPathInfo: true, retryCount: 0, cancellationToken: cts.Token));
         }
 
@@ -599,14 +599,14 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void ZipFile_Open_InvalidMode_ThrowsException()
         {
             // Arrange
             string zipPath = Path.Combine(_testDir, "test.zip");
 
-            // Act
-            SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, (ZipArchiveMode)99);
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
+                SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, (ZipArchiveMode)99));
         }
 
         #endregion
@@ -633,32 +633,31 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void ZipFileExtensions_CreateEntryFromFile_NullDestination_ThrowsException()
         {
             // Arrange
             string file1 = Path.Combine(_testDir, "file1.txt");
             File.WriteAllText(file1, "Content 1");
 
-            // Act
-            SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(null, file1, "file1.txt", CompressionLevel.Fastest);
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
+                SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(null, file1, "file1.txt", CompressionLevel.Fastest));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void ZipFileExtensions_CreateEntryFromFile_NullSourceFileName_ThrowsException()
         {
             // Arrange
             string zipPath = Path.Combine(_testDir, "test.zip");
             using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
-                // Act
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, null, "file1.txt", CompressionLevel.Fastest);
+                // Act & Assert
+                Assert.ThrowsExactly<ArgumentNullException>(() =>
+                    SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, null, "file1.txt", CompressionLevel.Fastest));
             }
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void ZipFileExtensions_CreateEntryFromFile_NullEntryName_ThrowsException()
         {
             // Arrange
@@ -667,8 +666,9 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             string zipPath = Path.Combine(_testDir, "test.zip");
             using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
-                // Act
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, null, CompressionLevel.Fastest);
+                // Act & Assert
+                Assert.ThrowsExactly<ArgumentNullException>(() =>
+                    SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, null, CompressionLevel.Fastest));
             }
         }
 
@@ -725,15 +725,14 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void ZipFileExtensions_ExtractToFile_NullSource_ThrowsException()
         {
-            // Act
-            SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(null, "test.txt");
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
+                SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(null, "test.txt"));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void ZipFileExtensions_ExtractToFile_NullDestinationFileName_ThrowsException()
         {
             // Arrange
@@ -745,11 +744,12 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
                 SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, "file1.txt", CompressionLevel.Fastest);
             }
 
-            // Act
+            // Act & Assert
             using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Read))
             {
                 var entry = archive.GetEntry("file1.txt");
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry, null);
+                Assert.ThrowsExactly<ArgumentNullException>(() =>
+                    SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry, null));
             }
         }
 

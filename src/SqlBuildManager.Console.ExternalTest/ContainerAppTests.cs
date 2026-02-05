@@ -47,7 +47,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
 
-        [DataTestMethod]
+        [TestMethod]
         public void ContainerApp_Run_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -102,7 +102,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         // [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
-        [DataTestMethod]
+        [TestMethod]
         public void ContainerApp_Run_LongRunning_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             settingsFile = Path.GetFullPath(settingsFile);
@@ -161,7 +161,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ContainerApp_StepWise_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -246,7 +246,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         // [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ContainerApp_Queue_ManagedIdentity_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -331,7 +331,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ContainerApp_EnvOnly_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -415,7 +415,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ContainerApp_Queue_DacpacSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -529,7 +529,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ContainerApp_Queue_DacpacSource_DbAlreadyInSync_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -651,7 +651,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ContainerApp_Queue_DacpacSource_ForceApplyCustom_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -778,7 +778,7 @@ namespace SqlBuildManager.Console.ExternalTest
         /// This validates the local execution path without deploying to Azure Container Apps.
         /// </summary>
         [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ContainerApp_WorkerTest_SBMSource_Success(string settingsFile, int concurrency, ConcurrencyType concurrencyType)
         {
             string jobName = null;

@@ -34,14 +34,14 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         #region GetBuildConnectionDataClass Tests
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void GetBuildConnectionDataClass_WithNonExistentKey_ThrowsArgumentNullException()
         {
             // Arrange
             var service = new DefaultConnectionsService();
 
-            // Act
-            service.GetBuildConnectionDataClass("NonExistentServer", "NonExistentDb", false);
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
+                service.GetBuildConnectionDataClass("NonExistentServer", "NonExistentDb", false));
         }
 
         [TestMethod]

@@ -31,27 +31,27 @@ namespace SqlSync.SqlBuild.UnitTest
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_WithNullContext_ThrowsArgumentNullException()
         {
             // Arrange
             var connectionsService = MockFactory.CreateMockConnectionsService().Object;
             var finalizerContext = new Mock<IBuildFinalizerContext>().Object;
 
-            // Act
-            new SqlBuildRunner(connectionsService, null, finalizerContext);
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
+                new SqlBuildRunner(connectionsService, null, finalizerContext));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_WithNullFinalizerContext_ThrowsArgumentNullException()
         {
             // Arrange
             var connectionsService = MockFactory.CreateMockConnectionsService().Object;
             var ctx = new FakeRunnerContext();
 
-            // Act
-            new SqlBuildRunner(connectionsService, ctx, null);
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
+                new SqlBuildRunner(connectionsService, ctx, null));
         }
 
         [TestMethod]

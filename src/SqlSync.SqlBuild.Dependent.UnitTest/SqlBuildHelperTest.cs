@@ -980,13 +980,12 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Assert.AreEqual(expected, actual);
         }
         [TestMethod()]
-        [ExpectedException(typeof(System.ApplicationException))]
         public void GetFromResourcesTest_GetException()
         {
             ConnectionData data = null;
             SqlBuildHelper target = new SqlBuildHelper(data);
             string resourceName = "SqlSync.SqlBuild.SqlLogging.NOT_HERE";
-            target.GetFromResources(resourceName);
+            Assert.ThrowsExactly<System.ApplicationException>(() => target.GetFromResources(resourceName));
         }
         #endregion
 
@@ -1333,7 +1332,6 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for GetScriptRunLog
         ///</summary>
         [TestMethod()]
-        [ExpectedException(typeof(ApplicationException))]
         public void GetScriptRunLogTest_ExpectException()
         {
             Initialization init = GetInitializationObject();
@@ -1341,12 +1339,11 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Guid scriptId = new Guid(init.PreRunScriptGuid);
             ConnectionData connData = init.connData;
             connData.DatabaseName = "invalidDatabaseName";
-            IReadOnlyList<ScriptRunLogEntry> actual;
             IProgressReporter progressReporter = new NullProgressReporter();
             IConnectionsService connectionsService = new DefaultConnectionsService();
             ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
             IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null);
-            actual = dbUtil.GetScriptRunLog(scriptId, connData);
+            Assert.ThrowsExactly<ApplicationException>(() => dbUtil.GetScriptRunLog(scriptId, connData));
         }
         #endregion
 
@@ -1356,7 +1353,6 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [ExpectedException(typeof(NullReferenceException))]
         public void SqlBuildHelper_ScriptLogWriteEventTest_ExpectException()
         {
             Initialization init = GetInitializationObject();
@@ -1367,7 +1363,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             target.scriptLogFileName = null;
             object sender = null;
             ScriptLogEventArgs e = new ScriptLogEventArgs(10, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], "C:\test.sql", "Test Executed");
-            target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e);
+            Assert.ThrowsExactly<NullReferenceException>(() => target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e));
         }
         /// <summary>
         ///A test for SqlBuildHelper_ScriptLogWriteEvent
@@ -1901,14 +1897,13 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [ExpectedException(typeof(ArgumentException), "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.")]
         public async Task SaveBuildDataSetTest_NullProjectFileName()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = null;
-            await target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
         }
 
         /// <summary>
@@ -1916,14 +1911,13 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [ExpectedException(typeof(ArgumentException), "The \"projectFileName\" field value is null or empty. Unable to save the DataSet.")]
         public async Task SaveBuildDataSetTest_EmptyProjectFileName()
         {
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = string.Empty;
-            await target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
         }
 
         /// <summary>
@@ -1932,7 +1926,6 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [ExpectedException(typeof(ArgumentException), "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.")]
         public async Task SaveBuildDataSetTest_NullBuildHistoryName()
         {
             Initialization init = GetInitializationObject();
@@ -1941,7 +1934,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             // projectFileName must be valid to pass the first validation
             target.projectFileName = init.projectFileName;
             target.buildHistoryXmlFile = null;
-            await target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
         }
         /// <summary>
         ///A test for SaveBuildDataSet - validates buildHistoryXmlFile check
@@ -1949,7 +1942,6 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [ExpectedException(typeof(ArgumentException), "The \"buildHistoryXmlFile\" field value is null or empty. Unable to save the build history DataSet.")]
         public async Task SaveBuildDataSetTest_EmptyBuildHistoryName()
         {
             Initialization init = GetInitializationObject();
@@ -1958,7 +1950,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             // projectFileName must be valid to pass the first validation
             target.projectFileName = init.projectFileName;
             target.buildHistoryXmlFile = string.Empty;
-            await target.BuildFinalizer.SaveBuildDataModelAsync(target, false);
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
         }
         #endregion
 

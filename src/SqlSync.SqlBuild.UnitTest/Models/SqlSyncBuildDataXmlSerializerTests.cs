@@ -162,14 +162,13 @@ namespace SqlSync.SqlBuild.UnitTest.Models
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void Load_FromXDocument_WithNullRoot_ThrowsException()
         {
             // Arrange
             var doc = new XDocument();
 
-            // Act
-            SqlSyncBuildDataXmlSerializer.Load(doc);
+            // Act & Assert
+            Assert.ThrowsExactly<InvalidOperationException>(() => SqlSyncBuildDataXmlSerializer.Load(doc));
         }
 
         [TestMethod]

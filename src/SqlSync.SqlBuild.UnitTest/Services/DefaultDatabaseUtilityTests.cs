@@ -732,7 +732,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var mockProps = new Mock<ISqlBuildRunnerProperties>();
 
             // Act & Assert
-            Assert.ThrowsException<NotImplementedException>(() =>
+            Assert.ThrowsExactly<NotImplementedException>(() =>
                 utility.ClearScriptBlocks(scrData, connData, mockProgress.Object, mockProps.Object));
         }
 

@@ -42,7 +42,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Run_Queue_SBMSource_Success(string settingsFile)
         {
             try
@@ -100,7 +100,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Run_LongRunning_Queue_SBMSource_Success(string settingsFile)
         {
             settingsFile = Path.GetFullPath(settingsFile);
@@ -161,7 +161,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Query_Queue_SBMSource_Success(string settingsFile)
         {
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
@@ -235,7 +235,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Run_Queue_SBMSource_BadTarget_Fail(string settingsFile)
         {
             try
@@ -296,7 +296,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-k8s-kv-mi.json")] // Old: requires Key Vault
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Run_Queue_DoubleDbConfig_SBMSource_Success(string settingsFile)
         {
             try
@@ -356,7 +356,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json", ConcurrencyType.MaxPerTag, 5)]
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json", ConcurrencyType.MaxPerTag, 3)]
         // [DataRow("TestConfig/settingsfile-k8s-sec.json", ConcurrencyType.MaxPerServer, 5)]
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Run_Queue_Concurrency_SBMSource_Success(string settingsFile, ConcurrencyType concurType, int concurrencyCount)
         {
             try
@@ -415,7 +415,7 @@ namespace SqlBuildManager.Console.ExternalTest
         }
 
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
-        [DataTestMethod]
+        [TestMethod]
         public void Kubernetes_Run_Queue_DacpacSource_ForceApplyCustom_Success(string settingsFile)
         {
             try
@@ -500,7 +500,7 @@ namespace SqlBuildManager.Console.ExternalTest
         }
 
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
-        [DataTestMethod]
+        [TestMethod]
         public async Task Kubernetes_Yaml_Queue_DacpacSource_Success(string settingsFile)
         {
             try
@@ -638,7 +638,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
 
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
-        [DataTestMethod]
+        [TestMethod]
         public async Task Kubernetes_Yaml_Queue_DacpacSource_ForceApplyCustom_Success(string settingsFile)
         {
             try

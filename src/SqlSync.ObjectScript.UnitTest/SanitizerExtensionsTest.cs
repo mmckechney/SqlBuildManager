@@ -106,57 +106,51 @@ namespace SqlSync.ObjectScript.UnitTest
         #region Sanitize Tests - Invalid Identifiers
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void Sanitize_IdentifierStartingWithNumber_ShouldThrowArgumentException()
         {
             string input = "123Table";
 
-            input.Sanitize();
+            Assert.ThrowsExactly<ArgumentException>(() => input.Sanitize());
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void Sanitize_IdentifierWithSpaces_ShouldThrowArgumentException()
         {
             string input = "Table Name";
 
-            input.Sanitize();
+            Assert.ThrowsExactly<ArgumentException>(() => input.Sanitize());
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void Sanitize_IdentifierWithSpecialCharacters_ShouldThrowArgumentException()
         {
             string input = "Table@Name";
 
-            input.Sanitize();
+            Assert.ThrowsExactly<ArgumentException>(() => input.Sanitize());
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void Sanitize_IdentifierWithHyphen_ShouldThrowArgumentException()
         {
             string input = "Table-Name";
 
-            input.Sanitize();
+            Assert.ThrowsExactly<ArgumentException>(() => input.Sanitize());
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void Sanitize_EmptyString_ShouldThrowArgumentException()
         {
             string input = "";
 
-            input.Sanitize();
+            Assert.ThrowsExactly<ArgumentException>(() => input.Sanitize());
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void Sanitize_IdentifierWithDot_ShouldThrowArgumentException()
         {
             string input = "Schema.Table";
 
-            input.Sanitize();
+            Assert.ThrowsExactly<ArgumentException>(() => input.Sanitize());
         }
 
         #endregion

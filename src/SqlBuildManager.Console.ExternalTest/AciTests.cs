@@ -51,7 +51,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // // [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         // // [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ACI_Queue_Run_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -105,7 +105,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ACI_Queue_SBMSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -181,7 +181,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ACI_Queue_SBMSource_DoubleDbConfig_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -260,7 +260,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         // [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ACI_Queue_SBMSource_ManagedIdentity_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -334,7 +334,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
         // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ACI_Queue_DacpacSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -427,7 +427,7 @@ namespace SqlBuildManager.Console.ExternalTest
         }
         // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ACI_Queue_DacpacSource_ForceApplyCustom_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
@@ -544,7 +544,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-aci-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         // [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void ACI_Queue_Query_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
@@ -609,7 +609,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
         // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataTestMethod]
+        [TestMethod]
         public void Aci_Queue_LongRunning_SBMSource_ByConcurrencyType_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             settingsFile = Path.GetFullPath(settingsFile);

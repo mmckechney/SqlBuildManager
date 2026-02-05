@@ -40,25 +40,25 @@ namespace SqlSync.SqlBuild.UnitTest
         #region Constructor Tests
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_WithNullContext_ThrowsArgumentNullException()
         {
-            // Act
-            new SqlBuildRunner(
-                new DefaultConnectionsService(),
-                null,
-                new Mock<IBuildFinalizerContext>().Object);
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
+                new SqlBuildRunner(
+                    new DefaultConnectionsService(),
+                    null,
+                    new Mock<IBuildFinalizerContext>().Object));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_WithNullFinalizerContext_ThrowsArgumentNullException()
         {
-            // Act
-            new SqlBuildRunner(
-                new DefaultConnectionsService(),
-                new FakeRunnerContext(),
-                null);
+            // Act & Assert
+            Assert.ThrowsExactly<ArgumentNullException>(() =>
+                new SqlBuildRunner(
+                    new DefaultConnectionsService(),
+                    new FakeRunnerContext(),
+                    null));
         }
 
         [TestMethod]

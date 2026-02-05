@@ -328,14 +328,14 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FileNotFoundException))]
         public void ReadBatchFromScriptFile_NonExistentFile_ThrowsException()
         {
             // Arrange
             string filePath = Path.Combine(_testDir, "nonexistent.sql");
 
-            // Act
-            _batcher.ReadBatchFromScriptFile(filePath, stripTransaction: false, maintainBatchDelimiter: false);
+            // Act & Assert
+            Assert.ThrowsExactly<FileNotFoundException>(() =>
+                _batcher.ReadBatchFromScriptFile(filePath, stripTransaction: false, maintainBatchDelimiter: false));
         }
 
         #endregion

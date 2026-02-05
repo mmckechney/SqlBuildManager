@@ -83,12 +83,9 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for UpdateObsoleteXmlNamespace
         ///</summary>
         [TestMethod()]
-        [ExpectedException(typeof(System.ArgumentException), "Empty path name is not legal.")]
         public void UpdateObsoleteXmlNamespace_TestEmptyFileName()
         {
-
-            bool actual = SqlBuildFileHelper.UpdateObsoleteXmlNamespace(string.Empty);
-
+            Assert.ThrowsExactly<System.ArgumentException>(() => SqlBuildFileHelper.UpdateObsoleteXmlNamespace(string.Empty));
         }
         /// <summary>
         ///A test for UpdateObsoleteXmlNamespace

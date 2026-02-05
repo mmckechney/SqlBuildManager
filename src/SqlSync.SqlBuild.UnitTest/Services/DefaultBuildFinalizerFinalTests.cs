@@ -50,7 +50,6 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         #region SaveBuildDataModel Tests
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public async Task SaveBuildDataModel_WithNullProjectFileName_ThrowsArgumentException()
         {
             // Arrange
@@ -58,12 +57,12 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.ProjectFileName).Returns((string)null);
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
-            // Act
-            await _finalizer.SaveBuildDataModelAsync(mockContext.Object, true);
+            // Act & Assert
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() =>
+                _finalizer.SaveBuildDataModelAsync(mockContext.Object, true));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public async Task SaveBuildDataModel_WithEmptyProjectFileName_ThrowsArgumentException()
         {
             // Arrange
@@ -71,12 +70,12 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.ProjectFileName).Returns(string.Empty);
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
-            // Act
-            await _finalizer.SaveBuildDataModelAsync(mockContext.Object, true);
+            // Act & Assert
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() =>
+                _finalizer.SaveBuildDataModelAsync(mockContext.Object, true));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public async Task SaveBuildDataModel_WithNullBuildHistoryXmlFile_ThrowsArgumentException()
         {
             // Arrange
@@ -89,12 +88,12 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.BuildHistoryXmlFile).Returns((string)null);
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
-            // Act
-            await _finalizer.SaveBuildDataModelAsync(mockContext.Object, true);
+            // Act & Assert
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() =>
+                _finalizer.SaveBuildDataModelAsync(mockContext.Object, true));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public async Task SaveBuildDataModel_WithEmptyBuildHistoryXmlFile_ThrowsArgumentException()
         {
             // Arrange
@@ -107,8 +106,9 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockContext.Setup(x => x.BuildHistoryXmlFile).Returns(string.Empty);
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
-            // Act
-            await _finalizer.SaveBuildDataModelAsync(mockContext.Object, true);
+            // Act & Assert
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() =>
+                _finalizer.SaveBuildDataModelAsync(mockContext.Object, true));
         }
 
         #endregion
@@ -116,7 +116,6 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         #region PerformRunScriptFinalization Tests
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public async Task PerformRunScriptFinalization_WithNullContext_ThrowsArgumentNullException()
         {
             // Arrange
@@ -124,8 +123,9 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var mockFinalizerContext = new Mock<IBuildFinalizerContext>();
             var build = new Build("Test", null, DateTime.Now, null, null, null, null, null);
 
-            // Act
-            await _finalizer.PerformRunScriptFinalizationAsync(null, mockConnectionsService.Object, mockFinalizerContext.Object, false, build);
+            // Act & Assert
+            await Assert.ThrowsExactlyAsync<ArgumentNullException>(() =>
+                _finalizer.PerformRunScriptFinalizationAsync(null, mockConnectionsService.Object, mockFinalizerContext.Object, false, build));
         }
 
         [TestMethod]
