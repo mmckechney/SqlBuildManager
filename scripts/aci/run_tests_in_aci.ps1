@@ -357,8 +357,11 @@ $testsCompleted = $false
 $testExitCode = $null
 
 while ($true) {
-    $container = az container show --name $testContainerName --resource-group $resourceGroupName | ConvertFrom-Json
-    $state = $container.instanceView.state
+    $container = az container show --name $testContainerName --resource-group $resourceGroupName 2>$null | ConvertFrom-Json -Depth 10
+    $state = $null
+    if ($null -ne $container -and $null -ne $container.instanceView) {
+        $state = $container.containers.instanceView.currentState.detailStatus
+    }
     
     # Stream logs periodically and check for test completion
     $currentTime = Get-Date
@@ -366,17 +369,21 @@ while ($true) {
         Write-Host ""
         Write-Host "--- Container Logs ($(Get-Date -Format 'HH:mm:ss')) ---" -ForegroundColor DarkGray
         $recentLogs = az container logs --name $testContainerName --resource-group $resourceGroupName 2>$null
-        $recentLogs | Select-Object -Last 20
-        $lastLogTime = $currentTime
-        
-        # Extract exit code from logs if present
-        if ($recentLogs -match "TEST_EXIT_CODE=(\d+)") {
-            $testExitCode = [int]$Matches[1]
+        if ($null -ne $recentLogs) {
+            $recentLogs | Select-Object -Last 20
+            
+            # Join array to string for regex matching
+            $logString = $recentLogs -join "`n"
+            # Extract exit code from logs if present
+            if ($logString -match "TEST_EXIT_CODE=(\d+)") {
+                $testExitCode = [int]$Matches[1]
+            }
         }
+        $lastLogTime = $currentTime
     }
     
     # Container terminates when tests and upload are complete
-    if ($state -eq "Terminated") {
+    if ($state -eq "Terminated" -or $state -eq "Completed") {
         $testsCompleted = $true
         Write-Host ""
         Write-Host "Container terminated. Tests and upload complete." -ForegroundColor Cyan
@@ -418,16 +425,29 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Test Results" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
-# Get container state
-$container = az container show --name $testContainerName --resource-group $resourceGroupName | ConvertFrom-Json
-$containerState = $container.containers[0].instanceView.currentState.state
+# Get container state with null checks
+$container = az container show --name $testContainerName --resource-group $resourceGroupName 2>$null | ConvertFrom-Json -Depth 10
+$containerState = "Unknown"
+$containerExitCode = $null
+
+if ($null -ne $container -and $null -ne $container.PSObject -and $container.PSObject.Properties.Name -contains 'containers') {
+    # $containers = $container.containers
+#     if ($null -ne $containers -and $containers.Count -gt 0) {
+        $containerInstance = $container.containers
+        if ($null -ne $containerInstance -and $null -ne $containerInstance.instanceView -and $null -ne $containerInstance.instanceView.currentState) {
+            $containerState = $containerInstance.containers.instanceView.currentState.detailStatus
+            $containerExitCode = $containerInstance.containers.instanceView.currentState.detailStatus
+        }
+#     }
+}
 
 # Use the exit code we extracted from logs, or default to container exit code
-if ($null -eq $testExitCode) {
-    $exitCode = $container.containers[0].instanceView.currentState.exitCode
-    if ($null -eq $exitCode) { $exitCode = 1 }
-} else {
+if ($null -ne $testExitCode) {
     $exitCode = $testExitCode
+} elseif ($null -ne $containerExitCode) {
+    $exitCode = $containerExitCode
+} else {
+    $exitCode = 1
 }
 
 Write-Host ""
