@@ -367,8 +367,10 @@ $testExitCode = $null
 while ($true) {
     $container = az container show --name $testContainerName --resource-group $resourceGroupName 2>$null | ConvertFrom-Json -Depth 10
     $state = $null
+    $state2 = $null
     if ($null -ne $container -and $null -ne $container.instanceView) {
         $state = $container.containers.instanceView.currentState.detailStatus
+        $state2 = $container.containers.instanceView.currentState.state
     }
     
     # Stream logs periodically and check for test completion
@@ -391,14 +393,14 @@ while ($true) {
     }
     
     # Container terminates when tests and upload are complete
-    if ($state -eq "Terminated" -or $state -eq "Completed") {
+    if ($state -eq "Terminated" -or $state -eq "Completed" -or $state2 -eq "Terminated" -or $state2 -eq "Completed") {
         $testsCompleted = $true
         Write-Host ""
         Write-Host "Container terminated. Tests and upload complete." -ForegroundColor Cyan
         break
     }
     
-    if ($state -eq "Failed") {
+    if ($state -eq "Failed" -or $state2 -eq "Failed") {
         Write-Host ""
         Write-Host "Container failed (state: $state)" -ForegroundColor Red
         break
