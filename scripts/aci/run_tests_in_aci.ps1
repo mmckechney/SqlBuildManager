@@ -265,7 +265,8 @@ $uploadCmd = "az storage blob upload-batch --account-name $storageAccountName --
 
 # Create results directory first, then run tests, capture exit code, login and upload
 # Use PIPESTATUS to get the exit code of dotnet vstest (not tee)
-$shellCmd = "mkdir -p /tests/TestResults; $testCmd; TEST_EXIT_CODE=`${PIPESTATUS[0]}; echo TEST_EXIT_CODE=`$TEST_EXIT_CODE; az login --identity --client-id `$AZURE_CLIENT_ID; $uploadCmd; tail -f /dev/null"
+# Exit with the test exit code so the container terminates with the correct status
+$shellCmd = "mkdir -p /tests/TestResults; $testCmd; TEST_EXIT_CODE=`${PIPESTATUS[0]}; echo TEST_EXIT_CODE=`$TEST_EXIT_CODE; az login --identity --client-id `$AZURE_CLIENT_ID; $uploadCmd; exit `$TEST_EXIT_CODE"
 
 $commandYaml = @"
       - /bin/bash
@@ -343,7 +344,7 @@ Write-Host "Container deployed. Waiting for tests to complete..." -ForegroundCol
 Write-Host ""
 
 #############################################
-# Wait for tests to complete (container stays running)
+# Wait for tests to complete (container terminates when done)
 #############################################
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Monitoring Test Execution" -ForegroundColor Cyan
@@ -368,23 +369,23 @@ while ($true) {
         $recentLogs | Select-Object -Last 20
         $lastLogTime = $currentTime
         
-        # Check if tests have completed (look for "Test Run" in output)
-        if ($recentLogs -match "Test Run (Passed|Failed)") {
-            $testsCompleted = $true
-            # Extract exit code from logs
-            if ($recentLogs -match "TEST_EXIT_CODE=(\d+)") {
-                $testExitCode = [int]$Matches[1]
-            }
-            Write-Host ""
-            Write-Host "Tests completed! Retrieving results..." -ForegroundColor Cyan
-            break
+        # Extract exit code from logs if present
+        if ($recentLogs -match "TEST_EXIT_CODE=(\d+)") {
+            $testExitCode = [int]$Matches[1]
         }
     }
     
-    # If container terminated unexpectedly, break out
-    if ($state -eq "Terminated" -or $state -eq "Failed") {
+    # Container terminates when tests and upload are complete
+    if ($state -eq "Terminated") {
+        $testsCompleted = $true
         Write-Host ""
-        Write-Host "Container terminated unexpectedly (state: $state)" -ForegroundColor Yellow
+        Write-Host "Container terminated. Tests and upload complete." -ForegroundColor Cyan
+        break
+    }
+    
+    if ($state -eq "Failed") {
+        Write-Host ""
+        Write-Host "Container failed (state: $state)" -ForegroundColor Red
         break
     }
     
@@ -459,48 +460,9 @@ Exit Code: $exitCode
 $logHeader | Set-Content -Path $logFilePath -Encoding UTF8
 $testLogs | Add-Content -Path $logFilePath -Encoding UTF8
 
-# Try to retrieve the TestResults.trx file from the container
+# Test results are now uploaded to blob storage
 Write-Host ""
-Write-Host "Retrieving TestResults.trx from container..." -ForegroundColor DarkGreen
-
-$trxFilePath = $logFilePath -replace '\.log$', '.trx'
-try {
-    # Use az container exec to cat the trx file contents
-    $trxContent = az container exec `
-        --name $testContainerName `
-        --resource-group $resourceGroupName `
-        --exec-command "cat /tests/TestResults/TestResults.trx" `
-        2>&1 | Out-String
-    
-    if ($LASTEXITCODE -eq 0 -and $trxContent -match '<\?xml') {
-        # Extract just the XML content (remove any shell prompts or extra output)
-        $xmlStart = $trxContent.IndexOf('<?xml')
-        if ($xmlStart -ge 0) {
-            $trxContent = $trxContent.Substring($xmlStart)
-            # Remove any trailing shell output after the XML
-            $xmlEnd = $trxContent.LastIndexOf('</TestRun>')
-            if ($xmlEnd -gt 0) {
-                $trxContent = $trxContent.Substring(0, $xmlEnd + '</TestRun>'.Length)
-            }
-        }
-        
-        $trxContent | Set-Content -Path $trxFilePath -Encoding UTF8
-        Write-Host "TestResults.trx saved to: $trxFilePath" -ForegroundColor Cyan
-        
-        # Also append a summary to the log file
-        Add-Content -Path $logFilePath -Value "`n`n============================================"
-        Add-Content -Path $logFilePath -Value "TestResults.trx Content"
-        Add-Content -Path $logFilePath -Value "============================================`n"
-        Add-Content -Path $logFilePath -Value $trxContent
-    } else {
-        Write-Host "Could not retrieve TestResults.trx file (container may have terminated)" -ForegroundColor Yellow
-    }
-} catch {
-    Write-Host "Warning: Could not retrieve TestResults.trx: $_" -ForegroundColor Yellow
-}
-
-Write-Host ""
-Write-Host "Test results saved to: $logFilePath" -ForegroundColor Cyan
+Write-Host "Test results uploaded to blob storage: $blobContainerName/$blobPath" -ForegroundColor Cyan
 Write-Host ""
 
 #############################################
