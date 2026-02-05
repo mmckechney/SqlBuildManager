@@ -689,6 +689,10 @@ namespace SqlBuildManager.Console.Batch
                         var poolresult = await collection.GetAsync(poolId);
                         var currentNodeCount = poolresult.Value.Data.ScaleSettings.FixedScale.TargetDedicatedNodes;
                         log.LogInformation($"Pre-existing node count {currentNodeCount}");
+                        
+                        bool poolNeedsUpdate = false;
+                        
+                        // Check if node count needs to be updated
                         if (currentNodeCount != nodeCount)
                         {
                             log.LogWarning($"The pool {poolId} node count of {currentNodeCount} does not match the requested node count of {nodeCount}");
@@ -697,17 +701,37 @@ namespace SqlBuildManager.Console.Batch
                                 log.LogWarning($"Requested node count is greater then existing node count. Resizing pool to {nodeCount}");
                                 var scaleSettings = new BatchAccountPoolScaleSettings() { FixedScale = new BatchAccountFixedScaleSettings() { TargetDedicatedNodes = nodeCount } };
                                 poolresult.Value.Data.ScaleSettings = scaleSettings;
-
-                                ArmOperation<BatchAccountPoolResource> lro = await collection.CreateOrUpdateAsync(Azure.WaitUntil.Completed, poolId, poolresult.Value.Data);
-                                BatchAccountPoolResource result = lro.Value;
-                                BatchAccountPoolData resourceData = result.Data;
-                                log.LogInformation($"Successfully created {os} pool {poolId} with {nodeCount} nodes");
-
+                                poolNeedsUpdate = true;
                             }
                             else
                             {
-                                log.LogWarning("Existing node count is larger than requested node count. No pool changes bring made");
+                                log.LogWarning("Existing node count is larger than requested node count. No pool node count changes being made");
                             }
+                        }
+                        
+                        // Check if User-Assigned Managed Identity needs to be assigned
+                        var requestedIdentityResourceId = new ResourceIdentifier(cmdLine.IdentityArgs.ResourceId);
+                        bool identityAssigned = poolresult.Value.Data.Identity?.UserAssignedIdentities?.ContainsKey(requestedIdentityResourceId) == true;
+                        if (!identityAssigned)
+                        {
+                            log.LogWarning($"The pool {poolId} does not have the required User-Assigned Managed Identity. Assigning identity: {cmdLine.IdentityArgs.ResourceId}");
+                            poolresult.Value.Data.Identity = new ManagedServiceIdentity("UserAssigned")
+                            {
+                                UserAssignedIdentities = { [requestedIdentityResourceId] = new Azure.ResourceManager.Models.UserAssignedIdentity() }
+                            };
+                            poolNeedsUpdate = true;
+                        }
+                        else
+                        {
+                            log.LogInformation($"The pool {poolId} already has the required User-Assigned Managed Identity assigned");
+                        }
+                        
+                        if (poolNeedsUpdate)
+                        {
+                            ArmOperation<BatchAccountPoolResource> lro = await collection.CreateOrUpdateAsync(Azure.WaitUntil.Completed, poolId, poolresult.Value.Data);
+                            BatchAccountPoolResource result = lro.Value;
+                            BatchAccountPoolData resourceData = result.Data;
+                            log.LogInformation($"Successfully updated {os} pool {poolId}");
                         }
                     }
                     catch (Exception exe)
