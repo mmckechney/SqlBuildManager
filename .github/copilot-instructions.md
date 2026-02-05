@@ -4,7 +4,7 @@
 
 ```bash
 # Build the console application
-dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f net8.0
+dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f net10.0
 
 # Run all unit tests (no external dependencies)
 dotnet test ./src/SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj
@@ -18,8 +18,8 @@ dotnet test ./src/SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj
 dotnet test ./src/SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj --filter "FullyQualifiedName~TestMethodName"
 
 # Build for specific runtime
-dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release -f net8.0 --self-contained
-dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration Release -f net8.0 --self-contained
+dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r win-x64 --configuration Release -f net10.0 --self-contained
+dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configuration Release -f net10.0 --self-contained
 ```
 
 ### Test Types

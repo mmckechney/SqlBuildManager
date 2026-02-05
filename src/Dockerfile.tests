@@ -1,7 +1,7 @@
 # Dockerfile for running integration tests in Azure Container Instances
 # This container runs within the VNet subnet to access resources via private endpoints and VNet rules
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 
 WORKDIR /src
 
@@ -18,7 +18,7 @@ RUN dotnet build SqlBuildManager.Console.ExternalTest/SqlBuildManager.Console.Ex
 RUN cp -r TestConfig /tests/TestConfig
 
 # Create the final test runner image (using SDK since we need dotnet test)
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS testrunner
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS testrunner
 
 WORKDIR /tests
 

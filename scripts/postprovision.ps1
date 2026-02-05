@@ -49,7 +49,7 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 }
 Write-Host "Repo Root: $repoRoot" -ForegroundColor DarkGreen
 
-$sbmExe = Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Debug\net8.0\sbm.exe"
+$sbmExe = Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Debug\net10.0\sbm.exe"
 write-Host "SBM Executable: $sbmExe" -ForegroundColor DarkGreen
 
 # Run the grant identity permissions script
