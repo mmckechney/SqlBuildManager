@@ -20,8 +20,10 @@ hooks:
   preprovision:
     shell: pwsh
     run: ./scripts/preprovision.ps1
+    interactive: true
 
-  # Post-provision hook to grant managed identity SQL permissions and optionally generate settings files
+  # Post-provision hook to grant managed identity SQL permissions and generate settings files, build container images and Batch packages
   postprovision:
     shell: pwsh
     run: ./scripts/postprovision.ps1
+    interactive: true

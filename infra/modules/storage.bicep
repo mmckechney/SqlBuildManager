@@ -79,6 +79,21 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   }
 }
 
+// Blob Services for the storage account
+resource blobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = {
+  parent: storageAccount
+  name: 'default'
+}
+
+// Test results container
+resource testResultsContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
+  parent: blobServices
+  name: 'testresults'
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
 // Private DNS Zone for Storage (blob) - only when using private endpoints
 resource privateDnsZoneBlob 'Microsoft.Network/privateDnsZones@2020-06-01' = if(usePrivateEndpoint) {
   name: 'privatelink.blob.${environment().suffixes.storage}'

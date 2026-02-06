@@ -95,61 +95,17 @@ metadata:
     $svcAcctYml | kubectl apply -f -
 
 }
-# Build and upload Batch application packages if BUILD_BATCH_PACKAGES is set
-$buildBatch = Get-AzdEnvValue "BUILD_BATCH_PACKAGES"
-if ($buildBatch -eq "true") {
-    Write-Host ""
-    Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host "Post-Provision: Building Batch Application Packages" -ForegroundColor Cyan
-    Write-Host "========================================" -ForegroundColor Cyan
-    
-    $batchScriptPath = Join-Path $repoRoot "scripts\Batch\build_and_upload_batch_fromprefix.ps1"
-    $outputPath = Join-Path $repoRoot "src\TestConfig"
-    
-    if (Test-Path $batchScriptPath) {
-        & $batchScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -action "BuildAndUpload"
-    } else {
-        Write-Host "Batch build script not found at: $batchScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\Batch\build_and_upload_batch_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
-    }
-} else {
-    Write-Host ""
-    Write-Host "Tip: Set BUILD_BATCH_PACKAGES=true to build and upload Batch application packages" -ForegroundColor DarkGray
-    Write-Host "  azd env set BUILD_BATCH_PACKAGES true" -ForegroundColor DarkGray
-}
 
-# Build and push Docker container images if BUILD_CONTAINER_IMAGES is set
-$buildContainers = Get-AzdEnvValue "BUILD_CONTAINER_IMAGES"
-if ($buildContainers -eq "true") {
-    Write-Host ""
-    Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host "Post-Provision: Building Container Images" -ForegroundColor Cyan
-    Write-Host "========================================" -ForegroundColor Cyan
-    
-    $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_image_fromprefix.ps1"
-    $outputPath = Join-Path $repoRoot "src\TestConfig"
-    
-    if (Test-Path $containerScriptPath) {
-        & $containerScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -wait $true
-    } else {
-        Write-Host "Container build script not found at: $containerScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\ContainerRegistry\build_container_registry_image_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
-    }
-} else {
-    Write-Host ""
-    Write-Host "Tip: Set BUILD_CONTAINER_IMAGES=true to build and push Docker container images" -ForegroundColor DarkGray
-    Write-Host "  azd env set BUILD_CONTAINER_IMAGES true" -ForegroundColor DarkGray
-}
 
 # Generate MI-only settings files if GENERATE_MI_SETTINGS is set
 # $generateSettings = Get-AzdEnvValue "GENERATE_MI_SETTINGS"
 # if ($generateSettings -eq "true") {
     Write-Host ""
-    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host "=================================================" -ForegroundColor Cyan
     Write-Host "Post-Provision: Generating MI-Only Settings Files" -ForegroundColor Cyan
-    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host "=================================================" -ForegroundColor Cyan
     
-    $settingsScriptPath = Join-Path $repoRoot "scripts\scripts\create_all_settingsfiles_mi_only.ps1"
+    $settingsScriptPath = Join-Path $repoRoot "scripts\create_all_settingsfiles_mi_only.ps1"
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     # Ensure output directory exists
@@ -171,9 +127,9 @@ if ($buildContainers -eq "true") {
 
 # Generate database override config files for integration tests
 Write-Host ""
-Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "===============================================" -ForegroundColor Cyan
 Write-Host "Post-Provision: Creating Database Config Files" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "===============================================" -ForegroundColor Cyan
 
 $dbConfigScriptPath = Join-Path $repoRoot "scripts\Database\create_database_override_files.ps1"
 $outputPath = Join-Path $repoRoot "src\TestConfig"
@@ -189,6 +145,86 @@ if (Test-Path $dbConfigScriptPath) {
     Write-Host "Database config script not found at: $dbConfigScriptPath" -ForegroundColor Yellow
     Write-Host "Run manually: .\scripts\Database\create_database_override_files.ps1 -prefix $prefix -path $outputPath" -ForegroundColor Yellow
 }
+
+
+
+# Build and upload Batch application packages if BUILD_BATCH_PACKAGES is set
+$buildBatch = Get-AzdEnvValue "BUILD_BATCH_PACKAGES"
+if ($buildBatch -eq "true") {
+    Write-Host ""
+    Write-Host "====================================================" -ForegroundColor Cyan
+    Write-Host "Post-Provision: Building Batch Application Packages" -ForegroundColor Cyan
+    Write-Host "====================================================" -ForegroundColor Cyan
+    
+    $batchScriptPath = Join-Path $repoRoot "scripts\Batch\build_and_upload_batch_fromprefix.ps1"
+    $outputPath = Join-Path $repoRoot "src\TestConfig"
+    
+    if (Test-Path $batchScriptPath) {
+        & $batchScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -action "BuildAndUpload"
+    } else {
+        Write-Host "Batch build script not found at: $batchScriptPath" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\Batch\build_and_upload_batch_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host ""
+    Write-Host "Tip: Set BUILD_BATCH_PACKAGES=true to build and upload Batch application packages" -ForegroundColor DarkGray
+    Write-Host "  azd env set BUILD_BATCH_PACKAGES true" -ForegroundColor DarkGray
+}
+
+
+
+# Build and push Docker container images if BUILD_CONTAINER_IMAGES is set
+$buildContainers = Get-AzdEnvValue "BUILD_CONTAINER_IMAGES"
+if ($buildContainers -eq "true") {
+    Write-Host ""
+    Write-Host "=========================================" -ForegroundColor Cyan
+    Write-Host "Post-Provision: Building Container Images" -ForegroundColor Cyan
+    Write-Host "=========================================" -ForegroundColor Cyan
+    
+    $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_image_fromprefix.ps1"
+    $outputPath = Join-Path $repoRoot "src\TestConfig"
+    
+    if (Test-Path $containerScriptPath) {
+        & $containerScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -wait $true
+    } else {
+        Write-Host "Container build script not found at: $containerScriptPath" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_container_registry_image_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host ""
+    Write-Host "Tip: Set BUILD_CONTAINER_IMAGES=true to build and push Docker container images" -ForegroundColor DarkGray
+    Write-Host "  azd env set BUILD_CONTAINER_IMAGES true" -ForegroundColor DarkGray
+}
+
+
+# Build and push Docker container images if BUILD_CONTAINER_IMAGES is set
+$buildContainers = Get-AzdEnvValue "BUILD_CONTAINER_IMAGES"
+if ($buildContainers -eq "true") {
+    Write-Host ""
+    Write-Host "================================================" -ForegroundColor Cyan
+    Write-Host "Post-Provision: Building Testing Container Image" -ForegroundColor Cyan
+    Write-Host "================================================" -ForegroundColor Cyan
+    
+    $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_testimage.ps1"
+    $outputPath = Join-Path $repoRoot "src\TestConfig"
+    
+    if (Test-Path $containerScriptPath) {
+        & $containerScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -wait $true
+    } else {
+        Write-Host "Container build script not found at: $containerScriptPath" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_container_registry_testimage.ps1 -prefix $prefix" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host ""
+    Write-Host "Tip: Set BUILD_CONTAINER_IMAGES=true to build and push Docker container images" -ForegroundColor DarkGray
+    Write-Host "  azd env set BUILD_CONTAINER_IMAGES true" -ForegroundColor DarkGray
+}
+
+
+
+
+
+
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
