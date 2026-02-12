@@ -22,6 +22,7 @@ With this update, it significantly reduces the the need to save and manage secre
 - [Key Features - Why use SQL Build Manager?](#key-features)
 - [Running builds](#running-builds-command-line)
   - [Querying across databases](#querying-across-databases-command-line)
+- [Runtime Process Flow](docs/threaded_build_process_flow.md)
 - [Command Line Reference/ Quickstart](docs/commandline.md)
 - [Running Locally](docs/local_build.md)
 - [Massively Parallel Database Builds](docs/massively_parallel.md)
