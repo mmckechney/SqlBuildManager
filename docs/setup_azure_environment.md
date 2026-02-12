@@ -1,63 +1,108 @@
 # Setting Up an Azure Environment
 
-- [Getting started - Building Azure Resources](#getting-started---building-azure-resources)
+- [Getting Started - Azure Developer CLI (Recommended)](#getting-started---azure-developer-cli-recommended)
+- [Alternative - PowerShell Scripts](#alternative---powershell-scripts)
 - [Notes on Unit Testing](#notes-on-unit-testing)
 - [SQL Express for local testing](#sql-express)
 - [Visual Studio Installer Project](#Visual-studio-installer-project)
 
 ----
 
-## Getting started - Building Azure Resources
+## Getting Started - Azure Developer CLI (Recommended)
 
-To get started leveraging Batch, Kubernetes, Container Apps or Azure Container Instance, you first need to create and configure resources in the Azure cloud. To automate as much of this as possible, there are PowerShell scripts in the `/scripts/templates` folder to leverage. See the associated [Readme](../scripts/templates/README.md) for full descriptions
+The simplest way to provision all Azure resources is using the [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/). This approach uses Bicep templates in the `/infra` folder for Infrastructure as Code deployment.
 
-**NOTE:** Before using these scripts, you will need to install both the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) and Kubernetes CLI (`az aks install-cli`) installed on your machine.
+### Prerequisites
+
+- [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+- PowerShell 7+
 
 ### Steps
 
-1. In a PowerShell window, navigate to the `scripts/templates` folder
-2. Run the `az login` command to connect to your Azure account
-3. Run the `create_azure_resources.ps1` file. You will be prompted for parameters:
-    - `-resourcePrefix` - the prefix for the Azure resources. Must be 6 or less characters, all lowercase.
-    - `-Location` - the Azure region to deploy the resources (you can get a list of available locations by running `az account list-locations -o tsv --query "[].name"`)
-    - `-outputPath` - optional, will default to the `/scr/TestConfig` folder, the location that the integration tests will look for configuration files 
-    - `-testDatabaseCount` - optional, default is 10. If 0, then the SQL Azure resources will not be created. If you plan on running any integration tests, this number should be greater than 1.
+1. Open a terminal at the repository root (where `azure.yaml` is located)
+2. Login to Azure:
+   ```bash
+   azd auth login
+   az login
+   ```
+3. Initialize the environment (first time only):
+   ```bash
+   azd init
+   ```
+   You will be prompted for:
+   - **Environment name** - This becomes the resource prefix (3-10 characters, lowercase)
+   - **Azure subscription** - Select your target subscription
+   - **Azure location** - Select the region for deployment
 
-    There are additional optional parameters you can set:
+4. Provision the resources:
+   ```bash
+   azd up
+   ```
 
-    - `-build` - whether or not to build the `sbm` command line code in the `sbm.csproj` file and upload it to the Azure Batch account
-    - `deployBatch` -  whether or not to build and Azure Batch environment. If you don't plan on using Batcj, you can set this to `$false`
-    - `-deployAks` - whether or not to build the AKS cluster. If you don't plan on using Kubernetes, you can set this to `$false`
-    - `-includeAci` - whether or not to include settings for Azure Container Instances (ACI). If you don't plan on using ACI, you can set this to `$false`
-    - `-deployContainerAppEnv` - whether or not to build the an Azure Container App environment . If you don't plan on using Container Apps, you can set this to `$false`
-    - `-deployContainerRegistry` - whether or not to create a private Azure Container Registry. This is recommended! To use public images,  you can set this to `$false`
+### What happens during `azd up`
 
-### What does the script do?
+#### Pre-provision Hook (`scripts/preprovision.ps1`)
+- Captures your current IP address (for SQL firewall rules)
+- Retrieves your Azure AD user info (for RBAC and SQL admin)
+- Sets default environment variables for post-provision steps
 
-The `create_azure_resources.ps1` script will create the following resources which will be ready to start processing your database builds once it's complete. Each resources is prefixed with, you guessed it, the value you provided in the `-resourcePrefix` argument
+#### Infrastructure Deployment (`infra/main.bicep`)
+Creates the following Azure resources with the environment name as prefix:
+- **Resource Group** (`{prefix}-rg`)
+- **Virtual Network** with subnets for AKS, Container Apps, ACI, Batch, and Private Endpoints
+- **Managed Identity** (`{prefix}identity`) - Used for all service-to-service authentication
+- **Storage Account** (`{prefix}storage`) - For runtime logs and Kubernetes package staging
+- **Service Bus Namespace** (`{prefix}servicebus`) - Topic-based message queue for database targets
+- **Event Hub** (`{prefix}eventhubnamespace` / `{prefix}eventhub`) - Progress event tracking
+- **Log Analytics Workspace** (`{prefix}loganalytics`)
+- **Container Registry** (`{prefix}containerregistry`) - Private registry for SQL Build Manager images
+- **Batch Account** (`{prefix}batchacct`) - Pre-configured with Linux/Windows application slots
+- **AKS Cluster** (`{prefix}aks`) - Kubernetes cluster with workload identity federation
+- **Container App Environment** (`{prefix}containerappenv`)
+- **Azure SQL Servers** (`{prefix}sql-a` and `{prefix}sql-b`) - Each with test databases
 
-- **Storage Account** (`{prefix}storage`) - this account is used for all of the runtime logs files and a staging location for the Kubernetes build package
-- **Service Bus Namespace and Topic** (`{prefix}servicebus` and `sqlbuildmanager` respectively) - this is the Topic where the database target messages are sent and used by both Batch and Kubernetes
-- **EventHub Namespace and EventHub** (`{prefix}eventhubnamespace` and `{prefix}eventhub` respectively) - used for progress event tracking in Kubernetes and can also be used for Batch
-- **Key Vault** (`{prefix}keyvault`) - used to store the secrets to access the storage account, service bus, event hub and databases at runtime
-- **Managed Identity** (`{prefix}identity`) - the identity used by both Kubernetes and Batch to access the secrets in the Key Vault
-- **AKS Cluster** (`{prefix}aks`) - a managed Kubernetes cluster with 2 worker nodes for running Kubernetes pods database builds. You can increase the worker node count as needed.
-- **Batch Account** (`{prefix}batchacct`) - a Batch account used to process database builds. Pre-configured with two applications `SqlBuildManagerLinux` and `SqlBuildManagerWindows` that have the local build of the console app uploaded to each respective OS target. Also pre-configured to use the Managed Identity
-- **Container App Environment** - an environment where individual container apps representing a build will be deployed
-- **Azure Container Registry** - a private container registry for the SQL Build Manager images. Images will be automatically build with three tags: The current date, the code version as defined in [AssemblyVersion.cs](../src/AssemblyVersioning.cs) and `latest-vNext` (this last one is used in the integration tests found in  [`SqlBuildManager.Console.ExternalTest`](https://github.com/mmckechney/SqlBuildManager/tree/master/src/SqlBuildManager.Console.ExternalTest)
-- 2 **Azure SQL Servers** (`{prefix}sql-a` and `{prefix}sql-b`) each with `-testDatabaseCount` number of databases.These can be used for integration testing from  [`SqlBuildManager.Console.ExternalTest`](https://github.com/mmckechney/SqlBuildManager/tree/master/src/SqlBuildManager.Console.ExternalTest)
+#### Post-provision Hook (`scripts/postprovision.ps1`)
+- Grants managed identity SQL permissions on all test databases
+- Creates Kubernetes namespace and service account (if AKS deployed)
+- Generates MI-only settings files for integration testing
+- Creates database override configuration files
+- Builds and uploads Batch application packages (if `BUILD_BATCH_PACKAGES=true`)
+- Builds and pushes container images to ACR (if `BUILD_CONTAINER_IMAGES=true`)
 
-In addition to creating the resources above it will create the following files in the `outputPath` location folder. These are used by the [`SqlBuildManager.Console.ExternalTest`](https://github.com/mmckechney/SqlBuildManager/tree/master/src/SqlBuildManager.Console.ExternalTest) project (which is also a great place to look to see execution examples):
+### Configuration Parameters
 
-1. `settingsfile-batch*.json` - batch settings files that contains all of the SQL, Batch, Storage and Service Bus endpoints and connection keys for use in testing. There will also be two files ending with `-keyvault.json` that will not contain any secrets, but will instead contain the Key Vault name. The secrets will also have been saved to the Key Vault.
-2. `settingsfile-aci-*.json` - settings files for ACI builds. This will not contain secrets as ACI will always leverage Key Vault.
-3. `settingsfile-containerapp-*.json` - settings files for Container App builds
-4. `settingsfile-k8s-*.json` - settings files for Kubernetes builds 
-5. `settingsfilekey.txt` - a text file containing the encryption key for the settings files
-6. `databasetargets.cfg` - a pre-configured database listing file for use by the integration tests that use an SBM file as a script source 
-7. `clientdbtargets.cfg` - a pre-configured database listing file for use by the integration tests that use a DACPAC as a script source
+You can customize the deployment by setting environment variables before running `azd up`:
 
-**IMPORTANT:** These files can be used _as is_ for the integration testing but are also great reference examples of how to create your own files for production use
+```bash
+# Deployment toggles
+azd env set DEPLOY_BATCH_ACCOUNT true       # Deploy Azure Batch (default: true)
+azd env set DEPLOY_CONTAINER_REGISTRY true  # Deploy ACR (default: true)
+azd env set DEPLOY_CONTAINERAPP_ENV true    # Deploy Container Apps (default: true)
+azd env set DEPLOY_AKS true                 # Deploy AKS (default: true)
+
+# Database settings
+azd env set TEST_DB_COUNT_PER_SERVER 10     # Test databases per server (default: 10)
+
+# Post-provision options
+azd env set BUILD_BATCH_PACKAGES true       # Build and upload Batch packages
+azd env set BUILD_CONTAINER_IMAGES true     # Build and push Docker images
+azd env set GENERATE_MI_SETTINGS true       # Generate settings files (default: true)
+
+# Security options
+azd env set USE_PRIVATE_ENDPOINT false      # Use private endpoints (default: false)
+```
+
+### Output Files
+
+After successful deployment, the following files are generated in `src/TestConfig`:
+- `settingsfile-batch-*.json` - Batch settings with MI authentication
+- `settingsfile-aci-*.json` - ACI settings 
+- `settingsfile-containerapp-*.json` - Container App settings
+- `settingsfile-k8s-*.json` - Kubernetes settings
+- `settingsfilekey.txt` - Encryption key for settings files
+- `databasetargets.cfg` - Database listing for SBM file integration tests
+- `clientdbtargets.cfg` - Database listing for DACPAC integration tests
 
 ---
 ## Notes on Unit Testing
