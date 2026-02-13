@@ -1,13 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Management.Smo;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Builder;
 using System.CommandLine.Help;
-using System.CommandLine.Invocation;
-using System.CommandLine.NamingConventionBinder;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO;
@@ -18,6 +15,9 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineBuilder
     {
+        // Local option for batch monitor flag
+        private static Option<bool> batchMonitorOption = new Option<bool>("--monitor") { Description = "Monitor active progress via Azure Event Hub Events (if configured). To get detailed database statuses, also use the --stream argument" };
+        
         /// <summary>
         /// For updating multiple databases simultaneously using Azure batch services
         /// </summary>
@@ -27,18 +27,18 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("run", "For updating multiple databases simultaneously using Azure batch services")
                 {
-                    overrideOption.Copy(true),
+                    overrideRequiredOption,
 
                     rootloggingpathOption,
                     defaultscripttimeoutOption,
                     platinumdacpacOption,
-                    packagenameOption.Copy(false),
+                    packagenameNotReqOption,
                     targetdacpacOption,
                     forcecustomdacpacOption,
                     platinumdbsourceOption,
                     platinumserversourceOption,
                     batchJobMonitorTimeoutMin,
-                    new Option<bool>("--monitor", () => false, "Monitor active progress via Azure Event Hub Events (if configured). To get detailed database statuses, also use the --stream argument"),
+                    batchMonitorOption,
                     unitTestOption,
 
                 };
@@ -50,7 +50,13 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.AddRange(EventHubResourceOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, bool, bool>(Worker.Batch_RunBuild);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    var monitor = parseResult.GetValue(batchMonitorOption);
+                    var stream = parseResult.GetValue(streamEventsOption);
+                    return await Worker.Batch_RunBuild(cmdLine, unittest, monitor, stream);
+                });
                 return cmd;
             }
         }
@@ -68,7 +74,7 @@ namespace SqlBuildManager.Console.CommandLine
                     rootloggingpathOption,
                     defaultscripttimeoutOption,
                     platinumdacpacOption,
-                    packagenameOption.Copy(false),
+                    packagenameNotReqOption,
                     targetdacpacOption,
                     forcecustomdacpacOption,
                     platinumdbsourceOption,
@@ -78,7 +84,7 @@ namespace SqlBuildManager.Console.CommandLine
                     timeoutretrycountOption,
                     unitTestOption,
                     //these two options aren't used and are added just for reusability in unit tests
-                    new Option<bool>("--monitor"){IsHidden = true},
+                    new Option<bool>("--monitor"){Hidden = true},
 
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
@@ -89,8 +95,12 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(EventHubResourceOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.RunThreadedExecutionAsync);
-                cmd.IsHidden = true;
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    return await Worker.RunThreadedExecutionAsync(cmdLine, unittest);
+                });
+                cmd.Hidden = true;
                 return cmd;
             }
         }
@@ -113,7 +123,10 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(batchaccountnameOption);
                 cmd.Add(batchaccountkeyOption);
                 cmd.Add(batchaccounturlOption);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.Batch_PreStageNodes);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.Batch_PreStageNodes(cmdLine);
+                });
                 return cmd;
             }
         }
@@ -134,7 +147,10 @@ namespace SqlBuildManager.Console.CommandLine
                     batchaccounturlOption
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.Batch_NodeCleanUp);
+                cmd.SetAction((parseResult) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return Worker.Batch_NodeCleanUp(cmdLine);
+                });
                 return cmd;
             }
         }
@@ -154,8 +170,11 @@ namespace SqlBuildManager.Console.CommandLine
                     batchaccounturlOption
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
-                cmd.IsHidden = true;
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.Batch_DeleteJob);
+                cmd.Hidden = true;
+                cmd.SetAction((parseResult) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return Worker.Batch_DeleteJob(cmdLine);
+                });
                 return cmd;
             }
         }
@@ -186,7 +205,11 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.AddRange(EventHubResourceOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.SaveAndEncryptBatchSettings);
+                cmd.SetAction((parseResult) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    return Worker.SaveAndEncryptBatchSettings(cmdLine, unittest);
+                });
                 return cmd;
             }
         }
@@ -200,14 +223,17 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("enqueue", "Sends database override targets to Service Bus Topic")
                 {
-                    batchjobnameOption.Copy(true),
-                    threadedConcurrencyTypeOption.Copy(true),
-                    overrideOption.Copy(true),
+                    batchjobnameRequiredOption,
+                    threadedConcurrencyRequiredOption,
+                    overrideRequiredOption,
                     keyVaultNameOption,
                     serviceBusconnectionOption
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.EnqueueOverrideTargets);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.EnqueueOverrideTargets(cmdLine);
+                });
                 return cmd;
             }
         }
@@ -228,7 +254,10 @@ namespace SqlBuildManager.Console.CommandLine
 
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.DeQueueOverrideTargets);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.DeQueueOverrideTargets(cmdLine);
+                });
                 return cmd;
             }
         }
@@ -242,16 +271,16 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("query", "Run a SELECT query across multiple databases using Azure Batch")
                 {
-                    overrideOption.Copy(true),
-                    queryFileOption.Copy(true),
-                    outputFileOption.Copy(true),
+                    overrideRequiredOption,
+                    queryFileRequiredOption,
+                    outputFileRequiredOption,
                     silentOption,
                     deletebatchjobOption,
                     rootloggingpathOption,
                     defaultscripttimeoutOption,
                     jobnameOption,
                     unitTestOption,
-                    new Option<bool>("--monitor", () => false, "Monitor active progress via Azure Event Hub Events (if configured). To get detailed database statuses, also use the --stream argument"),
+                    batchMonitorOption,
                 };
                 cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(SettingsFileExistingOptions);
@@ -260,7 +289,13 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs,bool, bool, bool>(Worker.Batch_RunQuery);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    var monitor = parseResult.GetValue(batchMonitorOption);
+                    var stream = parseResult.GetValue(streamEventsOption);
+                    return await Worker.Batch_RunQuery(cmdLine, unittest, monitor, stream);
+                });
                 return cmd;
             }
         }
@@ -275,8 +310,8 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("querythreaded", "[Internal use only] - this commmand is used to send query commands to Azure Batch Nodes")
                 {
                     overrideOption,
-                    queryFileOption.Copy(true),
-                    outputFileOption.Copy(true),
+                    queryFileRequiredOption,
+                    outputFileRequiredOption,
                     deletebatchjobOption,
                     rootloggingpathOption,
                     defaultscripttimeoutOption,
@@ -294,8 +329,11 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.AddRange(EventHubResourceOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.QueryDatabasesAsync);
-                cmd.IsHidden = true;
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.QueryDatabasesAsync(cmdLine);
+                });
+                cmd.Hidden = true;
                 return cmd;
             }
         }

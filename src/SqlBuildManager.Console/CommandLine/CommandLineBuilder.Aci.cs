@@ -1,14 +1,17 @@
-﻿using SqlBuildManager.Console.ContainerShared;
+using SqlBuildManager.Console.ContainerShared;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Parsing;
 using System.IO;
 
 namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineBuilder
     {
+        // Local option for monitor flag used in ACI commands
+        private static Option<bool> aciMonitorOption = new Option<bool>("--monitor") { Description = "Immediately start monitoring progress after successful ACI container deployment" };
+
         /// <summary>
         /// Saves settings file for Azure Container Instances container deployments
         /// </summary>
@@ -44,7 +47,11 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(IdentityArgumentsForContainerApp);
                 cmd.AddRange(ContainerRegistryAndImageOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.SaveAndEncryptAciSettings);
+                cmd.SetAction((parseResult) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    return Worker.SaveAndEncryptAciSettings(cmdLine, unittest);
+                });
 
                 return cmd;
             }
@@ -61,19 +68,19 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("run", "Runs an ACI build (orchestrates the prep, enqueue, deploy and monitor commands")
                 {
                     sectionPlaceholderOption,
-                    jobnameOption.Copy(true),
+                    jobnameRequiredOption,
                     packagenameAsFileToUploadOption,
-                    overrideOption.Copy(true),
+                    overrideRequiredOption,
                     platinumdacpacFileInfoOption,
                     allowForObjectDeletionOption,
-                    new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment"),
+                    aciMonitorOption,
                     unitTestOption,
                     forceOption,
 
                     settingsfileExistingOption,
                     aciIResourceGroupNameNotReqOption,
                     aciInstanceNameNotReqOption,
-                    aciContainerCountOption.Copy(true),
+                    aciContainerCountOption,
 
                 };
                 cmd.AddRange(EventHubResourceOptions);
@@ -84,11 +91,20 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(storageaccountkeyOption);
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.Add(clientIdOption);
-                cmd.Add(identityNameOption.Copy(false));
-                cmd.Add(identityResourceGroupOption.Copy(false));
-                cmd.Add(subscriptionIdOption.Copy(false));
+                cmd.Add(identityNameOption);
+                cmd.Add(identityResourceGroupOption);
+                cmd.Add(subscriptionIdOption);
                 cmd.AddRange(ConcurrencyRequiredOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool, bool, bool, bool>(Worker.AciRun);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
+                    var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
+                    var monitor = parseResult.GetValue(aciMonitorOption);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    var force = parseResult.GetValue(forceOption);
+                    var allowObjectDelete = parseResult.GetValue(allowForObjectDeletionOption);
+                    return await Worker.AciRun(cmdLine, packagename, platinumdacpac, monitor, unittest, force, allowObjectDelete);
+                });
                 return cmd;
             }
         }
@@ -107,7 +123,7 @@ namespace SqlBuildManager.Console.CommandLine
                 {
                     sectionPlaceholderOption,
                     jobnameOption,
-                    new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment"),
+                    aciMonitorOption,
                     unitTestOption,
                     overrideAsFileOption,
                     queryFileOption,
@@ -115,7 +131,7 @@ namespace SqlBuildManager.Console.CommandLine
                     forceOption,
                     aciIResourceGroupNameNotReqOption,
                     aciInstanceNameNotReqOption,
-                    aciContainerCountOption.Copy(true)
+                    aciContainerCountOption
                 });
                 cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(VnetOptions);
@@ -125,13 +141,21 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(storageaccountkeyOption);
                 cmd.Add(authtypeOption);
                 cmd.Add(clientIdOption);
-                cmd.Add(identityNameOption.Copy(false));
-                cmd.Add(identityResourceGroupOption.Copy(false));
-                cmd.Add(subscriptionIdOption.Copy(false));
+                cmd.Add(identityNameOption);
+                cmd.Add(identityResourceGroupOption);
+                cmd.Add(subscriptionIdOption);
                 cmd.AddRange(ConcurrencyRequiredOptions);
 
 
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool, bool, bool, bool>(Worker.AciQuery);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var queryFile = parseResult.GetValue(queryFileOption);
+                    var monitor = parseResult.GetValue(aciMonitorOption);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    var force = parseResult.GetValue(forceOption);
+                    var allowObjectDelete = parseResult.GetValue(allowForObjectDeletionOption);
+                    return await Worker.AciQuery(cmdLine, queryFile, monitor, unittest, force, allowObjectDelete);
+                });
                 return cmd;
 
             }
@@ -146,7 +170,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("prep", "Creates an Azure storage container and uploads the SBM and/or DACPAC files that will be used for the build.")
                 {
-                    jobnameOption.Copy(true),
+                    jobnameRequiredOption,
                     storageaccountnameOption,
                     storageaccountkeyOption,
                     packagenameAsFileToUploadOption,
@@ -158,7 +182,13 @@ namespace SqlBuildManager.Console.CommandLine
 
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(GenericContainer.PrepAndUploadContainerBuildPackage);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
+                    var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
+                    var force = parseResult.GetValue(forceOption);
+                    return await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine, packagename, platinumdacpac, force);
+                });
 
                 return cmd;
             }
@@ -174,13 +204,16 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("enqueue", "Sends database override targets to Service Bus Topic")
                 {
                     settingsfileExistingOption,
-                    jobnameOption.Copy(true),
-                    threadedConcurrencyTypeOption.Copy(true),
-                    overrideOption.Copy(true)
+                    jobnameRequiredOption,
+                    threadedConcurrencyRequiredOption,
+                    overrideRequiredOption
                 };
                 cmd.Add(keyVaultNameOption);
                 cmd.Add(serviceBusconnectionOption);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.EnqueueOverrideTargets);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.EnqueueOverrideTargets(cmdLine);
+                });
 
                 return cmd;
             }
@@ -198,16 +231,16 @@ namespace SqlBuildManager.Console.CommandLine
                     settingsfileExistingOption,
                     aciIResourceGroupNameNotReqOption,
                     aciInstanceNameNotReqOption,
-                    aciContainerCountOption.Copy(true),
-                    identityNameOption.Copy(false),
-                    identityResourceGroupOption.Copy(false),
+                    aciContainerCountOption,
+                    identityNameOption,
+                    identityResourceGroupOption,
                     sectionPlaceholderOption,
-                    jobnameOption.Copy(true),
+                    jobnameRequiredOption,
                     packagenameAsFileToUploadOption,
-                    overrideOption.Copy(false),
+                    overrideOption,
                     platinumdacpacFileInfoOption,
                     allowForObjectDeletionOption,
-                    new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful ACI container deployment"),
+                    aciMonitorOption,
                     unitTestOption
                 };
                 cmd.AddRange(EventHubResourceOptions);
@@ -218,10 +251,18 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(storageaccountkeyOption);
                 cmd.Add(authtypeOption);
                 cmd.Add(clientIdOption);
-                cmd.Add(subscriptionIdOption.Copy(false));
+                cmd.Add(subscriptionIdOption);
                 cmd.AddRange(ConcurrencyRequiredOptions);
 
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool, bool, bool>(Worker.AciDeploy);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
+                    var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
+                    var monitor = parseResult.GetValue(aciMonitorOption);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    var allowObjectDelete = parseResult.GetValue(allowForObjectDeletionOption);
+                    return await Worker.AciDeploy(cmdLine, packagename, platinumdacpac, monitor, unittest, allowObjectDelete);
+                });
                 return cmd;
             }
         }
@@ -245,7 +286,13 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(serviceBusconnectionOption);
                 cmd.Add(eventhubconnectionOption);
                 cmd.AddRange(EventHubResourceOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, DateTime?, bool, bool>(Worker.AciMonitorRuntimeProgress);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    var stream = parseResult.GetValue(streamEventsOption);
+                    // DateTime is null when called from command line (vs. internally after deploy)
+                    return await Worker.AciMonitorRuntimeProgress(cmdLine, null, unittest, stream);
+                });
 
                 return cmd;
             }
@@ -261,12 +308,15 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
                 {
                     settingsfileExistingOption,
-                    jobnameOption.Copy(true),
+                    jobnameRequiredOption,
                     threadedConcurrencyTypeOption
                 };
                 cmd.Add(keyVaultNameOption);
                 cmd.Add(serviceBusconnectionOption);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.DeQueueOverrideTargets);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.DeQueueOverrideTargets(cmdLine);
+                });
 
                 return cmd;
             }
@@ -280,7 +330,10 @@ namespace SqlBuildManager.Console.CommandLine
             get
             {
                 var cmd = new Command("query", "[Used by ACI] Starts the container(s) as a worker for database querying - polling and retrieving items from target service bus queue topic");
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.AciWorker_RunQueueQuery);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.AciWorker_RunQueueQuery(cmdLine);
+                });
                 return cmd;
             }
         }
@@ -293,7 +346,10 @@ namespace SqlBuildManager.Console.CommandLine
             get
             {
                 var cmd = new Command("worker", "[Used by ACI] Starts the container(s) as a worker - polling and retrieving items from target service bus queue topic");
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.AciWorker_RunQueueBuild);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.AciWorker_RunQueueBuild(cmdLine);
+                });
                 cmd.Add(AciQueryWorkerCommand);
                 return cmd;
             }

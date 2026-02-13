@@ -1,8 +1,8 @@
-﻿using SqlBuildManager.Console.ContainerShared;
+using SqlBuildManager.Console.ContainerShared;
 using System;
 using System.Collections.Generic;
-using System.CommandLine.NamingConventionBinder;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,6 +12,9 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineBuilder
     {
+        // Local option for container app monitor flag
+        private static Option<bool> containerAppMonitorOption = new Option<bool>("--monitor") { Description = "Immediately start monitoring progress after successful Container App deployment" };
+        
         /// <summary>
         /// Saves settings file for Azure Container App deployments
         /// </summary>
@@ -27,13 +30,17 @@ namespace SqlBuildManager.Console.CommandLine
                 };
                 cmd.AddRange(SettingsFileNewOptions);
                 cmd.AddRange(ContainerAppOptions);
-                IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
+                IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.Required = false; } cmd.Add(o); });
                 cmd.AddRange(ConnectionAndSecretsOptions);
                 cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.AddRange(ConcurrencyOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.SaveAndEncryptContainerAppSettings);
+                cmd.SetAction((parseResult) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    return Worker.SaveAndEncryptContainerAppSettings(cmdLine, unittest);
+                });
                 return cmd;
             }
         }
@@ -53,12 +60,12 @@ namespace SqlBuildManager.Console.CommandLine
                     packagenameOption,
                     platinumdacpacOption,
                     defaultscripttimeoutOption,
-                    overrideOption.Copy(false),
-                    jobnameOption.Copy(true),
+                    overrideOption,
+                    jobnameRequiredOption,
                     decryptedOption,
                     allowForObjectDeletionOption,
                     unitTestOption,
-                    new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful Container App container deployment"),
+                    containerAppMonitorOption,
                     containerAppEnvOnly,
                     containerAppDeleteAppUponCompletion,
                     forceOption
@@ -66,7 +73,7 @@ namespace SqlBuildManager.Console.CommandLine
                 });
 
                 cmd.AddRange(ContainerAppOptions);
-                IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
+                IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.Required = false; } cmd.Add(o); });
                 cmd.AddRange(ConnectionAndSecretsOptions);
                 cmd.AddRange(EventHubResourceOptions);
                 //TODO: Enable Managed Identity. For now, ManagedIdentity for SQL Auth is not available on Container Apps...
@@ -76,7 +83,15 @@ namespace SqlBuildManager.Console.CommandLine
                 //end
                 cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.AddRange(ConcurrencyOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, bool, bool, bool, bool>(Worker.ContainerAppsRun);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    var monitor = parseResult.GetValue(containerAppMonitorOption);
+                    var envOnly = parseResult.GetValue(containerAppEnvOnly);
+                    var deleteApp = parseResult.GetValue(containerAppDeleteAppUponCompletion);
+                    var force = parseResult.GetValue(forceOption);
+                    return await Worker.ContainerAppsRun(cmdLine, unittest, monitor, envOnly, deleteApp, force);
+                });
                 return cmd;
             }
         }
@@ -90,7 +105,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("prep", "Creates an Azure storage container and uploads the SBM and/or DACPAC files that will be used for the build.")
                 {
-                    jobnameOption.Copy(true),
+                    jobnameRequiredOption,
                     storageaccountnameOption,
                     storageaccountkeyOption,
                     packagenameAsFileToUploadOption,
@@ -102,7 +117,13 @@ namespace SqlBuildManager.Console.CommandLine
 
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool>(GenericContainer.PrepAndUploadContainerBuildPackage);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
+                    var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
+                    var force = parseResult.GetValue(forceOption);
+                    return await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine, packagename, platinumdacpac, force);
+                });
 
                 return cmd;
             }
@@ -117,14 +138,17 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("enqueue", "Sends database override targets to Service Bus Topic")
                 {
-                    jobnameOption.Copy(true),
-                    threadedConcurrencyTypeOption.Copy(true),
+                    jobnameRequiredOption,
+                    threadedConcurrencyRequiredOption,
                     serviceBusconnectionOption,
-                    overrideOption.Copy(true),
+                    overrideRequiredOption,
                     decryptedOption
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.EnqueueOverrideTargets);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.EnqueueOverrideTargets(cmdLine);
+                });
 
                 return cmd;
             }
@@ -142,19 +166,19 @@ namespace SqlBuildManager.Console.CommandLine
                     packagenameOption,
                     platinumdacpacOption,
                     defaultscripttimeoutOption,
-                    overrideOption.Copy(false),
-                    jobnameOption.Copy(true),
+                    overrideOption,
+                    jobnameRequiredOption,
                     decryptedOption,
                     allowForObjectDeletionOption,
                     unitTestOption,
-                    new Option<bool>("--monitor", () => true, "Immediately start monitoring progress after successful Container App container deployment"),
+                    containerAppMonitorOption,
                     containerAppEnvOnly,
                     containerAppDeleteAppUponCompletion
 
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
                 cmd.AddRange(ContainerAppOptions);
-                IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
+                IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.Required = false; } cmd.Add(o); });
                 cmd.AddRange(ConnectionAndSecretsOptions);
                 cmd.AddRange(EventHubResourceOptions);
                 //TODO: Enable Managed Identity. For now, ManagedIdentity for SQL Auth is not available on Container Apps...
@@ -164,7 +188,14 @@ namespace SqlBuildManager.Console.CommandLine
                 //end
                 cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.AddRange(ConcurrencyOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, bool, bool, bool>(Worker.ContainerAppDeploy);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    var monitor = parseResult.GetValue(containerAppMonitorOption);
+                    var envOnly = parseResult.GetValue(containerAppEnvOnly);
+                    var deleteApp = parseResult.GetValue(containerAppDeleteAppUponCompletion);
+                    return await Worker.ContainerAppDeploy(cmdLine, unittest, monitor, envOnly, deleteApp);
+                });
 
                 return cmd;
             }
@@ -190,7 +221,13 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(serviceBusconnectionOption);
                 cmd.Add(eventhubconnectionOption);
                 cmd.AddRange(EventHubResourceOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, DateTime?, bool>(Worker.MonitorContainerAppRuntimeProgress);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    var stream = parseResult.GetValue(streamEventsOption);
+                    // DateTime is null when called from command line (vs. internally after deploy)
+                    return await Worker.MonitorContainerAppRuntimeProgress(cmdLine, unittest, null, stream);
+                });
 
                 return cmd;
             }
@@ -206,11 +243,14 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
                 {
                     serviceBusconnectionOption,
-                    jobnameOption.Copy(true),
+                    jobnameRequiredOption,
                     threadedConcurrencyTypeOption
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.DeQueueOverrideTargets);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.DeQueueOverrideTargets(cmdLine);
+                });
 
                 return cmd;
             }
@@ -226,13 +266,16 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("test", "Create environment variables for Container app and run local execution")
                 {
                     packagenameOption,
-                    overrideOption.Copy(true),
-                    jobnameOption.Copy(true),
+                    overrideRequiredOption,
+                    jobnameRequiredOption,
                     decryptedOption
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
                 cmd.AddRange(ConcurrencyOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.ContainerAppTestSettings);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.ContainerAppTestSettings(cmdLine);
+                });
 
                 return cmd;
             }
@@ -245,13 +288,14 @@ namespace SqlBuildManager.Console.CommandLine
         {
             get
             {
-                var nameArgument = new Argument<string[]>("placeholder", "Used to keep extraneous elements added by the platform from causing issues");
-                nameArgument.IsHidden = true;
-                nameArgument.Arity = ArgumentArity.ZeroOrMore;
+                var nameArgument = new Argument<string[]>("placeholder") { Description = "Used to keep extraneous elements added by the platform from causing issues", Hidden = true, Arity = ArgumentArity.ZeroOrMore };
                 var cmd = new Command("worker", "[Used by Container Apps] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
-                cmd.AddArgument(nameArgument);
+                cmd.Arguments.Add(nameArgument);
                 
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.ContainerAppWorker_RunBuild);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.ContainerAppWorker_RunBuild(cmdLine);
+                });
                 cmd.Add(ContainerAppWorkerTestCommand);
 
                 return cmd;
@@ -274,7 +318,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(ContainerAppMonitorCommand);
                 cmd.Add(ContainerAppDequeueTargetsCommand);
                 cmd.Add(ContainerAppWorkerCommand);
-                cmd.AddAlias("ca");
+                cmd.Aliases.Add("ca");
                 return cmd;
             }
         }
