@@ -15,13 +15,13 @@ The threaded build execution allows SQL Build Manager to run scripts against mul
 
 ---
 
-## High-Level Architecture
+## High-Level Architecture and Build Process Flow
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────────────┐
 │                              ThreadedManager                                 │
 │                             ExecuteAsync()                                   │
-└─────────────────────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────────────────────┘
                                       │
         ┌─────────────────────────────┼─────────────────────────────┐
         ▼                             ▼                             ▼
@@ -30,7 +30,7 @@ The threaded build execution allows SQL Build Manager to run scripts against mul
 │  Path Setup       │    │  (SBM/DACPAC/Scripts)  │    │  & Script Loading  │
 └───────────────────┘    └────────────────────────┘    └────────────────────┘
                                       │
-        ┌─────────────────────────────┴─────────────────────────────┐
+        ┌─────────────────────────────┴──────────────────────────────┐
         │                     Execution Mode                         │
         ▼                                                            ▼
 ┌───────────────────────────┐                    ┌───────────────────────────┐
@@ -307,10 +307,10 @@ This section details what happens when a build is successfully committed.
 ### Commit Flow Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────────────┐
 │                    DefaultBuildFinalizer                                     │
 │              PerformRunScriptFinalizationAsync()                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────────────────────┘
                                       │
         ┌─────────────────────────────┼─────────────────────────────┐
         ▼                             ▼                             ▼
@@ -327,10 +327,10 @@ This section details what happens when a build is successfully committed.
                                       │
         ┌─────────────────────────────┼─────────────────────────────┐
         ▼                             ▼                             ▼
-┌───────────────────┐    ┌────────────────────────┐    ┌────────────────────┐
-│EnsureLogTableExists│   │ Group scripts by DB    │    │  Batch INSERT or   │
-│ Create if missing │    │ connection             │    │  fallback to single│
-└───────────────────┘    └────────────────────────┘    └────────────────────┘
+┌────────────────────┐    ┌────────────────────────┐    ┌────────────────────┐
+│EnsureLogTableExists│    │ Group scripts by DB    │    │  Batch INSERT or   │
+│ Create if missing  │    │ connection             │    │  fallback to single│
+└────────────────────┘    └────────────────────────┘    └────────────────────┘
 ```
 
 ### Detailed Commit Process
