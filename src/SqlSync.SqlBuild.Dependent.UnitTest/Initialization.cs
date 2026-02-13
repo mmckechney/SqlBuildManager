@@ -579,13 +579,14 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
         public SqlBuildRunData GetSqlBuildRunData_TransactionalNotTrial(SqlSyncBuildDataModel buildData)
         {
+            var uniqueId = Guid.NewGuid().ToString("N");
             SqlBuildRunData runData = new SqlBuildRunData()
             {
                 BuildDataModel = buildData,
                 BuildDescription = "UnitTestRun",
-                BuildFileName = @"C:\temp\UnitTestBuildFile.sbm",
+                BuildFileName = Path.Combine(Path.GetTempPath(), $"UnitTestBuildFile_{uniqueId}.sbm"),
                 BuildType = "Development",
-                ProjectFileName = @"C:\temp\ProjectFile.xml",
+                ProjectFileName = Path.Combine(Path.GetTempPath(), $"ProjectFile_{uniqueId}.xml"),
                 Server = serverName,
                 StartIndex = 0
             };
@@ -599,17 +600,18 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         public SqlSync.SqlBuild.Models.SqlBuildRunDataModel GetSqlBuildRunDataModel_TransactionalNotTrial(SqlSyncBuildDataModel buildData)
         {
+            var uniqueId = Guid.NewGuid().ToString("N");
             return new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
                 buildDataModel: buildData,
                 buildType: "Development",
                 server: serverName,
                 buildDescription: "UnitTestRun",
                 startIndex: 0,
-                projectFileName: @"C:\\temp\\ProjectFile.xml",
+                projectFileName: Path.Combine(Path.GetTempPath(), $"ProjectFile_{uniqueId}.xml"),
                 isTrial: false,
                 runItemIndexes: Array.Empty<double>(),
                 runScriptOnly: false,
-                buildFileName: @"C:\\temp\\UnitTestBuildFile.sbm",
+                buildFileName: Path.Combine(Path.GetTempPath(), $"UnitTestBuildFile_{uniqueId}.sbm"),
                 logToDatabaseName: string.Empty,
                 isTransactional: true,
                 platinumDacPacFileName: string.Empty,
