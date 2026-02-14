@@ -84,7 +84,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--deletewhendone", "true"
 
                 };
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -141,7 +141,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--deletewhendone", "true"
 
                 };
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -189,7 +189,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -203,7 +203,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", overrideFile
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -227,7 +227,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--deletewhendone", "true"
 
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -274,7 +274,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -288,7 +288,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", overrideFile
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -312,7 +312,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--deletewhendone", "false"
 
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 TestContext.WriteLine(ConsoleOutput.ToString());
@@ -359,7 +359,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -373,7 +373,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", overrideFile
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -397,7 +397,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--stream", "true",
                     "--deletewhendone", "true"
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -474,7 +474,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -488,7 +488,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", minusFirst
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -513,7 +513,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--deletewhendone", "true"
 
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -593,7 +593,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -607,7 +607,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", minusFirst
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -630,7 +630,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--deletewhendone", "true"
 
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 TestContext.WriteLine(ConsoleOutput.ToString());
@@ -714,7 +714,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -732,7 +732,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", minusFirst
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -756,7 +756,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--allowobjectdelete", "true"
 
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -805,7 +805,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--packagename", sbmFileName
                 };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result, "Prep step failed");
@@ -819,7 +819,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", overrideFile
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result, "Enqueue step failed");
@@ -836,7 +836,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--concurrencytype", concurrencyType.ToString(),
                     "--concurrency", concurrency.ToString()
                 };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
 
@@ -864,7 +864,7 @@ namespace SqlBuildManager.Console.ExternalTest
                             "--jobname", jobName,
                             "--concurrencytype", concurrencyType.ToString()
                         };
-                        var val = rootCommand.InvokeAsync(args);
+                        var val = rootCommand.Parse(args).InvokeAsync();
                         val.Wait();
                     }
                     catch

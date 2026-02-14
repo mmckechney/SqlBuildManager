@@ -156,7 +156,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -208,7 +208,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             Assert.IsTrue(val.Result != 0);
@@ -241,7 +241,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -263,7 +263,7 @@ namespace SqlBuildManager.Console.ExternalTest
             "--stream" };
 
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
@@ -294,7 +294,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             Assert.IsTrue(val.Result != 0);
             
@@ -338,7 +338,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -382,7 +382,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -419,7 +419,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--force"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             var logFileContents = ReleventLogFileContents(startingLine);
@@ -439,7 +439,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             rootCommand = CommandLineBuilder.SetUp();
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
@@ -489,7 +489,7 @@ namespace SqlBuildManager.Console.ExternalTest
         
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -527,7 +527,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -568,7 +568,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName}; 
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -618,7 +618,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName}; ;
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -671,7 +671,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
@@ -724,7 +724,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
@@ -782,7 +782,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--targetdacpac", targetDacPac};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
@@ -837,7 +837,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
@@ -888,7 +888,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--silent"};
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 var result = val.Result;
 
@@ -954,7 +954,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--silent"};
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 var result = val.Result;
 
@@ -1026,7 +1026,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                Task<int> val = rootCommand.InvokeAsync(args);
+                Task<int> val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 var result = val.Result;
 
@@ -1047,7 +1047,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
                 rootCommand = CommandLineBuilder.SetUp();
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
 
@@ -1125,7 +1125,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--unittest"};
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                Task<int>  val = rootCommand.InvokeAsync(args);
+                Task<int>  val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 var result = val.Result;
 
@@ -1189,7 +1189,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--silent"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
@@ -1230,7 +1230,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--silent"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -1271,7 +1271,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--silent"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -1311,7 +1311,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--silent"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
@@ -1353,7 +1353,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -1376,7 +1376,7 @@ namespace SqlBuildManager.Console.ExternalTest
             "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
         
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
@@ -1409,7 +1409,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -1432,7 +1432,7 @@ namespace SqlBuildManager.Console.ExternalTest
             };
 
             rootCommand = CommandLineBuilder.SetUp();
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
@@ -1481,7 +1481,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--concurrencytype",  concurType.ToString(),
                 "--jobname", jobName};
 
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -1502,7 +1502,7 @@ namespace SqlBuildManager.Console.ExternalTest
             "--stream"
             };
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
@@ -1541,7 +1541,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -1563,7 +1563,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--stream"
             };
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
@@ -1606,7 +1606,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -1629,7 +1629,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.ConsolidatedScriptResults.ToString()};
        
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
@@ -1678,7 +1678,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.ConsolidatedScriptResults.ToString()};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -1727,7 +1727,7 @@ namespace SqlBuildManager.Console.ExternalTest
             };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
@@ -1785,7 +1785,7 @@ namespace SqlBuildManager.Console.ExternalTest
             };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -1804,7 +1804,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
    
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
@@ -1844,7 +1844,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -1869,7 +1869,7 @@ namespace SqlBuildManager.Console.ExternalTest
             "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
             rootCommand = CommandLineBuilder.SetUp();
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
             
@@ -1938,7 +1938,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -1959,7 +1959,7 @@ namespace SqlBuildManager.Console.ExternalTest
             "--stream" };
 
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 

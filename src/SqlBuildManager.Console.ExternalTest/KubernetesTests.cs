@@ -79,7 +79,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 };
 
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
 
@@ -140,7 +140,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 };
 
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
 
@@ -205,7 +205,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 };
 
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
 
@@ -272,7 +272,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 };
 
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
 
@@ -331,7 +331,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 };
 
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
 
@@ -397,7 +397,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 };
 
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
 
@@ -480,7 +480,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 };
 
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 var result = val.Result;
 
@@ -564,7 +564,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     args = args.Concat(z).ToArray();
                 }
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -582,7 +582,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     args = args.Append("--secretsfile").ToArray();
                     args = args.Append(yamlFiles.SecretsFile).ToArray();
                 }
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -620,7 +620,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     args = args.Append("--secretsfile").ToArray();
                     args = args.Append(yamlFiles.SecretsFile).ToArray();
                 }
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -705,7 +705,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     args = args.Concat(z).ToArray();
                 }
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -727,7 +727,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     args = args.Append("--secretsfile").ToArray();
                     args = args.Append(yamlFiles.SecretsFile).ToArray();
                 }
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -765,7 +765,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     args = args.Append("--secretsfile").ToArray();
                     args = args.Append(yamlFiles.SecretsFile).ToArray();
                 }
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);

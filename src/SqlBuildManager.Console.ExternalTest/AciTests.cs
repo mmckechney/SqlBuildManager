@@ -65,7 +65,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 //get the size of the log file before we start
                 int startingLine = TestHelper.LogFileCurrentLineCount();
 
-                var parser = CommandLineBuilder.GetCommandParser();
+                var rootCommand = CommandLineBuilder.SetUp();
                 string jobName = TestHelper.GetUniqueJobName("aci");
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
@@ -86,7 +86,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()
                 };
 
-                var val = parser.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                Assert.AreEqual(0, result);
@@ -131,7 +131,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--packagename", sbmFileName
                 };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -144,7 +144,7 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", overrideFile
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -165,7 +165,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--stream",
                 "--eventhublogging", EventHubLogging.ConsolidatedScriptResults.ToString()
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -208,7 +208,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -221,7 +221,7 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", overrideFile
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -241,7 +241,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--monitor", "true",
                 "--stream"
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -287,7 +287,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", overrideFile
             };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -300,7 +300,7 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", overrideFile
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -321,7 +321,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--stream",
                 "--eventhublogging", EventHubLogging.ConsolidatedScriptResults.ToString()
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -380,7 +380,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", minusFirst,
             };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -393,7 +393,7 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", minusFirst
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -416,7 +416,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--monitor", "true",
                 "--stream"
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -478,7 +478,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -493,7 +493,7 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", minusFirst
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -520,7 +520,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--monitor", "true",
                 "--stream"
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -583,7 +583,7 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--stream"
                 };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -627,7 +627,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 //get the size of the log file before we start
                 int startingLine = TestHelper.LogFileCurrentLineCount();
 
-                var parser = CommandLineBuilder.GetCommandParser();
+                var parser = CommandLineBuilder.GetRootCommand();
                 string jobName = TestHelper.GetUniqueJobName("aci");
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
@@ -648,7 +648,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()
                 };
 
-                var val = parser.InvokeAsync(args);
+                var val = parser.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
