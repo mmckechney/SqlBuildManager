@@ -118,46 +118,46 @@ namespace SqlBuildManager.Console.CommandLine
             }
         }
 
-        /// <summary>
-        /// Helper command to create yaml files from a settings json file and runtime parameters
-        /// </summary>
-        private static Command KubernetesCreateYamlCommand
-        {
-            get
-            {
-                var cmd = new Command("createyaml", "Helper command to create yaml files from a settings json file and runtime parameters");
-                cmd.AddRange(SettingsFileExistingOptions);
-                cmd.AddRange(new List<Option>
-                {
-                    sectionPlaceholderOption,
-                    pathOption,
-                    prefixOption,
-                    jobnameOption,
-                    podCountOption,
-                    packagenameAsFileToUploadOption,
-                    platinumdacpacFileInfoOption,
-                    forceOption,
+        ///// <summary>
+        ///// Helper command to create yaml files from a settings json file and runtime parameters
+        ///// </summary>
+        //private static Command KubernetesCreateYamlCommand
+        //{
+        //    get
+        //    {
+        //        var cmd = new Command("createyaml", "Helper command to create yaml files from a settings json file and runtime parameters");
+        //        cmd.AddRange(SettingsFileExistingOptions);
+        //        cmd.AddRange(new List<Option>
+        //        {
+        //            sectionPlaceholderOption,
+        //            pathOption,
+        //            prefixOption,
+        //            jobnameOption,
+        //            podCountOption,
+        //            packagenameAsFileToUploadOption,
+        //            platinumdacpacFileInfoOption,
+        //            forceOption,
 
-                    imageTagOption,
-                    imageNameOption,
-                    imageRepositoryOption,
+        //            imageTagOption,
+        //            imageNameOption,
+        //            imageRepositoryOption,
 
-                    serviceAccountNameOption
+        //            serviceAccountNameOption
 
-                });
-                cmd.SetAction(async (parseResult, ct) => {
-                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
-                    var path = parseResult.GetValue(pathOption);
-                    var prefix = parseResult.GetValue(prefixOption);
-                    var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
-                    var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
-                    var force = parseResult.GetValue(forceOption);
-                    return await Worker.KubernetesSaveYamlFiles(cmdLine, path, prefix, packagename, platinumdacpac, force);
-                });
-                return cmd;
-            }
+        //        });
+        //        cmd.SetAction(async (parseResult, ct) => {
+        //            var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+        //            var path = parseResult.GetValue(pathOption);
+        //            var prefix = parseResult.GetValue(prefixOption);
+        //            var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
+        //            var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
+        //            var force = parseResult.GetValue(forceOption);
+        //            return await Worker.KubernetesSaveYamlFiles(cmdLine, path, prefix, packagename, platinumdacpac, force);
+        //        });
+        //        return cmd;
+        //    }
 
-        }
+        //}
 
         /// <summary>
         /// [Used by Kubernetes] Starts the pod as a worker for database querying - polling and retrieving items from target service bus queue topic
@@ -386,7 +386,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(KubernetesEnqueueTargetsCommand);
                 cmd.Add(KubernetesMonitorCommand);
                 cmd.Add(KubernetesDequeueTargetsCommand);
-                cmd.Add(KubernetesCreateYamlCommand);
+                //cmd.Add(KubernetesCreateYamlCommand);
                 cmd.Add(KubernetesQueryCommand);
                 cmd.Add(KubernetesWorkerCommand);
                 cmd.Aliases.Add("aks");

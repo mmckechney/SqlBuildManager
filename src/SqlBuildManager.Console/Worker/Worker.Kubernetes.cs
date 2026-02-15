@@ -88,7 +88,7 @@ namespace SqlBuildManager.Console
             var runtimeFileInfo = new FileInfo(kubernetesFiles.RuntimeConfigMapFile);
             FileInfo secretsFileInfo = null;
             bool secretsExist = false;
-            if (!string.IsNullOrWhiteSpace(kubernetesFiles.SecretsFile))
+            if (!string.IsNullOrWhiteSpace(kubernetesFiles.SecretsFile) && File.Exists(kubernetesFiles.SecretsFile))
             {
                 secretsFileInfo = new FileInfo(kubernetesFiles.SecretsFile);
                 secretsExist = true;
