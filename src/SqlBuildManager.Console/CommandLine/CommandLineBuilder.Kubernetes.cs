@@ -86,7 +86,7 @@ namespace SqlBuildManager.Console.CommandLine
                     sectionPlaceholderOption,
                     jobnameOption,
                     podCountOption,
-                    overrideAsFileOption,
+                    overrideRequiredOption,
                     queryFileOption,
                     outputFileOption,
                     forceOption,
@@ -106,12 +106,11 @@ namespace SqlBuildManager.Console.CommandLine
 
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
-                    var queryFile = parseResult.GetValue(queryFileOption);
                     var force = parseResult.GetValue(forceOption);
                     var cleanupOnFailure = parseResult.GetValue(k8sCleanupOnFailureOption);
                     var unittest = parseResult.GetValue(unitTestOption);
                     var stream = parseResult.GetValue(streamEventsOption);
-                    return await Worker.KubernetesQuery(cmdLine, queryFile, force, cleanupOnFailure, unittest, stream);
+                    return await Worker.KubernetesQuery(cmdLine, force, stream, unittest, cleanupOnFailure);
                 });
                 return cmd;
 

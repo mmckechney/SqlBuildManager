@@ -187,12 +187,8 @@ namespace SqlBuildManager.Console
             }
         }
 
-        internal static async Task<int> AciQuery(CommandLineArgs cmdLine, FileInfo @override, bool force, bool monitor, bool stream, bool unittest)
+        internal static async Task<int> AciQuery(CommandLineArgs cmdLine, bool force, bool monitor,  bool stream, bool unittest)
         {
-            if(@override != null)
-            {
-                cmdLine.Override = @override.FullName;
-            }
             (int success, cmdLine) = PrepForRemoteQueryExecution(cmdLine);
             if (success != 0)
             {

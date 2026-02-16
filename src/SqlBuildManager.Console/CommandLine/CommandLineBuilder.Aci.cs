@@ -1,3 +1,4 @@
+using Azure.ResourceManager.AppContainers.Models;
 using SqlBuildManager.Console.ContainerShared;
 using System;
 using System.Collections.Generic;
@@ -125,7 +126,7 @@ namespace SqlBuildManager.Console.CommandLine
                     jobnameOption,
                     aciMonitorOption,
                     unitTestOption,
-                    overrideAsFileOption,
+                    overrideRequiredOption,
                     queryFileOption,
                     outputFileOption,
                     forceOption,
@@ -145,16 +146,16 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(identityResourceGroupOption);
                 cmd.Add(subscriptionIdOption);
                 cmd.AddRange(ConcurrencyRequiredOptions);
+                cmd.Add(streamEventsOption);
 
 
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
-                    var queryFile = parseResult.GetValue(queryFileOption);
                     var monitor = parseResult.GetValue(aciMonitorOption);
                     var unittest = parseResult.GetValue(unitTestOption);
                     var force = parseResult.GetValue(forceOption);
-                    var allowObjectDelete = parseResult.GetValue(allowForObjectDeletionOption);
-                    return await Worker.AciQuery(cmdLine, queryFile, monitor, unittest, force, allowObjectDelete);
+                    var stream = parseResult.GetValue(streamEventsOption);
+                    return await Worker.AciQuery(cmdLine, force, stream, monitor, unittest);
                 });
                 return cmd;
 
