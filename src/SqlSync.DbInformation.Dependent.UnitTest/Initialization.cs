@@ -35,6 +35,14 @@ namespace SqlSync.DbInformation.Dependent.UnitTest
             testTimeStamp = DateTime.Now;
 
             connData = new ConnectionData(serverName, testDatabaseNames[0]);
+            var sqlUser = Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER");
+            var sqlPassword = Environment.GetEnvironmentVariable("SBM_TEST_SQL_PASSWORD");
+            if (!string.IsNullOrWhiteSpace(sqlUser))
+            {
+                connData.AuthenticationType = AuthenticationType.Password;
+                connData.UserId = sqlUser;
+                connData.Password = sqlPassword ?? string.Empty;
+            }
 
             tempFiles = new List<string>();
         }

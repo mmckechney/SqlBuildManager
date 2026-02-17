@@ -338,12 +338,16 @@ GO";
             string dacPacPath = Path.Combine(Path.GetTempPath(), $"Extract_{Guid.NewGuid()}.dacpac");
             _tempFiles.Add(dacPacPath);
 
+            var sqlUser = Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER") ?? string.Empty;
+            var sqlPassword = Environment.GetEnvironmentVariable("SBM_TEST_SQL_PASSWORD") ?? string.Empty;
+            var authType = string.IsNullOrWhiteSpace(sqlUser) ? AuthenticationType.Windows : AuthenticationType.Password;
+
             bool result = DacPacHelper.ExtractDacPac(
                 init.testDatabaseNames[0],
                 init.serverName,
-                AuthenticationType.Windows,
-                string.Empty,
-                string.Empty,
+                authType,
+                sqlUser,
+                sqlPassword,
                 dacPacPath,
                 60,
                 string.Empty);
@@ -359,12 +363,16 @@ GO";
             string dacPacPath = Path.Combine(Path.GetTempPath(), $"Extract_{Guid.NewGuid()}.dacpac");
             _tempFiles.Add(dacPacPath);
 
+            var sqlUser = Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER") ?? string.Empty;
+            var sqlPassword = Environment.GetEnvironmentVariable("SBM_TEST_SQL_PASSWORD") ?? string.Empty;
+            var authType = string.IsNullOrWhiteSpace(sqlUser) ? AuthenticationType.Windows : AuthenticationType.Password;
+
             bool result = DacPacHelper.ExtractDacPac(
                 "NonExistentDatabase12345",
                 init.serverName,
-                AuthenticationType.Windows,
-                string.Empty,
-                string.Empty,
+                authType,
+                sqlUser,
+                sqlPassword,
                 dacPacPath,
                 30,
                 string.Empty);
@@ -378,12 +386,16 @@ GO";
             string dacPacPath = Path.Combine(Path.GetTempPath(), $"Extract_{Guid.NewGuid()}.dacpac");
             _tempFiles.Add(dacPacPath);
 
+            var sqlUser = Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER") ?? string.Empty;
+            var sqlPassword = Environment.GetEnvironmentVariable("SBM_TEST_SQL_PASSWORD") ?? string.Empty;
+            var authType = string.IsNullOrWhiteSpace(sqlUser) ? AuthenticationType.Windows : AuthenticationType.Password;
+
             bool result = DacPacHelper.ExtractDacPac(
                 "master",
                 "NonExistentServer12345",
-                AuthenticationType.Windows,
-                string.Empty,
-                string.Empty,
+                authType,
+                sqlUser,
+                sqlPassword,
                 dacPacPath,
                 5,
                 string.Empty);

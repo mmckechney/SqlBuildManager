@@ -111,10 +111,9 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "--loglevel","debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -124,7 +123,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                  "--concurrency", "1",
                 "--concurrencytype",  "Count"
 
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
@@ -184,9 +183,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -195,7 +193,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--timeoutretrycount", "0",
                  "--concurrency", "2",
                 "--concurrencytype",  "Count"
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
@@ -245,9 +243,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -256,7 +253,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--timeoutretrycount", "0",
                  "--concurrency", "4",
                 "--concurrencytype",  "Count"
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
@@ -313,10 +310,9 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "--loglevel", "debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -325,7 +321,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--timeoutretrycount", "0",
                  "--concurrency", "1",
                 "--concurrencytype",  "Server"
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
@@ -386,10 +382,9 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "--loglevel", "debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -398,7 +393,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--timeoutretrycount", "0",
                  "--concurrency", "2",
                 "--concurrencytype",  "MaxPerServer"
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
@@ -456,10 +451,9 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "--loglevel", "debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -467,7 +461,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", "0",
                 "--authtype",
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
@@ -543,17 +537,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
             int retryCount = 20;
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "--loglevel", "debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", retryCount.ToString()
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
@@ -654,16 +647,15 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
             int retryCount = 3;
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", retryCount.ToString()
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.FinishingWithErrors;
@@ -753,16 +745,15 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
             int retryCount = 5;
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", retryCount.ToString()
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.FinishingWithErrors;
@@ -850,16 +841,15 @@ localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount","-1"
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
 
@@ -907,17 +897,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "--loglevel", "debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "false",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount","0"
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
@@ -983,16 +972,15 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             File.WriteAllText(multiDbOverrideSettingFileName, "");
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "false",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount","20"
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
@@ -1035,16 +1023,15 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "false",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount","0"
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.FinishingWithErrors;
@@ -1137,17 +1124,16 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
             int retryCount = 20;
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "--loglevel", "debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "true",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", retryCount.ToString()
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
@@ -1236,16 +1222,15 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
             int retryCount = 3;
 
-            string[] args = new string[] {
+            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "true",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", retryCount.ToString()
-            };
+            }).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.FinishingWithErrors;

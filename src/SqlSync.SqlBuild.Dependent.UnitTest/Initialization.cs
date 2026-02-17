@@ -86,6 +86,14 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             testTimeStamp = DateTime.Now;
 
             connData = new ConnectionData(serverName, testDatabaseNames[0]);
+            var sqlUser = Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER");
+            var sqlPassword = Environment.GetEnvironmentVariable("SBM_TEST_SQL_PASSWORD");
+            if (!string.IsNullOrWhiteSpace(sqlUser))
+            {
+                connData.AuthenticationType = AuthenticationType.Password;
+                connData.UserId = sqlUser;
+                connData.Password = sqlPassword ?? string.Empty;
+            }
 
             if (!CreateDatabases())
                 Assert.Fail(String.Format("Unable to create the target databases. {0}", Initialization.MissingDatabaseErrorMessage));
@@ -459,6 +467,15 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             InsertPreRunScriptEntry();
 
 
+        }
+
+        public ConnectionData CreateConnectionData(string databaseName)
+        {
+            var cd = new ConnectionData(serverName, databaseName);
+            cd.AuthenticationType = connData.AuthenticationType;
+            cd.UserId = connData.UserId;
+            cd.Password = connData.Password;
+            return cd;
         }
 
         public SqlBuildHelper CreateSqlBuildHelper(SqlSyncBuildDataModel buildData)
