@@ -88,7 +88,7 @@ namespace SqlBuildManager.Console
             var runtimeFileInfo = new FileInfo(kubernetesFiles.RuntimeConfigMapFile);
             FileInfo secretsFileInfo = null;
             bool secretsExist = false;
-            if (!string.IsNullOrWhiteSpace(kubernetesFiles.SecretsFile))
+            if (!string.IsNullOrWhiteSpace(kubernetesFiles.SecretsFile) && File.Exists(kubernetesFiles.SecretsFile))
             {
                 secretsFileInfo = new FileInfo(kubernetesFiles.SecretsFile);
                 secretsExist = true;
@@ -153,7 +153,7 @@ namespace SqlBuildManager.Console
             await KubernetesManager.SaveKubernetesYamlFiles(cmdLine, prefix, path);
             return 0;
         }
-        internal static async Task<int> KubernetesQuery(CommandLineArgs cmdLine, FileInfo @override, bool force, bool stream, bool unittest, bool cleanupOnFailure)
+        internal static async Task<int> KubernetesQuery(CommandLineArgs cmdLine, bool force, bool stream, bool unittest, bool cleanupOnFailure)
         {
             (int success, cmdLine) = PrepForRemoteQueryExecution(cmdLine);
             if (success != 0)
@@ -172,7 +172,8 @@ namespace SqlBuildManager.Console
                 return -1;
             }
             cmdLine.KubernetesArgs.RunningInKubernetes = true;
-            success = await KubernetesApplyJobs(cmdLine, @override, cleanupOnFailure, stream, unittest);
+            FileInfo overrideFile = !string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName) ? new FileInfo(cmdLine.MultiDbRunConfigFileName) : null;
+            success = await KubernetesApplyJobs(cmdLine, overrideFile, cleanupOnFailure, stream, unittest);
 
             var storageSvcClient = StorageManager.CreateStorageClient(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
             var saved = StorageManager.CombineQueryOutputfiles(storageSvcClient, cmdLine.JobName, cmdLine.OutputFile.FullName);

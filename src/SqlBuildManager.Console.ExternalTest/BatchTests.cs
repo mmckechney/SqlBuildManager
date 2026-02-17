@@ -38,6 +38,9 @@ namespace SqlBuildManager.Console.ExternalTest
         private string pw;
         private string server;
 
+        private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
+        private TextWriter originalConsoleOut;
+
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
@@ -63,12 +66,16 @@ namespace SqlBuildManager.Console.ExternalTest
             Aad.AadHelper.ManagedIdentityClientId = string.Empty;
             Aad.AadHelper.TenantId = string.Empty;
 
+            originalConsoleOut = System.Console.Out;
+            ConsoleOutput.Clear();
+            System.Console.SetOut(new StringWriter(ConsoleOutput));
 
         }
         [TestCleanup]
         public void CleanUp()
         {
-
+            System.Console.SetOut(originalConsoleOut);
+            TestContext.WriteLine(ConsoleOutput.ToString());
         }
 
         #region Helpers
@@ -120,6 +127,15 @@ namespace SqlBuildManager.Console.ExternalTest
             return string.Join(Environment.NewLine, ReadLines(logFile).Skip(startingLine).ToArray());
         }
 
+        /// <summary>
+        /// Returns combined log file and console output contents for assertion checking.
+        /// Falls back to console output when the log file hasn't been flushed to disk yet.
+        /// </summary>
+        private string CombinedLogAndConsoleOutput(int startingLine)
+        {
+            return ReleventLogFileContents(startingLine) + Environment.NewLine + ConsoleOutput.ToString();
+        }
+
         #endregion
 
         // [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Tag, 10)]
@@ -156,12 +172,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "run")
@@ -208,7 +224,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             Assert.IsTrue(val.Result != 0);
@@ -241,11 +257,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -263,11 +279,11 @@ namespace SqlBuildManager.Console.ExternalTest
             "--stream" };
 
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -294,7 +310,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             Assert.IsTrue(val.Result != 0);
             
@@ -338,12 +354,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "run")
@@ -382,12 +398,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(1, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed with Errors"), "This test should have failed!");
         }
@@ -419,10 +435,10 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--force"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             
             var tmpOverrideFileContents = File.ReadAllLines(tmpOverride).ToList();
@@ -439,12 +455,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             rootCommand = CommandLineBuilder.SetUp();
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "run")
@@ -489,12 +505,12 @@ namespace SqlBuildManager.Console.ExternalTest
         
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "run")
@@ -527,12 +543,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
             Assert.AreEqual(-101, result);
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.IsTrue(logFileContents.Contains("Completed with Errors"), "This test was supposed to have errors in the run");
             Assert.IsTrue(logFileContents.Contains("Invalid command line set") && logFileContents.ToLower().Contains("packagename"), "This test should report a missing commandline");
         }
@@ -568,12 +584,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName}; 
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "runthreaded")
@@ -618,11 +634,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName}; ;
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
@@ -671,12 +687,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "runthreaded")
@@ -724,12 +740,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains("Successfully created SBM from two dacpacs"), "Indication that the script creation was good");
@@ -782,12 +798,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--targetdacpac", targetDacPac};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains("Successfully created SBM from two dacpacs"), "Indication that the script creation was good");
@@ -837,12 +853,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
@@ -888,11 +904,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--silent"};
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 var result = val.Result;
 
-                var logFileContents = ReleventLogFileContents(startingLine);
+                var logFileContents = CombinedLogAndConsoleOutput(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
                 switch (batchMethod)
                 {
@@ -954,11 +970,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--silent"};
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 var result = val.Result;
 
-                var logFileContents = ReleventLogFileContents(startingLine);
+                var logFileContents = CombinedLogAndConsoleOutput(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
                 switch (batchMethod)
                 {
@@ -1026,7 +1042,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                Task<int> val = rootCommand.InvokeAsync(args);
+                Task<int> val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 var result = val.Result;
 
@@ -1047,11 +1063,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
                 rootCommand = CommandLineBuilder.SetUp();
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
 
-                var logFileContents = ReleventLogFileContents(startingLine);
+                var logFileContents = CombinedLogAndConsoleOutput(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
                 switch (batchMethod)
                 {
@@ -1125,11 +1141,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--unittest"};
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                Task<int>  val = rootCommand.InvokeAsync(args);
+                Task<int>  val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 var result = val.Result;
 
-                var logFileContents = ReleventLogFileContents(startingLine);
+                var logFileContents = CombinedLogAndConsoleOutput(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
                 switch (batchMethod)
                 {
@@ -1189,12 +1205,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--silent"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(5, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An INSERT statement should have been found");
         }
@@ -1230,12 +1246,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--silent"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(5, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "A DELETE statement should have been found");
         }
@@ -1271,12 +1287,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--silent"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(6, result, StandardExecutionErrorMessage(logFileContents));
 
         }
@@ -1311,12 +1327,12 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--silent"};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(5, result, StandardExecutionErrorMessage(logFileContents));
             //Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An UPDATE statement should have been found");
         }
@@ -1353,11 +1369,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -1376,11 +1392,11 @@ namespace SqlBuildManager.Console.ExternalTest
             "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
         
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -1409,11 +1425,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -1432,12 +1448,12 @@ namespace SqlBuildManager.Console.ExternalTest
             };
 
             rootCommand = CommandLineBuilder.SetUp();
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "run")
@@ -1481,11 +1497,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--concurrencytype",  concurType.ToString(),
                 "--jobname", jobName};
 
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -1502,11 +1518,11 @@ namespace SqlBuildManager.Console.ExternalTest
             "--stream"
             };
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -1541,11 +1557,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -1563,11 +1579,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--stream"
             };
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -1606,11 +1622,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -1629,11 +1645,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.ConsolidatedScriptResults.ToString()};
        
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -1678,11 +1694,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.ConsolidatedScriptResults.ToString()};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -1727,12 +1743,12 @@ namespace SqlBuildManager.Console.ExternalTest
             };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
 
@@ -1785,7 +1801,7 @@ namespace SqlBuildManager.Console.ExternalTest
             };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -1804,11 +1820,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
    
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "runthreaded")
@@ -1844,11 +1860,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
 
@@ -1869,11 +1885,11 @@ namespace SqlBuildManager.Console.ExternalTest
             "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()};
 
             rootCommand = CommandLineBuilder.SetUp();
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
             
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -1938,11 +1954,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--jobname", jobName};
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            Task<int> val = rootCommand.InvokeAsync(args);
+            Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -1959,11 +1975,11 @@ namespace SqlBuildManager.Console.ExternalTest
             "--stream" };
 
 
-            val = rootCommand.InvokeAsync(args);
+            val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             result = val.Result;
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
     }

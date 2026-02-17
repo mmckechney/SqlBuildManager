@@ -92,7 +92,7 @@ namespace SqlBuildManager.Console
                     }
 
 
-                    log.LogError("Enqueuing database targets");
+                    log.LogInformation("Enqueuing database targets");
                     var enqueueResult = await EnqueueOverrideTargets(cmdLine);
                     if (enqueueResult != 0)
                     {

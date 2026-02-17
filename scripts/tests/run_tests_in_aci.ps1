@@ -135,14 +135,14 @@ if ($buildImage) {
     Write-Host "Building Test Container Image" -ForegroundColor Cyan
     Write-Host "========================================" -ForegroundColor Cyan
     
-    $batchScriptPath = Join-Path $repoRoot "scripts\Batch\build_and_upload_batch_fromprefix.ps1"
+    $testImageScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_testimage.ps1"
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
-    if (Test-Path $batchScriptPath) {
-        & $batchScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -action "BuildAndUpload"
+    if (Test-Path $testImageScriptPath) {
+        & $testImageScriptPath -prefix $prefix -resourceGroupName $resourceGroupName 
     } else {
-        Write-Host "Batch build script not found at: $batchScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\Batch\build_and_upload_batch_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
+        Write-Host "Test image build script not found at: $testImageScriptPath" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_container_registry_testimage.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -action BuildAndUpload" -ForegroundColor Yellow
     }
    
 }

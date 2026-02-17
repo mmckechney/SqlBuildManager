@@ -1,4 +1,4 @@
-﻿using Azure.ResourceManager.Resources.Models;
+using Azure.ResourceManager.Resources.Models;
 using Microsoft.SqlServer.Management.Dmf;
 using SqlBuildManager.Console.ContainerApp.Internal;
 using System;
@@ -255,17 +255,6 @@ namespace SqlBuildManager.Console.CommandLine
       public static string Quoted(this string str)
       {
          return "\"" + str + "\"";
-      }
-      public static Option<T> Copy<T>(this Option<T> opt, bool required)
-      {
-
-         var aliases = opt.Aliases.ToArray();
-         Option<T> newOpt = new Option<T>(aliases, opt.Description);
-         //newOpt.Name = opt.Name;
-         //newOpt.ArgumentHelpName = "";
-         newOpt.IsRequired = required;
-
-         return newOpt;
       }
       public static string DecodeBase64(this string value)
       {
