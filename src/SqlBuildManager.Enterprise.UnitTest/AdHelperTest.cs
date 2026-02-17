@@ -30,7 +30,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         /// <summary>
         ///A test for GetDistinguishedName
         ///</summary>
-        [TestMethod(), Ignore("Not relevent for most deployments")]
+        [TestMethod(), Ignore("Not relevant for most deployments")]
         [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void GetDistinguishedNameTest_PassWithGoodDn()
         {
@@ -44,7 +44,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         /// <summary>
         ///A test for GetDistinguishedName
         ///</summary>
-        [TestMethod(), Ignore("Not relevent for most deployments")]
+        [TestMethod(), Ignore("Not relevant for most deployments")]
         [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void GetDistinguishedNameTest_PassWithNoDnReturned()
         {

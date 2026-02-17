@@ -246,7 +246,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 result = val.Result;
                 Assert.AreEqual(0, result);
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));

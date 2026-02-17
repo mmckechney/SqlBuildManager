@@ -89,7 +89,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             return startingLines;
         }
-        public string ReleventLogFileContents(int startingLine)
+        public string RelevantLogFileContents(int startingLine)
         {
 
             string logFile = Path.Combine(Path.GetTempPath(), LogFileName);
@@ -121,7 +121,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
@@ -152,7 +152,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
 
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Committing transaction for"), "This test was should have worked");
 

@@ -85,7 +85,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 Assert.AreEqual(0, result);
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -146,7 +146,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 Assert.AreEqual(0, result);
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
                 var dbCount = File.ReadAllText(tmpOverride).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -211,7 +211,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 Assert.AreEqual(0, result);
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
@@ -278,7 +278,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 Assert.AreEqual(1, result);
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {(dbCount - 2).ToString().PadLeft(5, '0')}"));
@@ -337,7 +337,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 Assert.AreEqual(0, result);
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -403,7 +403,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 Assert.AreEqual(0, result);
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -487,7 +487,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.AreEqual(0, result);
 
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -625,7 +625,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 result = val.Result;
                 Assert.AreEqual(0, result);
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
                 Assert.IsTrue(logFileContents.Contains("DACPAC created") || logFileContents.Contains("Dacpac Databases In Sync"), "A DACPAC should have been used for the build");
 
                 var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
@@ -773,7 +773,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"), "Should have committed to {db");
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
                 Assert.IsTrue(logFileContents.Contains("Committed - With Custom Dacpac"), "A custom DACPAC should have been required for a database");
 
             }

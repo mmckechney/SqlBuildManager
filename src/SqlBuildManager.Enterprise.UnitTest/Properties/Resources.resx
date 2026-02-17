@@ -119,10 +119,10 @@
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="DefaultScriptRegistry" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\defaultscriptregistry.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\Resources\DefaultScriptRegistry.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="DefaultScriptRegistryWithToken" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\defaultscriptregistrywithtoken.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\Resources\DefaultScriptRegistryWithToken.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="EnterpriseConfig" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\EnterpriseConfig.txt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>

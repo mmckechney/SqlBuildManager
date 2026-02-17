@@ -105,6 +105,7 @@
     </None>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy ..\SqlBuildManager.Console\bin\$(ConfigurationName)\$(TargetFramework)\sbm.runtimeconfig.json $(OutDir)sbm.runtimeconfig.json&#xD;&#xA;copy ..\SqlBuildManager.Console\bin\$(ConfigurationName)\\$(TargetFramework)\sbm.deps.json $(OutDir)sbm.deps.json&#xD;&#xA;" />
+    <Copy SourceFiles="..\SqlBuildManager.Console\bin\$(Configuration)\$(TargetFramework)\sbm.runtimeconfig.json" DestinationFolder="$(OutDir)" Condition="Exists('..\SqlBuildManager.Console\bin\$(Configuration)\$(TargetFramework)\sbm.runtimeconfig.json')" />
+    <Copy SourceFiles="..\SqlBuildManager.Console\bin\$(Configuration)\$(TargetFramework)\sbm.deps.json" DestinationFolder="$(OutDir)" Condition="Exists('..\SqlBuildManager.Console\bin\$(Configuration)\$(TargetFramework)\sbm.deps.json')" />
   </Target>
 </Project>

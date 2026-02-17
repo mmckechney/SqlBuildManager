@@ -113,7 +113,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             return startingLines;
         }
-        public static string ReleventLogFileContents(int startingLine)
+        public static string RelevantLogFileContents(int startingLine)
         {
 
             string logFile = Path.Combine(Path.GetTempPath(), LogFileName);
@@ -161,7 +161,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
 
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "run")
@@ -245,7 +245,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -267,7 +267,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -343,7 +343,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
 
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "run")
@@ -387,7 +387,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
 
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(1, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed with Errors"), "This test should have failed!");
         }
@@ -422,7 +422,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var val = rootCommand.InvokeAsync(args);
             val.Wait();
             var result = val.Result;
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             
             var tmpOverrideFileContents = File.ReadAllLines(tmpOverride).ToList();
@@ -444,7 +444,7 @@ namespace SqlBuildManager.Console.ExternalTest
             result = val.Result;
 
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "run")
@@ -494,7 +494,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
 
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "run")
@@ -532,7 +532,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
 
             Assert.AreEqual(-101, result);
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.IsTrue(logFileContents.Contains("Completed with Errors"), "This test was supposed to have errors in the run");
             Assert.IsTrue(logFileContents.Contains("Invalid command line set") && logFileContents.ToLower().Contains("packagename"), "This test should report a missing commandline");
         }
@@ -541,7 +541,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
-        public void Batch_Override_PlatinumDbSource_Succes(string batchMethod, string settingsFile)
+        public void Batch_Override_PlatinumDbSource_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -573,7 +573,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
 
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "runthreaded")
@@ -622,7 +622,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
@@ -676,7 +676,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "runthreaded")
@@ -729,7 +729,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains("Successfully created SBM from two dacpacs"), "Indication that the script creation was good");
@@ -787,7 +787,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains("Successfully created SBM from two dacpacs"), "Indication that the script creation was good");
@@ -842,7 +842,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
@@ -892,7 +892,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 val.Wait();
                 var result = val.Result;
 
-                var logFileContents = ReleventLogFileContents(startingLine);
+                var logFileContents = RelevantLogFileContents(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
                 switch (batchMethod)
                 {
@@ -958,7 +958,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 val.Wait();
                 var result = val.Result;
 
-                var logFileContents = ReleventLogFileContents(startingLine);
+                var logFileContents = RelevantLogFileContents(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
                 switch (batchMethod)
                 {
@@ -1051,7 +1051,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 val.Wait();
                 result = val.Result;
 
-                var logFileContents = ReleventLogFileContents(startingLine);
+                var logFileContents = RelevantLogFileContents(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
                 switch (batchMethod)
                 {
@@ -1129,7 +1129,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 val.Wait();
                 var result = val.Result;
 
-                var logFileContents = ReleventLogFileContents(startingLine);
+                var logFileContents = RelevantLogFileContents(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
                 switch (batchMethod)
                 {
@@ -1194,7 +1194,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(5, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An INSERT statement should have been found");
         }
@@ -1235,7 +1235,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
 
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(5, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "A DELETE statement should have been found");
         }
@@ -1276,7 +1276,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
 
             SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(6, result, StandardExecutionErrorMessage(logFileContents));
 
         }
@@ -1316,7 +1316,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(5, result, StandardExecutionErrorMessage(logFileContents));
             //Assert.IsTrue(logFileContents.Contains("An INSERT, UPDATE or DELETE keyword was found"), "An UPDATE statement should have been found");
         }
@@ -1357,7 +1357,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -1380,7 +1380,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -1413,7 +1413,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -1437,7 +1437,7 @@ namespace SqlBuildManager.Console.ExternalTest
             result = val.Result;
 
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "run")
@@ -1485,7 +1485,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -1506,7 +1506,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -1545,7 +1545,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -1567,7 +1567,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -1610,7 +1610,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -1633,7 +1633,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -1682,7 +1682,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -1732,7 +1732,7 @@ namespace SqlBuildManager.Console.ExternalTest
             var result = val.Result;
             ;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
 
@@ -1747,7 +1747,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json")]
         [TestMethod]
-        public void Batch_Queue_DacpacSource_FocceApplyCustom_Success(string batchMethod, string settingsFile)
+        public void Batch_Queue_DacpacSource_ForceApplyCustom_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -1808,7 +1808,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             if (batchMethod == "runthreaded")
@@ -1848,7 +1848,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
 
@@ -1873,7 +1873,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
             
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
@@ -1942,7 +1942,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
@@ -1963,7 +1963,7 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             result = val.Result;
 
-            logFileContents = ReleventLogFileContents(startingLine);
+            logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
     }

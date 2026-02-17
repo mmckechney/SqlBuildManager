@@ -272,7 +272,7 @@ namespace SqlBuildManager.Console.Events
                 }
                 else
                 {
-                    log.LogDebug($"Skipped event as not relevent: {eventArgs.Data.SequenceNumber}");
+                    log.LogDebug($"Skipped event as not relevant: {eventArgs.Data.SequenceNumber}");
                 } 
                     
 
