@@ -86,11 +86,11 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var unittest = parseResult.GetValue(unitTestOption);
+                    var stream = parseResult.GetValue(streamEventsOption);
                     var monitor = parseResult.GetValue(containerAppMonitorOption);
-                    var envOnly = parseResult.GetValue(containerAppEnvOnly);
                     var deleteApp = parseResult.GetValue(containerAppDeleteAppUponCompletion);
                     var force = parseResult.GetValue(forceOption);
-                    return await Worker.ContainerAppsRun(cmdLine, unittest, monitor, envOnly, deleteApp, force);
+                    return await Worker.ContainerAppsRun(cmdLine, unittest, stream, monitor, deleteApp, force);
                 });
                 return cmd;
             }
@@ -191,10 +191,10 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var unittest = parseResult.GetValue(unitTestOption);
+                    var stream = parseResult.GetValue(streamEventsOption);
                     var monitor = parseResult.GetValue(containerAppMonitorOption);
-                    var envOnly = parseResult.GetValue(containerAppEnvOnly);
                     var deleteApp = parseResult.GetValue(containerAppDeleteAppUponCompletion);
-                    return await Worker.ContainerAppDeploy(cmdLine, unittest, monitor, envOnly, deleteApp);
+                    return await Worker.ContainerAppDeploy(cmdLine, unittest, stream, monitor, deleteApp);
                 });
 
                 return cmd;

@@ -637,7 +637,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.AreEqual(0, result);
 
                 var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
-                Assert.IsTrue(logFileContents.Contains("Dacpac Databases In Sync"), "There should be a DB already in sync that forced a custom DACPAC to be created");
+                Assert.IsTrue(logFileContents.Contains("Dacpac Databases In Sync") || ConsoleOutput.ToString().Contains("Dacpac Databases In Sync"), "There should be a DB already in sync that forced a custom DACPAC to be created");
 
                 var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -762,7 +762,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.AreEqual(0, result);
 
                 var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
-                Assert.IsTrue(logFileContents.Contains("Committed - With Custom Dacpac"), "A custom DACPAC should have been required for a database");
+                Assert.IsTrue(logFileContents.Contains("Committed - With Custom Dacpac") || ConsoleOutput.ToString().Contains("Committed - With Custom Dacpac"), "A custom DACPAC should have been required for a database");
 
                 var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
