@@ -2,39 +2,33 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Npgsql;
 using SqlSync.Connection;
+using SqlSync.SqlBuild.Dependent.TestBase;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 
-namespace SqlSync.SqlBuild.Dependent.UnitTest
+namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
 {
     /// <summary>
-    /// Initialization helper for PostgreSQL-based dependent tests.
-    /// Mirrors the SQL Server Initialization class but uses Npgsql and PostgreSQL syntax.
+    /// PostgreSQL-specific initialization helper. Extends the shared InitializationBase
+    /// with Npgsql connections and PostgreSQL DDL/DML.
     /// Configure via environment variables:
     ///   SBM_TEST_POSTGRES_SERVER (default: localhost)
     ///   SBM_TEST_POSTGRES_USER (default: postgres)
     ///   SBM_TEST_POSTGRES_PASSWORD (default: P0stSqlAdm1n)
     /// </summary>
-    public class PostgresInitialization : IDisposable
+    public class PostgresInitialization : InitializationBase
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        public List<string> testDatabaseNames = null;
-        public List<string> tempFiles = null;
-        public Guid testGuid;
-        public DateTime testTimeStamp;
-        public ConnectionData connData = null;
-        public string projectFileName = null;
-        public string buildHistoryXmlFile = null;
 
-        public string serverName;
         public string pgUser;
         public string pgPassword;
 
         public static string MissingDatabaseErrorMessage = "NOTE: To successfully test, please make sure you have a PostgreSQL instance running. Set SBM_TEST_POSTGRES_SERVER, SBM_TEST_POSTGRES_USER, SBM_TEST_POSTGRES_PASSWORD environment variables.";
+
+        protected override string TestTableName => "transactiontest";
+        protected override string TempFilePrefix => "SqlSyncTest-PG-";
 
         private static string GetServerName() => Environment.GetEnvironmentVariable("SBM_TEST_POSTGRES_SERVER") ?? "localhost";
         private static string GetUser() => Environment.GetEnvironmentVariable("SBM_TEST_POSTGRES_USER") ?? "postgres";
@@ -46,16 +40,13 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             pgUser = GetUser();
             pgPassword = GetPassword();
 
-            testDatabaseNames = new List<string>
+            testDatabaseNames = new System.Collections.Generic.List<string>
             {
                 "sbm_pg_test",
                 "sbm_pg_test1",
                 "sbm_pg_test2",
                 "sbm_pg_test3"
             };
-
-            testGuid = Guid.NewGuid();
-            testTimeStamp = DateTime.Now;
 
             connData = new ConnectionData()
             {
@@ -67,8 +58,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 DatabasePlatform = DatabasePlatform.PostgreSQL,
                 ScriptTimeout = 20
             };
-
-            tempFiles = new List<string>();
 
             if (!CreateDatabases())
                 Assert.Fail(string.Format("Unable to create the target PostgreSQL databases. {0}", MissingDatabaseErrorMessage));
@@ -92,7 +81,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             return $"Host={serverName};Database={dbName};Username={pgUser};Password={pgPassword};Timeout=20";
         }
 
-        public bool CreateDatabases()
+        public override bool CreateDatabases()
         {
             try
             {
@@ -107,7 +96,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
                     if (val == null || val == DBNull.Value)
                     {
-                        // CREATE DATABASE cannot run inside a transaction in PostgreSQL
                         using var createCmd = new NpgsqlCommand($"CREATE DATABASE \"{dbName}\"", adminConn);
                         createCmd.ExecuteNonQuery();
                     }
@@ -121,7 +109,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
         }
 
-        public bool CreateTestTables()
+        public override bool CreateTestTables()
         {
             try
             {
@@ -149,11 +137,11 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
         }
 
-        public bool CreateSqlBuildLoggingTables()
+        public override bool CreateSqlBuildLoggingTables()
         {
             try
             {
-                var resourceProvider = new Services.PostgresResourceProvider();
+                var resourceProvider = new PostgresResourceProvider();
 
                 foreach (string dbName in testDatabaseNames)
                 {
@@ -181,7 +169,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
         }
 
-        public bool CleanTestTables()
+        public override bool CleanTestTables()
         {
             try
             {
@@ -202,7 +190,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
         }
 
-        public bool CleanSqlBuildLoggingTables()
+        public override bool CleanSqlBuildLoggingTables()
         {
             try
             {
@@ -223,78 +211,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
         }
 
-        public SqlSyncBuildDataModel CreateSqlSyncSqlBuildDataModelObject()
-        {
-            return SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-        }
-
-        public void AddInsertScript(ref SqlSyncBuildDataModel data, bool multipleRun)
-        {
-            var row = new Script
-            {
-                AllowMultipleRuns = multipleRun,
-                BuildOrder = 1,
-                CausesBuildFailure = true,
-                Database = testDatabaseNames[0],
-                DateAdded = testTimeStamp,
-                FileName = GetTrulyUniqueFile(),
-                RollBackOnError = true,
-                StripTransactionText = true,
-                Description = "PostgreSQL Test Script to insert into transactiontest table",
-                AddedBy = "UnitTest",
-                ScriptId = Guid.NewGuid().ToString()
-            };
-
-            data.Script.Add(row);
-            string script = $"INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('INSERT TEST', '{testGuid}', '{testTimeStamp:yyyy-MM-dd HH:mm:ss}')";
-            File.WriteAllText(row.FileName, script);
-        }
-
-        public void AddSelectScript(ref SqlSyncBuildDataModel data)
-        {
-            var row = new Script
-            {
-                AllowMultipleRuns = true,
-                BuildOrder = 1,
-                CausesBuildFailure = true,
-                Database = testDatabaseNames[0],
-                DateAdded = testTimeStamp,
-                FileName = GetTrulyUniqueFile(),
-                RollBackOnError = true,
-                StripTransactionText = true,
-                Description = "PostgreSQL Test Script to select from transactiontest table",
-                AddedBy = "UnitTest",
-                ScriptId = Guid.NewGuid().ToString()
-            };
-
-            data.Script.Add(row);
-            File.WriteAllText(row.FileName, "SELECT * FROM transactiontest");
-        }
-
-        public void AddFailureScript(ref SqlSyncBuildDataModel data, bool rollBackOnError, bool causeBuildFailure)
-        {
-            var row = new Script
-            {
-                AllowMultipleRuns = true,
-                BuildOrder = 10,
-                CausesBuildFailure = causeBuildFailure,
-                Database = testDatabaseNames[0],
-                DateAdded = testTimeStamp,
-                FileName = GetTrulyUniqueFile(),
-                RollBackOnError = rollBackOnError,
-                StripTransactionText = true,
-                Description = "PostgreSQL Test Script to cause a failure",
-                AddedBy = "UnitTest",
-                ScriptId = Guid.NewGuid().ToString()
-            };
-
-            data.Script.Add(row);
-            // Invalid column name will cause failure
-            string script = $"INSERT INTO transactiontest (invalid_column, guid, datetimestamp) VALUES ('INSERT TEST', '{testGuid}', '{testTimeStamp:yyyy-MM-dd HH:mm:ss}')";
-            File.WriteAllText(row.FileName, script);
-        }
-
-        public ConnectionData CreateConnectionData(string databaseName)
+        public override ConnectionData CreateConnectionData(string databaseName)
         {
             return new ConnectionData()
             {
@@ -308,44 +225,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             };
         }
 
-        public SqlBuildHelper CreateSqlBuildHelper(SqlSyncBuildDataModel buildData)
-        {
-            SqlBuildHelper helper = new SqlBuildHelper(connData);
-            return SetSqlBuildHelperValues(helper, buildData);
-        }
-
-        public SqlBuildHelper SetSqlBuildHelperValues(SqlBuildHelper sbh, SqlSyncBuildDataModel buildData)
-        {
-            ((ISqlBuildRunnerProperties)sbh).BuildDataModel = buildData;
-
-            string logFile = GetTrulyUniqueFile();
-            sbh.scriptLogFileName = logFile;
-
-            SqlSyncBuildDataModel buildHist = CreateSqlSyncSqlBuildDataModelObject();
-            ((ISqlBuildRunnerProperties)sbh).BuildHistoryModel = buildHist;
-
-            projectFileName = GetTrulyUniqueFile();
-            sbh.projectFileName = projectFileName;
-
-            buildHistoryXmlFile = GetTrulyUniqueFile();
-            sbh.buildHistoryXmlFile = buildHistoryXmlFile;
-            return sbh;
-        }
-
-        public Build GetRunBuildRow(SqlBuildHelper sqlBuildHelper)
-        {
-            return new Build();
-        }
-
-        public List<DatabaseOverride> GetDatabaseOverrides()
-        {
-            return new List<DatabaseOverride>
-            {
-                new DatabaseOverride(serverName, testDatabaseNames[0], testDatabaseNames[0])
-            };
-        }
-
-        public int GetSqlBuildLoggingRowCountByBuildFileName(int databaseIndex)
+        public override int GetSqlBuildLoggingRowCountByBuildFileName(int databaseIndex)
         {
             try
             {
@@ -362,7 +242,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
         }
 
-        public int GetTestTableRowCount(int databaseIndex)
+        public override int GetTestTableRowCount(int databaseIndex)
         {
             try
             {
@@ -379,29 +259,94 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
         }
 
-        public string GetTrulyUniqueFile()
+        public string PreRunScriptGuid = "47037F10-C217-4e7b-89AE-482F8C09D672";
+
+        public bool InsertPreRunScriptEntry()
         {
-            string tmpName = Path.GetTempFileName();
-            string newName = Path.Combine(Path.GetDirectoryName(tmpName), "SqlSyncTest-PG-" + Guid.NewGuid().ToString() + ".tmp");
-            File.Move(tmpName, newName);
-            tempFiles.Add(newName);
-            return newName;
+            try
+            {
+                foreach (string dbName in testDatabaseNames)
+                {
+                    using var conn = new NpgsqlConnection(GetConnectionString(dbName));
+                    conn.Open();
+                    using var cmd = new NpgsqlCommand(
+                        @"INSERT INTO sqlbuild_logging (buildfilename, scriptfilename, scriptid, scriptfilehash, commitdate, tag, scripttext, sequence, description, allowscriptblock, userid)
+                          VALUES ('PreRunEntry', 'PreRunScript.sql', @scriptid, 'MadeUpHash', @commitdate, '', 'Pre-run script text', 0, 'Pre-run script', true, 'UnitTest')", conn);
+                    cmd.Parameters.AddWithValue("@scriptid", new Guid(PreRunScriptGuid));
+                    cmd.Parameters.AddWithValue("@commitdate", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+                }
+                return true;
+            }
+            catch (Exception exe)
+            {
+                log.LogError(exe, "Unable to insert pre-run script entry");
+                return false;
+            }
         }
 
-        public void Dispose()
+        public void AddPreRunScript(ref SqlSyncBuildDataModel data, bool multipleRun)
         {
-            foreach (var file in tempFiles)
+            var row = new Script
             {
-                if (File.Exists(file))
-                {
-                    try { File.Delete(file); } catch { }
-                }
-            }
+                AllowMultipleRuns = multipleRun,
+                BuildOrder = 1,
+                CausesBuildFailure = true,
+                Database = testDatabaseNames[0],
+                DateAdded = testTimeStamp,
+                FileName = GetTrulyUniqueFile(),
+                RollBackOnError = true,
+                StripTransactionText = true,
+                Description = "Test Script to be skipped",
+                AddedBy = "UnitTest",
+                ScriptId = PreRunScriptGuid
+            };
 
-            if (File.Exists(projectFileName))
-                try { File.Delete(projectFileName); } catch { }
-            if (File.Exists(buildHistoryXmlFile))
-                try { File.Delete(buildHistoryXmlFile); } catch { }
+            data.Script.Add(row);
+            string script = $"INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('INSERT TEST', '{testGuid}', '{testTimeStamp:yyyy-MM-dd HH:mm:ss}')";
+            File.WriteAllText(row.FileName, script);
+
+            InsertPreRunScriptEntry();
+        }
+
+        public SqlBuildHelper CreateSqlBuildHelperAccessor(SqlSyncBuildDataModel buildData)
+        {
+            SqlBuildHelper target = new SqlBuildHelper(data: connData, connectionsService: new DefaultConnectionsService());
+
+            ((ISqlBuildRunnerProperties)target).BuildDataModel = buildData;
+
+            string logFile = GetTrulyUniqueFile();
+            tempFiles.Add(logFile);
+            target.scriptLogFileName = logFile;
+
+            SqlSyncBuildDataModel buildHist = CreateSqlSyncSqlBuildDataModelObject();
+            ((ISqlBuildRunnerProperties)target).BuildHistoryModel = buildHist;
+
+            projectFileName = GetTrulyUniqueFile();
+            tempFiles.Add(projectFileName);
+            target.projectFileName = projectFileName;
+
+            buildHistoryXmlFile = GetTrulyUniqueFile();
+            tempFiles.Add(buildHistoryXmlFile);
+            target.buildHistoryXmlFile = buildHistoryXmlFile;
+
+            return target;
+        }
+
+        public int GetSqlBuildLoggingRowCountByScriptId(int databaseIndex, string guidValue)
+        {
+            try
+            {
+                using var conn = new NpgsqlConnection(GetConnectionString(testDatabaseNames[databaseIndex]));
+                conn.Open();
+                using var cmd = new NpgsqlCommand("SELECT count(*) FROM sqlbuild_logging WHERE scriptid = @scriptid", conn);
+                cmd.Parameters.AddWithValue("@scriptid", new Guid(guidValue));
+                return Convert.ToInt32(cmd.ExecuteScalar());
+            }
+            catch
+            {
+                return -1;
+            }
         }
     }
 }
