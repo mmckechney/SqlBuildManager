@@ -24,7 +24,7 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             else
             {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.KeyVaultName}");
+                log.LogInformation($"Unable to read environment variable {ContainerEnvVariables.KeyVaultName}");
             }
 
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.IdentityClientId);
@@ -65,7 +65,7 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             else
             {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.DacpacName}");
+                log.LogInformation($"Unable to read environment variable {ContainerEnvVariables.DacpacName}");
             }
 
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.StorageAccountName);
@@ -122,7 +122,7 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             else
             {
-                log.LogWarning($"Unable to read or parse environment variable {ContainerEnvVariables.AuthType}");
+                log.LogWarning($"Unable to read or parse environment variable {ContainerEnvVariables.EventHubLogging}");
             }
 
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.AllowObjectDelete);
@@ -152,6 +152,7 @@ namespace SqlBuildManager.Console.ContainerShared
             {
                 log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.EventHubConnectionString}");
             }
+
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.ServiceBusTopicConnectionString);
             if (!string.IsNullOrWhiteSpace(tmp))
             {
@@ -172,7 +173,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 }
                 else
                 {
-                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.StorageAccountKey}");
+                    log.LogInformation($"Unable to read environment variable {ContainerEnvVariables.StorageAccountKey}");
                 }
               
 
@@ -183,7 +184,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 }
                 else
                 {
-                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.UserName}");
+                    log.LogInformation($"Unable to read environment variable {ContainerEnvVariables.UserName}");
                 }
 
                 tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.Password);
@@ -193,7 +194,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 }
                 else
                 {
-                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.Password}");
+                    log.LogInformation($"Unable to read environment variable {ContainerEnvVariables.Password}");
                 }
             }
             

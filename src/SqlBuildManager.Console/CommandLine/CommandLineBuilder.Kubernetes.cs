@@ -1,13 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Management.Smo;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Builder;
 using System.CommandLine.Help;
-using System.CommandLine.Invocation;
-using System.CommandLine.NamingConventionBinder;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO;
@@ -18,6 +15,10 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineBuilder
     {
+        // Local option for kubernetes monitor flag
+        private static Option<bool> k8sMonitorOption = new Option<bool>("--monitor") { Description = "Immediately start monitoring progress after successful pod deployment" };
+        private static Option<bool> k8sCleanupOnFailureOption = new Option<bool>("--cleanup-onfailure") { Description = "Cleanup the Kubernetes applied resources (job, configmap, etc) if there is a job failure" };
+        
         /// <summary>
         /// "Run a build in Kubernetes (Orchestrates the prep, enqueue and monitor commands as well as kubectl)
         /// </summary>
@@ -38,7 +39,7 @@ namespace SqlBuildManager.Console.CommandLine
                     platinumdacpacFileInfoOption,
                     forceOption,
                     allowForObjectDeletionOption,
-                    new Option<bool>("--cleanup-onfailure", () => true, "Cleanup the Kubernetes applied resources (job, configmap, etc) if there is a job failure"),
+                    k8sCleanupOnFailureOption,
                     imageTagOption,
                     imageNameOption,
                     imageRepositoryOption
@@ -48,12 +49,23 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConcurrencyOptions);
-                //IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.IsRequired = false; } cmd.Add(o); });
+                //IdentityArgumentsForContainerApp.ForEach(o => { if (o.Name == "identityname") { o.Required = false; } cmd.Add(o); });
                 cmd.Add(subscriptionIdOption);
                 cmd.Add(unitTestOption);
 
 
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, FileInfo, bool, bool, bool, bool, bool>(Worker.KubernetesRun);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var overrideFile = parseResult.GetValue(overrideAsFileOption);
+                    var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
+                    var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
+                    var force = parseResult.GetValue(forceOption);
+                    var allowObjectDelete = parseResult.GetValue(allowForObjectDeletionOption);
+                    var cleanupOnFailure = parseResult.GetValue(k8sCleanupOnFailureOption);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    var stream = parseResult.GetValue(streamEventsOption);
+                    return await Worker.KubernetesRun(cmdLine, overrideFile, packagename, platinumdacpac, force, allowObjectDelete, cleanupOnFailure, unittest, stream);
+                });
                 return cmd;
 
             }
@@ -74,11 +86,11 @@ namespace SqlBuildManager.Console.CommandLine
                     sectionPlaceholderOption,
                     jobnameOption,
                     podCountOption,
-                    overrideAsFileOption,
+                    overrideRequiredOption,
                     queryFileOption,
                     outputFileOption,
                     forceOption,
-                    new Option<bool>("--cleanup-onfailure", () => true, "Cleanup the Kubernetes applied resources (job, configmap, etc) if there is a job failure"),
+                    k8sCleanupOnFailureOption,
                     imageTagOption,
                     imageNameOption,
                     imageRepositoryOption
@@ -92,44 +104,59 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(unitTestOption);
 
 
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, bool, bool, bool, bool>(Worker.KubernetesQuery);
-                return cmd;
-
-            }
-        }
-
-        /// <summary>
-        /// Helper command to create yaml files from a settings json file and runtime parameters
-        /// </summary>
-        private static Command KubernetesCreateYamlCommand
-        {
-            get
-            {
-                var cmd = new Command("createyaml", "Helper command to create yaml files from a settings json file and runtime parameters");
-                cmd.AddRange(SettingsFileExistingOptions);
-                cmd.AddRange(new List<Option>
-                {
-                    sectionPlaceholderOption,
-                    pathOption,
-                    prefixOption,
-                    jobnameOption,
-                    podCountOption,
-                    packagenameAsFileToUploadOption,
-                    platinumdacpacFileInfoOption,
-                    forceOption,
-
-                    imageTagOption,
-                    imageNameOption,
-                    imageRepositoryOption,
-
-                    serviceAccountNameOption
-
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var force = parseResult.GetValue(forceOption);
+                    var cleanupOnFailure = parseResult.GetValue(k8sCleanupOnFailureOption);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    var stream = parseResult.GetValue(streamEventsOption);
+                    return await Worker.KubernetesQuery(cmdLine, force, stream, unittest, cleanupOnFailure);
                 });
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, DirectoryInfo, string, FileInfo, FileInfo, bool>(Worker.KubernetesSaveYamlFiles);
                 return cmd;
-            }
 
+            }
         }
+
+        ///// <summary>
+        ///// Helper command to create yaml files from a settings json file and runtime parameters
+        ///// </summary>
+        //private static Command KubernetesCreateYamlCommand
+        //{
+        //    get
+        //    {
+        //        var cmd = new Command("createyaml", "Helper command to create yaml files from a settings json file and runtime parameters");
+        //        cmd.AddRange(SettingsFileExistingOptions);
+        //        cmd.AddRange(new List<Option>
+        //        {
+        //            sectionPlaceholderOption,
+        //            pathOption,
+        //            prefixOption,
+        //            jobnameOption,
+        //            podCountOption,
+        //            packagenameAsFileToUploadOption,
+        //            platinumdacpacFileInfoOption,
+        //            forceOption,
+
+        //            imageTagOption,
+        //            imageNameOption,
+        //            imageRepositoryOption,
+
+        //            serviceAccountNameOption
+
+        //        });
+        //        cmd.SetAction(async (parseResult, ct) => {
+        //            var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+        //            var path = parseResult.GetValue(pathOption);
+        //            var prefix = parseResult.GetValue(prefixOption);
+        //            var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
+        //            var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
+        //            var force = parseResult.GetValue(forceOption);
+        //            return await Worker.KubernetesSaveYamlFiles(cmdLine, path, prefix, packagename, platinumdacpac, force);
+        //        });
+        //        return cmd;
+        //    }
+
+        //}
 
         /// <summary>
         /// [Used by Kubernetes] Starts the pod as a worker for database querying - polling and retrieving items from target service bus queue topic
@@ -139,7 +166,10 @@ namespace SqlBuildManager.Console.CommandLine
             get
             {
                 var cmd = new Command("query", "[Used by Kubernetes] Starts the pod as a worker for database querying - polling and retrieving items from target service bus queue topic");
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.KubernetesWorker_RunQueueQuery);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.KubernetesWorker_RunQueueQuery(cmdLine);
+                });
 
                 return cmd;
             }
@@ -153,7 +183,10 @@ namespace SqlBuildManager.Console.CommandLine
             get
             {
                 var cmd = new Command("worker", "[Used by Kubernetes] Starts the pod as a worker - polling and retrieving items from target service bus queue topic");
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.KubernetesWorker_RunQueueBuild);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.KubernetesWorker_RunQueueBuild(cmdLine);
+                });
                 cmd.Add(KubernetesQueryWorkerCommand);
                 return cmd;
             }
@@ -179,7 +212,17 @@ namespace SqlBuildManager.Console.CommandLine
                 });
                 cmd.AddRange(kubernetesYamlFileOptions);
 
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, string, string, ConcurrencyType, string, FileInfo>(Worker.KubernetesEnqueueOverrideTargets);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var secretsFile = parseResult.GetValue(secretsFileOption);
+                    var runtimeFile = parseResult.GetValue(runtimeFileOption);
+                    var keyvaultname = parseResult.GetValue(keyVaultNameOption);
+                    var jobname = parseResult.GetValue(jobnameOption);
+                    var concurrencytype = parseResult.GetValue(threadedConcurrencyTypeOption);
+                    var servicebustopicconnection = parseResult.GetValue(serviceBusconnectionOption);
+                    var overrideFile = parseResult.GetValue(overrideAsFileOption);
+                    return await Worker.KubernetesEnqueueOverrideTargets(cmdLine, secretsFile, runtimeFile, keyvaultname, jobname, concurrencytype, servicebustopicconnection, overrideFile);
+                });
 
 
                 return cmd;
@@ -209,7 +252,11 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(silentOption);
 
 
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.SaveAndEncryptKubernetesSettings);
+                cmd.SetAction((parseResult) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    return Worker.SaveAndEncryptKubernetesSettings(cmdLine, unittest);
+                });
                 return cmd;
             }
         }
@@ -238,7 +285,15 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(eventhubconnectionOption);
                 cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(kubernetesYamlFileOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, bool, bool, bool>(Worker.KubernetesMonitorRuntimeProgress);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var secretsFile = parseResult.GetValue(secretsFileOption);
+                    var runtimeFile = parseResult.GetValue(runtimeFileOption);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    var stream = parseResult.GetValue(streamEventsOption);
+                    var consolidateLogs = true; // default parameter
+                    return await Worker.KubernetesMonitorRuntimeProgress(cmdLine, secretsFile, runtimeFile, unittest, stream, consolidateLogs);
+                });
                 return cmd;
             }
         }
@@ -269,7 +324,16 @@ namespace SqlBuildManager.Console.CommandLine
                 });
                 cmd.AddRange(kubernetesYamlFileOptions);
                 cmd.AddRange(DatabaseAuthArgs);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, FileInfo, FileInfo, bool>(Worker.KubernetesUploadBuildPackage);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var secretsFile = parseResult.GetValue(secretsFileOption);
+                    var runtimeFile = parseResult.GetValue(runtimeFileOption);
+                    var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
+                    var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
+                    var force = parseResult.GetValue(forceOption);
+                    var (retVal, _) = await Worker.KubernetesUploadBuildPackage(cmdLine, secretsFile, runtimeFile, packagename, platinumdacpac, force);
+                    return retVal;
+                });
                 return cmd;
             }
         }
@@ -293,7 +357,16 @@ namespace SqlBuildManager.Console.CommandLine
 
                 });
                 cmd.AddRange(kubernetesYamlFileOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, FileInfo, FileInfo, string, string, ConcurrencyType, string>(Worker.KubernetesDequeueOverrideTargets);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var secretsFile = parseResult.GetValue(secretsFileOption);
+                    var runtimeFile = parseResult.GetValue(runtimeFileOption);
+                    var keyvaultname = parseResult.GetValue(keyVaultNameOption);
+                    var jobname = parseResult.GetValue(jobnameOption);
+                    var concurrencytype = parseResult.GetValue(threadedConcurrencyTypeOption);
+                    var servicebustopicconnection = parseResult.GetValue(serviceBusconnectionOption);
+                    return await Worker.KubernetesDequeueOverrideTargets(cmdLine, secretsFile, runtimeFile, keyvaultname, jobname, concurrencytype, servicebustopicconnection);
+                });
                 return cmd;
             }
         }
@@ -312,10 +385,10 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(KubernetesEnqueueTargetsCommand);
                 cmd.Add(KubernetesMonitorCommand);
                 cmd.Add(KubernetesDequeueTargetsCommand);
-                cmd.Add(KubernetesCreateYamlCommand);
+                //cmd.Add(KubernetesCreateYamlCommand);
                 cmd.Add(KubernetesQueryCommand);
                 cmd.Add(KubernetesWorkerCommand);
-                cmd.AddAlias("aks");
+                cmd.Aliases.Add("aks");
                 return cmd;
             }
         }

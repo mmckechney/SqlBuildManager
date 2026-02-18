@@ -117,7 +117,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
@@ -147,7 +147,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync(); 
             val.Wait();
             var result = val.Result;
 

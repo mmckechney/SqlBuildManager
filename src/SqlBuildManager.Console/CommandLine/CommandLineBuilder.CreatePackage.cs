@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.CommandLine.NamingConventionBinder;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,16 +20,19 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("fromdiff", "Creates an SBM package from a calculated diff between two databases")
                 {
-                    outputsbmOption.Copy(true),
-                    golddatabaseOption.Copy(true),
-                    goldserverOption.Copy(true),
-                    databaseOption.Copy(true),
-                    serverOption.Copy(true),
+                    outputsbmRequiredOption,
+                    golddatabaseOption,
+                    goldserverOption,
+                    databaseRequiredOption,
+                    serverRequiredOption,
                     authtypeOption,
                     allowForObjectDeletionOption
 
                 };
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreatePackageFromDiff);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.CreatePackageFromDiff(cmdLine);
+                });
                 return cmd;
             }
         }
@@ -43,10 +46,13 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("fromscripts", "Creates an SBM package or SBX project file from a list of scripts (type is determined by file extension- .sbm or .sbx)")
                 {
-                    outputsbmOption.Copy(true),
+                    outputsbmRequiredOption,
                     scriptListOption
                 };
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreatePackageFromScripts);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.CreatePackageFromScripts(cmdLine);
+                });
                 return cmd;
             }
         }
@@ -61,13 +67,19 @@ namespace SqlBuildManager.Console.CommandLine
                 //Create from differences between two DACPACS
                 var cmd = new Command("fromdacpacs", "Creates an SBM package from differences between two DACPAC files")
                 {
-                    outputsbmOption.Copy(true),
+                    outputsbmRequiredOption,
                     platinumdacpacSourceOption,
                     targetdacpacSourceOption,
                     allowForObjectDeletionOption
 
                 };
-                cmd.Handler = CommandHandler.Create<string, FileInfo, FileInfo, bool>(Worker.CreatePackageFromDacpacs);
+                cmd.SetAction((parseResult) => {
+                    var outputsbm = parseResult.GetValue(outputsbmOption);
+                    var platinumdacpac = parseResult.GetValue(platinumdacpacSourceOption);
+                    var targetdacpac = parseResult.GetValue(targetdacpacSourceOption);
+                    var allowObjectDelete = parseResult.GetValue(allowForObjectDeletionOption);
+                    return Worker.CreatePackageFromDacpacs(outputsbm, platinumdacpac, targetdacpac, allowObjectDelete);
+                });
                 return cmd;
             }
         }
@@ -82,14 +94,17 @@ namespace SqlBuildManager.Console.CommandLine
                 //Create an SBM from a platium DACPAC file
                 var cmd = new Command("fromdacpacdiff", "Extract a SBM package from a source --platinumdacpac and a target database connection")
                 {
-                    platinumdacpacOption.Copy(true),
-                    outputsbmOption.Copy(true),
-                    databaseOption.Copy(true),
-                    serverOption.Copy(true),
+                    platinumdacpacRequiredOption,
+                    outputsbmRequiredOption,
+                    databaseRequiredOption,
+                    serverRequiredOption,
                     allowForObjectDeletionOption
                 };
                 cmd.AddRange(DatabaseAuthArgs);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreateFromDacpacDiff);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.CreateFromDacpacDiff(cmdLine);
+                });
                 return cmd;
                 
             }

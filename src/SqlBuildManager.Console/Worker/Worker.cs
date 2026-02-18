@@ -11,6 +11,7 @@ using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO;
@@ -55,11 +56,13 @@ namespace SqlBuildManager.Console
             {
                 Task.Run(async () =>
                 {
-                    var parser = clB.GetCommandParser();
+                    var rootCommand = clB.GetRootCommand();
 
                     try
                     {
-                        int result = await parser.InvokeAsync(Worker.startArgs.Args); //  rootCommand.InvokeAsync(Worker.startArgs.Args);
+                        // In System.CommandLine 2.0, use Parse then Invoke on the ParseResult
+                        var parseResult = rootCommand.Parse(Worker.startArgs.Args);
+                        int result = parseResult.Invoke();
                         exitCode = result;
 
                     }

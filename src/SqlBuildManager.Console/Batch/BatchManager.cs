@@ -270,12 +270,12 @@ namespace SqlBuildManager.Console.Batch
                         //If we end up with fewer splits, then reduce the node count...
                         if (concurrencyBuckets.Count() < cmdLine.BatchArgs.BatchNodeCount)
                         {
-                            log.LogWarning($"NOTE! The number of targets ({concurrencyBuckets.Count()}) is less than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Changing the pool node count to {concurrencyBuckets.Count()}");
+                            log.LogInformation($"NOTE! The number of targets ({concurrencyBuckets.Count()}) is less than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Changing the pool node count to {concurrencyBuckets.Count()}");
                             cmdLine.BatchArgs.BatchNodeCount = concurrencyBuckets.Count();
                         }
                         else if (concurrencyBuckets.Count() > cmdLine.BatchArgs.BatchNodeCount) //need to do some consolidating
                         {
-                            log.LogWarning($"NOTE! When splitting by {cmdLine.ConcurrencyType.ToString()}, the number of targets ({concurrencyBuckets.Count()}) is greater than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Will consolidate to fit within the number of nodes");
+                            log.LogInformation($"NOTE! When splitting by {cmdLine.ConcurrencyType.ToString()}, the number of targets ({concurrencyBuckets.Count()}) is greater than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Will consolidate to fit within the number of nodes");
                             concurrencyBuckets = Concurrency.RecombineServersToFixedBucketCount(multiDb, cmdLine.BatchArgs.BatchNodeCount);
                         }
                     }
