@@ -37,6 +37,13 @@ param testDbCountPerServer int = 10
 @description('Whether to use private endpoints for SQL Server connectivity instead of public network access')
 param usePrivateEndpoint bool = false
 
+@description('Whether to deploy Azure Database for PostgreSQL Flexible Server')
+param deployPostgreSQL bool = true
+
+@secure()
+@description('Administrator password for PostgreSQL Flexible Server')
+param pgAdminPassword string = ''
+
 @allowed([
   'Basic'
   'Standard'
@@ -166,6 +173,25 @@ module databases './modules/database.bicep' = if(testDbCountPerServer > 0 && use
   }
 }
 
+// PostgreSQL Flexible Server
+module postgresql './modules/postgresql.bicep' = if(deployPostgreSQL && userIdGuid != '' && userLoginName != '' && pgAdminPassword != ''){
+  name: 'postgresql'
+  scope: rg
+  params: {
+    namePrefix: namePrefix
+    testDbCount: testDbCountPerServer
+    location: location
+    currentIpAddress: currentIpAddress
+    subnetNames: join(networkResource.outputs.subnetNames, ',')
+    pgAdminObjectId: userIdGuid
+    pgAdminLogin: userLoginName
+    pgAdminPassword: pgAdminPassword
+    usePrivateEndpoint: usePrivateEndpoint
+    vnetId: networkResource.outputs.vnetId
+    privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
+  }
+}
+
 // Batch Account
 module batchAccount './modules/batch.bicep' = if(deployBatchAccount){
   name: 'batchAccount'
@@ -278,6 +304,7 @@ output EVENTHUB_SKU string = eventhubSku
 output SERVICEBUS_SKU string = serviceBusSku
 output SKU_CAPACITY int = skuCapacity
 output USE_PRIVATE_ENDPOINT bool = usePrivateEndpoint
+output DEPLOY_POSTGRESQL bool = deployPostgreSQL
 
 // Resource outputs
 output RESOURCE_GROUP_NAME string = resourceGroupName
@@ -325,3 +352,8 @@ output AKS_CLUSTER_NAME string = deployAks ? aks!.outputs.clusterName : ''
 output AKS_CLUSTER_ID string = deployAks ? aks!.outputs.clusterId : ''
 output AKS_FEDERATED_IDENTITY_NAME string = deployAks ? aks!.outputs.federatedIdName : ''
 output AKS_SERVICE_ACCOUNT_NAME string = deployAks ? aks!.outputs.serviceAccountName : ''
+
+output PG_SERVER_NAME string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerName : ''
+output PG_SERVER_FQDN string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerFqdn : ''
+output PG_ADMIN_USER string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgAdminUser : ''
+output PG_DATABASE_COUNT int = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgDatabaseCount : 0

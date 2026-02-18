@@ -61,6 +61,23 @@ if (Test-Path $scriptPath) {
     Write-Host "Skipping SQL permissions grant. Run manually after deployment:" -ForegroundColor Yellow
     Write-Host "  .\scripts\Database\grant_identity_permissions.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
 }
+
+# Grant PostgreSQL managed identity permissions
+$pgDeployed = Get-AzdEnvValue "DEPLOY_POSTGRESQL"
+if ($pgDeployed -eq "true") {
+    Write-Host ""
+    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host "Post-Provision: Granting PostgreSQL Permissions" -ForegroundColor Cyan
+    Write-Host "========================================" -ForegroundColor Cyan
+
+    $pgScriptPath = Join-Path $repoRoot "scripts\Database\grant_pg_identity_permissions.ps1"
+    if (Test-Path $pgScriptPath) {
+        & $pgScriptPath -prefix $prefix -resourceGroupName $resourceGroupName
+    } else {
+        Write-Host "Script not found at: $pgScriptPath" -ForegroundColor Yellow
+    }
+}
+
 $aksDeployed = Get-AzdEnvValue "DEPLOY_AKS"
 if ($aksDeployed -eq "true") {
 
@@ -146,6 +163,21 @@ if (Test-Path $dbConfigScriptPath) {
     Write-Host "Run manually: .\scripts\Database\create_database_override_files.ps1 -prefix $prefix -path $outputPath" -ForegroundColor Yellow
 }
 
+# Generate PostgreSQL database override config files
+$pgDeployedForConfig = Get-AzdEnvValue "DEPLOY_POSTGRESQL"
+if ($pgDeployedForConfig -eq "true") {
+    Write-Host ""
+    Write-Host "======================================================" -ForegroundColor Cyan
+    Write-Host "Post-Provision: Creating PostgreSQL Database Config Files" -ForegroundColor Cyan
+    Write-Host "======================================================" -ForegroundColor Cyan
+
+    $pgDbConfigScriptPath = Join-Path $repoRoot "scripts\Database\create_pg_database_override_files.ps1"
+    if (Test-Path $pgDbConfigScriptPath) {
+        & $pgDbConfigScriptPath -prefix $prefix -path $outputPath
+    } else {
+        Write-Host "PostgreSQL config script not found at: $pgDbConfigScriptPath" -ForegroundColor Yellow
+    }
+}
 
 
 # Build and upload Batch application packages if BUILD_BATCH_PACKAGES is set

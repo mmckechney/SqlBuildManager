@@ -1,3 +1,5 @@
+using Azure.Core;
+using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using System.Data.Common;
@@ -6,10 +8,16 @@ namespace SqlSync.Connection
 {
     /// <summary>
     /// PostgreSQL implementation of IDbConnectionFactory using Npgsql.
+    /// Supports Password, AzureADDefault, and ManagedIdentity authentication.
     /// </summary>
     public class PostgresConnectionFactory : IDbConnectionFactory
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        /// <summary>
+        /// The Azure AD scope for Azure Database for PostgreSQL.
+        /// </summary>
+        private static readonly string[] PgAadScopes = new[] { "https://ossrdbms-aad.database.windows.net/.default" };
 
         public DbConnection CreateConnection(ConnectionData connData)
         {
@@ -63,22 +71,58 @@ namespace SqlSync.Connection
                     break;
                 case AuthenticationType.AzureADDefault:
                 case AuthenticationType.ManagedIdentity:
-                    // Azure AD/Managed Identity requires Npgsql.Authentication.AzureIdentity plugin
-                    builder.Username = string.IsNullOrEmpty(managedIdentityClientId) ? uid : managedIdentityClientId;
+                    // Acquire an Azure AD token and use it as the password
+                    builder.SslMode = SslMode.Require;
+                    string tokenUsername = string.IsNullOrEmpty(managedIdentityClientId) ? uid : managedIdentityClientId;
+                    builder.Username = tokenUsername;
+                    builder.Password = GetAzureAdAccessToken(managedIdentityClientId);
                     break;
                 case AuthenticationType.AzureADPassword:
                     builder.Username = uid;
                     builder.Password = pw;
+                    builder.SslMode = SslMode.Require;
                     break;
                 case AuthenticationType.AzureADIntegrated:
                 case AuthenticationType.AzureADInteractive:
                     builder.Username = uid;
                     builder.Password = pw;
+                    builder.SslMode = SslMode.Require;
                     break;
             }
 
             log.LogDebug($"PostgreSQL Connection string: {builder.ConnectionString}");
             return builder.ConnectionString;
+        }
+
+        /// <summary>
+        /// Acquires an Azure AD access token for Azure Database for PostgreSQL.
+        /// Uses DefaultAzureCredential (supports MI, VS, CLI, etc.) or 
+        /// ManagedIdentityCredential if a specific client ID is provided.
+        /// </summary>
+        private static string GetAzureAdAccessToken(string managedIdentityClientId)
+        {
+            try
+            {
+                TokenCredential credential;
+                if (!string.IsNullOrEmpty(managedIdentityClientId))
+                {
+                    credential = new ManagedIdentityCredential(managedIdentityClientId);
+                }
+                else
+                {
+                    credential = new DefaultAzureCredential();
+                }
+
+                var tokenRequestContext = new TokenRequestContext(PgAadScopes);
+                var token = credential.GetToken(tokenRequestContext, default);
+                log.LogDebug("Successfully acquired Azure AD token for PostgreSQL");
+                return token.Token;
+            }
+            catch (System.Exception ex)
+            {
+                log.LogError(ex, "Failed to acquire Azure AD token for PostgreSQL");
+                throw;
+            }
         }
 
         public DbCommand CreateCommand(string sql, DbConnection connection, DbTransaction transaction = null)

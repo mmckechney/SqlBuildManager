@@ -34,4 +34,7 @@ $batchSubnet = $prefix + "batchsubnet"
 $serviceAccountName= $prefix + "serviceaccount"
 $federatedIdName = $prefix + "federatedidname"
 
+#Used with PostgreSQL Flexible Server
+$pgServerName = $prefix + "pgserver"
+
 
