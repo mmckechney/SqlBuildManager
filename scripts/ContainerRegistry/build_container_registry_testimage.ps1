@@ -3,7 +3,6 @@ param
 (
     [string] $prefix,
     [string] $resourceGroupName,
-    [string] $path,
     [bool] $wait = $true,
     [string] $imageTag = "test-runner"
 )
@@ -21,10 +20,7 @@ $testImageName = "sqlbuildmanager-tests"
 # Get set resource name variables from prefix
 #############################################
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
-$keyFileScript = Join-Path $repoRoot "scripts\key_file_names.ps1"
-
 . $prefixScript -prefix $prefix
-. $keyFileScript -prefix $prefix -path $path
 
 #############################################
 # Build and push test image if requested

@@ -1,11 +1,8 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Builder;
 using System.CommandLine.Help;
-using System.CommandLine.Invocation;
-using System.CommandLine.NamingConventionBinder;
 using System.CommandLine.Parsing;
 using System.Linq;
 using System.Security.Cryptography;
@@ -16,143 +13,35 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineBuilder
     {
-        public static Parser GetCommandParser()
+        private static RootCommand _rootCommand;
+
+        /// <summary>
+        /// Gets the configured RootCommand for parsing. Caches the result.
+        /// </summary>
+        public static RootCommand GetRootCommand()
         {
-            RootCommand rootCommand = SetUp();
-
-
-            var builder = new System.CommandLine.Builder.CommandLineBuilder(rootCommand)
-                       .UseTypoCorrections()
-                       .UseDefaults()
-                       .UseHelp(ctx =>
-                       {
-                           ctx.HelpBuilder.CustomizeLayout(_ => HelpBuilder.Default
-                                             .GetLayout()
-                                             .Prepend(
-                                                 _ => AnsiConsole.Write(new FigletText("SQL Build Manager"))
-                                             ));
-                           ctx.HelpBuilder.CustomizeSymbol(FirstBuildRunCommand,
-                               firstColumnText: $"** Build Execution Commands:\u0000{Environment.NewLine}{FirstBuildRunCommand.Name}",
-                               secondColumnText: $"\u0000{Environment.NewLine}{FirstBuildRunCommand.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(FirstUtilityCommand,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Build Utility Commands:\u0000{Environment.NewLine}{FirstUtilityCommand.Name}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{FirstUtilityCommand.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(FirstPackageManagementCommand,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Package Management Commands:\u0000{Environment.NewLine}{FirstPackageManagementCommand.Name}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{FirstPackageManagementCommand.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(FirstPackageInformationCommand,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Package Information Commands:\u0000{Environment.NewLine}{FirstPackageInformationCommand.Name}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{FirstPackageInformationCommand.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(FirstAdditionalCommand,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Additional Commands:\u0000{Environment.NewLine}{FirstAdditionalCommand.Name}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{FirstAdditionalCommand.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(imageTagOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Container Registry Options:\u0000{Environment.NewLine}{OptionString(imageTagOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{imageTagOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(threadedConcurrencyTypeOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Concurrency Options:\u0000{Environment.NewLine}{OptionString(threadedConcurrencyTypeOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{threadedConcurrencyTypeOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(threadedConcurrencyRequiredTypeOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Concurrency Options:\u0000{Environment.NewLine}{OptionString(threadedConcurrencyRequiredTypeOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{threadedConcurrencyRequiredTypeOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(settingsfileExistingOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Settings File Options:\u0000{Environment.NewLine}{OptionString(settingsfileExistingOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{settingsfileExistingOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(settingsfileNewOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Settings File Options:\u0000{Environment.NewLine}{OptionString(settingsfileNewOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{settingsfileNewOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(settingsfileExistingRequiredOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Settings File Options:\u0000{Environment.NewLine}{OptionString(settingsfileExistingRequiredOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{settingsfileExistingRequiredOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(usernameOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Database Auth Options:\u0000{Environment.NewLine}{OptionString(usernameOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{usernameOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(clientIdOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Identity Options:\u0000{Environment.NewLine}{OptionString(clientIdOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{clientIdOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(serviceAccountNameOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Identity Options:\u0000{Environment.NewLine}{OptionString(serviceAccountNameOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{serviceAccountNameOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(keyVaultNameOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Connection and Secrets Options:\u0000{Environment.NewLine}{OptionString(keyVaultNameOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{keyVaultNameOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(batchResourceGroupOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Batch Pool Compute Options :\u0000{Environment.NewLine}{OptionString(batchResourceGroupOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{batchResourceGroupOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(batchjobnameOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Batch Job Settings Options :\u0000{Environment.NewLine}{OptionString(batchjobnameOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{batchjobnameOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(containerAppEnvironmentOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Container App Deployment Options :\u0000{Environment.NewLine}{OptionString(containerAppEnvironmentOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{containerAppEnvironmentOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(runtimeFileOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Kubernetes YAML file Options :\u0000{Environment.NewLine}{OptionString(runtimeFileOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{runtimeFileOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(aciIResourceGroupNameOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Container Instance Options :\u0000{Environment.NewLine}{OptionString(aciIResourceGroupNameOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{aciIResourceGroupNameOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(aciIResourceGroupNameNotReqOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** Container Instance Options :\u0000{Environment.NewLine}{OptionString(aciIResourceGroupNameNotReqOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{aciIResourceGroupNameNotReqOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(vnetNameOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** VNET Options :\u0000{Environment.NewLine}{OptionString(vnetNameOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{vnetNameOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(eventHubLoggingTypeOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** EventHub Resource Options :\u0000{Environment.NewLine}{OptionString(eventHubLoggingTypeOption)}",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000{Environment.NewLine}{eventHubLoggingTypeOption.Description}");
-
-                           ctx.HelpBuilder.CustomizeSymbol(sectionPlaceholderOption,
-                               firstColumnText: $"\u0000{Environment.NewLine}** General Options:\u0000",
-                               secondColumnText: $"\u0000{Environment.NewLine}\u0000");
-
-                       });
-
-            builder.RegisterWithDotnetSuggest();
-            builder.UseTypoCorrections();
-            //builder.AddMiddleware(async (context, next) =>
-            //{
-            //    if (context.ParseResult.HasOption(settingsfileExistingOption) || context.ParseResult.HasOption(settingsfileExistingOption) || context.ParseResult.HasOption(settingsfileExistingRequiredOption))
-            //    {
-            //        await next(context);
-            //    }
-            //    else
-            //    {
-            //        await next(context);
-            //    }
-
-            //});
-
-            var parser = builder.Build();
-
-            return parser;
+            if (_rootCommand == null)
+            {
+                _rootCommand = SetUp();
+            }
+            return _rootCommand;
         }
+
+        /// <summary>
+        /// Parses arguments directly using the root command.
+        /// In System.CommandLine 2.0, we use RootCommand.Parse() directly.
+        /// </summary>
+        public static ParseResult Parse(string[] args)
+        {
+            var rootCommand = GetRootCommand();
+            return rootCommand.Parse(args);
+        }
+
         private static string OptionString(Option option)
         {
             var str = string.Join(", ", option.Aliases) + $" <{option.Name}>";
 
-            if (option.IsRequired)
+            if (option.Required)
             {
                 return str + " (REQUIRED)";
             }
@@ -161,19 +50,25 @@ namespace SqlBuildManager.Console.CommandLine
                 return str;
             }
         }
+
         public static (CommandLineArgs, string) ParseArgumentsWithMessage(string[] args)
         {
-            var parser = GetCommandParser();
-            var res = parser.Parse(args);
-            if (res.Errors.Count > 0)
+            var parseResult = Parse(args);
+
+            // If help was requested, skip error checking and return null with empty message
+            // so the caller can invoke the parse result to display help
+            if (args.Any(a => a == "-?" || a == "-h" || a == "--help"))
             {
-                return (null, string.Join<string>(System.Environment.NewLine, res.Errors.Select(e => e.Message).ToArray()));
+                return (null, string.Empty);
             }
 
-            var bindingContext = new InvocationContext(parser.Parse(args)).BindingContext;
+            if (parseResult.Errors.Count > 0)
+            {
+                return (null, string.Join<string>(System.Environment.NewLine, parseResult.Errors.Select(e => e.Message).ToArray()));
+            }
 
-            var binder = new ModelBinder(typeof(CommandLineArgs));
-            var instance = (CommandLineArgs)binder.CreateInstance(bindingContext);
+            // Use our explicit binder instead of the deprecated ModelBinder
+            var instance = CommandLineArgsBinder.Bind(parseResult);
 
             return (instance, string.Empty);
         }
@@ -194,9 +89,9 @@ namespace SqlBuildManager.Console.CommandLine
         public static List<List<string>> ListCommands()
         {
             var cmdList = new List<List<string>>();
-            var parser = GetCommandParser();
+            var rootCommand = GetRootCommand();
 
-            var commands = parser.Configuration.RootCommand.Subcommands;
+            var commands = rootCommand.Subcommands;
             cmdList.AddRange(commands.Select(c => new List<string> { c.Name }));
 
             foreach(var cmd in commands)
@@ -223,14 +118,14 @@ namespace SqlBuildManager.Console.CommandLine
         {
             var cmdDocs = new List<CommandDoc>();
             var filledCmdDocs = new List<CommandDoc>();
-            var parser = GetCommandParser();
+            var rootCommand = GetRootCommand();
 
-            var commands = parser.Configuration.RootCommand.Subcommands;
+            var commands = rootCommand.Subcommands;
             cmdDocs.AddRange(commands.Select(c => new CommandDoc { ParentCommand = c.Name, ParentCommandDescription = c.Description }));
 
             foreach (var cmd in commands)
             {
-                if (cmd.IsHidden)
+                if (cmd.Hidden)
                 {
                     continue;
                 }
@@ -238,16 +133,16 @@ namespace SqlBuildManager.Console.CommandLine
                 foreach (var sub in cmd.Subcommands)
                 {
 
-                    if (!sub.IsHidden) { targetParent.SubCommands.Add(new SubCommand() { Name = sub.Name, Description = sub.Description }); } else { continue; }
+                    if (!sub.Hidden) { targetParent.SubCommands.Add(new SubCommand() { Name = sub.Name, Description = sub.Description }); } else { continue; }
                     foreach (var sub2 in sub.Subcommands)
                     {
-                        if (!sub2.IsHidden)
+                        if (!sub2.Hidden)
                             targetParent.SubCommands.Add(new SubCommand() { Name = $"{sub.Name} {sub2.Name}", Description = sub2.Description });
                         else
                             continue;
                         foreach (var sub3 in sub2.Subcommands)
                         {
-                            if (!sub3.IsHidden)
+                            if (!sub3.Hidden)
                                 targetParent.SubCommands.Add(new SubCommand() { Name = $"{sub.Name} {sub2.Name} {sub2.Name}", Description = sub3.Description });
                         }
                     }

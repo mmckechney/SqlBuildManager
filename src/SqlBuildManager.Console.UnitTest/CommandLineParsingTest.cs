@@ -34,7 +34,8 @@ namespace SqlBuildManager.Console.UnitTest
                 };
 
                 (var cmdLine, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
-                Assert.IsNotNull(cmdLine.BatchArgs);
+                Assert.IsNotNull(cmdLine, $"cmdLine is null. Parse error: {message}");
+                Assert.IsNotNull(cmdLine.BatchArgs, "BatchArgs is null");
                 Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.EssentialOnly));
                 Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.ScriptErrors));
 

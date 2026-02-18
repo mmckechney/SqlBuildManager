@@ -209,10 +209,10 @@ if ($buildContainers -eq "true") {
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $containerScriptPath) {
-        & $containerScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -wait $true
+        & $containerScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -wait $true
     } else {
         Write-Host "Container build script not found at: $containerScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\ContainerRegistry\build_container_registry_testimage.ps1 -prefix $prefix" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_container_registry_testimage.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
     }
 } else {
     Write-Host ""

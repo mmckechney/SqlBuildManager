@@ -2,6 +2,7 @@
 using Microsoft.SqlServer.Management.HadrModel;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
+using Microsoft.VisualStudio.TestPlatform.CoreUtilities.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MoreLinq;
 using SqlBuildManager.Console.CommandLine;
@@ -28,15 +29,19 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod]
         public void Duplicate_ArgumentCheck_Test()
         {
+            bool shouldFail = false;
+            StringBuilder sb = new();
             CommandLineArgs cmdLine;
             string message;
             string[] args = new string[0];
             var commandList = CommandLineBuilder.ListCommands();
             var sortedCommands = commandList.OrderBy(x => x[0]).ToList();
-            try
+
+            foreach (var command in sortedCommands)
             {
-                foreach(var command in sortedCommands)
+                try
                 {
+
                     command.Add("-h");
                     args = command.ToArray();
                     (cmdLine, message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
@@ -44,17 +49,25 @@ namespace SqlBuildManager.Console.UnitTest
 
                     System.Console.WriteLine(string.Join(' ', command));
                 }
+                catch (Exception exe)
+                {
+                    shouldFail = true;
+                    if (exe.Message.ToLower().Contains("an item with the same key has already been added"))
+                    {
+                        sb.AppendLine($"There is a duplicate key in the command line arguments: '{string.Join(' ', args)}' : {exe.Message} : {exe.InnerException?.Message}");
+                        //Assert.Fail($"There is a duplicate key in the command line arguments: '{string.Join(' ', args)}' : {exe.Message} : {exe.InnerException?.Message}");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"Error parsing arguments: '{string.Join(' ', args)}' : {exe.Message} : {exe.InnerException?.Message}");
+                        //Assert.Fail($"Error parsing arguments: '{string.Join(' ', args)}' : {exe.Message} : {exe.InnerException?.Message}");
+                    }
+                }
             }
-            catch(Exception exe)
+
+            if (shouldFail)
             {
-                if(exe.Message.ToLower().Contains("an item with the same key has already been added"))
-                {
-                    Assert.Fail($"There is a duplicate key in the command line arguments: '{string.Join(' ', args)}' : {exe.Message}");
-                }
-                else
-                {
-                    Assert.Fail($"Error parsing arguments: '{string.Join(' ', args)}' : {exe.Message}");
-                }
+                Assert.Fail(sb.ToString());
             }
         }
 

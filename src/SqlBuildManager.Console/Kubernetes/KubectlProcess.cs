@@ -92,7 +92,7 @@ namespace SqlBuildManager.Console.Kubernetes
                   }
                   if (line.ToLower().Contains("pending"))
                   {
-                     if (logStatus) log.LogWarning($"Pod {linearr[0]} is pending");
+                     if (logStatus) log.LogInformation($"Pod {linearr[0]} is pending");
                      inPending++;
                   }
                }

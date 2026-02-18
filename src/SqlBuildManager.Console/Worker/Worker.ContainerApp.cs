@@ -46,7 +46,7 @@ namespace SqlBuildManager.Console
             }
 
             res = await ContainerAppDeploy(cmdLine, unittest, stream, true, deleteWhenDone);
-            if (res != -7)
+            if (res != 0)
             {
                 log.LogError("Failed to deploy container app");
                 log.LogInformation("Cleaning up any remaining queue messages...");
