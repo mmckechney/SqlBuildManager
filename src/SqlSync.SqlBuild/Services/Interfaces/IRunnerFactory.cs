@@ -10,6 +10,8 @@ namespace SqlSync.SqlBuild.Services
             ISqlBuildRunnerContext context,
             IBuildFinalizerContext finalizerContext,
             ISqlCommandExecutor executor = null,
-            ITransactionManager transactionManager = null);
+            ITransactionManager transactionManager = null,
+            IBuildFinalizer buildFinalizer = null,
+            ISqlLoggingService sqlLoggingService = null);
     }
 }

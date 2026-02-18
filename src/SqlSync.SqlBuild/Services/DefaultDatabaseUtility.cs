@@ -23,12 +23,15 @@ namespace SqlSync.SqlBuild.Services
         private readonly IProgressReporter progressReporter;
         private readonly ISqlBuildFileHelper fileHelper;
 
-        public DefaultDatabaseUtility(IConnectionsService connectionsService, ISqlLoggingService sqlLoggingService, IProgressReporter progressReporter, ISqlBuildFileHelper fileHelper) 
+        private readonly ISqlResourceProvider resourceProvider;
+
+        public DefaultDatabaseUtility(IConnectionsService connectionsService, ISqlLoggingService sqlLoggingService, IProgressReporter progressReporter, ISqlBuildFileHelper fileHelper, ISqlResourceProvider resourceProvider = null) 
         {
             this.connectionsService = connectionsService;
             this.sqlLoggingService = sqlLoggingService;
             this.progressReporter = progressReporter;
             this.fileHelper = fileHelper ?? new DefaultSqlBuildFileHelper();
+            this.resourceProvider = resourceProvider ?? new SqlServerResourceProvider();
         }
         /// <summary>
         /// Checks to see if the specified script has a block against running more than once. If so, returns some data about it
@@ -54,9 +57,9 @@ namespace SqlSync.SqlBuild.Services
                 return false;
             }
 
-            var conn = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, cData.SQLServerName, cData.UserId, cData.Password, cData.AuthenticationType, 2, cData.ManagedIdentityClientId);
+            var conn = SqlSync.Connection.ConnectionHelper.GetDbConnection(new ConnectionData() { DatabaseName = databaseName, SQLServerName = cData.SQLServerName, UserId = cData.UserId, Password = cData.Password, AuthenticationType = cData.AuthenticationType, ScriptTimeout = 2, ManagedIdentityClientId = cData.ManagedIdentityClientId, DatabasePlatform = cData.DatabasePlatform });
             DbCommand cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT AllowScriptBlock,ScriptFileHash,CommitDate,ScriptText FROM SqlBuild_Logging WITH (NOLOCK) WHERE ScriptId = @ScriptId ORDER BY CommitDate DESC";
+            cmd.CommandText = resourceProvider.GetHasBlockingSqlLogQuery();
             var param = cmd.CreateParameter();
             param.ParameterName = "@ScriptId";
             param.Value = scriptId;
@@ -113,7 +116,7 @@ namespace SqlSync.SqlBuild.Services
             try
             {
                 DbCommand cmd = connData.Connection.CreateCommand();
-                cmd.CommandText = "SELECT * FROM SqlBuild_Logging WHERE ScriptId = @ScriptId AND AllowScriptBlock = 1";
+                cmd.CommandText = resourceProvider.GetBlockingScriptLogQuery();
                 cmd.Transaction = connData.Transaction;
                 var param = cmd.CreateParameter();
                 param.ParameterName = "@ScriptId";

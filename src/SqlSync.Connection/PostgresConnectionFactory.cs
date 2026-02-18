@@ -56,18 +56,14 @@ namespace SqlSync.Connection
                 default:
                     builder.Username = uid;
                     builder.Password = pw;
-                    // Trust self-signed certs in dev/test environments
                     builder.SslMode = SslMode.Prefer;
-                    builder.TrustServerCertificate = true;
                     break;
                 case AuthenticationType.Windows:
-                    // PostgreSQL can use SSPI/GSSAPI on domain-joined systems via IntegratedSecurity
-                    builder["Integrated Security"] = true;
+                    // PostgreSQL GSSAPI/SSPI auth — no username/password needed
                     break;
                 case AuthenticationType.AzureADDefault:
                 case AuthenticationType.ManagedIdentity:
                     // Azure AD/Managed Identity requires Npgsql.Authentication.AzureIdentity plugin
-                    // The plugin auto-registers and provides tokens when configured
                     builder.Username = string.IsNullOrEmpty(managedIdentityClientId) ? uid : managedIdentityClientId;
                     break;
                 case AuthenticationType.AzureADPassword:
@@ -76,7 +72,6 @@ namespace SqlSync.Connection
                     break;
                 case AuthenticationType.AzureADIntegrated:
                 case AuthenticationType.AzureADInteractive:
-                    // These modes are less common for PostgreSQL — fall back to password
                     builder.Username = uid;
                     builder.Password = pw;
                     break;

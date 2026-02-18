@@ -274,7 +274,8 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var service = Activator.CreateInstance(
                 typeof(DefaultConnectionsService).Assembly.GetType("SqlSync.SqlBuild.Services.DefaultSqlLoggingService"),
                 mockConnectionsService.Object,
-                mockProgressReporter.Object);
+                mockProgressReporter.Object,
+                (ISqlResourceProvider)null);
 
             // Assert
             Assert.IsNotNull(service);
@@ -292,7 +293,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             
             // Create instance using internal constructor
             var serviceType = typeof(DefaultConnectionsService).Assembly.GetType("SqlSync.SqlBuild.Services.DefaultSqlLoggingService");
-            var service = Activator.CreateInstance(serviceType, mockConnectionsService.Object, mockProgressReporter.Object) as ISqlLoggingService;
+            var service = Activator.CreateInstance(serviceType, mockConnectionsService.Object, mockProgressReporter.Object, (ISqlResourceProvider)null) as ISqlLoggingService;
 
             var emptyConnections = new Dictionary<string, BuildConnectData>();
 

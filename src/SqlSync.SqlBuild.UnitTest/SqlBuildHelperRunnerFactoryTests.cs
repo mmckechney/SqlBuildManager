@@ -69,7 +69,7 @@ namespace SqlSync.SqlBuild.UnitTest
 
             public FakeRunnerFactory(BuildModels.Build result) => _result = result;
 
-            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null, ITransactionManager transactionManager = null)
+            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null, ITransactionManager transactionManager = null, IBuildFinalizer buildFinalizer = null, ISqlLoggingService sqlLoggingService = null)
             {
                 CreateCalled = true;
                 return new FakeRunner(_result);

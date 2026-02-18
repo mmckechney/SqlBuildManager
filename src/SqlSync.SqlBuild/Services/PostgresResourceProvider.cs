@@ -34,8 +34,7 @@ namespace SqlSync.SqlBuild.Services
         public string CheckTableExistsQuery(string tableName)
         {
             // PostgreSQL: use information_schema to check for table existence
-            // Use a parameterized query to avoid SQL injection; caller should bind @TableName
-            return "SELECT 1 FROM information_schema.tables WHERE table_name = lower(@TableName)";
+            return $"SELECT 1 FROM information_schema.tables WHERE table_name = '{tableName.ToLowerInvariant()}'";
         }
 
         public string GetBlockingScriptLogQuery()

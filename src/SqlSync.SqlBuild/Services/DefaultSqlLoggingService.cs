@@ -23,15 +23,17 @@ namespace SqlSync.SqlBuild.Services
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly IConnectionsService connectionsService;
         private readonly IProgressReporter progressReporter;
+        private readonly ISqlResourceProvider resourceProvider;
 
         // Static cache for verified logging tables (server:database combinations that have been confirmed)
         private static readonly HashSet<string> _verifiedLoggingTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly object _cacheLock = new object();
 
-        public DefaultSqlLoggingService(IConnectionsService connectionsService, IProgressReporter progressReporter) 
+        public DefaultSqlLoggingService(IConnectionsService connectionsService, IProgressReporter progressReporter, ISqlResourceProvider resourceProvider = null) 
         {
             this.connectionsService = connectionsService;
             this.progressReporter = progressReporter;
+            this.resourceProvider = resourceProvider ?? new SqlServerResourceProvider();
         }
 
         private static string GetCacheKey(string serverName, string databaseName) => $"{serverName}:{databaseName}";
@@ -104,7 +106,7 @@ namespace SqlSync.SqlBuild.Services
                 try
                 {
                     createTableCmd = connData.Connection.CreateCommand();
-                    createTableCmd.CommandText = Properties.Resources.LoggingTable;
+                    createTableCmd.CommandText = resourceProvider.LoggingTableDdl;
                     if (createTableCmd.Connection is SqlConnection sqlConn1)
                         sqlConn1.InfoMessage += new SqlInfoMessageEventHandler(Connection_InfoMessage);
 
@@ -123,7 +125,7 @@ namespace SqlSync.SqlBuild.Services
 
                     //Ensure the indexes are there
                     createCommitIndex = connData.Connection.CreateCommand();
-                    createCommitIndex.CommandText = Properties.Resources.LoggingTableCommitCheckIndex;
+                    createCommitIndex.CommandText = resourceProvider.LoggingTableCommitCheckIndex;
                     if (createCommitIndex.Connection is SqlConnection sqlConn2)
                         sqlConn2.InfoMessage += new SqlInfoMessageEventHandler(Connection_InfoMessage);
 
@@ -172,7 +174,7 @@ namespace SqlSync.SqlBuild.Services
             try
             {
                 DbCommand cmd = conn.CreateCommand();
-                cmd.CommandText = "SELECT 1 FROM sys.objects WITH (NOLOCK) WHERE name = 'SqlBuild_Logging' AND type = 'U'";
+                cmd.CommandText = resourceProvider.CheckTableExistsQuery("SqlBuild_Logging");
                 if (cmd.Connection.State == ConnectionState.Closed)
                     cmd.Connection.Open();
 
@@ -332,9 +334,10 @@ namespace SqlSync.SqlBuild.Services
             if (connData.Connection.State == ConnectionState.Closed)
                 await connData.Connection.OpenAsync();
 
-            // Build multi-row INSERT statement
+            // Build multi-row INSERT statement using lowercase unquoted column names (compatible with both SQL Server and PostgreSQL)
+            var tableName = resourceProvider is PostgresResourceProvider ? "sqlbuild_logging" : "SqlBuild_Logging";
             var sql = new StringBuilder();
-            sql.AppendLine("INSERT INTO SqlBuild_Logging([BuildFileName],[ScriptFileName],[ScriptId],[ScriptFileHash],[CommitDate],[Sequence],[UserId],[AllowScriptBlock],[ScriptText],[Tag],[TargetDatabase],[RunWithVersion],[BuildProjectHash],[BuildRequestedBy],[ScriptRunStart],[ScriptRunEnd],[Description]) VALUES");
+            sql.AppendLine($"INSERT INTO {tableName}(BuildFileName,ScriptFileName,ScriptId,ScriptFileHash,CommitDate,Sequence,UserId,AllowScriptBlock,ScriptText,Tag,TargetDatabase,RunWithVersion,BuildProjectHash,BuildRequestedBy,ScriptRunStart,ScriptRunEnd,Description) VALUES");
 
             var cmd = connData.Connection.CreateCommand();
             if (connData.Transaction != null)
@@ -386,7 +389,7 @@ namespace SqlSync.SqlBuild.Services
                 await connData.Connection.OpenAsync();
 
             var cmd = connData.Connection.CreateCommand();
-            cmd.CommandText = Properties.Resources.LogScript;
+            cmd.CommandText = resourceProvider.LogScriptInsert;
             if (connData.Transaction != null)
                 cmd.Transaction = connData.Transaction;
 
