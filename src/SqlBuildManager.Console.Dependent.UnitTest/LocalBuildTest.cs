@@ -32,6 +32,13 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
         private static string GetLocalhostFolderName(string loggingRoot)
         {
+            string[] serverParts = Initialization.TestServer.Split('\\');
+            string candidatePath = Path.Combine(new[] { loggingRoot, "working" }.Concat(serverParts).ToArray());
+            if (Directory.Exists(candidatePath))
+            {
+                return candidatePath;
+            }
+
             if (Directory.Exists(Path.Combine(loggingRoot, "working", "(local)", "SQLEXPRESS")))
             {
                 return Path.Combine(loggingRoot, "working", "(local)", "SQLEXPRESS");
@@ -39,6 +46,10 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             else if (Directory.Exists(Path.Combine(loggingRoot, "working", "localhost", "SQLEXPRESS")))
             {
                 return Path.Combine(loggingRoot, "working", "localhost", "SQLEXPRESS");
+            }
+            else if (Directory.Exists(Path.Combine(loggingRoot, "working", "localhost")))
+            {
+                return Path.Combine(loggingRoot, "working", "localhost");
             }
             else
             {
@@ -91,7 +102,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string[] args = (new string[] {
                 "build",
-                "--server", "localhost\\sqlexpress",
+                "--server", Initialization.TestServer,
                 "--database", "SqlBuildTest",
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
@@ -151,7 +162,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string[] args = (new string[] {
                 "build",
-                "--server", "localhost\\sqlexpress",
+                "--server", Initialization.TestServer,
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -210,7 +221,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string[] args = (new string[] {
                 "build",
-                "--server", "localhost\\sqlexpress",
+                "--server", Initialization.TestServer,
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -410,7 +421,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", "0", 
                 "--database", "master",
-                "--server", @"(local)\SQLEXPRESS"
+                "--server", Initialization.TestServer
 
 
             }).Concat(Initialization.GetAuthArgs()).ToArray();

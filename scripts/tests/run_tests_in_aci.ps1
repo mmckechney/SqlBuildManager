@@ -350,6 +350,9 @@ Write-Host ""
 Write-Host "Test results uploaded to blob storage: $blobContainerName/$blobPath" -ForegroundColor Cyan
 Write-Host ""
 
+# Download test results from blob storage
+Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContainerName $blobContainerName -localDestination "./testresults" -blobPath $blobPath
+
 #############################################
 # Cleanup and report
 #############################################

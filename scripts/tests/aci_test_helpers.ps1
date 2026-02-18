@@ -399,6 +399,86 @@ function Wait-ForAciTests {
 }
 
 #############################################
+# Download Test Results
+#############################################
+
+function Download-TestResultsFromBlob {
+    <#
+    .SYNOPSIS
+        Downloads test results from Azure Blob Storage to a local directory.
+        Handles errors gracefully (e.g., storage account firewall blocking access).
+    .PARAMETER storageAccountName
+        The Azure Storage account name.
+    .PARAMETER blobContainerName
+        The blob container name (default: "testresults").
+    .PARAMETER localDestination
+        Local directory to download to (default: "./testresults").
+    .PARAMETER blobPath
+        Optional blob path prefix to scope the download. If not provided, downloads all blobs.
+    #>
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$storageAccountName,
+        [string]$blobContainerName = "testresults",
+        [string]$localDestination = "./testresults",
+        [string]$blobPath
+    )
+
+    Write-Host ""
+    Write-Host "Downloading test results from blob storage..." -ForegroundColor Cyan
+    Write-Host "  Storage Account: $storageAccountName" -ForegroundColor DarkGreen
+    Write-Host "  Container:       $blobContainerName" -ForegroundColor DarkGreen
+    if ($blobPath) {
+        Write-Host "  Blob Path:       $blobPath" -ForegroundColor DarkGreen
+    }
+    Write-Host "  Local Path:      $localDestination" -ForegroundColor DarkGreen
+
+    # Ensure local directory exists
+    if (-not (Test-Path $localDestination)) {
+        New-Item -ItemType Directory -Path $localDestination -Force | Out-Null
+    }
+
+    try {
+        $downloadArgs = @(
+            "storage", "blob", "download-batch",
+            "--account-name", $storageAccountName,
+            "--source", $blobContainerName,
+            "--destination", $localDestination,
+            "--auth-mode", "login"
+        )
+        if ($blobPath) {
+            $downloadArgs += @("--pattern", "$blobPath/*")
+        }
+
+        $output = az @downloadArgs 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            $errorText = $output | Out-String
+            if ($errorText -match "AuthorizationFailure|Forbidden|firewall|network rules") {
+                Write-Host ""
+                Write-Host "WARNING: Unable to download test results - storage account firewall may be blocking access." -ForegroundColor Yellow
+                Write-Host "  You can download manually after updating firewall rules:" -ForegroundColor Yellow
+                Write-Host "  az storage blob download-batch --account-name $storageAccountName --source $blobContainerName --destination $localDestination --auth-mode login" -ForegroundColor DarkGray
+            } else {
+                Write-Host ""
+                Write-Host "WARNING: Failed to download test results (exit code: $LASTEXITCODE)" -ForegroundColor Yellow
+                Write-Host "  $errorText" -ForegroundColor Yellow
+            }
+            return $false
+        }
+
+        Write-Host "  Test results downloaded successfully." -ForegroundColor Green
+        return $true
+    }
+    catch {
+        Write-Host ""
+        Write-Host "WARNING: Error downloading test results: $($_.Exception.Message)" -ForegroundColor Yellow
+        Write-Host "  The test run itself has completed - results may still be available in blob storage." -ForegroundColor Yellow
+        Write-Host "  Manual download: az storage blob download-batch --account-name $storageAccountName --source $blobContainerName --destination $localDestination --auth-mode login" -ForegroundColor DarkGray
+        return $false
+    }
+}
+
+#############################################
 # Cleanup & Exit
 #############################################
 
