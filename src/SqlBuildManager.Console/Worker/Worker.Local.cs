@@ -129,7 +129,8 @@ namespace SqlBuildManager.Console
                     AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType,
                     UserId = cmdLine.AuthenticationArgs.UserName,
                     Password = cmdLine.AuthenticationArgs.Password,
-                    ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId
+                    ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId,
+                    DatabasePlatform = cmdLine.AuthenticationArgs.DatabasePlatform
                 };
                 sqlB.SqlBuildHelper helper = new sqlB.SqlBuildHelper(connData, true, "", cmdLine.Transactional);
                 LocalRunInfo.Sq1SyncBuildData = buildModel;
