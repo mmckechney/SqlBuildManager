@@ -133,7 +133,7 @@ namespace SqlBuildManager.Console.ExternalTest
         /// </summary>
         private string CombinedLogAndConsoleOutput(int startingLine)
         {
-            return ReleventLogFileContents(startingLine) + Environment.NewLine + ConsoleOutput.ToString();
+            return RelevantLogFileContents(startingLine) + Environment.NewLine + ConsoleOutput.ToString();
         }
 
         #endregion
