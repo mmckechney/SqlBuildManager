@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BuildModels = SqlSync.SqlBuild.Models;
+using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
 
 namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
 {
@@ -776,6 +777,294 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             // Closed connection should return false gracefully
             bool closedResult = dbUtil.GetBlockingSqlLog(scriptId, ref connData);
             Assert.IsFalse(closedResult, "Closed connection should return false");
+        }
+
+        #endregion
+
+        #region .: ClearScriptBlocks :.
+
+        [TestMethod]
+        [Ignore("ClearScriptBlocks is not yet implemented (throws NotImplementedException)")]
+        public void PostgreSQL_ClearScriptBlocks()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            ConnectionData connData = init.connData;
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            init.AddInsertScript(ref buildData, true);
+
+            Models.CommittedScript row = new();
+            row.ScriptId = buildData.Script[0].ScriptId;
+            row.ServerName = init.serverName;
+            row.AllowScriptBlock = true;
+            buildData.CommittedScript.Add(row);
+
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            var resourceProvider = new PostgresResourceProvider();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter, resourceProvider);
+            ISqlBuildFileHelper fileHelper = new DefaultSqlBuildFileHelper();
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, fileHelper, resourceProvider);
+
+            string[] scripts = new string[] { Guid.NewGuid().ToString(), buildData.Script[0].ScriptId };
+            ClearScriptData scrData = new ClearScriptData(scripts, buildData, init.projectFileName, init.projectFileName);
+
+            IProgressReporter reporter = new NullProgressReporter();
+            dbUtil.ClearScriptBlocks(scrData, connData, reporter, null);
+            Assert.AreEqual(false, buildData.CommittedScript[0].AllowScriptBlock);
+        }
+
+        #endregion
+
+        #region .: RecordCommittedScripts :.
+
+        [TestMethod]
+        public void PostgreSQL_RecordCommittedScripts()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+
+            Guid scriptID = Guid.NewGuid();
+            string hash = "WETRWEW@#$@$WEQW#$#R";
+            LoggingCommittedScript script = new LoggingCommittedScript(scriptID, hash, 20, "My script text", "TAGID", init.serverName, init.testDatabaseNames[0]);
+            List<LoggingCommittedScript> committedScripts = new List<LoggingCommittedScript>();
+            committedScripts.Add(script);
+
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlSyncBuildDataModel buildModelUpdated;
+            buildModelUpdated = target.BuildFinalizer.RecordCommittedScripts(committedScripts, buildData);
+            Assert.IsNotNull(buildModelUpdated);
+
+            Assert.AreEqual(scriptID.ToString(), buildData.CommittedScript[0].ScriptId);
+            Assert.AreEqual(true, buildData.CommittedScript[0].AllowScriptBlock);
+            Assert.AreEqual(hash, buildData.CommittedScript[0].ScriptHash);
+        }
+
+        #endregion
+
+        #region .: GetScriptRunLog :.
+
+        [TestMethod]
+        public async Task PostgreSQL_GetScriptRunLog_ReturnsEntries()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            init.InsertPreRunScriptEntry();
+
+            Guid scriptId = new Guid(init.PreRunScriptGuid);
+            ConnectionData connData = init.connData;
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            var resourceProvider = new PostgresResourceProvider();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter, resourceProvider);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null, resourceProvider);
+
+            var actual = dbUtil.GetScriptRunLog(scriptId, connData);
+            Assert.IsTrue(actual.Count > 0, string.Format("Missing rows for pre-run script. {0}", PostgresInitialization.MissingDatabaseErrorMessage));
+
+            actual = dbUtil.GetScriptRunLog(Guid.NewGuid(), connData);
+            Assert.IsTrue(actual.Count == 0, "Rows found for new unique script id.");
+        }
+
+        [TestMethod]
+        public void PostgreSQL_GetScriptRunLog_InvalidDb_ThrowsException()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+
+            Guid scriptId = new Guid(init.PreRunScriptGuid);
+            ConnectionData connData = init.connData;
+            connData.DatabaseName = "invalidDatabaseName";
+            IProgressReporter progressReporter = new NullProgressReporter();
+            IConnectionsService connectionsService = new DefaultConnectionsService();
+            var resourceProvider = new PostgresResourceProvider();
+            ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter, resourceProvider);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null, resourceProvider);
+
+            Assert.ThrowsExactly<ApplicationException>(() => dbUtil.GetScriptRunLog(scriptId, connData));
+        }
+
+        #endregion
+
+        #region .: SaveBuildDataSet :.
+
+        [TestMethod]
+        public async Task PostgreSQL_SaveBuildDataSet_NullProjectFileName()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+            target.projectFileName = null;
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
+        }
+
+        [TestMethod]
+        public async Task PostgreSQL_SaveBuildDataSet_EmptyProjectFileName()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+            target.projectFileName = string.Empty;
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
+        }
+
+        [TestMethod]
+        public async Task PostgreSQL_SaveBuildDataSet_NullBuildHistoryName()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+            target.projectFileName = init.projectFileName;
+            target.buildHistoryXmlFile = null;
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
+        }
+
+        [TestMethod]
+        public async Task PostgreSQL_SaveBuildDataSet_EmptyBuildHistoryName()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+            target.projectFileName = init.projectFileName;
+            target.buildHistoryXmlFile = string.Empty;
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
+        }
+
+        #endregion
+
+        #region .: ProcessBuild End-to-End :.
+
+        [TestMethod]
+        public async Task PostgreSQL_ProcessBuild_SingleInsert_CommitsAndLogs()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            init.AddInsertScript(ref buildData, true);
+            init.AddSelectScript(ref buildData);
+
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
+            Build myBuild = init.GetRunBuildRow(sbh);
+
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
+
+            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+            int testTableCount = init.GetTestTableRowCount(0);
+            Assert.IsTrue(sqlLoggingCount > 0, "Expected logging entries after committed build, got " + sqlLoggingCount);
+            Assert.IsTrue(testTableCount > 0, "Expected test table entries after committed build, got " + testTableCount);
+        }
+
+        [TestMethod]
+        public async Task PostgreSQL_ProcessBuild_FailureCausesBuildFailure_RollsBack()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            init.AddInsertScript(ref buildData, true);
+            init.AddFailureScript(ref buildData, true, true);
+
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
+            Build myBuild = init.GetRunBuildRow(sbh);
+
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+
+            Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
+
+            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+            int testTableCount = init.GetTestTableRowCount(0);
+            Assert.AreEqual(0, sqlLoggingCount, "Should have 0 logging entries after rollback");
+            Assert.AreEqual(0, testTableCount, "Should have 0 test table entries after rollback");
+        }
+
+        [TestMethod]
+        public async Task PostgreSQL_ProcessBuild_MultipleInserts_AllCommit()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            init.AddInsertScript(ref buildData, true);
+            init.AddInsertScript(ref buildData, true);
+            init.AddInsertScript(ref buildData, true);
+
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
+            Build myBuild = init.GetRunBuildRow(sbh);
+
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
+
+            int testTableCount = init.GetTestTableRowCount(0);
+            Assert.IsTrue(testTableCount >= 3, "Expected at least 3 test table entries, got " + testTableCount);
+        }
+
+        [TestMethod]
+        public async Task PostgreSQL_ProcessBuild_AsMultiDbRun()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            init.AddInsertScript(ref buildData, true);
+
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
+            Build myBuild = init.GetRunBuildRow(sbh);
+
+            // isMultiDbRun = true
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, true, null);
+
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
+        }
+
+        [TestMethod]
+        public async Task PostgreSQL_ProcessBuild_NonTransactional_FailureThenSuccess()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            // First: a failure that doesn't cause build failure
+            init.AddFailureScript(ref buildData, false, false);
+            // Then: a success script
+            init.AddInsertScript(ref buildData, true);
+
+            SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
+            Build myBuild = init.GetRunBuildRow(sbh);
+
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+
+            // Non-transactional with non-failing failure should still complete  
+            Assert.AreNotEqual(BuildItemStatus.RolledBack, actual.FinalStatus, "Should not be RolledBack in non-transactional mode");
         }
 
         #endregion

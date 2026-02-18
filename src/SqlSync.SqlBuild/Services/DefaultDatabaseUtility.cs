@@ -144,10 +144,14 @@ namespace SqlSync.SqlBuild.Services
         {
             try
             {
-                SqlCommand cmd = new SqlCommand("SELECT * FROM SqlBuild_Logging WITH (NOLOCK) WHERE ScriptId = @ScriptId ORDER BY CommitDate DESC");
-                cmd.Parameters.AddWithValue("@ScriptId", scriptId);
-                cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
-                cmd.Connection.Open();
+                using var conn = SqlSync.Connection.ConnectionHelper.GetDbConnection(connData);
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = resourceProvider.GetScriptRunLogQuery();
+                var param = cmd.CreateParameter();
+                param.ParameterName = "@ScriptId";
+                param.Value = scriptId;
+                cmd.Parameters.Add(param);
                 var list = new List<SqlSync.SqlBuild.Models.ScriptRunLogEntry>();
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -173,10 +177,14 @@ namespace SqlSync.SqlBuild.Services
         {
             try
             {
-                SqlCommand cmd = new SqlCommand("SELECT * FROM SqlBuild_Logging WITH (NOLOCK) WHERE [ScriptFileName] = @ScriptFileName ORDER BY CommitDate DESC");
-                cmd.Parameters.AddWithValue("@ScriptFileName", objectFileName);
-                cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
-                cmd.Connection.Open();
+                using var conn = SqlSync.Connection.ConnectionHelper.GetDbConnection(connData);
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = resourceProvider.GetObjectRunHistoryQuery();
+                var param = cmd.CreateParameter();
+                param.ParameterName = "@ScriptFileName";
+                param.Value = objectFileName;
+                cmd.Parameters.Add(param);
                 var list = new List<SqlSync.SqlBuild.Models.ScriptRunLogEntry>();
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
