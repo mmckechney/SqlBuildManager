@@ -647,7 +647,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 server: serverName,
                 buildDescription: "UnitTestRun",
                 startIndex: 0,
-                projectFileName: Path.Combine(Path.GetTempPath(), $"ProjectFile_{uniqueId}.xml"),
+                projectFileName: Path.Combine(Path.Combine(Path.GetTempPath(),$"ProjectFile_{uniqueId}.xml")),
                 isTrial: false,
                 runItemIndexes: Array.Empty<double>(),
                 runScriptOnly: false,
@@ -723,7 +723,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public string GetTrulyUniqueFile()
         {
             string tmpName = Path.GetTempFileName();
-            string newName = Path.GetDirectoryName(tmpName) + @"\SqlSyncTest-" + Guid.NewGuid().ToString() + ".tmp";
+            string newName = Path.Combine(Path.GetDirectoryName(tmpName), @"\SqlSyncTest-" + Guid.NewGuid().ToString() + ".tmp");
             File.Move(tmpName, newName);
 
 

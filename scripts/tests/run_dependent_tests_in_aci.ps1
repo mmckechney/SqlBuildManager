@@ -57,6 +57,152 @@
 
 $ErrorActionPreference = "Stop"
 
+#############################################
+# Function to parse and summarize test results
+#############################################
+$script:lastSummaryLineCount = 0
+
+function Show-TestSummary {
+    param(
+        [string[]]$logs,
+        [switch]$refresh
+    )
+    
+    $passed = @()
+    $failed = @()
+    $skipped = @()
+    
+    foreach ($line in $logs) {
+        if ($line -match '^\s{2}Passed\s+(.+?)(?:\s+\[|$)') {
+            $passed += $matches[1]
+        }
+        elseif ($line -match '^\s{2}Failed\s+(.+?)(?:\s+\[|$)') {
+            $failed += $matches[1]
+        }
+        elseif ($line -match '^\s{2}Skipped\s+(.+?)(?:$|\s)') {
+            $skipped += $matches[1]
+        }
+    }
+    
+    # If refreshing, move cursor up to overwrite previous summary
+    if ($refresh -and $script:lastSummaryLineCount -gt 0) {
+        # Move cursor up by the number of lines we printed last time
+        [Console]::SetCursorPosition(0, [Console]::CursorTop - $script:lastSummaryLineCount)
+    }
+    
+    $lineCount = 0
+    
+    # Build the output as a string buffer to count lines
+    $output = @()
+    
+    if (-not $refresh) {
+        $output += ""
+        $lineCount++
+    }
+    
+    $output += "========================================"
+    $output += "Test Summary ($(Get-Date -Format 'HH:mm:ss'))"
+    $output += "========================================"
+    $output += ""
+    $lineCount += 4
+    
+    $output += "$($passed.Count) Passed"
+    $lineCount++
+    if ($passed.Count -gt 0 -and $passed.Count -le 10) {
+        foreach ($test in $passed) {
+            $output += " - $test"
+            $lineCount++
+        }
+    }
+    elseif ($passed.Count -gt 10) {
+        $output += " (list truncated - showing first 5)"
+        $lineCount++
+        foreach ($test in ($passed | Select-Object -First 5)) {
+            $output += " - $test"
+            $lineCount++
+        }
+    }
+    
+    $output += ""
+    $lineCount++
+    $output += "$($failed.Count) Failed"
+    $lineCount++
+    if ($failed.Count -gt 0) {
+        foreach ($test in $failed) {
+            $output += " - $test"
+            $lineCount++
+        }
+    }
+    
+    $output += ""
+    $lineCount++
+    $output += "$($skipped.Count) Skipped"
+    $lineCount++
+    if ($skipped.Count -gt 0 -and $skipped.Count -le 10) {
+        foreach ($test in $skipped) {
+            $output += " - $test"
+            $lineCount++
+        }
+    }
+    elseif ($skipped.Count -gt 10) {
+        $output += " (list truncated - showing first 5)"
+        $lineCount++
+        foreach ($test in ($skipped | Select-Object -First 5)) {
+            $output += " - $test"
+            $lineCount++
+        }
+    }
+    $output += ""
+    $lineCount++
+    
+    # Clear any remaining lines from previous output if this one is shorter
+    if ($refresh -and $lineCount -lt $script:lastSummaryLineCount) {
+        $linesToClear = $script:lastSummaryLineCount - $lineCount
+        for ($i = 0; $i -lt $linesToClear; $i++) {
+            $output += (" " * ([Console]::WindowWidth - 1))
+            $lineCount++
+        }
+    }
+    
+    # Print the output with appropriate colors
+    $i = 0
+    foreach ($line in $output) {
+        if ($line -match "^Test Summary") {
+            Write-Host $line -ForegroundColor Cyan
+        }
+        elseif ($line -match "^=+$") {
+            Write-Host $line -ForegroundColor Cyan
+        }
+        elseif ($line -match "^\d+ Passed") {
+            Write-Host $line -ForegroundColor Green
+        }
+        elseif ($line -match "^\d+ Failed") {
+            Write-Host $line -ForegroundColor Red
+        }
+        elseif ($line -match "^\d+ Skipped") {
+            Write-Host $line -ForegroundColor Yellow
+        }
+        elseif ($line -match "^ - " -and $output[$i-1] -match "Passed") {
+            Write-Host $line -ForegroundColor DarkGray
+        }
+        elseif ($line -match "^ - " -and $output[$i-1] -match "Failed") {
+            Write-Host $line -ForegroundColor Yellow
+        }
+        elseif ($line -match "^ - ") {
+            Write-Host $line -ForegroundColor DarkGray
+        }
+        elseif ($line -match "truncated") {
+            Write-Host $line -ForegroundColor DarkGray
+        }
+        else {
+            Write-Host $line
+        }
+        $i++
+    }
+    
+    $script:lastSummaryLineCount = $lineCount
+}
+
 # Get the repo root
 $repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
@@ -305,15 +451,22 @@ while ($true) {
     
     $currentTime = Get-Date
     if (($currentTime - $lastLogTime).TotalSeconds -ge 10) {
-        Write-Host ""
-        Write-Host "--- Test Runner Logs ($(Get-Date -Format 'HH:mm:ss')) ---" -ForegroundColor DarkGray
         $recentLogs = az container logs --name $testContainerName --resource-group $resourceGroupName --container-name test-runner 2>$null
         if ($null -ne $recentLogs) {
-            $recentLogs | Select-Object -Last 20
+            # Check for test exit code
             $logString = $recentLogs -join "`n"
             if ($logString -match "TEST_EXIT_CODE=(\d+)") {
                 $testExitCode = [int]$Matches[1]
             }
+            
+            # Show refreshing test summary
+            if ($script:lastSummaryLineCount -eq 0) {
+                # First time - add a header
+                Write-Host ""
+                Write-Host "--- Live Test Progress ---" -ForegroundColor DarkGray
+                Write-Host ""
+            }
+            Show-TestSummary -logs $recentLogs -refresh
         }
         $lastLogTime = $currentTime
     }
@@ -335,10 +488,16 @@ while ($true) {
         Write-Host ""
         Write-Host "ERROR: Test execution timed out after $timeoutMinutes minutes" -ForegroundColor Red
         Write-Host ""
-        Write-Host "Test runner logs:" -ForegroundColor Yellow
-        az container logs --name $testContainerName --resource-group $resourceGroupName --container-name test-runner
+        Write-Host "Retrieving test logs and generating summary..." -ForegroundColor Yellow
+        $testLogs = az container logs --name $testContainerName --resource-group $resourceGroupName --container-name test-runner 2>$null
+        if ($testLogs) {
+            Show-TestSummary -logs $testLogs
+        }
+        else {
+            Write-Host "No test logs available yet" -ForegroundColor Yellow
+        }
         Write-Host ""
-        Write-Host "SQL Server logs:" -ForegroundColor Yellow
+        Write-Host "SQL Server logs (last 10 lines):" -ForegroundColor Yellow
         az container logs --name $testContainerName --resource-group $resourceGroupName --container-name sql-server 2>$null | Select-Object -Last 10
         
         if (-not $keepContainer) {
@@ -368,9 +527,14 @@ Write-Host "Test Exit Code: $testExitCode" -ForegroundColor DarkGreen
 Write-Host "Results uploaded to: $blobContainerName/$blobPath" -ForegroundColor Cyan
 Write-Host ""
 
-# Show full test runner logs
-Write-Host "--- Full Test Output ---" -ForegroundColor Cyan
-az container logs --name $testContainerName --resource-group $resourceGroupName --container-name test-runner
+# Get and parse full test runner logs
+$fullTestLogs = az container logs --name $testContainerName --resource-group $resourceGroupName --container-name test-runner 2>$null
+if ($fullTestLogs) {
+    Show-TestSummary -logs $fullTestLogs
+}
+else {
+    Write-Host "No test logs available" -ForegroundColor Yellow
+}
 
 #############################################
 # Cleanup
