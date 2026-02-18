@@ -4,62 +4,55 @@
     [string] $prefix,
 
     [string] $resourceGroupName,
-    [string] $customName,
+    [string] $customName = "dependent",
     
     [string] $testFilter = "",
     
-    [string] $imageTag = "test-runner",
+    [string] $imageTag = "dependent-test-runner",
     
+    [string] $sqlPassword = "SqlBM_Test#2026!",
+
     [switch] $buildImage,
     
     [switch] $keepContainer,
     
-    [int] $timeoutMinutes = 30
+    [int] $timeoutMinutes = 300
 )
 
 <#
 .SYNOPSIS
-    Runs integration tests in Azure Container Instances within the VNet.
+    Runs Dependent.UnitTest integration tests in ACI with a SQL Server sidecar.
 
 .DESCRIPTION
-    This script builds and deploys a test container to ACI within the VNet subnet,
-    allowing tests to run with access to resources via VNet rules and private endpoints.
+    Deploys a container group to ACI with two containers:
+    1. SQL Server 2022 on Linux (sidecar) - provides the database instance
+    2. Test runner - runs the Dependent.UnitTest projects against the SQL Server sidecar
     
-    The container runs the tests, captures the results, and returns pass/fail status.
+    The test runner waits for SQL Server to be ready, then runs all 5 Dependent.UnitTest
+    projects. SqlSync.SqlBuild.Dependent.UnitTest runs first to create the test databases.
+    
+    Environment variables SBM_TEST_SQL_SERVER, SBM_TEST_SQL_USER, and SBM_TEST_SQL_PASSWORD
+    are set automatically to connect to the sidecar SQL Server instance.
 
 .PARAMETER prefix
     The resource name prefix used when deploying resources.
 
-.PARAMETER resourceGroupName
-    The Azure resource group name (defaults to {prefix}-rg).
-
-.PARAMETER testFilter
-    Optional test filter (e.g., "FullyQualifiedName~ContainerApp" or "TestCategory=Integration").
-    If not specified, runs all tests in SqlBuildManager.Console.ExternalTest.
-
-.PARAMETER imageTag
-    The container image tag to use (default: test-runner).
+.PARAMETER sqlPassword
+    SA password for the SQL Server sidecar (must meet SQL Server complexity requirements).
 
 .PARAMETER buildImage
     If specified, builds and pushes the test container image before running.
 
 .PARAMETER keepContainer
-    If specified, keeps the ACI container after test completion for debugging.
-
-.PARAMETER timeoutMinutes
-    Maximum time to wait for tests to complete (default: 30 minutes).
+    If specified, keeps the ACI container group after test completion for debugging.
 
 .EXAMPLE
-    # Build image and run all tests
-    .\run_tests_in_aci.ps1 -prefix mwm025 -buildImage
+    # Build image and run all dependent tests
+    .\run_dependent_tests_in_aci.ps1 -prefix mwm025 -buildImage
 
 .EXAMPLE
-    # Run only ContainerApp tests (image already built)
-    .\run_tests_in_aci.ps1 -prefix mwm025 -testFilter "FullyQualifiedName~ContainerApp"
-
-.EXAMPLE
-    # Run ACI tests and keep container for debugging
-    .\run_tests_in_aci.ps1 -prefix mwm025 -testFilter "FullyQualifiedName~AciTests" -keepContainer
+    # Run with custom SQL password
+    .\run_dependent_tests_in_aci.ps1 -prefix mwm025 -sqlPassword "MyStr0ng!Pass"
 #>
 
 $ErrorActionPreference = "Stop"
@@ -226,40 +219,18 @@ if ([string]::IsNullOrWhiteSpace($resourceGroupName)) {
     $resourceGroupName = "$prefix-rg"
 }
 
-# Container name for test runner
-if ([string]::IsNullOrWhiteSpace($customName)) {
-    $testContainerName = "$prefix-test-runner"
-} else {
-    $testContainerName = "$prefix-test-runner-$customName"
-}
-$testImageName = "sqlbuildmanager-tests"
-
-# Create log file path
-$logDir = Join-Path $repoRoot "src\TestConfig\TestResults"
-if (-not (Test-Path $logDir)) {
-    New-Item -ItemType Directory -Path $logDir -Force | Out-Null
-}
-$logFileName = "test-results-$(Get-Date -Format 'yyyy-MM-dd-HHmmss')"
-if (-not [string]::IsNullOrWhiteSpace($customName)) {
-    $logFileName += "-$customName"
-}
-$logFileName += ".log"
-$logFilePath = Join-Path $logDir $logFileName
+$testContainerName = "$prefix-test-runner-$customName"
+$testImageName = "sqlbuildmanager-dependent-tests"
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "Integration Test Runner (ACI in VNet)" -ForegroundColor Cyan
+Write-Host "Dependent Test Runner (ACI + SQL Sidecar)" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 Write-Host "Container Name: $testContainerName" -ForegroundColor DarkGreen
-Write-Host "VNet: $vnet" -ForegroundColor DarkGreen
-Write-Host "Subnet: $aciSubnet" -ForegroundColor DarkGreen
-Write-Host "Log File: $logFilePath" -ForegroundColor DarkGreen
 if ($testFilter) {
     Write-Host "Test Filter: $testFilter" -ForegroundColor DarkGreen
-} else {
-    Write-Host "Test Filter: (all tests)" -ForegroundColor DarkGreen
 }
 Write-Host ""
 
@@ -272,25 +243,56 @@ Write-Host "Using Managed Identity: $identityName (ClientId: $($identity.clientI
 Write-Host "Using Container Registry: $acrLoginServer" -ForegroundColor DarkGreen
 Write-Host ""
 
-
 #############################################
 # Build and push test image if requested
 #############################################
 if ($buildImage) {
     Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host "Building Test Container Image" -ForegroundColor Cyan
+    Write-Host "Building Dependent Test Container Image" -ForegroundColor Cyan
     Write-Host "========================================" -ForegroundColor Cyan
     
-    $testImageScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_testimage.ps1"
-    $outputPath = Join-Path $repoRoot "src\TestConfig"
+    $srcPath = Join-Path $repoRoot "src"
     
-    if (Test-Path $testImageScriptPath) {
-        & $testImageScriptPath -prefix $prefix -resourceGroupName $resourceGroupName 
-    } else {
-        Write-Host "Test image build script not found at: $testImageScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\ContainerRegistry\build_container_registry_testimage.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -action BuildAndUpload" -ForegroundColor Yellow
+    # Build using ACR (same pattern as build_container_registry_testimage.ps1)
+    $tmpDir = Join-Path $env:TEMP "sbm-dependent-tests-$(Get-Date -Format 'yyyyMMddHHmmss')"
+    New-Item -ItemType Directory -Path $tmpDir -Force | Out-Null
+    
+    # Copy source, excluding build artifacts
+    Write-Host "Copying source files..." -ForegroundColor DarkGreen
+    $excludeDirs = @('.vs', 'bin', 'obj', 'TestResults')
+    Get-ChildItem -Path $srcPath -Recurse -File | Where-Object {
+        $relativePath = $_.FullName.Substring($srcPath.Length)
+        $excluded = $false
+        foreach ($dir in $excludeDirs) {
+            if ($relativePath -like "*\$dir\*" -or $relativePath -like "*/$dir/*") {
+                $excluded = $true
+                break
+            }
+        }
+        -not $excluded
+    } | ForEach-Object {
+        $destPath = Join-Path $tmpDir $_.FullName.Substring($srcPath.Length)
+        $destDir = Split-Path $destPath -Parent
+        if (-not (Test-Path $destDir)) {
+            New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+        }
+        Copy-Item $_.FullName -Destination $destPath
     }
-   
+    
+    # Remove .dockerignore if present
+    $dockerIgnore = Join-Path $tmpDir ".dockerignore"
+    if (Test-Path $dockerIgnore) { Remove-Item $dockerIgnore -Force }
+    
+    Write-Host "Building image via ACR..." -ForegroundColor DarkGreen
+    az acr build --registry $containerRegistryName `
+        --resource-group $resourceGroupName `
+        --image "${testImageName}:${imageTag}" `
+        --file (Join-Path $tmpDir "Dockerfile.dependent-tests") `
+        $tmpDir
+    
+    # Cleanup
+    Remove-Item -Path $tmpDir -Recurse -Force -ErrorAction SilentlyContinue
+    Write-Host "Image built and pushed: ${testImageName}:${imageTag}" -ForegroundColor Green
 }
 
 #############################################
@@ -314,76 +316,41 @@ $subnetId = az network vnet subnet show `
     --query id -o tsv
 
 #############################################
-# Build container command with test filter
+# Build container commands
 #############################################
-Write-Host "Test filter: $testFilter" -ForegroundColor DarkGray
-
-#############################################
-# Deploy test container to ACI in VNet
-#############################################
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Deploying Test Container to ACI" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-
-$fullImageName = "$acrLoginServer/${testImageName}:${imageTag}"
-Write-Host "Image: $fullImageName" -ForegroundColor DarkGreen
-Write-Host "Deploying to VNet subnet for network access..." -ForegroundColor DarkGreen
-Write-Host ""
-
-# Build command array for YAML - override entrypoint to capture exit code and upload results
 $blobContainerName = "testresults"
 $timestamp = Get-Date -Format 'yyyy-MM-dd-HHmmss'
 $blobPath = "$testContainerName/$timestamp"
 
-# Build the test command with filter - quote arguments containing semicolons
-# Use --ResultsDirectory to capture all test output including logs
-# Use html logger to capture per-test output, and --Diag for diagnostics
-# Use --Blame to capture per-test diagnostic data and crash dumps
-# Use tee to capture console output to a log file while still displaying it
-if ($testFilter) {
-    $testCmd = "dotnet vstest SqlBuildManager.Console.ExternalTest.dll '--logger:trx;LogFileName=TestResults.trx' '--logger:html;LogFileName=TestResults.html' '--logger:console;verbosity=detailed' '--TestCaseFilter:$testFilter' --ResultsDirectory:/tests/TestResults --Diag:/tests/TestResults/diag.log 2>&1 | tee /tests/TestResults/console-output.log"
-} else {
-    $testCmd = "dotnet vstest SqlBuildManager.Console.ExternalTest.dll '--logger:trx;LogFileName=TestResults.trx' '--logger:html;LogFileName=TestResults.html' '--logger:console;verbosity=detailed' --ResultsDirectory:/tests/TestResults --Diag:/tests/TestResults/diag.log 2>&1 | tee /tests/TestResults/console-output.log"
-}
-
-# Upload entire TestResults directory (includes TRX and log attachments)
 $uploadCmd = "az storage blob upload-batch --account-name $storageAccountName --destination $blobContainerName --source /tests/TestResults --destination-path $blobPath --auth-mode login --overwrite"
 
-# Build Kubernetes pre-requisite commands if test filter contains "Kubernetes"
-$aksPreCmd = ""
-if ($testFilter -like "*Kubernetes*") {
-    $aksClusterName = "$($prefix)aks"
-    $aksPreCmd = "az aks install-cli; az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName --overwrite-existing; "
-    Write-Host "Kubernetes tests detected - will install kubectl and get AKS credentials" -ForegroundColor DarkGreen
-}
+# Test runner: login to Azure, run tests, upload results
+$testShellCmd = "az login --identity --client-id `$AZURE_CLIENT_ID; /tests/run-tests.sh; TEST_EXIT_CODE=`$?; echo TEST_EXIT_CODE=`$TEST_EXIT_CODE; $uploadCmd; exit `$TEST_EXIT_CODE"
 
-# Create results directory first, then run tests, capture exit code, login and upload
-# Use PIPESTATUS to get the exit code of dotnet vstest (not tee)
-# Exit with the test exit code so the container terminates with the correct status
-$shellCmd = "mkdir -p /tests/TestResults; az login --identity --client-id `$AZURE_CLIENT_ID; $aksPreCmd$testCmd; TEST_EXIT_CODE=`${PIPESTATUS[0]}; echo TEST_EXIT_CODE=`$TEST_EXIT_CODE;  $uploadCmd; exit `$TEST_EXIT_CODE"
+$fullImageName = "$acrLoginServer/${testImageName}:${imageTag}"
 
-$commandYaml = @"
-      - /bin/bash
-      - -c
-      - "$shellCmd"
-"@
+#############################################
+# Deploy container group with SQL sidecar
+#############################################
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "Deploying Container Group to ACI" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "Test Image: $fullImageName" -ForegroundColor DarkGreen
+Write-Host "SQL Server: mcr.microsoft.com/mssql/server:2022-latest" -ForegroundColor DarkGreen
+Write-Host ""
 
-# Build environment variables for YAML
-$envVarsYaml = @"
-      - name: AZURE_CLIENT_ID
-        value: $($identity.clientId)
-"@
+$location = az group show --name $resourceGroupName --query location -o tsv
 
+# Build environment variables for test filter
+$testFilterEnvVar = ""
 if ($testFilter) {
-    $envVarsYaml += @"
+    $testFilterEnvVar = @"
 
       - name: TEST_FILTER
         value: $testFilter
 "@
 }
 
-# Generate YAML deployment file
-$location = az group show --name $resourceGroupName --query location -o tsv
 $aciYaml = @"
 apiVersion: 2021-09-01
 location: $location
@@ -397,13 +364,40 @@ properties:
   - server: $acrLoginServer
     identity: $($identity.id)
   containers:
-  - name: $testContainerName
+  - name: sql-server
+    properties:
+      image: mcr.microsoft.com/mssql/server:2022-latest
+      environmentVariables:
+      - name: ACCEPT_EULA
+        value: "Y"
+      - name: MSSQL_SA_PASSWORD
+        value: "$sqlPassword"
+      - name: MSSQL_DATA_DIR
+        value: "/var/opt/mssql/data"
+      resources:
+        requests:
+          cpu: 2
+          memoryInGb: 4
+      ports:
+      - port: 1433
+  - name: test-runner
     properties:
       image: $fullImageName
       command:
-$commandYaml
+      - /bin/bash
+      - -c
+      - "$testShellCmd"
       environmentVariables:
-$envVarsYaml
+      - name: AZURE_CLIENT_ID
+        value: $($identity.clientId)
+      - name: SBM_TEST_SQL_SERVER
+        value: localhost
+      - name: SBM_TEST_SQL_USER
+        value: sa
+      - name: SBM_TEST_SQL_PASSWORD
+        value: "$sqlPassword"
+      - name: SBM_TEST_DB_PATH
+        value: "/var/opt/mssql/data"$testFilterEnvVar
       resources:
         requests:
           cpu: 2
@@ -415,30 +409,26 @@ $envVarsYaml
 "@
 
 # Write YAML to temp file
-$yamlFilePath = Join-Path $env:TEMP "aci-test-runner-$(Get-Date -Format 'yyyyMMddHHmmss').yaml"
+$yamlFilePath = Join-Path $env:TEMP "aci-dependent-tests-$(Get-Date -Format 'yyyyMMddHHmmss').yaml"
 $aciYaml | Set-Content -Path $yamlFilePath -Encoding UTF8
 
-Write-Host "Generated ACI YAML deployment file: $yamlFilePath" -ForegroundColor DarkGray
-Write-Host "YAML Contents:" -ForegroundColor DarkGray
+Write-Host "Generated ACI YAML:" -ForegroundColor DarkGray
 Write-Host $aciYaml -ForegroundColor DarkGray
 Write-Host ""
-Write-Host "Deploying test container to ACI..." -ForegroundColor DarkGreen
-# Deploy using YAML file
-az container create --resource-group $resourceGroupName --file $yamlFilePath -o none
+Write-Host "Deploying container group..." -ForegroundColor DarkGreen
 
-# Clean up temp YAML file
+az container create --resource-group $resourceGroupName --file $yamlFilePath -o none
 Remove-Item $yamlFilePath -Force -ErrorAction SilentlyContinue
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Failed to create test container" -ForegroundColor Red
+    Write-Host "ERROR: Failed to create container group" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "Container deployed. Waiting for tests to complete..." -ForegroundColor DarkGreen
-Write-Host ""
+Write-Host "Container group deployed. Waiting for tests to complete..." -ForegroundColor DarkGreen
 
 #############################################
-# Wait for tests to complete (container terminates when done)
+# Wait for tests to complete
 #############################################
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Monitoring Test Execution" -ForegroundColor Cyan
@@ -459,14 +449,12 @@ while ($true) {
         $state2 = $container.containers.instanceView.currentState.state
     }
     
-    # Stream logs periodically and check for test completion
     $currentTime = Get-Date
     if (($currentTime - $lastLogTime).TotalSeconds -ge 10) {
-        $recentLogs = az container logs --name $testContainerName --resource-group $resourceGroupName 2>$null
+        $recentLogs = az container logs --name $testContainerName --resource-group $resourceGroupName --container-name test-runner 2>$null
         if ($null -ne $recentLogs) {
-            # Join array to string for regex matching
+            # Check for test exit code
             $logString = $recentLogs -join "`n"
-            # Extract exit code from logs if present
             if ($logString -match "TEST_EXIT_CODE=(\d+)") {
                 $testExitCode = [int]$Matches[1]
             }
@@ -483,34 +471,34 @@ while ($true) {
         $lastLogTime = $currentTime
     }
     
-    # Container terminates when tests and upload are complete
     if ($state -eq "Terminated" -or $state -eq "Completed" -or $state2 -eq "Terminated" -or $state2 -eq "Completed") {
         $testsCompleted = $true
         Write-Host ""
-        Write-Host "Container terminated. Tests and upload complete." -ForegroundColor Cyan
+        Write-Host "Container group terminated. Tests complete." -ForegroundColor Cyan
         break
     }
     
     if ($state -eq "Failed" -or $state2 -eq "Failed") {
         Write-Host ""
-        Write-Host "Container failed (state: $state)" -ForegroundColor Red
+        Write-Host "Container group failed (state: $state)" -ForegroundColor Red
         break
     }
     
     if ($currentTime -gt $timeoutTime) {
         Write-Host ""
         Write-Host "ERROR: Test execution timed out after $timeoutMinutes minutes" -ForegroundColor Red
-        
-        # Get final logs and show summary
         Write-Host ""
         Write-Host "Retrieving test logs and generating summary..." -ForegroundColor Yellow
-        $testLogs = az container logs --name $testContainerName --resource-group $resourceGroupName 2>$null
+        $testLogs = az container logs --name $testContainerName --resource-group $resourceGroupName --container-name test-runner 2>$null
         if ($testLogs) {
             Show-TestSummary -logs $testLogs
         }
         else {
             Write-Host "No test logs available yet" -ForegroundColor Yellow
         }
+        Write-Host ""
+        Write-Host "SQL Server logs (last 10 lines):" -ForegroundColor Yellow
+        az container logs --name $testContainerName --resource-group $resourceGroupName --container-name sql-server 2>$null | Select-Object -Last 10
         
         if (-not $keepContainer) {
             az container delete --name $testContainerName --resource-group $resourceGroupName --yes -o none
@@ -522,102 +510,63 @@ while ($true) {
     Start-Sleep -Seconds 5
 }
 
-Write-Host ""
-Write-Host ""
-
 #############################################
-# Get final results
+# Results
 #############################################
+Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Test Results" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
-# Get container state with null checks
-$container = az container show --name $testContainerName --resource-group $resourceGroupName 2>$null | ConvertFrom-Json -Depth 10
-$containerState = "Unknown"
-$containerExitCode = $null
-
-if ($null -ne $container -and $null -ne $container.PSObject -and $container.PSObject.Properties.Name -contains 'containers') {
-    # $containers = $container.containers
-#     if ($null -ne $containers -and $containers.Count -gt 0) {
-        $containerInstance = $container.containers
-        if ($null -ne $containerInstance -and $null -ne $containerInstance.instanceView -and $null -ne $containerInstance.instanceView.currentState) {
-            $containerState = $containerInstance.containers.instanceView.currentState.detailStatus
-            $containerExitCode = $containerInstance.containers.instanceView.currentState.detailStatus
-        }
-#     }
-}
-
-# Use the exit code we extracted from logs, or default to container exit code
-if ($null -ne $testExitCode) {
-    $exitCode = $testExitCode
-} elseif ($null -ne $containerExitCode) {
-    $exitCode = $containerExitCode
-} else {
-    $exitCode = 1
+if ($null -eq $testExitCode) {
+    $testExitCode = 1
 }
 
 Write-Host ""
-Write-Host "Container State: $containerState" -ForegroundColor DarkGreen
-Write-Host "Test Exit Code: $exitCode" -ForegroundColor DarkGreen
+Write-Host "Test Exit Code: $testExitCode" -ForegroundColor DarkGreen
+Write-Host "Results uploaded to: $blobContainerName/$blobPath" -ForegroundColor Cyan
 Write-Host ""
 
-# Get full logs and save to file
-$testLogs = az container logs --name $testContainerName --resource-group $resourceGroupName 2>&1 | Out-String
-
-# Show test summary instead of full logs
-if ($testLogs) {
-    $testLogsArray = $testLogs -split "`n"
-    Show-TestSummary -logs $testLogsArray
+# Get and parse full test runner logs
+$fullTestLogs = az container logs --name $testContainerName --resource-group $resourceGroupName --container-name test-runner 2>$null
+if ($fullTestLogs) {
+    Show-TestSummary -logs $fullTestLogs
 }
 else {
     Write-Host "No test logs available" -ForegroundColor Yellow
 }
 
-# Save logs to file with proper formatting
-$logHeader = @"
-============================================
-Integration Test Results
-============================================
-Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
-Container Name: $testContainerName
-Resource Group: $resourceGroupName
-Test Filter: $(if ($testFilter) { $testFilter } else { "(all tests)" })
-Container State: $containerState
-Exit Code: $exitCode
-============================================
-
-"@
-
-$logHeader | Set-Content -Path $logFilePath -Encoding UTF8
-$testLogs | Add-Content -Path $logFilePath -Encoding UTF8
-
-# Test results are now uploaded to blob storage
-Write-Host ""
-Write-Host "Test results uploaded to blob storage: $blobContainerName/$blobPath" -ForegroundColor Cyan
-Write-Host ""
-
 #############################################
-# Cleanup and report
+# Cleanup
 #############################################
 if ($keepContainer) {
-    Write-Host "Container kept for debugging: $testContainerName" -ForegroundColor Yellow
-    Write-Host "To view logs: az container logs --name $testContainerName --resource-group $resourceGroupName" -ForegroundColor DarkGray
-    Write-Host "To delete: az container delete --name $testContainerName --resource-group $resourceGroupName --yes" -ForegroundColor DarkGray
+    Write-Host ""
+    Write-Host "Container group kept for debugging: $testContainerName" -ForegroundColor Yellow
+    Write-Host "Test runner logs: az container logs --name $testContainerName --resource-group $resourceGroupName --container-name test-runner" -ForegroundColor DarkGray
+    Write-Host "SQL Server logs:  az container logs --name $testContainerName --resource-group $resourceGroupName --container-name sql-server" -ForegroundColor DarkGray
+    Write-Host "Delete:           az container delete --name $testContainerName --resource-group $resourceGroupName --yes" -ForegroundColor DarkGray
 } else {
-    Write-Host "Cleaning up test container..." -ForegroundColor DarkGreen
+    Write-Host "Cleaning up container group..." -ForegroundColor DarkGreen
     az container delete --name $testContainerName --resource-group $resourceGroupName --yes -o none
 }
 
 Write-Host ""
-if ($exitCode -eq 0) {
+if ($testExitCode -eq 0) {
     Write-Host "========================================" -ForegroundColor Green
     Write-Host "TESTS PASSED" -ForegroundColor Green
     Write-Host "========================================" -ForegroundColor Green
     exit 0
 } else {
     Write-Host "========================================" -ForegroundColor Red
-    Write-Host "TESTS FAILED (Exit Code: $exitCode)" -ForegroundColor Red
+    Write-Host "TESTS FAILED (Exit Code: $testExitCode)" -ForegroundColor Red
     Write-Host "========================================" -ForegroundColor Red
-    exit $exitCode
+    exit $testExitCode
 }
+
+
+# Download test results 
+if( (Test-Path ./testresults) -eq $false) { mkdir testresults }
+az storage blob download-batch --account-name "$($prefix)storage" --source testresults --destination ./testresults  --auth-mode login
+
+# Analyze test results with GitHub Copilot
+copilot --yolo -p "The folder './testresults' contains sub-folders named for different Azure integration tests. These sub-folders contain `TestResults.html` test result HTML summaries and `console-output.log` console output log files. Please review these files and for all failures, create an analysis of the failures and how they can be fixed. IMPORTANT: In the `console-output.log` file, the log entries are organized first with the `Passed` or `Failed` message on the same line as the test name, followed by the `Standard Output Messages:` and `TestContext Messages:` lines and content.  Save your analysis to a single `failures.md ` file.  For the tests that didn't fail, please review the logs and identify any messages that either have misleading messages or suggest something may have gone wrong, even if the test passed. Please create a single `observations.md` markdown file with your observations analysis. Save the markdown files to the ./testresults directory."

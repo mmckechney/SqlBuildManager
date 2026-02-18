@@ -18,10 +18,12 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
     [TestClass()]
     public class DatabaseSyncerTest
     {
+        private static Initialization _init = null!;
+
         [ClassInitialize()]
         public static void Initilize(TestContext testContext)
         {
-            Initialization init = new Initialization();
+            _init = new Initialization();
         }
         public TestContext TestContext { get; set; } = null!;
 
@@ -63,18 +65,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public async Task SyncronizeDatabasesTest_SyncWorked()
         {
             DatabaseSyncer target = new DatabaseSyncer();
-            ConnectionData gold = new ConnectionData()
-            {
-                DatabaseName = "SqlBuildTest_SyncTest1",
-                SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.Windows
-            };
-            ConnectionData toUpdate = new ConnectionData()
-            {
-                DatabaseName = "SqlBuildTest_SyncTest2",
-                SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.Windows
-            };
+            ConnectionData gold = _init.CreateConnectionData("SqlBuildTest_SyncTest1");
+            ConnectionData toUpdate = _init.CreateConnectionData("SqlBuildTest_SyncTest2");
             target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
             bool success = await target.SyncronizeDatabasesAsync(gold, toUpdate, false);
 
@@ -88,18 +80,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public async Task SyncronizeDatabasesTest_SyncWorkedAndSticks()
         {
             DatabaseSyncer target = new DatabaseSyncer();
-            ConnectionData gold = new ConnectionData()
-            {
-                DatabaseName = "SqlBuildTest_SyncTest1",
-                SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.Windows
-            };
-            ConnectionData toUpdate = new ConnectionData()
-            {
-                DatabaseName = "SqlBuildTest_SyncTest2",
-                SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.Windows
-            };
+            ConnectionData gold = _init.CreateConnectionData("SqlBuildTest_SyncTest1");
+            ConnectionData toUpdate = _init.CreateConnectionData("SqlBuildTest_SyncTest2");
             target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
             bool success = await target.SyncronizeDatabasesAsync(gold, toUpdate, false);
 
@@ -121,12 +103,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
 
             string sql = "DELETE FROM [SqlBuildTest_SyncTest2].[dbo].[SqlBuild_Logging]";
-            ConnectionData sync2Conn = new ConnectionData()
-            {
-                DatabaseName = "SqlBuildTest_SyncTest2",
-                SQLServerName = @"localhost\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.Windows
-            };
+            ConnectionData sync2Conn = _init.CreateConnectionData("SqlBuildTest_SyncTest2");
             SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(sync2Conn);
             conn.Open();
             using (SqlCommand cmd = new SqlCommand(sql, conn))

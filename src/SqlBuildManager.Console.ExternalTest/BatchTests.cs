@@ -120,7 +120,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             return startingLines;
         }
-        public static string ReleventLogFileContents(int startingLine)
+        public static string RelevantLogFileContents(int startingLine)
         {
 
             string logFile = Path.Combine(Path.GetTempPath(), LogFileName);
@@ -133,7 +133,7 @@ namespace SqlBuildManager.Console.ExternalTest
         /// </summary>
         private string CombinedLogAndConsoleOutput(int startingLine)
         {
-            return ReleventLogFileContents(startingLine) + Environment.NewLine + ConsoleOutput.ToString();
+            return RelevantLogFileContents(startingLine) + Environment.NewLine + ConsoleOutput.ToString();
         }
 
         #endregion
@@ -557,7 +557,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
-        public void Batch_Override_PlatinumDbSource_Succes(string batchMethod, string settingsFile)
+        public void Batch_Override_PlatinumDbSource_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -1763,7 +1763,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json")]
         [TestMethod]
-        public void Batch_Queue_DacpacSource_FocceApplyCustom_Success(string batchMethod, string settingsFile)
+        public void Batch_Queue_DacpacSource_ForceApplyCustom_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;

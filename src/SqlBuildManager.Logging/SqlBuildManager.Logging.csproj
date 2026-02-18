@@ -36,9 +36,4 @@
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Serilog.Sinks.AzureEventHub">
-      <HintPath>..\..\..\serilog-sinks-azureeventhub\src\Serilog.Sinks.AzureEventHub\bin\Debug\netstandard2.0\Serilog.Sinks.AzureEventHub.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 </Project>

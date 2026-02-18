@@ -155,9 +155,9 @@ namespace SqlBuildManager.Enterprise.UnitTest
             cfg.Deny = new AccessSetting[] { deny };
 
             List<string> adGroups = new List<string>();
-            adGroups.Add("IrreleventGroup1");
+            adGroups.Add("IrrelevantGroup1");
             adGroups.Add("EpicFailGroup");
-            adGroups.Add("IrreleventGroup2");
+            adGroups.Add("IrrelevantGroup2");
 
             bool expected = false;
             bool actual;
@@ -185,9 +185,9 @@ namespace SqlBuildManager.Enterprise.UnitTest
             cfg.Deny = new AccessSetting[] { deny };
 
             List<string> adGroups = new List<string>();
-            adGroups.Add("IrreleventGroup1");
+            adGroups.Add("IrrelevantGroup1");
             adGroups.Add("EpicFailGroup");
-            adGroups.Add("IrreleventGroup2");
+            adGroups.Add("IrrelevantGroup2");
 
             bool expected = false;
             bool actual;
@@ -236,9 +236,9 @@ namespace SqlBuildManager.Enterprise.UnitTest
             cfg.Allow = new AccessSetting[] { allow };
 
             List<string> adGroups = new List<string>();
-            adGroups.Add("IrreleventGroup1");
+            adGroups.Add("IrrelevantGroup1");
             adGroups.Add("EpicSuccessGroup");
-            adGroups.Add("IrreleventGroup2");
+            adGroups.Add("IrrelevantGroup2");
 
             bool expected = true;
             bool actual;
@@ -266,9 +266,9 @@ namespace SqlBuildManager.Enterprise.UnitTest
             cfg.Allow = new AccessSetting[] { allow, allow2 };
 
             List<string> adGroups = new List<string>();
-            adGroups.Add("IrreleventGroup1");
+            adGroups.Add("IrrelevantGroup1");
             adGroups.Add("EpicSuccessGroup");
-            adGroups.Add("IrreleventGroup2");
+            adGroups.Add("IrrelevantGroup2");
 
             bool expected = true;
             bool actual;

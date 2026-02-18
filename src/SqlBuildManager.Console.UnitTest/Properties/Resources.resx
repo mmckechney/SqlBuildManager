@@ -125,22 +125,22 @@
     <value>..\Resources\NoTrans_MultiDb.sbm;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="SimpleSelect" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\simpleselect.sbm;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Resources\SimpleSelect.sbm;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="SyntaxError" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\syntaxerror.sbm;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Resources\SyntaxError.sbm;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="InsertForThreadedTest" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\insertforthreadedtest.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Resources\InsertForThreadedTest.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="TableLockingScript" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\tablelockingscript.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\Resources\TableLockingScript.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="SimpleSelect_WithCodeReview" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\simpleselect_withcodereview.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Resources\SimpleSelect_WithCodeReview.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="dbconfig" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\dbconfig.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Resources\dbconfig.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="concurrency" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\concurrency.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

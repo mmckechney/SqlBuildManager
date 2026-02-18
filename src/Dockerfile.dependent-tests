@@ -1,0 +1,50 @@
+# Dockerfile for running Dependent integration tests with a SQL Server sidecar
+# Builds all *.Dependent.UnitTest projects and includes the test runner
+# Used with run_dependent_tests_in_aci.ps1 which provides a SQL Server sidecar container
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+
+WORKDIR /src
+
+# Copy everything
+COPY . .
+
+# Restore and build all Dependent.UnitTest projects
+RUN dotnet restore SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.csproj && \
+    dotnet restore SqlBuildManager.Console.Dependent.UnitTest/SqlBuildManager.Console.Dependent.UnitTest.csproj && \
+    dotnet restore SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.UnitTest.csproj && \
+    dotnet restore SqlSync.DbInformation.Dependent.UnitTest/SqlSync.DbInformation.Dependent.UnitTest.csproj && \
+    dotnet restore SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.csproj
+
+RUN dotnet build SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.csproj --configuration Release --no-restore -o /tests/SqlSync.SqlBuild.Dependent.UnitTest && \
+    dotnet build SqlBuildManager.Console.Dependent.UnitTest/SqlBuildManager.Console.Dependent.UnitTest.csproj --configuration Release --no-restore -o /tests/SqlBuildManager.Console.Dependent.UnitTest && \
+    dotnet build SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.UnitTest.csproj --configuration Release --no-restore -o /tests/SqlSync.ObjectScript.Dependent.UnitTest && \
+    dotnet build SqlSync.DbInformation.Dependent.UnitTest/SqlSync.DbInformation.Dependent.UnitTest.csproj --configuration Release --no-restore -o /tests/SqlSync.DbInformation.Dependent.UnitTest && \
+    dotnet build SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.csproj --configuration Release --no-restore -o /tests/SqlSync.Connection.Dependent.UnitTest
+
+# Final test runner image
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS testrunner
+
+# Install Azure CLI for uploading results and sqlcmd for health checks
+RUN apt-get update && \
+    apt-get install -y curl gnupg lsb-release && \
+    curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /tests
+
+# Copy built test assemblies
+COPY --from=build /tests .
+
+# SQL Server connection environment variables (configured for sidecar)
+ENV SBM_TEST_SQL_SERVER=localhost
+ENV SBM_TEST_SQL_USER=sa
+ENV SBM_TEST_SQL_PASSWORD=""
+ENV DOTNET_ENVIRONMENT=Production
+
+# Copy test runner script and ensure Unix line endings
+COPY run-dependent-tests.sh /tests/run-tests.sh
+RUN sed -i 's/\r$//' /tests/run-tests.sh && chmod +x /tests/run-tests.sh
+
+ENTRYPOINT ["/bin/bash", "/tests/run-tests.sh"]

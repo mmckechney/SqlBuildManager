@@ -1,11 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using SqlSync.Connection;
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
     class Initialization : IDisposable
     {
-        public static string ConnectionString = @"Server=(local)\SQLEXPRESS;Database={0};Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False;";
+        public static string ConnectionString;
+
+        public static string TestAuthType => string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER"))
+            ? AuthenticationType.Windows.ToString()
+            : AuthenticationType.Password.ToString();
+
+        public static string[] GetAuthArgs()
+        {
+            var user = Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER");
+            var password = Environment.GetEnvironmentVariable("SBM_TEST_SQL_PASSWORD");
+            if (!string.IsNullOrWhiteSpace(user))
+                return new[] { "--authtype", AuthenticationType.Password.ToString(), "--username", user, "--password", password ?? "" };
+            else
+                return new[] { "--authtype", AuthenticationType.Windows.ToString() };
+        }
+
+        static Initialization()
+        {
+            var server = Environment.GetEnvironmentVariable("SBM_TEST_SQL_SERVER") ?? @"(local)\SQLEXPRESS";
+            var user = Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER");
+            var password = Environment.GetEnvironmentVariable("SBM_TEST_SQL_PASSWORD");
+            if (!string.IsNullOrWhiteSpace(user))
+                ConnectionString = $"Server={server};Database={{0}};User ID={user};Password={password};TrustServerCertificate=True;Encrypt=False;";
+            else
+                ConnectionString = $@"Server={server};Database={{0}};Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False;";
+        }
 
         private static List<string> tempFiles;
         public static string SqlBuildZipFileName;

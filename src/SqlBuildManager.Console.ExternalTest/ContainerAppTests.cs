@@ -636,7 +636,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 TestContext.WriteLine(ConsoleOutput.ToString());
                 Assert.AreEqual(0, result);
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
                 Assert.IsTrue(logFileContents.Contains("Dacpac Databases In Sync") || ConsoleOutput.ToString().Contains("Dacpac Databases In Sync"), "There should be a DB already in sync that forced a custom DACPAC to be created");
 
                 var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
@@ -761,7 +761,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 result = val.Result;
                 Assert.AreEqual(0, result);
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
                 Assert.IsTrue(logFileContents.Contains("Committed - With Custom Dacpac") || ConsoleOutput.ToString().Contains("Committed - With Custom Dacpac"), "A custom DACPAC should have been required for a database");
 
                 var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
@@ -840,7 +840,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 val.Wait();
                 result = val.Result;
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
                 Assert.AreEqual(0, result, $"Worker test failed. Log contents: {logFileContents}");
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;

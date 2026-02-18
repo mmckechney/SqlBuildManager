@@ -121,4 +121,7 @@
   <data name="RegisteredServers_Good" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RegisteredServers_Good.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="RegisteredServers__Bad" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RegisteredServers__Bad.xml;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>

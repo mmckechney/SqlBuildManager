@@ -10,13 +10,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.IO;
+using System.Runtime.InteropServices;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
     public class Initialization : IDisposable
     {
         public int TableLockingLoopCount = 1000000;
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        public static string MissingDatabaseErrorMessage = "NOTE: To succesfully test, please make sure you have a a (local)\\SQLEXPRESS database instance installed and running";
+        public static string MissingDatabaseErrorMessage = "NOTE: To succesfully test, please make sure you have a SQL Server instance running. Set SBM_TEST_SQL_SERVER, SBM_TEST_SQL_USER, SBM_TEST_SQL_PASSWORD environment variables for non-default configuration.";
         public List<string> testDatabaseNames = null;
         public List<string> tempFiles = null;
         public Guid testGuid;
@@ -25,12 +26,35 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public string projectFileName = null;
         public string buildHistoryXmlFile = null;
 
-        public string connectionString = @"Data Source=(local)\SQLEXPRESS;Initial Catalog={0}; Trusted_Connection=Yes;CONNECTION TIMEOUT=20;Trust Server Certificate=true";
-        public string serverName = @"(local)\SQLEXPRESS";
+        public string connectionString;
+        public string serverName;
+        public string databasePath;
+
+        private static string GetServerName() => Environment.GetEnvironmentVariable("SBM_TEST_SQL_SERVER") ?? @"(local)\SQLEXPRESS";
+        private static string GetConnectionString(string serverName)
+        {
+            var user = Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER");
+            var password = Environment.GetEnvironmentVariable("SBM_TEST_SQL_PASSWORD");
+            if (!string.IsNullOrWhiteSpace(user))
+                return $"Data Source={serverName};Initial Catalog={{0}};User ID={user};Password={password};CONNECTION TIMEOUT=20;Trust Server Certificate=true;Encrypt=false";
+            else
+                return $@"Data Source={serverName};Initial Catalog={{0}}; Trusted_Connection=Yes;CONNECTION TIMEOUT=20;Trust Server Certificate=true";
+        }
+        private static string GetDatabasePath()
+        {
+            var envPath = Environment.GetEnvironmentVariable("SBM_TEST_DB_PATH");
+            if (!string.IsNullOrWhiteSpace(envPath))
+                return envPath;
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? @"C:\SqlBuildManager_UnitTestDatabase" : "/var/opt/mssql/data";
+        }
 
         public string PreRunScriptGuid = "47037F10-C217-4e7b-89AE-482F8C09D672";
         public Initialization()
         {
+            serverName = GetServerName();
+            connectionString = GetConnectionString(serverName);
+            databasePath = GetDatabasePath();
+
             testDatabaseNames = new List<string>();
             testDatabaseNames.Add("SqlBuildTest");
             testDatabaseNames.Add("SqlBuildTest1");
@@ -62,6 +86,14 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             testTimeStamp = DateTime.Now;
 
             connData = new ConnectionData(serverName, testDatabaseNames[0]);
+            var sqlUser = Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER");
+            var sqlPassword = Environment.GetEnvironmentVariable("SBM_TEST_SQL_PASSWORD");
+            if (!string.IsNullOrWhiteSpace(sqlUser))
+            {
+                connData.AuthenticationType = AuthenticationType.Password;
+                connData.UserId = sqlUser;
+                connData.Password = sqlPassword ?? string.Empty;
+            }
 
             if (!CreateDatabases())
                 Assert.Fail(String.Format("Unable to create the target databases. {0}", Initialization.MissingDatabaseErrorMessage));
@@ -103,7 +135,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             try
             {
-                string databasePath = @"C:\SqlBuildManager_UnitTestDatabase";
                 if (!Directory.Exists(databasePath))
                     Directory.CreateDirectory(databasePath);
 
@@ -438,6 +469,15 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         }
 
+        public ConnectionData CreateConnectionData(string databaseName)
+        {
+            var cd = new ConnectionData(serverName, databaseName);
+            cd.AuthenticationType = connData.AuthenticationType;
+            cd.UserId = connData.UserId;
+            cd.Password = connData.Password;
+            return cd;
+        }
+
         public SqlBuildHelper CreateSqlBuildHelper(SqlSyncBuildDataModel buildData)
         {
             SqlBuildHelper helper = new SqlBuildHelper(connData);
@@ -607,7 +647,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 server: serverName,
                 buildDescription: "UnitTestRun",
                 startIndex: 0,
-                projectFileName: Path.Combine(Path.GetTempPath(), $"ProjectFile_{uniqueId}.xml"),
+                projectFileName: Path.Combine(Path.Combine(Path.GetTempPath(),$"ProjectFile_{uniqueId}.xml")),
                 isTrial: false,
                 runItemIndexes: Array.Empty<double>(),
                 runScriptOnly: false,
@@ -683,7 +723,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public string GetTrulyUniqueFile()
         {
             string tmpName = Path.GetTempFileName();
-            string newName = Path.GetDirectoryName(tmpName) + @"\SqlSyncTest-" + Guid.NewGuid().ToString() + ".tmp";
+            string newName = Path.Combine(Path.GetDirectoryName(tmpName), @"\SqlSyncTest-" + Guid.NewGuid().ToString() + ".tmp");
             File.Move(tmpName, newName);
 
 

@@ -108,6 +108,7 @@ namespace SqlSync.Connection
                     builder.Authentication = SqlAuthenticationMethod.SqlPassword;
                     builder.UserID = uid;
                     builder.Password = pw;
+                    builder.TrustServerCertificate = true;
                     break;
             }
             log.LogDebug($"Database Connection string: {builder.ConnectionString}");

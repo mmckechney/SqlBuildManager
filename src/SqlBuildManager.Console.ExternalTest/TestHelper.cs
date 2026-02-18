@@ -78,7 +78,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             return startingLines;
         }
-        public static string ReleventLogFileContents(int startingLine)
+        public static string RelevantLogFileContents(int startingLine)
         {
 
             string logFile = Path.Combine(Path.GetTempPath(), LogFileName);

@@ -9,6 +9,7 @@
     <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\RegisteredServers__Bad.xml" />
     <EmbeddedResource Include="Resources\RegisteredServers_Good.xml" />
   </ItemGroup>
   <ItemGroup>
