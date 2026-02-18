@@ -10,6 +10,17 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 
 
 ---
+### **PostgreSQL Support**
+
+SQL Build Manager now supports **PostgreSQL** as an alternative database target alongside Microsoft SQL Server. Use `--platform PostgreSQL` in any build command to target PostgreSQL databases. See the [PostgreSQL documentation](docs/postgresql.md) for full details.
+
+Features **not yet available** for PostgreSQL:
+- DACPAC operations (extract, compare, `create fromdacpacs` / `create fromdacpacdiff`)
+- Object scripting (SMO-based)
+- Windows/Integrated authentication (use `--authtype Password`)
+- Some SQL Server-specific script policies (`WithNoLockPolicy`, `QualifiedNamesPolicy`)
+
+---
 ### **Key feature enhancement with Version 14.4+: Expanded use of Azure User Assigned Managed Identity**
 
 With this update, it significantly reduces the the need to save and manage secrets and connection strings. For full details on leveraging Managed Identity to connect to the other Azure resources such as SQL Database, Blob storage, Service Bus, Event Hub, Key Vault and Azure Container registry, see the [Managed Identity documentation here](/docs/managed_identity.md).
@@ -20,6 +31,7 @@ With this update, it significantly reduces the the need to save and manage secre
 
 - [Important Concepts!](#important-concepts)
 - [Key Features - Why use SQL Build Manager?](#key-features)
+- [PostgreSQL Support](docs/postgresql.md)
 - [Running builds](#running-builds-command-line)
   - [Querying across databases](#querying-across-databases-command-line)
 - [Runtime Process Flow](docs/threaded_build_process_flow.md)
@@ -70,6 +82,7 @@ The name of a build. This is used as the name or name prefix for all of the Azur
 ## Key Features
 
 - Packaging of all of your update scripts and runtime meta-data into a single .sbm (zip file) or leverage data-tier application ([DACPAC](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/deploy-a-data-tier-application)) deployment across your entire database fleet.
+- **Supports both Microsoft SQL Server and PostgreSQL** — select the target platform at runtime with `--platform SqlServer` or `--platform PostgreSQL`
 - Massively parallel execution across thousands of databases utilizing local threading or an [Azure Batch, Kubernetes, Container Apps or Container Instance remote execution](docs/massively_parallel.md)
 - Single transaction handling. If any one script fails, the entire package is rolled back, leaving the database unchanged.
 - Handle multiple database updates in one package - seamlessly update all your databases with local threading or massively parallel remote processing.
