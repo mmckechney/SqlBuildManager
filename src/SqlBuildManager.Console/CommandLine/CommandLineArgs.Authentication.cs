@@ -42,6 +42,17 @@ namespace SqlBuildManager.Console.CommandLine
                 this.DirectPropertyChangeTracker.Add("Authentication.AuthenticationType");
             }
         }
+
+        [JsonIgnore]
+        public virtual SqlSync.Connection.DatabasePlatform DatabasePlatform
+        {
+            set
+            {
+                AuthenticationArgs.DatabasePlatform = value;
+                this.DirectPropertyChangeTracker.Add("Authentication.DatabasePlatform");
+            }
+        }
+
         [Serializable]
         public class Authentication : ArgsBase
         {
@@ -51,6 +62,10 @@ namespace SqlBuildManager.Console.CommandLine
             [JsonConverter(typeof(JsonStringEnumConverter))]
             [DefaultValue(SqlSync.Connection.AuthenticationType.Password)]
             public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; } = SqlSync.Connection.AuthenticationType.Password;
+
+            [JsonConverter(typeof(JsonStringEnumConverter))]
+            [DefaultValue(SqlSync.Connection.DatabasePlatform.SqlServer)]
+            public SqlSync.Connection.DatabasePlatform DatabasePlatform { get; set; } = SqlSync.Connection.DatabasePlatform.SqlServer;
         }
     }
 }

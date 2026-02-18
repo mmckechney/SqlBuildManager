@@ -8,6 +8,7 @@ using SqlSync.SqlBuild.SqlLogging;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -78,8 +79,8 @@ namespace SqlSync.SqlBuild.Services
             }
             //Self healing: add the table if needed
             sqlInfoMessage = string.Empty;
-            SqlCommand createTableCmd = new SqlCommand(Properties.Resources.LoggingTable);
-            SqlCommand createCommitIndex = new SqlCommand(Properties.Resources.LoggingTableCommitCheckIndex);
+            DbCommand createTableCmd = null;
+            DbCommand createCommitIndex = null;
             Dictionary<string, BuildConnectData>.KeyCollection keys = unconfirmedLogTable.Keys;
             foreach (string key in keys)
             {
@@ -102,9 +103,10 @@ namespace SqlSync.SqlBuild.Services
                 }
                 try
                 {
-
-                    createTableCmd.Connection = connData.Connection;
-                    createTableCmd.Connection.InfoMessage += new SqlInfoMessageEventHandler(Connection_InfoMessage);
+                    createTableCmd = connData.Connection.CreateCommand();
+                    createTableCmd.CommandText = Properties.Resources.LoggingTable;
+                    if (createTableCmd.Connection is SqlConnection sqlConn1)
+                        sqlConn1.InfoMessage += new SqlInfoMessageEventHandler(Connection_InfoMessage);
 
                     //If there is an alternate target for logging, check to see if this connection is for that database, if not, skip it.
                     if (logToDatabaseName.Length > 0 && !createTableCmd.Connection.Database.Equals(logToDatabaseName, StringComparison.CurrentCultureIgnoreCase))
@@ -120,8 +122,10 @@ namespace SqlSync.SqlBuild.Services
                     log.LogDebug($"EnsureLogTablePresence Table Sql Messages for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}:\r\n{sqlInfoMessage}");
 
                     //Ensure the indexes are there
-                    createCommitIndex.Connection = connData.Connection;
-                    createCommitIndex.Connection.InfoMessage += new SqlInfoMessageEventHandler(Connection_InfoMessage);
+                    createCommitIndex = connData.Connection.CreateCommand();
+                    createCommitIndex.CommandText = Properties.Resources.LoggingTableCommitCheckIndex;
+                    if (createCommitIndex.Connection is SqlConnection sqlConn2)
+                        sqlConn2.InfoMessage += new SqlInfoMessageEventHandler(Connection_InfoMessage);
 
                     //If there is an alternate target for logging, check to see if this connection is for that database, if not, skip it.
                     if (logToDatabaseName.Length > 0 && !createCommitIndex.Connection.Database.Equals(logToDatabaseName, StringComparison.CurrentCultureIgnoreCase))
@@ -147,8 +151,10 @@ namespace SqlSync.SqlBuild.Services
                 }
                 finally
                 {
-                    createTableCmd.Connection.InfoMessage -= new SqlInfoMessageEventHandler(Connection_InfoMessage);
-                    createCommitIndex.Connection.InfoMessage -= new SqlInfoMessageEventHandler(Connection_InfoMessage);
+                    if (createTableCmd?.Connection is SqlConnection sqlConnA)
+                        sqlConnA.InfoMessage -= new SqlInfoMessageEventHandler(Connection_InfoMessage);
+                    if (createCommitIndex?.Connection is SqlConnection sqlConnB)
+                        sqlConnB.InfoMessage -= new SqlInfoMessageEventHandler(Connection_InfoMessage);
                 }
             }
             
@@ -161,11 +167,12 @@ namespace SqlSync.SqlBuild.Services
         /// </summary>
         /// <param name="conn">Connection object to the target database</param>
         /// <returns></returns>
-        public async Task<bool> LogTableExists(SqlConnection conn)
+        public async Task<bool> LogTableExists(DbConnection conn)
         {
             try
             {
-                SqlCommand cmd = new SqlCommand("SELECT 1 FROM sys.objects WITH (NOLOCK) WHERE name = 'SqlBuild_Logging' AND type = 'U'", conn);
+                DbCommand cmd = conn.CreateCommand();
+                cmd.CommandText = "SELECT 1 FROM sys.objects WITH (NOLOCK) WHERE name = 'SqlBuild_Logging' AND type = 'U'";
                 if (cmd.Connection.State == ConnectionState.Closed)
                     cmd.Connection.Open();
 
@@ -295,6 +302,22 @@ namespace SqlSync.SqlBuild.Services
             return returnValue;
         }
 
+        private static void AddParameter(DbCommand cmd, string name, object value)
+        {
+            var p = cmd.CreateParameter();
+            p.ParameterName = name;
+            p.Value = value ?? DBNull.Value;
+            cmd.Parameters.Add(p);
+        }
+
+        private static DbParameter AddParameter(DbCommand cmd, string name)
+        {
+            var p = cmd.CreateParameter();
+            p.ParameterName = name;
+            cmd.Parameters.Add(p);
+            return p;
+        }
+
         private async Task ExecuteBatchInsertAsync(
             BuildConnectData connData,
             List<(sqlLog.CommittedScript script, Script row)> scripts,
@@ -313,8 +336,7 @@ namespace SqlSync.SqlBuild.Services
             var sql = new StringBuilder();
             sql.AppendLine("INSERT INTO SqlBuild_Logging([BuildFileName],[ScriptFileName],[ScriptId],[ScriptFileHash],[CommitDate],[Sequence],[UserId],[AllowScriptBlock],[ScriptText],[Tag],[TargetDatabase],[RunWithVersion],[BuildProjectHash],[BuildRequestedBy],[ScriptRunStart],[ScriptRunEnd],[Description]) VALUES");
 
-            var cmd = new SqlCommand();
-            cmd.Connection = connData.Connection;
+            var cmd = connData.Connection.CreateCommand();
             if (connData.Transaction != null)
                 cmd.Transaction = connData.Transaction;
 
@@ -325,22 +347,22 @@ namespace SqlSync.SqlBuild.Services
                 if (i > 0) sql.Append(",");
                 sql.AppendLine($"(@BuildFileName{i},@ScriptFileName{i},@ScriptId{i},@ScriptFileHash{i},@CommitDate{i},@Sequence{i},@UserId{i},1,@ScriptText{i},@Tag{i},@TargetDatabase{i},@RunWithVersion{i},@BuildProjectHash{i},@BuildRequestedBy{i},@ScriptRunStart{i},@ScriptRunEnd{i},@Description{i})");
 
-                cmd.Parameters.AddWithValue($"@BuildFileName{i}", buildFileName);
-                cmd.Parameters.AddWithValue($"@ScriptFileName{i}", row.FileName);
-                cmd.Parameters.AddWithValue($"@ScriptId{i}", script.ScriptId);
-                cmd.Parameters.AddWithValue($"@ScriptFileHash{i}", script.FileHash);
-                cmd.Parameters.AddWithValue($"@CommitDate{i}", commitDate);
-                cmd.Parameters.AddWithValue($"@Sequence{i}", script.Sequence);
-                cmd.Parameters.AddWithValue($"@UserId{i}", userId);
-                cmd.Parameters.AddWithValue($"@ScriptText{i}", script.ScriptText);
-                cmd.Parameters.AddWithValue($"@Tag{i}", script.Tag ?? "");
-                cmd.Parameters.AddWithValue($"@TargetDatabase{i}", script.DatabaseTarget);
-                cmd.Parameters.AddWithValue($"@RunWithVersion{i}", runWithVersion);
-                cmd.Parameters.AddWithValue($"@BuildProjectHash{i}", buildProjectHash);
-                cmd.Parameters.AddWithValue($"@BuildRequestedBy{i}", buildRequestedBy);
-                cmd.Parameters.AddWithValue($"@ScriptRunStart{i}", script.RunStart);
-                cmd.Parameters.AddWithValue($"@ScriptRunEnd{i}", script.RunEnd);
-                cmd.Parameters.AddWithValue($"@Description{i}", description);
+                AddParameter(cmd, $"@BuildFileName{i}", buildFileName);
+                AddParameter(cmd, $"@ScriptFileName{i}", row.FileName);
+                AddParameter(cmd, $"@ScriptId{i}", script.ScriptId);
+                AddParameter(cmd, $"@ScriptFileHash{i}", script.FileHash);
+                AddParameter(cmd, $"@CommitDate{i}", commitDate);
+                AddParameter(cmd, $"@Sequence{i}", script.Sequence);
+                AddParameter(cmd, $"@UserId{i}", userId);
+                AddParameter(cmd, $"@ScriptText{i}", script.ScriptText);
+                AddParameter(cmd, $"@Tag{i}", script.Tag ?? "");
+                AddParameter(cmd, $"@TargetDatabase{i}", script.DatabaseTarget);
+                AddParameter(cmd, $"@RunWithVersion{i}", runWithVersion);
+                AddParameter(cmd, $"@BuildProjectHash{i}", buildProjectHash);
+                AddParameter(cmd, $"@BuildRequestedBy{i}", buildRequestedBy);
+                AddParameter(cmd, $"@ScriptRunStart{i}", script.RunStart);
+                AddParameter(cmd, $"@ScriptRunEnd{i}", script.RunEnd);
+                AddParameter(cmd, $"@Description{i}", description);
             }
 
             cmd.CommandText = sql.ToString();
@@ -363,27 +385,27 @@ namespace SqlSync.SqlBuild.Services
             if (connData.Connection.State == ConnectionState.Closed)
                 await connData.Connection.OpenAsync();
 
-            var cmd = new SqlCommand(Properties.Resources.LogScript);
-            cmd.Connection = connData.Connection;
+            var cmd = connData.Connection.CreateCommand();
+            cmd.CommandText = Properties.Resources.LogScript;
             if (connData.Transaction != null)
                 cmd.Transaction = connData.Transaction;
 
-            cmd.Parameters.AddWithValue("@BuildFileName", buildFileName);
-            cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.Parameters.AddWithValue("@CommitDate", commitDate);
-            cmd.Parameters.AddWithValue("@RunWithVersion", runWithVersion);
-            cmd.Parameters.AddWithValue("@BuildProjectHash", buildProjectHash);
-            cmd.Parameters.AddWithValue("@BuildRequestedBy", buildRequestedBy);
-            cmd.Parameters.AddWithValue("@Description", description);
-            cmd.Parameters.Add("@ScriptFileName", SqlDbType.VarChar);
-            cmd.Parameters.Add("@ScriptId", SqlDbType.UniqueIdentifier);
-            cmd.Parameters.Add("@ScriptFileHash", SqlDbType.VarChar);
-            cmd.Parameters.Add("@Sequence", SqlDbType.Int);
-            cmd.Parameters.Add("@ScriptText", SqlDbType.Text);
-            cmd.Parameters.Add("@Tag", SqlDbType.VarChar);
-            cmd.Parameters.Add("@TargetDatabase", SqlDbType.VarChar);
-            cmd.Parameters.Add("@ScriptRunStart", SqlDbType.DateTime);
-            cmd.Parameters.Add("@ScriptRunEnd", SqlDbType.DateTime);
+            AddParameter(cmd, "@BuildFileName", buildFileName);
+            AddParameter(cmd, "@UserId", userId);
+            AddParameter(cmd, "@CommitDate", commitDate);
+            AddParameter(cmd, "@RunWithVersion", runWithVersion);
+            AddParameter(cmd, "@BuildProjectHash", buildProjectHash);
+            AddParameter(cmd, "@BuildRequestedBy", buildRequestedBy);
+            AddParameter(cmd, "@Description", description);
+            AddParameter(cmd, "@ScriptFileName");
+            AddParameter(cmd, "@ScriptId");
+            AddParameter(cmd, "@ScriptFileHash");
+            AddParameter(cmd, "@Sequence");
+            AddParameter(cmd, "@ScriptText");
+            AddParameter(cmd, "@Tag");
+            AddParameter(cmd, "@TargetDatabase");
+            AddParameter(cmd, "@ScriptRunStart");
+            AddParameter(cmd, "@ScriptRunEnd");
 
             foreach (var (script, row) in scripts)
             {

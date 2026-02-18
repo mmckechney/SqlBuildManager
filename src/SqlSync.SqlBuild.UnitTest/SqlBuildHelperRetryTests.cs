@@ -102,7 +102,7 @@ namespace SqlSync.SqlBuild.UnitTest
             private readonly Queue<BuildItemStatus> _statuses;
             public TestRunnerFactory(Queue<BuildItemStatus> statuses) => _statuses = statuses;
 
-            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null)
+            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null, ITransactionManager transactionManager = null)
             {
                 return new TestSqlBuildRunner(context, _statuses);
             }

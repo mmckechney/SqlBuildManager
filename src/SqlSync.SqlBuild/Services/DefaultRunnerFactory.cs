@@ -9,9 +9,10 @@ namespace SqlSync.SqlBuild.Services
             IConnectionsService connectionsService,
             ISqlBuildRunnerContext context,
             IBuildFinalizerContext finalizerContext,
-            ISqlCommandExecutor executor = null)
+            ISqlCommandExecutor executor = null,
+            ITransactionManager transactionManager = null)
         {
-            return new SqlBuildRunner(connectionsService, context, finalizerContext, executor);
+            return new SqlBuildRunner(connectionsService, context, finalizerContext, executor, transactionManager: transactionManager);
         }
     }
 }

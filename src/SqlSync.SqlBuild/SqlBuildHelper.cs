@@ -92,6 +92,9 @@ namespace SqlSync.SqlBuild
         internal Services.IScriptLogWriter ScriptLogWriter { get; }
         internal Services.IBuildHistoryTracker BuildHistoryTracker { get; }
         internal Services.IDacPacFallbackHandler DacPacFallbackHandler { get; }
+        internal Services.ITransactionManager TransactionManager { get; }
+        internal Services.IScriptSyntaxProvider SyntaxProvider { get; }
+        internal Services.ISqlResourceProvider ResourceProvider { get; }
 
         #endregion
 
@@ -157,6 +160,9 @@ namespace SqlSync.SqlBuild
             BuildPreparationService = new Services.DefaultBuildPreparationService(this);
             ScriptBatcher = new Services.DefaultScriptBatcher();
             TokenReplacementService = new Services.DefaultTokenReplacementService();
+            TransactionManager = new Services.SqlServerTransactionManager();
+            SyntaxProvider = new Services.SqlServerSyntaxProvider();
+            ResourceProvider = new Services.SqlServerResourceProvider();
             ConnectionsService = connectionsService ?? new Services.DefaultConnectionsService();
             SqlLoggingService = new Services.DefaultSqlLoggingService(ConnectionsService, ProgressReporter);
             DatabaseUtility = databaseUtility ?? new Services.DefaultDatabaseUtility(ConnectionsService, SqlLoggingService, ProgressReporter, FileHelper);

@@ -73,7 +73,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             private readonly Func<ISqlBuildRunnerContext, SqlBuildRunner> _factory;
             public FakeRunnerFactory(Func<ISqlBuildRunnerContext, SqlBuildRunner> factory) => _factory = factory;
 
-            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null)
+            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null, ITransactionManager transactionManager = null)
             {
                 return _factory(context);
             }

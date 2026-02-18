@@ -30,6 +30,37 @@ namespace SqlSync.Connection
 
             appName = string.Format($"Sql Build Manager v{version} [{System.Environment.UserName}];");
         }
+
+        /// <summary>
+        /// Returns the appropriate IDbConnectionFactory for the given platform.
+        /// </summary>
+        public static IDbConnectionFactory GetFactory(DatabasePlatform platform)
+        {
+            return platform switch
+            {
+                DatabasePlatform.PostgreSQL => new PostgresConnectionFactory(),
+                _ => new SqlServerConnectionFactory(),
+            };
+        }
+
+        /// <summary>
+        /// Returns the appropriate IDbConnectionFactory for the given ConnectionData.
+        /// </summary>
+        public static IDbConnectionFactory GetFactory(ConnectionData connData)
+        {
+            return GetFactory(connData?.DatabasePlatform ?? DatabasePlatform.SqlServer);
+        }
+
+        /// <summary>
+        /// Creates a platform-aware DbConnection from ConnectionData.
+        /// </summary>
+        public static DbConnection GetDbConnection(ConnectionData connData)
+        {
+            if (connData == null)
+                return null;
+            return GetFactory(connData).CreateConnection(connData);
+        }
+
         public static SqlConnection GetConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId)
         {
             String conn = GetConnectionString(dbName, serverName, uid, pw, authType, scriptTimeOut, managedIdentityClientId);
