@@ -68,10 +68,12 @@ $ErrorActionPreference = "Stop"
 # Function to parse and summarize test results
 #############################################
 $script:lastSummaryLineCount = 0
+$script:lastConsoleWidth = 0
 
 function Show-TestSummary {
     param(
         [string[]]$logs,
+        [DateTime]$startTime,
         [switch]$refresh
     )
     
@@ -91,10 +93,35 @@ function Show-TestSummary {
         }
     }
     
+    # Calculate elapsed time
+    $elapsed = (Get-Date) - $startTime
+    $elapsedStr = "{0:hh\:mm\:ss}" -f $elapsed
+    
+    # Detect console resize - reset if width changed
+    $currentWidth = [Console]::WindowWidth
+    if ($refresh -and $script:lastConsoleWidth -ne 0 -and $currentWidth -ne $script:lastConsoleWidth) {
+        # Console was resized - reset and don't try to reposition cursor
+        $script:lastSummaryLineCount = 0
+        Write-Host "" -ForegroundColor DarkGray
+        Write-Host "(Console resized - restarting summary display)" -ForegroundColor DarkGray
+    }
+    $script:lastConsoleWidth = $currentWidth
+    
     # If refreshing, move cursor up to overwrite previous summary
     if ($refresh -and $script:lastSummaryLineCount -gt 0) {
-        # Move cursor up by the number of lines we printed last time
-        [Console]::SetCursorPosition(0, [Console]::CursorTop - $script:lastSummaryLineCount)
+        try {
+            # Move cursor up by the number of lines we printed last time
+            $targetLine = [Console]::CursorTop - $script:lastSummaryLineCount
+            if ($targetLine -ge 0) {
+                [Console]::SetCursorPosition(0, $targetLine)
+            } else {
+                # Can't move up that far - reset
+                $script:lastSummaryLineCount = 0
+            }
+        } catch {
+            # Cursor positioning failed (maybe due to resize) - reset and continue
+            $script:lastSummaryLineCount = 0
+        }
     }
     
     $lineCount = 0
@@ -108,7 +135,7 @@ function Show-TestSummary {
     }
     
     $output += "========================================"
-    $output += "Test Summary ($(Get-Date -Format 'HH:mm:ss'))"
+    $output += "Test Summary ($(Get-Date -Format 'HH:mm:ss')) - Elapsed: $elapsedStr"
     $output += "========================================"
     $output += ""
     $lineCount += 4
@@ -478,7 +505,7 @@ while ($true) {
                 Write-Host "--- Live Test Progress ---" -ForegroundColor DarkGray
                 Write-Host ""
             }
-            Show-TestSummary -logs $recentLogs -refresh
+            Show-TestSummary -logs $recentLogs -startTime $startTime -refresh
         }
         $lastLogTime = $currentTime
     }
@@ -506,7 +533,7 @@ while ($true) {
         Write-Host "Retrieving test logs and generating summary..." -ForegroundColor Yellow
         $testLogs = az container logs --name $testContainerName --resource-group $resourceGroupName 2>$null
         if ($testLogs) {
-            Show-TestSummary -logs $testLogs
+            Show-TestSummary -logs $testLogs -startTime $startTime
         }
         else {
             Write-Host "No test logs available yet" -ForegroundColor Yellow
@@ -568,7 +595,7 @@ $testLogs = az container logs --name $testContainerName --resource-group $resour
 # Show test summary instead of full logs
 if ($testLogs) {
     $testLogsArray = $testLogs -split "`n"
-    Show-TestSummary -logs $testLogsArray
+    Show-TestSummary -logs $testLogsArray -startTime $startTime
 }
 else {
     Write-Host "No test logs available" -ForegroundColor Yellow
