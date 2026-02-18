@@ -89,7 +89,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
+            string[] args = (new string[] {
                 "build",
                 "--server", "localhost\\sqlexpress",
                 "--database", "SqlBuildTest",
@@ -99,7 +99,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", "0"
 
-            }).ToArray();
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
 
             int actual = await Worker.RunLocalBuildAsync(cmdLine);
@@ -149,7 +149,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
+            string[] args = (new string[] {
                 "build",
                 "--server", "localhost\\sqlexpress",
                 "--rootloggingpath", loggingPath,
@@ -159,7 +159,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", "0"
 
-            }).ToArray();
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
 
             int actual = await Worker.RunLocalBuildAsync(cmdLine);
@@ -208,7 +208,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
+            string[] args = (new string[] {
                 "build",
                 "--server", "localhost\\sqlexpress",
                 "--rootloggingpath", loggingPath,
@@ -217,7 +217,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", "0"
 
-            }).ToArray();
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
 
             int actual = await Worker.RunLocalBuildAsync(cmdLine);
@@ -270,7 +270,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
+            string[] args = (new string[] {
                 "build",
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
@@ -279,7 +279,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", "0"
 
-            }).ToArray();
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
 
             int actual = await Worker.RunLocalBuildAsync(cmdLine);
@@ -336,7 +336,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
+            string[] args = (new string[] {
                 "build",
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
@@ -345,7 +345,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", "0"
 
-            }).ToArray();
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
 
             int actual = await Worker.RunLocalBuildAsync(cmdLine);
@@ -401,7 +401,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = Initialization.GetAuthArgs().Concat(new string[] {
+            string[] args = (new string[] {
                 "build",
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
@@ -413,7 +413,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--server", @"(local)\SQLEXPRESS"
 
 
-            }).ToArray();
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
 
             int actual = await Worker.RunLocalBuildAsync(cmdLine);
