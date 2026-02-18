@@ -67,7 +67,14 @@ $ErrorActionPreference = "Stop"
 #############################################
 # Function to parse and summarize test results
 #############################################
-$script:lastSummaryLineCount = 0
+$script:lastRenderLineCount = 0
+
+# Accumulated test results across all log fetches (survives log truncation)
+$script:allPassed = [System.Collections.Generic.List[string]]::new()
+$script:allFailed = [System.Collections.Generic.List[string]]::new()
+$script:allSkipped = [System.Collections.Generic.List[string]]::new()
+$script:seenTests = [System.Collections.Generic.HashSet[string]]::new()
+$script:monitoringStartTime = $null
 
 function Show-TestSummary {
     param(
@@ -75,139 +82,148 @@ function Show-TestSummary {
         [switch]$refresh
     )
     
-    $passed = @()
-    $failed = @()
-    $skipped = @()
-    
+    # Parse new results from current log batch and merge into accumulated state
     foreach ($line in $logs) {
         if ($line -match '^\s{2}Passed\s+(.+?)(?:\s+\[|$)') {
-            $passed += $matches[1]
+            $testName = $matches[1]
+            if (-not $script:seenTests.Contains($testName)) {
+                $script:seenTests.Add($testName) | Out-Null
+                $script:allPassed.Add($testName)
+            }
         }
         elseif ($line -match '^\s{2}Failed\s+(.+?)(?:\s+\[|$)') {
-            $failed += $matches[1]
+            $testName = $matches[1]
+            if (-not $script:seenTests.Contains($testName)) {
+                $script:seenTests.Add($testName) | Out-Null
+                $script:allFailed.Add($testName)
+            }
         }
         elseif ($line -match '^\s{2}Skipped\s+(.+?)(?:$|\s)') {
-            $skipped += $matches[1]
+            $testName = $matches[1]
+            if (-not $script:seenTests.Contains($testName)) {
+                $script:seenTests.Add($testName) | Out-Null
+                $script:allSkipped.Add($testName)
+            }
         }
     }
     
-    # If refreshing, move cursor up to overwrite previous summary
-    if ($refresh -and $script:lastSummaryLineCount -gt 0) {
-        # Move cursor up by the number of lines we printed last time
-        [Console]::SetCursorPosition(0, [Console]::CursorTop - $script:lastSummaryLineCount)
+    # Use accumulated results for display
+    $passed = $script:allPassed
+    $failed = $script:allFailed
+    $skipped = $script:allSkipped
+    
+    # Determine console width for padding (prevents wrapping so line count = visual row count)
+    $consoleWidth = [Math]::Max(40, [Console]::WindowWidth)
+    
+    # If refreshing, move cursor up by the number of lines we rendered last time
+    # Using relative movement so it works correctly even when the buffer has scrolled
+    if ($refresh -and $script:lastRenderLineCount -gt 0) {
+        $targetRow = [Math]::Max(0, [Console]::CursorTop - $script:lastRenderLineCount)
+        [Console]::SetCursorPosition(0, $targetRow)
     }
     
-    $lineCount = 0
+    # Build elapsed time string
+    $elapsedStr = ""
+    if ($null -ne $script:monitoringStartTime) {
+        $elapsed = (Get-Date) - $script:monitoringStartTime
+        $elapsedStr = " | Elapsed: {0:d2}:{1:d2}:{2:d2}" -f [int]$elapsed.TotalHours, $elapsed.Minutes, $elapsed.Seconds
+    }
     
-    # Build the output as a string buffer to count lines
+    # Build the output as a string buffer
     $output = @()
     
     if (-not $refresh) {
         $output += ""
-        $lineCount++
     }
     
-    $output += "========================================"
-    $output += "Test Summary ($(Get-Date -Format 'HH:mm:ss'))"
-    $output += "========================================"
+    $output += "========================================================="
+    $output += "Test Summary ($(Get-Date -Format 'HH:mm:ss')$elapsedStr)"
+    $output += "========================================================="
     $output += ""
-    $lineCount += 4
     
     $output += "$($passed.Count) Passed"
-    $lineCount++
-    if ($passed.Count -gt 0 -and $passed.Count -le 10) {
+    if ($passed.Count -gt 0 -and $passed.Count -le 5) {
         foreach ($test in $passed) {
             $output += " - $test"
-            $lineCount++
         }
     }
-    elseif ($passed.Count -gt 10) {
-        $output += " (list truncated - showing first 5)"
-        $lineCount++
-        foreach ($test in ($passed | Select-Object -First 5)) {
+    elseif ($passed.Count -gt 5) {
+        $output += " (showing last 5 of $($passed.Count))"
+        foreach ($test in ($passed | Select-Object -Last 5)) {
             $output += " - $test"
-            $lineCount++
         }
     }
     
     $output += ""
-    $lineCount++
     $output += "$($failed.Count) Failed"
-    $lineCount++
     if ($failed.Count -gt 0) {
         foreach ($test in $failed) {
             $output += " - $test"
-            $lineCount++
         }
     }
     
     $output += ""
-    $lineCount++
     $output += "$($skipped.Count) Skipped"
-    $lineCount++
     if ($skipped.Count -gt 0 -and $skipped.Count -le 10) {
         foreach ($test in $skipped) {
             $output += " - $test"
-            $lineCount++
         }
     }
     elseif ($skipped.Count -gt 10) {
         $output += " (list truncated - showing first 5)"
-        $lineCount++
         foreach ($test in ($skipped | Select-Object -First 5)) {
             $output += " - $test"
-            $lineCount++
         }
     }
     $output += ""
-    $lineCount++
     
-    # Clear any remaining lines from previous output if this one is shorter
-    if ($refresh -and $lineCount -lt $script:lastSummaryLineCount) {
-        $linesToClear = $script:lastSummaryLineCount - $lineCount
-        for ($i = 0; $i -lt $linesToClear; $i++) {
-            $output += (" " * ([Console]::WindowWidth - 1))
-            $lineCount++
-        }
+    # If previous render had more lines, pad with blank lines to overwrite them
+    $prevCount = $script:lastRenderLineCount
+    while ($output.Count -lt $prevCount) {
+        $output += ""
     }
     
-    # Print the output with appropriate colors
-    $i = 0
+    # Print the output with appropriate colors, padding each line to full width
+    # Padding to consoleWidth-1 prevents wrapping, so line count = visual row count
+    $currentSection = ""
     foreach ($line in $output) {
+        # Track which section we are in for coloring " - " items
+        if ($line -match "^\d+ Passed") { $currentSection = "passed" }
+        elseif ($line -match "^\d+ Failed") { $currentSection = "failed" }
+        elseif ($line -match "^\d+ Skipped") { $currentSection = "skipped" }
+        
+        $paddedLine = $line.PadRight($consoleWidth - 1).Substring(0, $consoleWidth - 1)
         if ($line -match "^Test Summary") {
-            Write-Host $line -ForegroundColor Cyan
+            Write-Host $paddedLine -ForegroundColor Cyan
         }
-        elseif ($line -match "^=+$") {
-            Write-Host $line -ForegroundColor Cyan
+        elseif ($line -match "^=+") {
+            Write-Host $paddedLine -ForegroundColor Cyan
         }
         elseif ($line -match "^\d+ Passed") {
-            Write-Host $line -ForegroundColor Green
+            Write-Host $paddedLine -ForegroundColor Green
         }
         elseif ($line -match "^\d+ Failed") {
-            Write-Host $line -ForegroundColor Red
+            Write-Host $paddedLine -ForegroundColor Red
         }
         elseif ($line -match "^\d+ Skipped") {
-            Write-Host $line -ForegroundColor Yellow
+            Write-Host $paddedLine -ForegroundColor Yellow
         }
-        elseif ($line -match "^ - " -and $output[$i-1] -match "Passed") {
-            Write-Host $line -ForegroundColor DarkGray
-        }
-        elseif ($line -match "^ - " -and $output[$i-1] -match "Failed") {
-            Write-Host $line -ForegroundColor Yellow
+        elseif ($line -match "^ - " -and $currentSection -eq "failed") {
+            Write-Host $paddedLine -ForegroundColor DarkGray
         }
         elseif ($line -match "^ - ") {
-            Write-Host $line -ForegroundColor DarkGray
+            Write-Host $paddedLine -ForegroundColor DarkGray
         }
-        elseif ($line -match "truncated") {
-            Write-Host $line -ForegroundColor DarkGray
+        elseif ($line -match "truncated|showing last") {
+            Write-Host $paddedLine -ForegroundColor DarkGray
         }
         else {
-            Write-Host $line
+            Write-Host $paddedLine
         }
-        $i++
     }
     
-    $script:lastSummaryLineCount = $lineCount
+    # Record how many lines we rendered so next refresh can move back the right amount
+    $script:lastRenderLineCount = $output.Count
 }
 
 # Get the repo root
@@ -445,6 +461,7 @@ Write-Host "Monitoring Test Execution" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
 $startTime = Get-Date
+$script:monitoringStartTime = $startTime
 $timeoutTime = $startTime.AddMinutes($timeoutMinutes)
 $lastLogTime = $startTime
 $testsCompleted = $false
@@ -472,7 +489,7 @@ while ($true) {
             }
             
             # Show refreshing test summary
-            if ($script:lastSummaryLineCount -eq 0) {
+            if ($script:lastRenderLineCount -eq 0) {
                 # First time - add a header
                 Write-Host ""
                 Write-Host "--- Live Test Progress ---" -ForegroundColor DarkGray
@@ -518,8 +535,7 @@ while ($true) {
         exit 1
     }
     
-    Write-Host "." -NoNewline
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 10
 }
 
 Write-Host ""
