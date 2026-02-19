@@ -132,6 +132,13 @@ namespace SqlBuildManager.Console
                     ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId,
                     DatabasePlatform = cmdLine.AuthenticationArgs.DatabasePlatform
                 };
+                // For PG MI auth, use identity name as UserId (PG role name)
+                if (connData.DatabasePlatform == DatabasePlatform.PostgreSQL
+                    && string.IsNullOrEmpty(connData.UserId)
+                    && !string.IsNullOrEmpty(cmdLine.IdentityArgs.IdentityName))
+                {
+                    connData.UserId = cmdLine.IdentityArgs.IdentityName;
+                }
                 sqlB.SqlBuildHelper helper = new sqlB.SqlBuildHelper(connData, true, "", cmdLine.Transactional);
                 LocalRunInfo.Sq1SyncBuildData = buildModel;
                 LocalRunInfo.BuildZipFileName = cmdLine.BuildFileName;

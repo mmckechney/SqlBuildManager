@@ -38,6 +38,12 @@ namespace SqlBuildManager.Console.ContainerShared
                 log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.IdentityClientId}");
             }
 
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.IdentityName);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.IdentityArgs.IdentityName = tmp;
+            }
+
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.JobName);
             if (!string.IsNullOrWhiteSpace(tmp))
             {

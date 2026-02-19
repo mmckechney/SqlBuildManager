@@ -73,8 +73,9 @@ namespace SqlSync.Connection
                 case AuthenticationType.ManagedIdentity:
                     // Acquire an Azure AD token and use it as the password
                     builder.SslMode = SslMode.Require;
-                    string tokenUsername = string.IsNullOrEmpty(managedIdentityClientId) ? uid : managedIdentityClientId;
-                    builder.Username = tokenUsername;
+                    // PG Entra ID requires the identity name (role name) as the username.
+                    // Use uid (identity name) if available; fall back to client ID only if no name provided.
+                    builder.Username = !string.IsNullOrEmpty(uid) ? uid : managedIdentityClientId;
                     builder.Password = GetAzureAdAccessToken(managedIdentityClientId);
                     break;
                 case AuthenticationType.AzureADPassword:

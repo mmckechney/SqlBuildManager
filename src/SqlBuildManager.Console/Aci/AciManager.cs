@@ -218,6 +218,10 @@ namespace SqlBuildManager.Console.Aci
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.ConcurrencyType) { Value = cmdLine.ConcurrencyType.ToString() });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.AllowObjectDelete) { Value = cmdLine.AllowObjectDelete.ToString() });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.IdentityClientId) { Value = cmdLine.IdentityArgs.ClientId.ToString() });
+            if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
+            {
+                lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.IdentityName) { Value = cmdLine.IdentityArgs.IdentityName });
+            }
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.StorageAccountName) { Value = cmdLine.ConnectionArgs.StorageAccountName });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.EventHubLogging) { Value = string.Join("|",cmdLine.EventHubLogging) });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.DatabasePlatform) { Value = cmdLine.AuthenticationArgs.DatabasePlatform.ToString() });
