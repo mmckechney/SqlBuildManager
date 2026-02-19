@@ -83,13 +83,34 @@ if ([string]::IsNullOrWhiteSpace($pgAdminPassword) -or $pgAdminPassword -like "E
     }
 }
 
-# Get an Entra ID access token for PostgreSQL
-Write-Host "Obtaining Entra ID access token for PostgreSQL..." -ForegroundColor DarkGreen
-$accessToken = az account get-access-token --resource-type oss-rdbms --query accessToken -o tsv
-if ([string]::IsNullOrWhiteSpace($accessToken)) {
-    Write-Host "WARNING: Could not obtain Entra ID token for PostgreSQL. Falling back to password auth for granting permissions." -ForegroundColor Yellow
+# Ensure the rdbms-connect extension is installed (needed for az postgres flexible-server execute)
+Write-Host "Ensuring rdbms-connect extension is installed..." -ForegroundColor DarkGreen
+az extension add --name rdbms-connect --yes 2>$null
+
+# Step 1: Create the managed identity role in the 'postgres' database
+# pgaadauth_create_principal only exists in the postgres database and creates a server-wide role
+Write-Host "Ensuring Entra ID role '$identityName' exists..." -ForegroundColor DarkGreen
+$createRoleSql = "SELECT * FROM pgaadauth_create_principal('${identityName}', false, false)"
+$createOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$createRoleSql" --output none 2>&1
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "  ✓ Role '$identityName' created" -ForegroundColor Green
+} elseif ($createOutput -match "already exists") {
+    Write-Host "  Role '$identityName' already exists — OK" -ForegroundColor DarkGreen
+} else {
+    Write-Host "  ⚠ pgaadauth_create_principal failed, trying direct CREATE ROLE..." -ForegroundColor Yellow
+    $fallbackSql = "CREATE ROLE ""${identityName}"" WITH LOGIN"
+    $fallbackOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$fallbackSql" --output none 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "  ✓ Role '$identityName' created via CREATE ROLE" -ForegroundColor Green
+    } elseif ($fallbackOutput -match "already exists") {
+        Write-Host "  Role '$identityName' already exists — OK" -ForegroundColor DarkGreen
+    } else {
+        Write-Host "  ERROR: Could not create role for managed identity. Grants may fail." -ForegroundColor Red
+        Write-Host "  $fallbackOutput" -ForegroundColor Red
+    }
 }
 
+# Step 2: Grant privileges on each test database
 # List all databases
 $dbs = az postgres flexible-server db list --resource-group $resourceGroupName --server-name $pgServerName --query "[].name" -o tsv
 
@@ -100,39 +121,26 @@ foreach ($db in $dbs) {
 
     Write-Host "  Processing database: $db" -ForegroundColor DarkGreen
 
-    # Use az postgres flexible-server execute to grant permissions
-    # The managed identity needs to be registered as a PG role with azure_ad_user attribute
-    $sql = @"
-DO \$\$
-BEGIN
-    -- Create role for the managed identity if it doesn't exist
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '$identityName') THEN
-        EXECUTE format('CREATE ROLE %I WITH LOGIN IN ROLE azure_ad_user', '$identityName');
-        RAISE NOTICE 'Created role %', '$identityName';
-    END IF;
-    
-    -- Grant all privileges on all tables 
-    EXECUTE format('GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO %I', '$identityName');
-    EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO %I', '$identityName');
-    
-    -- Grant usage and create on schema
-    EXECUTE format('GRANT USAGE, CREATE ON SCHEMA public TO %I', '$identityName');
-    
-    RAISE NOTICE 'Permissions granted for % on database %', '$identityName', current_database();
-END
-\$\$;
-"@
+    # Grant privileges (run each as a separate statement)
+    $grantStatements = @(
+        "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ""${identityName}""",
+        "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO ""${identityName}""",
+        "GRANT USAGE, CREATE ON SCHEMA public TO ""${identityName}"""
+    )
 
-    try {
-        az postgres flexible-server execute --name $pgServerName --resource-group $resourceGroupName --database-name $db --admin-user $pgAdminUser --admin-password $pgAdminPassword --querytext $sql --output none 2>$null
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "    ✓ Granted permissions to $identityName on $db" -ForegroundColor Green
-        } else {
-            Write-Host "    ✗ Failed to grant permissions on $db (exit code: $LASTEXITCODE)" -ForegroundColor Red
+    $allSucceeded = $true
+    foreach ($grantSql in $grantStatements) {
+        az postgres flexible-server execute --name $pgServerName --database-name $db --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$grantSql" --output none 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            $allSucceeded = $false
+            Write-Host "    ⚠ Grant statement failed: $grantSql" -ForegroundColor Yellow
         }
     }
-    catch {
-        Write-Host "    ✗ Failed to grant permissions on $db : $_" -ForegroundColor Red
+
+    if ($allSucceeded) {
+        Write-Host "    ✓ Granted permissions to $identityName on $db" -ForegroundColor Green
+    } else {
+        Write-Host "    ⚠ Some permissions may not have been granted on $db" -ForegroundColor Yellow
     }
 }
 
