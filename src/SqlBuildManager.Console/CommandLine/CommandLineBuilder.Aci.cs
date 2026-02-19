@@ -141,6 +141,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(storageaccountnameOption);
                 cmd.Add(storageaccountkeyOption);
                 cmd.Add(authtypeOption);
+                cmd.Add(platformOption);
                 cmd.Add(clientIdOption);
                 cmd.Add(identityNameOption);
                 cmd.Add(identityResourceGroupOption);
@@ -183,6 +184,7 @@ namespace SqlBuildManager.Console.CommandLine
 
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
+                cmd.Add(platformOption);
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
@@ -251,6 +253,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(storageaccountnameOption);
                 cmd.Add(storageaccountkeyOption);
                 cmd.Add(authtypeOption);
+                cmd.Add(platformOption);
                 cmd.Add(clientIdOption);
                 cmd.Add(subscriptionIdOption);
                 cmd.AddRange(ConcurrencyRequiredOptions);

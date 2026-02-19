@@ -361,7 +361,7 @@ namespace SqlBuildManager.Console.CommandLine
         internal static Option<string> usernameOption = new Option<string>("--username", "-u") { Description = "The username to authenticate against the database if not using integrated or Managed Identity auth" };
         internal static Option<string> passwordOption = new Option<string>("--password", "-p") { Description = "The password to authenticate against the database if not using integrated or Managed Identity auth" };
         internal static Option<SqlSync.Connection.AuthenticationType> authtypeOption = new Option<SqlSync.Connection.AuthenticationType>("--authtype") { Description = "SQL Authentication type to use."  };
-        internal static Option<SqlSync.Connection.DatabasePlatform> platformOption = new Option<SqlSync.Connection.DatabasePlatform>("--platform") { Description = "Target database platform (default: SqlServer)." };
+        internal static Option<SqlSync.Connection.DatabasePlatform> platformOption = new Option<SqlSync.Connection.DatabasePlatform>("--platform", "--databaseplatform") { Description = "Target database platform (default: SqlServer)." };
 
         /// <summary>
         /// Container Registry and Image Options including "--imagetag, --imagename, --registryserver, --registryusername, --registrypassword
