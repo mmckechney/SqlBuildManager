@@ -1,3 +1,4 @@
+using SqlBuildManager.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
@@ -33,11 +34,6 @@ namespace SqlSync.SqlBuild.Dependent.TestBase
         /// SQL Server uses "TransactionTest", PostgreSQL uses "transactiontest".
         /// </summary>
         protected abstract string TestTableName { get; }
-
-        /// <summary>
-        /// Prefix for temp files created by GetTrulyUniqueFile to distinguish platform origin.
-        /// </summary>
-        protected virtual string TempFilePrefix => "SqlSyncTest-";
 
         protected InitializationBase()
         {
@@ -272,11 +268,9 @@ namespace SqlSync.SqlBuild.Dependent.TestBase
             File.WriteAllText(row.FileName, script);
         }
 
-        public string GetTrulyUniqueFile()
+        public string GetTrulyUniqueFile(string extension = "tmp")
         {
-            string tmpName = Path.GetTempFileName();
-            string newName = Path.Combine(Path.GetDirectoryName(tmpName), TempFilePrefix + Guid.NewGuid().ToString() + ".tmp");
-            File.Move(tmpName, newName);
+            string newName = TestFileHelper.GetTrulyUniqueFile(extension);
             tempFiles.Add(newName);
             return newName;
         }
