@@ -24,7 +24,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public string databasePath;
 
         protected override string TestTableName => "TransactionTest";
-        protected override string TempFilePrefix => @"\SqlSyncTest-";
 
         private static string GetServerName() => Environment.GetEnvironmentVariable("SBM_TEST_SQL_SERVER") ?? @"(local)\SQLEXPRESS";
         private static string GetConnectionString(string serverName)
@@ -526,17 +525,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 return -1;
             }
         }
-        public string GetTrulyUniqueFile()
-        {
-            string tmpName = Path.GetTempFileName();
-            string newName = Path.Combine(Path.GetDirectoryName(tmpName), $"SqlSyncTest-{Guid.NewGuid().ToString()}.tmp");
-            File.Move(tmpName, newName);
-
-
-            tempFiles.Add(newName);
-            return newName;
-
-        }
+        // GetTrulyUniqueFile is now inherited from InitializationBase (delegates to TestFileHelper)
 
 
         public string GetTableLockingScript()

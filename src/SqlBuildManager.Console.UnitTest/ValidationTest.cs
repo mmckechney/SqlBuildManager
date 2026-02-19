@@ -219,7 +219,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateCommonCommandLineArgsTest_GoodConfig()
         {
             var init = new Initialization();
-            var multFile = init.GetTrulyUniqueFile("cfg");
+            var multFile = SqlBuildManager.Test.Common.TestFileHelper.GetTrulyUniqueFile("cfg");
             File.WriteAllBytes(multFile, Properties.Resources.NoTrans_MultiDb_multidb);
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureADIntegrated;

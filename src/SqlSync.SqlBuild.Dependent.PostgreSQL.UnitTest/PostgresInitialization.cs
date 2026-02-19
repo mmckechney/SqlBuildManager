@@ -28,7 +28,6 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
         public static string MissingDatabaseErrorMessage = "NOTE: To successfully test, please make sure you have a PostgreSQL instance running. Set SBM_TEST_POSTGRES_SERVER, SBM_TEST_POSTGRES_USER, SBM_TEST_POSTGRES_PASSWORD environment variables.";
 
         protected override string TestTableName => "transactiontest";
-        protected override string TempFilePrefix => "SqlSyncTest-PG-";
 
         private static string GetServerName() => Environment.GetEnvironmentVariable("SBM_TEST_POSTGRES_SERVER") ?? "localhost";
         private static string GetUser() => Environment.GetEnvironmentVariable("SBM_TEST_POSTGRES_USER") ?? "postgres";
