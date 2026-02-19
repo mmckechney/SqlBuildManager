@@ -28,7 +28,6 @@ namespace SqlBuildManager.Console
             
             cmdLine.IdentityArgs.PrincipalId = null;
             cmdLine.IdentityArgs.ResourceId = null;
-            cmdLine.IdentityArgs.IdentityName = null;
             cmdLine.IdentityArgs.ClientId = null;
             cmdLine.IdentityArgs.ResourceGroup = null;
             cmdLine.IdentityArgs.SubscriptionId = null;

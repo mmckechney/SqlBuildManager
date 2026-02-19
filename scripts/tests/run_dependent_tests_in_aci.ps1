@@ -113,29 +113,11 @@ if ($buildImage) {
     
     # Build using ACR (same pattern as build_container_registry_testimage.ps1)
     $tmpDir = Join-Path $env:TEMP "sbm-dependent-tests-$(Get-Date -Format 'yyyyMMddHHmmss')"
-    New-Item -ItemType Directory -Path $tmpDir -Force | Out-Null
     
     # Copy source, excluding build artifacts
     Write-Host "Copying source files..." -ForegroundColor DarkGreen
-    $excludeDirs = @('.vs', 'bin', 'obj', 'TestResults')
-    Get-ChildItem -Path $srcPath -Recurse -File | Where-Object {
-        $relativePath = $_.FullName.Substring($srcPath.Length)
-        $excluded = $false
-        foreach ($dir in $excludeDirs) {
-            if ($relativePath -like "*\$dir\*" -or $relativePath -like "*/$dir/*") {
-                $excluded = $true
-                break
-            }
-        }
-        -not $excluded
-    } | ForEach-Object {
-        $destPath = Join-Path $tmpDir $_.FullName.Substring($srcPath.Length)
-        $destDir = Split-Path $destPath -Parent
-        if (-not (Test-Path $destDir)) {
-            New-Item -ItemType Directory -Path $destDir -Force | Out-Null
-        }
-        Copy-Item $_.FullName -Destination $destPath
-    }
+    $excludeDirs = ".vs", ".vs_backup", "bin", "obj", "TestResults"
+    robocopy $srcPath $tmpDir /E /XD $excludeDirs /NFL /NDL /NJH /NJS /NC /NS /NP | Out-Null
     
     # Remove .dockerignore if present
     $dockerIgnore = Join-Path $tmpDir ".dockerignore"

@@ -38,23 +38,10 @@ Write-Host "  Context: $contextPath" -ForegroundColor DarkGray
 
 # Copy source to temp folder excluding .vs and other problematic folders
 $tempContext = Join-Path $env:TEMP "sbm-test-build-$(Get-Date -Format 'yyyyMMddHHmmss')"
-New-Item -ItemType Directory -Path $tempContext -Force | Out-Null
-
 Write-Host "Copying source to temp location (excluding .vs, bin, obj)..." -ForegroundColor DarkGray
 
-# Use Get-ChildItem with exclusions and Copy-Item
-Get-ChildItem -Path $contextPath -Exclude '.vs','bin','obj','TestResults' | ForEach-Object {
-    if ($_.PSIsContainer) {
-        # For directories, use robocopy to handle subdirectory exclusions
-        if ($_.Name -notin @('.vs', 'bin', 'obj', 'TestResults')) {
-            $destDir = Join-Path $tempContext $_.Name
-            robocopy $_.FullName $destDir /E /XD .vs bin obj TestResults /XF *.user /NFL /NDL /NJH /NJS /NC /NS /NP | Out-Null
-        }
-    } else {
-        # For files, just copy them
-        Copy-Item $_.FullName -Destination $tempContext
-    }
-}
+$excludeDirs = ".vs", ".vs_backup", "bin", "obj", "TestResults"
+robocopy $contextPath $tempContext /E /XD $excludeDirs /XF *.user /NFL /NDL /NJH /NJS /NC /NS /NP | Out-Null
 
 # Remove .dockerignore if it exists (it might be excluding things we need)
 $dockerignorePath = Join-Path $tempContext ".dockerignore"
