@@ -176,7 +176,7 @@ namespace SqlSync.SqlBuild
             }
             ConnectionsService = connectionsService ?? new Services.DefaultConnectionsService(
                 Connection.ConnectionHelper.GetFactory(platform), TransactionManager);
-            SqlLoggingService = new Services.DefaultSqlLoggingService(ConnectionsService, ProgressReporter, ResourceProvider);
+            SqlLoggingService = new Services.DefaultSqlLoggingService(ConnectionsService, ProgressReporter, ResourceProvider, SyntaxProvider);
             DatabaseUtility = databaseUtility ?? new Services.DefaultDatabaseUtility(ConnectionsService, SqlLoggingService, ProgressReporter, FileHelper, ResourceProvider);
             BuildFinalizer = buildFinalizer ?? new Services.DefaultBuildFinalizer(SqlLoggingService, ProgressReporter);
 

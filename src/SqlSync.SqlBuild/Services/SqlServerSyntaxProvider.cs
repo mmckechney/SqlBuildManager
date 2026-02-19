@@ -21,5 +21,7 @@ namespace SqlSync.SqlBuild.Services
         public string StringConcatOperator => "+";
 
         public string TopNRowsClause(int n) => $"TOP({n})";
+
+        public string BooleanTrueLiteral => "1";
     }
 }

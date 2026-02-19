@@ -21,5 +21,7 @@ namespace SqlSync.SqlBuild.Services
         public string StringConcatOperator => "||";
 
         public string TopNRowsClause(int n) => $"LIMIT {n}";
+
+        public string BooleanTrueLiteral => "true";
     }
 }

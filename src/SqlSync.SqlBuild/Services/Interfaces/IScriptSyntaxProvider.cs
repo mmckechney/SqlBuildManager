@@ -29,5 +29,8 @@ namespace SqlSync.SqlBuild.Services
 
         /// <summary>Generates a TOP/LIMIT clause (e.g. "TOP(n)" for SQL Server, "LIMIT n" for PostgreSQL)</summary>
         string TopNRowsClause(int n);
+
+        /// <summary>SQL literal for boolean true (e.g. "1" for SQL Server, "true" for PostgreSQL)</summary>
+        string BooleanTrueLiteral { get; }
     }
 }
