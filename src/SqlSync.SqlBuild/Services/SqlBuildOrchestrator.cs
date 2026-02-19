@@ -15,6 +15,8 @@ namespace SqlSync.SqlBuild.Services
         private readonly ISqlBuildRunnerProperties _props;
         private readonly IBuildFinalizerContext _finalizerCtx;
         private readonly IRunnerFactory _runnerFactory;
+        private readonly ITransactionManager _transactionManager;
+        private readonly IBuildFinalizer _buildFinalizer;
 
         public SqlBuildOrchestrator(
             ISqlBuildRunnerContext ctx, 
@@ -23,7 +25,9 @@ namespace SqlSync.SqlBuild.Services
             IBuildFinalizerContext finalizerCtx, 
             IConnectionsService connectionsService, 
             ISqlLoggingService sqlLoggingService,
-            IRunnerFactory runnerFactory = null)
+            IRunnerFactory runnerFactory = null,
+            ITransactionManager transactionManager = null,
+            IBuildFinalizer buildFinalizer = null)
         {
             _ctx = ctx;
             _props = props;
@@ -32,6 +36,8 @@ namespace SqlSync.SqlBuild.Services
             _sqlLoggingService = sqlLoggingService;
             _finalizerCtx = finalizerCtx;
             _runnerFactory = runnerFactory ?? new DefaultRunnerFactory();
+            _transactionManager = transactionManager;
+            _buildFinalizer = buildFinalizer;
         }
 
         public Task<Build> ExecuteAsync(
@@ -64,7 +70,7 @@ namespace SqlSync.SqlBuild.Services
         {
             Build buildResultsModel = null;
             int buildRetries = 0;
-            var runner = _runnerFactory.Create(connectionsService, _ctx, _finalizerCtx, null);
+            var runner = _runnerFactory.Create(connectionsService, _ctx, _finalizerCtx, null, _transactionManager, _buildFinalizer, _sqlLoggingService);
 
             while (buildRetries <= allowableTimeoutRetries &&
                 (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout ))

@@ -1,5 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Polly;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.Status;
@@ -84,10 +83,14 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 else
                 {
                     connData.AuthenticationType = masterConnData.AuthenticationType;
+                    connData.UserId = masterConnData.UserId;
                 }
                 connData.ScriptTimeout = scriptTimeout;
-                SqlConnection conn = ConnectionHelper.GetConnection(connData);
-                SqlCommand cmd = new SqlCommand(query, conn);
+                connData.DatabasePlatform = masterConnData.DatabasePlatform;
+                connData.ManagedIdentityClientId = masterConnData.ManagedIdentityClientId;
+                DbConnection conn = ConnectionHelper.GetDbConnection(connData);
+                DbCommand cmd = conn.CreateCommand();
+                cmd.CommandText = query;
                 cmd.CommandType = CommandType.Text;
 
 
