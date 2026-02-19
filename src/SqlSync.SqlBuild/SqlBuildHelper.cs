@@ -371,6 +371,7 @@ namespace SqlSync.SqlBuild
                 log.LogInformation($"Creating Script Log File: {scriptLogFileName}");
 
                 
+                //TODO: this always seems to be output as an empty guid?
                 var nextBuildId = new Guid().ToString();
                 log.LogInformation($"Generating Build Record ID: {nextBuildId}");
 
