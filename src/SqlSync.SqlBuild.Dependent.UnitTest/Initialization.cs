@@ -723,7 +723,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public string GetTrulyUniqueFile()
         {
             string tmpName = Path.GetTempFileName();
-            string newName = Path.Combine(Path.GetDirectoryName(tmpName), @"\SqlSyncTest-" + Guid.NewGuid().ToString() + ".tmp");
+            string newName = Path.Combine(Path.GetDirectoryName(tmpName), $"SqlSyncTest-{Guid.NewGuid().ToString()}.tmp");
             File.Move(tmpName, newName);
 
 

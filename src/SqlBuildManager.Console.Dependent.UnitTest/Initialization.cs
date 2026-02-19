@@ -115,7 +115,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         {
             if (extension.StartsWith(".")) extension = extension.Replace(".", "");
             string tmpName = Path.GetTempFileName();
-            string newName = Path.GetDirectoryName(tmpName) + @"\SqlBuildManager-Console-" + Guid.NewGuid().ToString() + "." + extension;
+            string newName = Path.Combine(Path.GetDirectoryName(tmpName), $"SqlBuildManager-Console-{Guid.NewGuid().ToString()}.{extension}");
             File.Move(tmpName, newName);
 
 
