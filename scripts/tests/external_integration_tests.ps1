@@ -10,6 +10,7 @@ param (
 .\run_tests_in_aci.ps1 -prefix $prefix -customName containerapp -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.ContainerAppTests" -timeoutMinutes 300
 .\run_tests_in_aci.ps1 -prefix $prefix -customName aci -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.AciTests" -timeoutMinutes 300
 .\run_tests_in_aci.ps1 -prefix $prefix -customName aks -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.KubernetesTests" -timeoutMinutes 300
+.\run_tests_in_aci.ps1 -prefix $prefix -customName pg -testFilter "FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.ExternalTest" -timeoutMinutes 300
 
 
 # Download test results 
