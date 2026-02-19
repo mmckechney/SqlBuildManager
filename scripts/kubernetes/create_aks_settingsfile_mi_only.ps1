@@ -58,9 +58,9 @@ if ([string]::IsNullOrWhiteSpace($resourceGroupName)) {
     $resourceGroupName = "$prefix-rg"
 }
 
-Write-Host "============================================" -ForegroundColor Cyan
+Write-Host "=================================================" -ForegroundColor Cyan
 Write-Host "Creating AKS Managed Identity-Only Settings File" -ForegroundColor Cyan
-Write-Host "============================================" -ForegroundColor Cyan
+Write-Host "=================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "This settings file uses Managed Identity for ALL Azure services." -ForegroundColor Yellow
 Write-Host "No keys, connection strings, or passwords are stored." -ForegroundColor Yellow
@@ -104,6 +104,7 @@ $params += @("--registry", $containerRegistryName)
 $params += @("--tag", "latest-vNext")
 $params += @("--tenantid", $tenantId)
 $params += @("--serviceaccountname", $serviceAccountName)
+$params += @("--identityname", $identityName)
 $params += @("--force")
 $params += @("--podcount", $podCount)
 $params += @("--eventhublogging", "ScriptErrors")

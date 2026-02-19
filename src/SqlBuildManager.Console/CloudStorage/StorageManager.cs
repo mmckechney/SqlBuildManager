@@ -568,6 +568,13 @@ namespace SqlBuildManager.Console.CloudStorage
                 {
                     try
                     {
+                        var fileInfo = new FileInfo(f);
+                        if (fileInfo.Length == 0)
+                        {
+                            log.LogDebug($"Skipping 0-byte file '{f}'");
+                            continue;
+                        }
+
                         var tmp = Path.GetRelativePath(rootLoggingPath, f);
 
                         if (Program.AppendLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
