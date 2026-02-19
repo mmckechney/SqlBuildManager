@@ -444,7 +444,8 @@ function Download-TestResultsFromBlob {
             "--account-name", $storageAccountName,
             "--source", $blobContainerName,
             "--destination", $localDestination,
-            "--auth-mode", "login"
+            "--auth-mode", "login",
+            "--overwrite"
         )
         if ($blobPath) {
             $downloadArgs += @("--pattern", "$blobPath/*")

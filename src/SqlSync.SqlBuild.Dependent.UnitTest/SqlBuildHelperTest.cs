@@ -1418,17 +1418,16 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             object sender = null;
 
             //Create the "end" entry for an external log file...
-            string fileName = init.GetTrulyUniqueFile();
-            target.externalScriptLogFileName = fileName;
-            File.SetAttributes(fileName, FileAttributes.ReadOnly); //Make read-only so the copy throws an exception
+            // Use a path where a component is a regular file, so directory creation fails on all platforms (even Linux root)
+            string blockingFile = init.GetTrulyUniqueFile();
+            target.externalScriptLogFileName = Path.Combine(blockingFile, "unreachable.log");
 
             ScriptLogEventArgs e = new ScriptLogEventArgs(-10000, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], @"C:\test.sql", "Test Executed");
             target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e);
 
-            FileInfo inf = new FileInfo(target.externalScriptLogFileName);
-            Assert.IsTrue(inf.Length == 0); //file should be zero size because move should have failed.
+            Assert.IsFalse(File.Exists(target.externalScriptLogFileName)); //file should not exist because copy should have failed.
 
-            File.SetAttributes(fileName, FileAttributes.Normal); //Set back to normal for the test clean-up process.
+            File.Delete(blockingFile); //Clean up the blocking file.
 
         }
 

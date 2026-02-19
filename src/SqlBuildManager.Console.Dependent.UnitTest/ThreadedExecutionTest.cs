@@ -38,7 +38,15 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
         private static string GetLocalhostFolderName(string loggingRoot)
         {
-            string workingDir = Path.Combine(loggingRoot, "working");
+            // Find the "working" directory case-insensitively (production code uses "Working", Linux is case-sensitive)
+            string workingDir = Directory.Exists(loggingRoot)
+                ? Directory.GetDirectories(loggingRoot).FirstOrDefault(d => Path.GetFileName(d).Equals("working", StringComparison.OrdinalIgnoreCase))
+                : null;
+
+            if (workingDir == null)
+            {
+                throw new Exception($"Unable to find working directory at root: {loggingRoot}. Found: [{(Directory.Exists(loggingRoot) ? string.Join(", ", Directory.GetDirectories(loggingRoot).Select(Path.GetFileName)) : "root not found")}]");
+            }
 
             // Build path segments from the test server name (e.g. "localhost\SQLEXPRESS" → "localhost","SQLEXPRESS")
             string[] serverParts = Initialization.TestServer.Split('\\');
@@ -49,13 +57,10 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             }
 
             // Fallback: if there's exactly one server directory under working/, use it
-            if (Directory.Exists(workingDir))
+            var serverDirs = Directory.GetDirectories(workingDir);
+            if (serverDirs.Length == 1)
             {
-                var serverDirs = Directory.GetDirectories(workingDir);
-                if (serverDirs.Length == 1)
-                {
-                    return serverDirs[0];
-                }
+                return serverDirs[0];
             }
 
             // Fallback: check well-known local paths for backward compatibility
@@ -72,10 +77,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 return Path.Combine(workingDir, "localhost");
             }
 
-            string found = Directory.Exists(workingDir)
-                ? string.Join(", ", Directory.GetDirectories(workingDir).Select(Path.GetFileName))
-                : "(working dir not found)";
-            throw new Exception($"Unable to find localhost temp directory at root: {loggingRoot}. Found under working/: [{found}]");
+            throw new Exception($"Unable to find localhost temp directory at root: {loggingRoot}. Found under working/: [{string.Join(", ", serverDirs.Select(Path.GetFileName))}]");
         }
         
 

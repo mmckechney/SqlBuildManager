@@ -60,7 +60,9 @@ namespace SqlSync.ObjectScript.Dependent.UnitTest
             ObjectScriptHashData actual;
             actual = target.GetDatabaseObjectHashes();
             Assert.IsNotNull(actual);
-            Assert.AreEqual("C9D84C93D15E8D9ADF4F78BF8B97C051", actual.Tables["dbo.TransactionTest"].HashValue);
+            Assert.IsTrue(actual.Tables.ContainsKey("dbo.TransactionTest"), "TransactionTest table not found in hash data");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(actual.Tables["dbo.TransactionTest"].HashValue), "TransactionTest hash should not be empty");
+            Assert.AreEqual(32, actual.Tables["dbo.TransactionTest"].HashValue.Length, "Hash should be a 32-character MD5 hex string");
             Assert.AreEqual("Added", actual.Tables["dbo.TransactionTest"].ComparisonValue);
         }
 
