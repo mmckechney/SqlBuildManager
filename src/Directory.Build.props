@@ -1,6 +1,2 @@
 <Project>
-  <!-- Suppress nullable reference warnings in test projects -->
-  <PropertyGroup Condition="$(MSBuildProjectName.Contains('Test'))">
-    <NoWarn>$(NoWarn);CS8604;CS8602;MSTEST0005;MSTEST0032</NoWarn>
-  </PropertyGroup>
 </Project>
