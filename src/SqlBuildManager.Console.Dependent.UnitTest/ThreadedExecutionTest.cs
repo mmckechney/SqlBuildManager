@@ -38,31 +38,44 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
         private static string GetLocalhostFolderName(string loggingRoot)
         {
+            string workingDir = Path.Combine(loggingRoot, "working");
+
             // Build path segments from the test server name (e.g. "localhost\SQLEXPRESS" → "localhost","SQLEXPRESS")
             string[] serverParts = Initialization.TestServer.Split('\\');
-            string candidatePath = Path.Combine(new[] { loggingRoot, "working" }.Concat(serverParts).ToArray());
+            string candidatePath = Path.Combine(new[] { workingDir }.Concat(serverParts).ToArray());
             if (Directory.Exists(candidatePath))
             {
                 return candidatePath;
             }
 
+            // Fallback: if there's exactly one server directory under working/, use it
+            if (Directory.Exists(workingDir))
+            {
+                var serverDirs = Directory.GetDirectories(workingDir);
+                if (serverDirs.Length == 1)
+                {
+                    return serverDirs[0];
+                }
+            }
+
             // Fallback: check well-known local paths for backward compatibility
-            if (Directory.Exists(Path.Combine(loggingRoot, "working", "(local)", "SQLEXPRESS")))
+            if (Directory.Exists(Path.Combine(workingDir, "(local)", "SQLEXPRESS")))
             {
-                return Path.Combine(loggingRoot, "working", "(local)", "SQLEXPRESS");
+                return Path.Combine(workingDir, "(local)", "SQLEXPRESS");
             }
-            else if (Directory.Exists(Path.Combine(loggingRoot, "working", "localhost", "SQLEXPRESS")))
+            else if (Directory.Exists(Path.Combine(workingDir, "localhost", "SQLEXPRESS")))
             {
-                return Path.Combine(loggingRoot, "working", "localhost", "SQLEXPRESS");
+                return Path.Combine(workingDir, "localhost", "SQLEXPRESS");
             }
-            else if (Directory.Exists(Path.Combine(loggingRoot, "working", "localhost")))
+            else if (Directory.Exists(Path.Combine(workingDir, "localhost")))
             {
-                return Path.Combine(loggingRoot, "working", "localhost");
+                return Path.Combine(workingDir, "localhost");
             }
-            else
-            {
-                throw new Exception($"Unable to find localhost temp directory at root: {loggingRoot}");
-            }
+
+            string found = Directory.Exists(workingDir)
+                ? string.Join(", ", Directory.GetDirectories(workingDir).Select(Path.GetFileName))
+                : "(working dir not found)";
+            throw new Exception($"Unable to find localhost temp directory at root: {loggingRoot}. Found under working/: [{found}]");
         }
         
 
@@ -458,7 +471,6 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", "0",
-                "--authtype",
             }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
