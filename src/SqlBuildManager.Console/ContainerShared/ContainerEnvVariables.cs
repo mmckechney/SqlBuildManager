@@ -22,6 +22,7 @@
         internal static string QueryFile { get; } = "Sbm_QueryFile";
         internal static string OutputFile { get; } = "Sbm_OutputFile";
         internal static string EventHubLogging { get; } = "Sbm_EventHubLogging";
+        internal static string DatabasePlatform { get; } = "Sbm_DatabasePlatform";
 
     }
 }

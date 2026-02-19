@@ -105,6 +105,15 @@ namespace SqlBuildManager.Console.ContainerShared
                 log.LogWarning($"Unable to read or parse environment variable {ContainerEnvVariables.AuthType}");
             }
 
+            if (Enum.TryParse<SqlSync.Connection.DatabasePlatform>(Environment.GetEnvironmentVariable(ContainerEnvVariables.DatabasePlatform), out SqlSync.Connection.DatabasePlatform dbPlatform))
+            {
+                cmdLine.DatabasePlatform = dbPlatform;
+            }
+            else
+            {
+                log.LogInformation($"Unable to read or parse environment variable {ContainerEnvVariables.DatabasePlatform}. Defaulting to SqlServer.");
+            }
+
             var ehString = Environment.GetEnvironmentVariable(ContainerEnvVariables.EventHubLogging);
             if (!string.IsNullOrWhiteSpace(ehString))
             {

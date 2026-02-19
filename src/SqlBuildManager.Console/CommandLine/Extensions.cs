@@ -89,7 +89,11 @@ namespace SqlBuildManager.Console.CommandLine
                      }
                   }
 
-               }
+                  if (cmd.AuthenticationArgs.DatabasePlatform != SqlSync.Connection.DatabasePlatform.SqlServer)
+                  {
+                      args.AddRange(new string[] { "--databaseplatform", cmd.AuthenticationArgs.DatabasePlatform.ToString().Quoted() });
+                  }
+                }
             }
             else if (property.PropertyType == typeof(CommandLineArgs.Connections)) //Special case if Key Vault is specified
             {

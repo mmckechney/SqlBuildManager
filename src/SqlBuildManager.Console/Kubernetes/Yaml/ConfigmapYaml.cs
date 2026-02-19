@@ -53,6 +53,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
         public string ConcurrencyType { get; set; } = null;
         public string AuthType { get; set; } = null;
+        public string DatabasePlatform { get; set; } = null;
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
         public string ServiceBusTopicConnectionString { get; set; } = null;
 

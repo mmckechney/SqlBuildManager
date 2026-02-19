@@ -220,6 +220,7 @@ namespace SqlBuildManager.Console.Aci
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.IdentityClientId) { Value = cmdLine.IdentityArgs.ClientId.ToString() });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.StorageAccountName) { Value = cmdLine.ConnectionArgs.StorageAccountName });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.EventHubLogging) { Value = string.Join("|",cmdLine.EventHubLogging) });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.DatabasePlatform) { Value = cmdLine.AuthenticationArgs.DatabasePlatform.ToString() });
             if (cmdLine.QueryFile != null)
             {
                 lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.QueryFile) { Value = cmdLine.QueryFile.Name });

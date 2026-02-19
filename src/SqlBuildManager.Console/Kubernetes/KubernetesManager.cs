@@ -272,6 +272,7 @@ namespace SqlBuildManager.Console.Kubernetes
          yml.data.Concurrency = args.Concurrency.ToString();
          yml.data.ConcurrencyType = args.ConcurrencyType.ToString();
          yml.data.AuthType = args.AuthenticationArgs.AuthenticationType.ToString();
+         yml.data.DatabasePlatform = args.AuthenticationArgs.DatabasePlatform.ToString();
          yml.data.KeyVaultName = args.ConnectionArgs.KeyVaultName;
          yml.data.EventHubLogging = string.Join("|", args.EventHubArgs.Logging);
          if (args.QueryFile != null)
@@ -383,6 +384,15 @@ namespace SqlBuildManager.Console.Kubernetes
                args.AuthenticationType = auth;
             }
             log.LogDebug($"authType= {args.AllowObjectDelete}");
+         }
+
+         if (File.Exists("/etc/runtime/DatabasePlatform"))
+         {
+            if (Enum.TryParse<SqlSync.Connection.DatabasePlatform>(File.ReadAllText("/etc/runtime/DatabasePlatform"), out SqlSync.Connection.DatabasePlatform dbPlatform))
+            {
+               args.DatabasePlatform = dbPlatform;
+            }
+            log.LogDebug($"databasePlatform= {args.AuthenticationArgs.DatabasePlatform}");
          }
 
          if (File.Exists("/etc/runtime/EventHubConnectionString"))
@@ -573,6 +583,11 @@ namespace SqlBuildManager.Console.Kubernetes
          if (Enum.TryParse<AuthenticationType>(GetValueFromConfigMapstring(filename, "AuthType"), out AuthenticationType auth))
          {
             args.AuthenticationType = auth;
+         }
+
+         if (Enum.TryParse<SqlSync.Connection.DatabasePlatform>(GetValueFromConfigMapstring(filename, "DatabasePlatform"), out SqlSync.Connection.DatabasePlatform dbPlatform))
+         {
+            args.DatabasePlatform = dbPlatform;
          }
 
          if (args.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
