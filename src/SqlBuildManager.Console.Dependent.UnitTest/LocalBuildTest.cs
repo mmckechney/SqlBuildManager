@@ -22,7 +22,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
     {
 
 
-        private TestContext testContextInstance;
+        public TestContext TestContext { get; set; }
         private static List<Initialization> initObjs = new List<Initialization>();
         private Initialization GetInitializationObject()
         {
@@ -56,22 +56,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 throw new Exception($"Unable to find localhost temp directory at root: {loggingRoot}");
             }
         }
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
+       
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
         [TestInitialize]
         public void ConfigureProcessInfo()
