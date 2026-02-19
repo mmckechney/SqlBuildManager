@@ -105,7 +105,8 @@ if ($null -ne $aadAdmins) {
     # Authenticate as Entra ID admin using Azure AD token
     $aadToken = az account get-access-token --resource-type oss-rdbms --query accessToken -o tsv 2>$null
     if (-not [string]::IsNullOrWhiteSpace($aadToken)) {
-        $createRoleSql = "SELECT * FROM pgaadauth_create_principal('${identityName}', false, true)"
+        # Parameters: (name, isAdmin, isMfa) — managed identities don't use MFA
+        $createRoleSql = "SELECT * FROM pgaadauth_create_principal('${identityName}', false, false)"
         $createOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $aadAdmins --admin-password "$aadToken" --querytext "$createRoleSql" --output none 2>&1
         if ($LASTEXITCODE -eq 0) {
             Write-Host "  ✓ Role '$identityName' created (Entra ID auth)" -ForegroundColor Green
@@ -123,7 +124,7 @@ if ($null -ne $aadAdmins) {
 
 if (-not $roleCreated) {
     # Fallback: try with local admin (will only work if the role already exists or for non-MI roles)
-    $createRoleSql = "SELECT * FROM pgaadauth_create_principal('${identityName}', false, true)"
+    $createRoleSql = "SELECT * FROM pgaadauth_create_principal('${identityName}', false, false)"
     $createOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$createRoleSql" --output none 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "  ✓ Role '$identityName' created" -ForegroundColor Green
