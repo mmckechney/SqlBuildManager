@@ -22,7 +22,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string actual;
             actual = target.PolicyId;
             string expected = "ConstraintNamePolicy";
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
 
         }
         /// <summary>
@@ -35,7 +35,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string actual;
             actual = target.LongDescription;
             string expected = "Checks that constraints contain the name of the table they are applied to.";
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
 
         }
 
@@ -49,7 +49,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string actual;
             actual = target.ShortDescription;
             string expected = "Constraint Naming (beta)";
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
         }
 
 
@@ -425,10 +425,5 @@ GO
             Assert.AreEqual(expected, actual);
 
         }
-
-
-
-
-
     }
 }

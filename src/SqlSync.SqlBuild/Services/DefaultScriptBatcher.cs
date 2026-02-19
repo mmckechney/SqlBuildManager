@@ -66,7 +66,7 @@ namespace SqlSync.SqlBuild.Services
                         if (startIndex >= 2 && scriptContents.Substring(startIndex - 2, 2) == "\r\n")
                             startIndex = startIndex - 2;
 
-                        modStartIndex = (startIndex == 0) ? startIndex : startIndex + Environment.NewLine.Length;
+                        modStartIndex = (startIndex == 0) ? startIndex : startIndex + "\r\n".Length;
                         scriptSubstring = scriptContents.Substring(modStartIndex, m.Key.Index - modStartIndex);
                         scriptSubstring = scriptSubstring.ClearTrailingSpacesAndTabs();
                         list.Add(scriptSubstring);
@@ -95,7 +95,7 @@ namespace SqlSync.SqlBuild.Services
                     if (startIndex >= 2 && scriptContents.Substring(startIndex - 2, 2) == "\r\n")
                         startIndex = startIndex - 2;
 
-                    modStartIndex = (startIndex == 0) ? startIndex : startIndex + Environment.NewLine.Length;
+                    modStartIndex = (startIndex == 0) ? startIndex : startIndex + "\r\n".Length;
                     modStartIndex = (modStartIndex > scriptContents.Length) ? scriptContents.Length : modStartIndex;
                     string lastItem = scriptContents.Substring(modStartIndex);
                     lastItem = lastItem.ClearTrailingCarriageReturn();

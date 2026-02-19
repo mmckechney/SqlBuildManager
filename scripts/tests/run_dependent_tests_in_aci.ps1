@@ -57,178 +57,9 @@
 
 $ErrorActionPreference = "Stop"
 
-#############################################
-# Function to parse and summarize test results
-#############################################
-$script:lastSummaryLineCount = 0
-$script:lastConsoleWidth = 0
-
-function Show-TestSummary {
-    param(
-        [string[]]$logs,
-        [DateTime]$startTime,
-        [switch]$refresh
-    )
-    
-    $passed = @()
-    $failed = @()
-    $skipped = @()
-    
-    foreach ($line in $logs) {
-        if ($line -match '^\s{2}Passed\s+(.+?)(?:\s+\[|$)') {
-            $passed += $matches[1]
-        }
-        elseif ($line -match '^\s{2}Failed\s+(.+?)(?:\s+\[|$)') {
-            $failed += $matches[1]
-        }
-        elseif ($line -match '^\s{2}Skipped\s+(.+?)(?:$|\s)') {
-            $skipped += $matches[1]
-        }
-    }
-    
-    # Calculate elapsed time
-    $elapsed = (Get-Date) - $startTime
-    $elapsedStr = "{0:hh\:mm\:ss}" -f $elapsed
-    
-    # Detect console resize - reset if width changed
-    $currentWidth = [Console]::WindowWidth
-    if ($refresh -and $script:lastConsoleWidth -ne 0 -and $currentWidth -ne $script:lastConsoleWidth) {
-        # Console was resized - reset and don't try to reposition cursor
-        $script:lastSummaryLineCount = 0
-        Write-Host "" -ForegroundColor DarkGray
-        Write-Host "(Console resized - restarting summary display)" -ForegroundColor DarkGray
-    }
-    $script:lastConsoleWidth = $currentWidth
-    
-    # If refreshing, move cursor up to overwrite previous summary
-    if ($refresh -and $script:lastSummaryLineCount -gt 0) {
-        try {
-            # Move cursor up by the number of lines we printed last time
-            $targetLine = [Console]::CursorTop - $script:lastSummaryLineCount
-            if ($targetLine -ge 0) {
-                [Console]::SetCursorPosition(0, $targetLine)
-            } else {
-                # Can't move up that far - reset
-                $script:lastSummaryLineCount = 0
-            }
-        } catch {
-            # Cursor positioning failed (maybe due to resize) - reset and continue
-            $script:lastSummaryLineCount = 0
-        }
-    }
-    
-    $lineCount = 0
-    
-    # Build the output as a string buffer to count lines
-    $output = @()
-    
-    if (-not $refresh) {
-        $output += ""
-        $lineCount++
-    }
-    
-    $output += "========================================"
-    $output += "Test Summary ($(Get-Date -Format 'HH:mm:ss')) - Elapsed: $elapsedStr"
-    $output += "========================================"
-    $output += ""
-    $lineCount += 4
-    
-    $output += "$($passed.Count) Passed"
-    $lineCount++
-    if ($passed.Count -gt 0 -and $passed.Count -le 10) {
-        foreach ($test in $passed) {
-            $output += " - $test"
-            $lineCount++
-        }
-    }
-    elseif ($passed.Count -gt 10) {
-        $output += " (list truncated - showing first 5)"
-        $lineCount++
-        foreach ($test in ($passed | Select-Object -First 5)) {
-            $output += " - $test"
-            $lineCount++
-        }
-    }
-    
-    $output += ""
-    $lineCount++
-    $output += "$($failed.Count) Failed"
-    $lineCount++
-    if ($failed.Count -gt 0) {
-        foreach ($test in $failed) {
-            $output += " - $test"
-            $lineCount++
-        }
-    }
-    
-    $output += ""
-    $lineCount++
-    $output += "$($skipped.Count) Skipped"
-    $lineCount++
-    if ($skipped.Count -gt 0 -and $skipped.Count -le 10) {
-        foreach ($test in $skipped) {
-            $output += " - $test"
-            $lineCount++
-        }
-    }
-    elseif ($skipped.Count -gt 10) {
-        $output += " (list truncated - showing first 5)"
-        $lineCount++
-        foreach ($test in ($skipped | Select-Object -First 5)) {
-            $output += " - $test"
-            $lineCount++
-        }
-    }
-    $output += ""
-    $lineCount++
-    
-    # Clear any remaining lines from previous output if this one is shorter
-    if ($refresh -and $lineCount -lt $script:lastSummaryLineCount) {
-        $linesToClear = $script:lastSummaryLineCount - $lineCount
-        for ($i = 0; $i -lt $linesToClear; $i++) {
-            $output += (" " * ([Console]::WindowWidth - 1))
-            $lineCount++
-        }
-    }
-    
-    # Print the output with appropriate colors
-    $i = 0
-    foreach ($line in $output) {
-        if ($line -match "^Test Summary") {
-            Write-Host $line -ForegroundColor Cyan
-        }
-        elseif ($line -match "^=+$") {
-            Write-Host $line -ForegroundColor Cyan
-        }
-        elseif ($line -match "^\d+ Passed") {
-            Write-Host $line -ForegroundColor Green
-        }
-        elseif ($line -match "^\d+ Failed") {
-            Write-Host $line -ForegroundColor Red
-        }
-        elseif ($line -match "^\d+ Skipped") {
-            Write-Host $line -ForegroundColor Yellow
-        }
-        elseif ($line -match "^ - " -and $output[$i-1] -match "Passed") {
-            Write-Host $line -ForegroundColor DarkGray
-        }
-        elseif ($line -match "^ - " -and $output[$i-1] -match "Failed") {
-            Write-Host $line -ForegroundColor Yellow
-        }
-        elseif ($line -match "^ - ") {
-            Write-Host $line -ForegroundColor DarkGray
-        }
-        elseif ($line -match "truncated") {
-            Write-Host $line -ForegroundColor DarkGray
-        }
-        else {
-            Write-Host $line
-        }
-        $i++
-    }
-    
-    $script:lastSummaryLineCount = $lineCount
-}
+# Dot-source shared ACI test helpers
+. (Join-Path $PSScriptRoot "aci_test_helpers.ps1")
+Initialize-TestSummaryState
 
 # Get the repo root
 $repoRoot = $env:AZD_PROJECT_PATH
@@ -318,29 +149,22 @@ if ($buildImage) {
         $tmpDir
     
     # Cleanup
+    $oldProgress = $ProgressPreference
+    $ProgressPreference = 'SilentlyContinue'
     Remove-Item -Path $tmpDir -Recurse -Force -ErrorAction SilentlyContinue
+    $ProgressPreference = $oldProgress
     Write-Host "Image built and pushed: ${testImageName}:${imageTag}" -ForegroundColor Green
 }
 
 #############################################
 # Clean up any existing test container
 #############################################
-Write-Host "Checking for existing test container..." -ForegroundColor DarkGreen
-$existingContainer = az container show --name $testContainerName --resource-group $resourceGroupName 2>$null
-if ($existingContainer) {
-    Write-Host "Deleting existing test container..." -ForegroundColor Yellow
-    az container delete --name $testContainerName --resource-group $resourceGroupName --yes -o none
-    Start-Sleep -Seconds 5
-}
+Remove-ExistingAciContainer -containerName $testContainerName -resourceGroupName $resourceGroupName
 
 #############################################
 # Get subnet ID for VNet deployment
 #############################################
-$subnetId = az network vnet subnet show `
-    --resource-group $resourceGroupName `
-    --vnet-name $vnet `
-    --name $aciSubnet `
-    --query id -o tsv
+$subnetId = Get-AciSubnetId -resourceGroupName $resourceGroupName -vnetName $vnet -subnetName $aciSubnet
 
 #############################################
 # Build container commands
@@ -435,107 +259,20 @@ properties:
   - id: $subnetId
 "@
 
-# Write YAML to temp file
-$yamlFilePath = Join-Path $env:TEMP "aci-dependent-tests-$(Get-Date -Format 'yyyyMMddHHmmss').yaml"
-$aciYaml | Set-Content -Path $yamlFilePath -Encoding UTF8
-
-Write-Host "Generated ACI YAML:" -ForegroundColor DarkGray
-Write-Host $aciYaml -ForegroundColor DarkGray
-Write-Host ""
-Write-Host "Deploying container group..." -ForegroundColor DarkGreen
-
-az container create --resource-group $resourceGroupName --file $yamlFilePath -o none
-Remove-Item $yamlFilePath -Force -ErrorAction SilentlyContinue
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Failed to create container group" -ForegroundColor Red
-    exit 1
-}
-
-Write-Host "Container group deployed. Waiting for tests to complete..." -ForegroundColor DarkGreen
+# Deploy container group via shared helper
+Deploy-AciFromYaml -yamlContent $aciYaml -resourceGroupName $resourceGroupName -yamlFilePrefix "aci-dependent-tests"
 
 #############################################
 # Wait for tests to complete
 #############################################
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Monitoring Test Execution" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-
-$startTime = Get-Date
-$timeoutTime = $startTime.AddMinutes($timeoutMinutes)
-$lastLogTime = $startTime
-$testsCompleted = $false
-$testExitCode = $null
-
-while ($true) {
-    $container = az container show --name $testContainerName --resource-group $resourceGroupName 2>$null | ConvertFrom-Json -Depth 10
-    $state = $null
-    $state2 = $null
-    if ($null -ne $container -and $null -ne $container.instanceView) {
-        $state = $container.containers.instanceView.currentState.detailStatus
-        $state2 = $container.containers.instanceView.currentState.state
-    }
-    
-    $currentTime = Get-Date
-    if (($currentTime - $lastLogTime).TotalSeconds -ge 10) {
-        $recentLogs = az container logs --name $testContainerName --resource-group $resourceGroupName --container-name test-runner 2>$null
-        if ($null -ne $recentLogs) {
-            # Check for test exit code
-            $logString = $recentLogs -join "`n"
-            if ($logString -match "TEST_EXIT_CODE=(\d+)") {
-                $testExitCode = [int]$Matches[1]
-            }
-            
-            # Show refreshing test summary
-            if ($script:lastSummaryLineCount -eq 0) {
-                # First time - add a header
-                Write-Host ""
-                Write-Host "--- Live Test Progress ---" -ForegroundColor DarkGray
-                Write-Host ""
-            }
-            Show-TestSummary -logs $recentLogs -startTime $startTime -refresh
-        }
-        $lastLogTime = $currentTime
-    }
-    
-    if ($state -eq "Terminated" -or $state -eq "Completed" -or $state2 -eq "Terminated" -or $state2 -eq "Completed") {
-        $testsCompleted = $true
-        Write-Host ""
-        Write-Host "Container group terminated. Tests complete." -ForegroundColor Cyan
-        break
-    }
-    
-    if ($state -eq "Failed" -or $state2 -eq "Failed") {
-        Write-Host ""
-        Write-Host "Container group failed (state: $state)" -ForegroundColor Red
-        break
-    }
-    
-    if ($currentTime -gt $timeoutTime) {
-        Write-Host ""
-        Write-Host "ERROR: Test execution timed out after $timeoutMinutes minutes" -ForegroundColor Red
-        Write-Host ""
-        Write-Host "Retrieving test logs and generating summary..." -ForegroundColor Yellow
-        $testLogs = az container logs --name $testContainerName --resource-group $resourceGroupName --container-name test-runner 2>$null
-        if ($testLogs) {
-            Show-TestSummary -logs $testLogs -startTime $startTime
-        }
-        else {
-            Write-Host "No test logs available yet" -ForegroundColor Yellow
-        }
-        Write-Host ""
-        Write-Host "SQL Server logs (last 10 lines):" -ForegroundColor Yellow
-        az container logs --name $testContainerName --resource-group $resourceGroupName --container-name sql-server 2>$null | Select-Object -Last 10
-        
-        if (-not $keepContainer) {
-            az container delete --name $testContainerName --resource-group $resourceGroupName --yes -o none
-        }
-        exit 1
-    }
-    
-    Write-Host "." -NoNewline
-    Start-Sleep -Seconds 5
-}
+$monitorResult = Wait-ForAciTests `
+    -containerName $testContainerName `
+    -resourceGroupName $resourceGroupName `
+    -timeoutMinutes $timeoutMinutes `
+    -logContainerName "test-runner" `
+    -keepContainer:$keepContainer `
+    -sqlContainerName "sql-server"
+$testExitCode = $monitorResult.TestExitCode
 
 #############################################
 # Results
@@ -555,7 +292,7 @@ Write-Host "Results uploaded to: $blobContainerName/$blobPath" -ForegroundColor 
 Write-Host ""
 
 # Get and parse full test runner logs
-$fullTestLogs = az container logs --name $testContainerName --resource-group $resourceGroupName --container-name test-runner 2>$null
+$fullTestLogs = Get-AciContainerLogs -containerName $testContainerName -resourceGroupName $resourceGroupName -logContainerName "test-runner"
 if ($fullTestLogs) {
     Show-TestSummary -logs $fullTestLogs -startTime $startTime
 }
@@ -563,37 +300,10 @@ else {
     Write-Host "No test logs available" -ForegroundColor Yellow
 }
 
+# Download test results from blob storage
+Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContainerName $blobContainerName -localDestination "./testresults" -blobPath $blobPath
+
 #############################################
 # Cleanup
 #############################################
-if ($keepContainer) {
-    Write-Host ""
-    Write-Host "Container group kept for debugging: $testContainerName" -ForegroundColor Yellow
-    Write-Host "Test runner logs: az container logs --name $testContainerName --resource-group $resourceGroupName --container-name test-runner" -ForegroundColor DarkGray
-    Write-Host "SQL Server logs:  az container logs --name $testContainerName --resource-group $resourceGroupName --container-name sql-server" -ForegroundColor DarkGray
-    Write-Host "Delete:           az container delete --name $testContainerName --resource-group $resourceGroupName --yes" -ForegroundColor DarkGray
-} else {
-    Write-Host "Cleaning up container group..." -ForegroundColor DarkGreen
-    az container delete --name $testContainerName --resource-group $resourceGroupName --yes -o none
-}
-
-Write-Host ""
-if ($testExitCode -eq 0) {
-    Write-Host "========================================" -ForegroundColor Green
-    Write-Host "TESTS PASSED" -ForegroundColor Green
-    Write-Host "========================================" -ForegroundColor Green
-    exit 0
-} else {
-    Write-Host "========================================" -ForegroundColor Red
-    Write-Host "TESTS FAILED (Exit Code: $testExitCode)" -ForegroundColor Red
-    Write-Host "========================================" -ForegroundColor Red
-    exit $testExitCode
-}
-
-
-# Download test results 
-if( (Test-Path ./testresults) -eq $false) { mkdir testresults }
-az storage blob download-batch --account-name "$($prefix)storage" --source testresults --destination ./testresults  --auth-mode login
-
-# Analyze test results with GitHub Copilot
-copilot --yolo -p "The folder './testresults' contains sub-folders named for different Azure integration tests. These sub-folders contain `TestResults.html` test result HTML summaries and `console-output.log` console output log files. Please review these files and for all failures, create an analysis of the failures and how they can be fixed. IMPORTANT: In the `console-output.log` file, the log entries are organized first with the `Passed` or `Failed` message on the same line as the test name, followed by the `Standard Output Messages:` and `TestContext Messages:` lines and content.  Save your analysis to a single `failures.md ` file.  For the tests that didn't fail, please review the logs and identify any messages that either have misleading messages or suggest something may have gone wrong, even if the test passed. Please create a single `observations.md` markdown file with your observations analysis. Save the markdown files to the ./testresults directory."
+Complete-AciTestRun -containerName $testContainerName -resourceGroupName $resourceGroupName -exitCode $testExitCode -keepContainer:$keepContainer -logContainerName "test-runner" -sqlContainerName "sql-server"

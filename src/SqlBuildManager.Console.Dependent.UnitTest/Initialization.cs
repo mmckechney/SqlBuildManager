@@ -8,6 +8,11 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
     {
         public static string ConnectionString;
 
+        /// <summary>
+        /// The SQL Server name used for tests, from SBM_TEST_SQL_SERVER env var or defaulting to (local)\SQLEXPRESS.
+        /// </summary>
+        public static string TestServer { get; }
+
         public static string TestAuthType => string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER"))
             ? AuthenticationType.Windows.ToString()
             : AuthenticationType.Password.ToString();
@@ -24,13 +29,13 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
         static Initialization()
         {
-            var server = Environment.GetEnvironmentVariable("SBM_TEST_SQL_SERVER") ?? @"(local)\SQLEXPRESS";
+            TestServer = Environment.GetEnvironmentVariable("SBM_TEST_SQL_SERVER") ?? @"(local)\SQLEXPRESS";
             var user = Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER");
             var password = Environment.GetEnvironmentVariable("SBM_TEST_SQL_PASSWORD");
             if (!string.IsNullOrWhiteSpace(user))
-                ConnectionString = $"Server={server};Database={{0}};User ID={user};Password={password};TrustServerCertificate=True;Encrypt=False;";
+                ConnectionString = $"Server={TestServer};Database={{0}};User ID={user};Password={password};TrustServerCertificate=True;Encrypt=False;";
             else
-                ConnectionString = $@"Server={server};Database={{0}};Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False;";
+                ConnectionString = $@"Server={TestServer};Database={{0}};Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False;";
         }
 
         private static List<string> tempFiles;
@@ -70,7 +75,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
         public void CopyDbConfigFileToTestPath()
         {
-            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig);
+            WriteDbConfigWithServer(Initialization.DbConfigFileName, Properties.Resources.dbconfig);
         }
         public void CopySqlScriptOverrideFiletoTestPath()
         {
@@ -78,29 +83,39 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
         public void CopyDbConfigFile100ToTestPath()
         {
-            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_100);
+            WriteDbConfigWithServer(Initialization.DbConfigFileName, Properties.Resources.dbconfig_100);
         }
         public void CopyDbConfigFile50ToTestPath()
         {
-            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_50);
+            WriteDbConfigWithServer(Initialization.DbConfigFileName, Properties.Resources.dbconfig_50);
         }
         public void CopyDbConfigFile20ToTestPath()
         {
-            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_20);
+            WriteDbConfigWithServer(Initialization.DbConfigFileName, Properties.Resources.dbconfig_20);
         }
         public void CopyDbConfigFile10ToTestPath()
         {
-            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_10);
+            WriteDbConfigWithServer(Initialization.DbConfigFileName, Properties.Resources.dbconfig_10);
         }
         public void CopyDoubleDbConfigFileToTestPath()
         {
-            File.WriteAllBytes(Initialization.DbConfigFileName, Properties.Resources.dbconfig_doubledb);
+            WriteDbConfigWithServer(Initialization.DbConfigFileName, Properties.Resources.dbconfig_doubledb);
+        }
+
+        /// <summary>
+        /// Writes a cfg resource file to disk, replacing the embedded server name with TestServer.
+        /// </summary>
+        private static void WriteDbConfigWithServer(string targetPath, byte[] resourceBytes)
+        {
+            string content = System.Text.Encoding.UTF8.GetString(resourceBytes);
+            content = content.Replace(@"(local)\SQLEXPRESS", TestServer);
+            File.WriteAllText(targetPath, content);
         }
         public string GetTrulyUniqueFile(string extension)
         {
             if (extension.StartsWith(".")) extension = extension.Replace(".", "");
             string tmpName = Path.GetTempFileName();
-            string newName = Path.GetDirectoryName(tmpName) + @"\SqlBuildManager-Console-" + Guid.NewGuid().ToString() + "." + extension;
+            string newName = Path.Combine(Path.GetDirectoryName(tmpName), $"SqlBuildManager-Console-{Guid.NewGuid().ToString()}.{extension}");
             File.Move(tmpName, newName);
 
 

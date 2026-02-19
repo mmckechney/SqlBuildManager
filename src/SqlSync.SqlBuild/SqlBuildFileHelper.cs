@@ -966,7 +966,7 @@ namespace SqlSync.SqlBuild
                 foreach (var script in scripts)
                 {
                     var (_, textHash) = await GetSHA1HashAsync(Path.Combine(projectFileExtractionPath, script.FileName), script.StripTransactionText ?? false, cancellationToken).ConfigureAwait(false);
-                    sb.AppendLine(textHash);
+                    sb.Append(textHash).Append("\r\n");
                 }
 
                 string strHashData = GetSHA1Hash(sb.ToString());
@@ -991,7 +991,7 @@ namespace SqlSync.SqlBuild
             foreach (ScriptBatch batch in scriptBatchColl)
             {
                 textHash=  fileHelper.GetSHA1Hash(batch.ScriptBatchContents);
-                sb.AppendLine(textHash);
+                sb.Append(textHash).Append("\r\n");
             }
 
             string strHashData = GetSHA1Hash(sb.ToString());

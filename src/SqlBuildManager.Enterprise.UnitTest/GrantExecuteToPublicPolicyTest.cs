@@ -23,7 +23,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string actual;
             actual = target.PolicyId;
             string expected = "GrantExecuteToPublicPolicy";
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
 
         }
         /// <summary>

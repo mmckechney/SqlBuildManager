@@ -526,6 +526,17 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 return -1;
             }
         }
+        public string GetTrulyUniqueFile()
+        {
+            string tmpName = Path.GetTempFileName();
+            string newName = Path.Combine(Path.GetDirectoryName(tmpName), $"SqlSyncTest-{Guid.NewGuid().ToString()}.tmp");
+            File.Move(tmpName, newName);
+
+
+            tempFiles.Add(newName);
+            return newName;
+
+        }
 
 
         public string GetTableLockingScript()
