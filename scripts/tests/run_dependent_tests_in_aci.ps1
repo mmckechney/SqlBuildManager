@@ -105,37 +105,8 @@ Write-Host ""
 # Build and push test image if requested
 #############################################
 if ($buildImage) {
-    Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host "Building Dependent Test Container Image" -ForegroundColor Cyan
-    Write-Host "========================================" -ForegroundColor Cyan
-    
-    $srcPath = Join-Path $repoRoot "src"
-    
-    # Build using ACR (same pattern as build_container_registry_testimage.ps1)
-    $tmpDir = Join-Path $env:TEMP "sbm-dependent-tests-$(Get-Date -Format 'yyyyMMddHHmmss')"
-    
-    # Copy source, excluding build artifacts
-    Write-Host "Copying source files..." -ForegroundColor DarkGreen
-    $excludeDirs = ".vs", ".vs_backup", "bin", "obj", "TestResults"
-    robocopy $srcPath $tmpDir /E /XD $excludeDirs /NFL /NDL /NJH /NJS /NC /NS /NP | Out-Null
-    
-    # Remove .dockerignore if present
-    $dockerIgnore = Join-Path $tmpDir ".dockerignore"
-    if (Test-Path $dockerIgnore) { Remove-Item $dockerIgnore -Force }
-    
-    Write-Host "Building image via ACR..." -ForegroundColor DarkGreen
-    az acr build --registry $containerRegistryName `
-        --resource-group $resourceGroupName `
-        --image "${testImageName}:${imageTag}" `
-        --file (Join-Path $tmpDir "Dockerfile.dependent-tests") `
-        $tmpDir
-    
-    # Cleanup
-    $oldProgress = $ProgressPreference
-    $ProgressPreference = 'SilentlyContinue'
-    Remove-Item -Path $tmpDir -Recurse -Force -ErrorAction SilentlyContinue
-    $ProgressPreference = $oldProgress
-    Write-Host "Image built and pushed: ${testImageName}:${imageTag}" -ForegroundColor Green
+    $buildScript = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_dependenttest_image.ps1"
+    & $buildScript -prefix $prefix -resourceGroupName $resourceGroupName -imageTag $imageTag
 }
 
 #############################################
