@@ -902,7 +902,7 @@ namespace SqlSync.SqlBuild.UnitTest
 
             public TestRunnerFactory(BuildModels.Build result) => _result = result;
 
-            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null)
+            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null, ITransactionManager transactionManager = null, IBuildFinalizer buildFinalizer = null, ISqlLoggingService sqlLoggingService = null)
             {
                 CreateCalled = true;
                 return new TestRunner(_result);

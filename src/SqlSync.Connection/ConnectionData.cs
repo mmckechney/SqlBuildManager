@@ -22,6 +22,8 @@ namespace SqlSync.Connection
 
         private AuthenticationType authType = AuthenticationType.Password;
 
+        private DatabasePlatform _DatabasePlatform = DatabasePlatform.SqlServer;
+
         private int _ScriptTimeout = 20;
 
         public ConnectionData()
@@ -108,6 +110,18 @@ namespace SqlSync.Connection
             }
         }
 
+        public virtual DatabasePlatform DatabasePlatform
+        {
+            get
+            {
+                return _DatabasePlatform;
+            }
+            set
+            {
+                _DatabasePlatform = value;
+            }
+        }
+
         public virtual int ScriptTimeout
         {
             get
@@ -144,6 +158,7 @@ namespace SqlSync.Connection
                 authType = dataClass.authType;
                 ScriptTimeout = dataClass.ScriptTimeout;
                 ManagedIdentityClientId = dataClass.ManagedIdentityClientId;
+                _DatabasePlatform = dataClass._DatabasePlatform;
                 return this;
             }
             catch (System.Exception ex)

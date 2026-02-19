@@ -200,6 +200,7 @@ namespace SqlBuildManager.Console.CommandLine
             _registry.Register(CommandLineBuilder.usernameOption, (args, v) => args.UserName = v);
             _registry.Register(CommandLineBuilder.passwordOption, (args, v) => args.Password = v);
             _registry.Register(CommandLineBuilder.authtypeOption, (args, v) => args.AuthenticationType = v);
+            _registry.Register(CommandLineBuilder.platformOption, (args, v) => args.DatabasePlatform = v);
         }
 
         #endregion

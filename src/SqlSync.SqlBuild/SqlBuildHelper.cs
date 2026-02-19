@@ -92,6 +92,9 @@ namespace SqlSync.SqlBuild
         internal Services.IScriptLogWriter ScriptLogWriter { get; }
         internal Services.IBuildHistoryTracker BuildHistoryTracker { get; }
         internal Services.IDacPacFallbackHandler DacPacFallbackHandler { get; }
+        internal Services.ITransactionManager TransactionManager { get; }
+        internal Services.IScriptSyntaxProvider SyntaxProvider { get; }
+        internal Services.ISqlResourceProvider ResourceProvider { get; }
 
         #endregion
 
@@ -157,9 +160,24 @@ namespace SqlSync.SqlBuild
             BuildPreparationService = new Services.DefaultBuildPreparationService(this);
             ScriptBatcher = new Services.DefaultScriptBatcher();
             TokenReplacementService = new Services.DefaultTokenReplacementService();
-            ConnectionsService = connectionsService ?? new Services.DefaultConnectionsService();
-            SqlLoggingService = new Services.DefaultSqlLoggingService(ConnectionsService, ProgressReporter);
-            DatabaseUtility = databaseUtility ?? new Services.DefaultDatabaseUtility(ConnectionsService, SqlLoggingService, ProgressReporter, FileHelper);
+            // Select platform-specific services based on connection data
+            var platform = data?.DatabasePlatform ?? Connection.DatabasePlatform.SqlServer;
+            if (platform == Connection.DatabasePlatform.PostgreSQL)
+            {
+                TransactionManager = new Services.PostgresTransactionManager();
+                SyntaxProvider = new Services.PostgresSyntaxProvider();
+                ResourceProvider = new Services.PostgresResourceProvider();
+            }
+            else
+            {
+                TransactionManager = new Services.SqlServerTransactionManager();
+                SyntaxProvider = new Services.SqlServerSyntaxProvider();
+                ResourceProvider = new Services.SqlServerResourceProvider();
+            }
+            ConnectionsService = connectionsService ?? new Services.DefaultConnectionsService(
+                Connection.ConnectionHelper.GetFactory(platform), TransactionManager);
+            SqlLoggingService = new Services.DefaultSqlLoggingService(ConnectionsService, ProgressReporter, ResourceProvider);
+            DatabaseUtility = databaseUtility ?? new Services.DefaultDatabaseUtility(ConnectionsService, SqlLoggingService, ProgressReporter, FileHelper, ResourceProvider);
             BuildFinalizer = buildFinalizer ?? new Services.DefaultBuildFinalizer(SqlLoggingService, ProgressReporter);
 
             if (createScriptRunLogFile)
@@ -421,7 +439,7 @@ namespace SqlSync.SqlBuild
 
         internal async Task<BuildModels.Build> RunBuildScriptsAsync(IList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel, CancellationToken cancellationToken = default)
         {
-            var runner = RunnerFactory.Create(ConnectionsService, this, this, null);
+            var runner = RunnerFactory.Create(ConnectionsService, this, this, null, TransactionManager, BuildFinalizer, SqlLoggingService);
             return await runner.RunAsync(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, cancellationToken).ConfigureAwait(false);
         }
 

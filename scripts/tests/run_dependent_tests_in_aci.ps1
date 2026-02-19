@@ -294,7 +294,7 @@ Write-Host ""
 # Get and parse full test runner logs
 $fullTestLogs = Get-AciContainerLogs -containerName $testContainerName -resourceGroupName $resourceGroupName -logContainerName "test-runner"
 if ($fullTestLogs) {
-    Show-TestSummary -logs $fullTestLogs
+    Show-TestSummary -logs $fullTestLogs -startTime $startTime
 }
 else {
     Write-Host "No test logs available" -ForegroundColor Yellow

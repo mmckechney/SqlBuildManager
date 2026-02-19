@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>1701;1702;CA2100;CS0618</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="4.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
+    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
+    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj" />
+    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
+    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
+  </ItemGroup>
+</Project>

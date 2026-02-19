@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>1701;1702;NU1608</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\dbconfig.cfg" />
+    <EmbeddedResource Include="Resources\dbconfig-4.cfg" />
+    <EmbeddedResource Include="Resources\dbconfig-8.cfg" />
+    <EmbeddedResource Include="Resources\dbconfig-doubledb.cfg" />
+    <EmbeddedResource Include="Resources\PG_SimpleSelect.sbm" />
+    <EmbeddedResource Include="Resources\PG_SimpleSelect_client.sbm" />
+    <EmbeddedResource Include="Resources\PG_SimpleSelect_DoubleClient.sbm" />
+    <EmbeddedResource Include="Resources\PG_InsertForThreadedTest.sbm" />
+    <EmbeddedResource Include="Resources\PG_SyntaxError.sbm" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="4.1.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="4.1.0" />
+    <PackageReference Include="Npgsql" Version="10.0.1" />
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SqlBuildManager.Console\sbm.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj" />
+    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
+    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
+    <ProjectReference Include="..\SqlSync.ObjectScript\SqlSync.ObjectScript.csproj" />
+    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Copy SourceFiles="..\SqlBuildManager.Console\bin\$(Configuration)\$(TargetFramework)\sbm.runtimeconfig.json" DestinationFolder="$(OutDir)" Condition="Exists('..\SqlBuildManager.Console\bin\$(Configuration)\$(TargetFramework)\sbm.runtimeconfig.json')" />
+    <Copy SourceFiles="..\SqlBuildManager.Console\bin\$(Configuration)\$(TargetFramework)\sbm.deps.json" DestinationFolder="$(OutDir)" Condition="Exists('..\SqlBuildManager.Console\bin\$(Configuration)\$(TargetFramework)\sbm.deps.json')" />
+  </Target>
+</Project>

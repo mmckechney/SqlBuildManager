@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.Connection;
+using SqlSync.SqlBuild.Dependent.TestBase;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
 using System;
@@ -13,22 +14,17 @@ using System.IO;
 using System.Runtime.InteropServices;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
-    public class Initialization : IDisposable
+    public class Initialization : InitializationBase
     {
         public int TableLockingLoopCount = 1000000;
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public static string MissingDatabaseErrorMessage = "NOTE: To succesfully test, please make sure you have a SQL Server instance running. Set SBM_TEST_SQL_SERVER, SBM_TEST_SQL_USER, SBM_TEST_SQL_PASSWORD environment variables for non-default configuration.";
-        public List<string> testDatabaseNames = null;
-        public List<string> tempFiles = null;
-        public Guid testGuid;
-        public DateTime testTimeStamp;
-        public ConnectionData connData = null;
-        public string projectFileName = null;
-        public string buildHistoryXmlFile = null;
 
         public string connectionString;
-        public string serverName;
         public string databasePath;
+
+        protected override string TestTableName => "TransactionTest";
+        protected override string TempFilePrefix => @"\SqlSyncTest-";
 
         private static string GetServerName() => Environment.GetEnvironmentVariable("SBM_TEST_SQL_SERVER") ?? @"(local)\SQLEXPRESS";
         private static string GetConnectionString(string serverName)
@@ -49,7 +45,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
 
         public string PreRunScriptGuid = "47037F10-C217-4e7b-89AE-482F8C09D672";
-        public Initialization()
+        public Initialization() : base()
         {
             serverName = GetServerName();
             connectionString = GetConnectionString(serverName);
@@ -82,9 +78,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             testDatabaseNames.Add("SqlBuildTest_SyncTest2");
             testDatabaseNames.Add("SqlBuildTest_SyncTest3");
 
-            testGuid = Guid.NewGuid();
-            testTimeStamp = DateTime.Now;
-
             connData = new ConnectionData(serverName, testDatabaseNames[0]);
             var sqlUser = Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER");
             var sqlPassword = Environment.GetEnvironmentVariable("SBM_TEST_SQL_PASSWORD");
@@ -111,27 +104,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             {
                 Assert.Fail("Unable to clean pre-existing data from the SqlBuild_Logging tables");
             }
-
-
-
-            tempFiles = new List<string>();
         }
-        public void Dispose()
-        {
-            for (int i = 0; i < tempFiles.Count; i++)
-            {
-                if (File.Exists(tempFiles[i]))
-                    File.Delete(tempFiles[i]);
-            }
-
-            if (File.Exists(projectFileName))
-                File.Delete(projectFileName);
-
-            if (File.Exists(buildHistoryXmlFile))
-                File.Delete(buildHistoryXmlFile);
-        }
-
-        public bool CreateDatabases()
+        public override bool CreateDatabases()
         {
             try
             {
@@ -169,7 +143,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 return false;
             }
         }
-        public bool CreateTestTables()
+        public override bool CreateTestTables()
         {
 
             try
@@ -192,7 +166,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
 
         }
-        public bool CleanTestTables()
+        public override bool CleanTestTables()
         {
             try
             {
@@ -219,7 +193,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 return false;
             }
         }
-        public bool CreateSqlBuildLoggingTables()
+        public override bool CreateSqlBuildLoggingTables()
         {
             for (int i = 0; i < testDatabaseNames.Count; i++)
             {
@@ -242,7 +216,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
             return true;
         }
-        public bool CleanSqlBuildLoggingTables()
+        public override bool CleanSqlBuildLoggingTables()
         {
             int maxRetries = 5;
             int retryDelayMs = 2000;
@@ -321,129 +295,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 return false;
             }
         }
-        public SqlSyncBuildDataModel CreateSqlSyncSqlBuildDataModelObject()
-        {
-            try
-            {
-                SqlSyncBuildDataModel data = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-                return data;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-        public void AddInsertScript(ref SqlSyncBuildDataModel data, bool multipleRun)
-        {
-            Models.Script row = new Script();
-            row.AllowMultipleRuns = multipleRun;
-            row.BuildOrder = 1;
-            row.CausesBuildFailure = true;
-            row.Database = testDatabaseNames[0];
-            row.DateAdded = testTimeStamp;
-            string fileName = GetTrulyUniqueFile();
-
-            row.FileName = fileName;
-            row.RollBackOnError = true;
-            row.StripTransactionText = true;
-            row.Description = "Test Script to successfully insert into TransactionTest table";
-            row.AddedBy = "UnitTest";
-            row.ScriptId = Guid.NewGuid().ToString();
-
-            data.Script.Add(row);
-            string script = "INSERT INTO TransactionTest (Message, Guid, DateTimeStamp) VALUES ('INSERT TEST','" + testGuid + "','" + testTimeStamp.ToString() + "')";
-            File.WriteAllText(fileName, script);
-
-
-        }
-        public void AddSelectScript(ref SqlSyncBuildDataModel data)
-        {
-            Script row = new();
-            row.AllowMultipleRuns = true;
-            row.BuildOrder = 1;
-            row.CausesBuildFailure = true;
-            row.Database = testDatabaseNames[0];
-            row.DateAdded = testTimeStamp;
-            string fileName = GetTrulyUniqueFile();
-
-            row.FileName = fileName;
-            row.RollBackOnError = true;
-            row.StripTransactionText = true;
-            row.Description = "Test Script to successfully select from TransactionTest table";
-            row.AddedBy = "UnitTest";
-            row.ScriptId = Guid.NewGuid().ToString();
-            data.Script.Add(row);
-            string script = "SELECT * FROM TransactionTest";
-            File.WriteAllText(fileName, script);
-
-
-        }
-        public void AddFailureScript(ref SqlSyncBuildDataModel data, bool rollBackOnError, bool causeBuildFailure)
-        {
-            Script row = new();
-            row.AllowMultipleRuns = true;
-            row.BuildOrder = 10;
-            row.CausesBuildFailure = causeBuildFailure;
-            row.Database = testDatabaseNames[0];
-            row.DateAdded = testTimeStamp;
-            string fileName = GetTrulyUniqueFile();
-
-            row.FileName = fileName;
-            row.RollBackOnError = rollBackOnError;
-            row.StripTransactionText = true;
-            row.Description = "Test Script to cause a failure when inserting into TransactionTest table";
-            row.AddedBy = "UnitTest";
-            row.ScriptId = Guid.NewGuid().ToString();
-            data.Script.Add(row);
-            string script = "INSERT INTO TransactionTest (INVALID, Guid, DateTimeStamp) VALUES ('INSERT TEST','" + testGuid + "','" + testTimeStamp.ToString() + "')";
-            File.WriteAllText(fileName, script);
-
-
-        }
-        public void AddScriptWithBadDatabase(ref SqlSyncBuildDataModel data)
-        {
-            Script row = new();
-            row.AllowMultipleRuns = true;
-            row.BuildOrder = 1;
-            row.CausesBuildFailure = true;
-            row.Database = "REALLY_BAD_DATABASE";
-            row.DateAdded = testTimeStamp;
-            string fileName = GetTrulyUniqueFile();
-
-            row.FileName = fileName;
-            row.RollBackOnError = true;
-            row.StripTransactionText = true;
-            row.Description = "Test Script that has an invalid database name";
-            row.AddedBy = "UnitTest";
-            row.ScriptId = Guid.NewGuid().ToString();
-            data.Script.Add(row);
-
-            string script = "INSERT INTO TransactionTest (Message, Guid, DateTimeStamp) VALUES ('INSERT TEST','" + testGuid + "','" + testTimeStamp.ToString() + "')";
-            File.WriteAllText(fileName, script);
-
-
-        }
-        public void AddBatchInsertScripts(ref SqlSyncBuildDataModel data, bool multipleRun)
-        {
-            Script row = new();
-            row.AllowMultipleRuns = multipleRun;
-            row.BuildOrder = 1;
-            row.CausesBuildFailure = true;
-            row.Database = testDatabaseNames[0];
-            row.DateAdded = testTimeStamp;
-            string fileName = GetTrulyUniqueFile();
-
-            row.FileName = fileName;
-            row.RollBackOnError = true;
-            row.StripTransactionText = true;
-            row.Description = "Test Script to successfully insert into TransactionTest table";
-            row.AddedBy = "UnitTest";
-            row.ScriptId = Guid.NewGuid().ToString();
-            data.Script.Add(row);
-            string script = "INSERT INTO TransactionTest (Message, Guid, DateTimeStamp) VALUES ('INSERT TEST','" + testGuid + "','" + testTimeStamp.ToString() + "')";
-            script = script + "\r\nGO\r\n" + script;
-            File.WriteAllText(fileName, script);
-        }
         public void AddPreRunScript(ref SqlSyncBuildDataModel data, bool multipleRun)
         {
             Script row = new();
@@ -469,29 +320,13 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         }
 
-        public ConnectionData CreateConnectionData(string databaseName)
+        public override ConnectionData CreateConnectionData(string databaseName)
         {
             var cd = new ConnectionData(serverName, databaseName);
             cd.AuthenticationType = connData.AuthenticationType;
             cd.UserId = connData.UserId;
             cd.Password = connData.Password;
             return cd;
-        }
-
-        public SqlBuildHelper CreateSqlBuildHelper(SqlSyncBuildDataModel buildData)
-        {
-            SqlBuildHelper helper = new SqlBuildHelper(connData);
-            return SetSqlBuildHelperValues(helper, buildData);
-        }
-        public SqlBuildHelper CreateSqlBuildHelper_NonTransactional(SqlSyncBuildDataModel buildData, bool withScriptLog)
-        {
-            SqlBuildHelper helper = new SqlBuildHelper(connData, withScriptLog, string.Empty, false);
-            return SetSqlBuildHelperValues(helper, buildData);
-        }
-        public SqlBuildHelper CreateSqlBuildHelper_Basic()
-        {
-            SqlBuildHelper helper = new SqlBuildHelper(connData);
-            return SetSqlBuildHelperValues(helper, null);
         }
 
         public SqlBuildHelper CreateSqlBuildHelperAccessor(SqlSyncBuildDataModel buildData)
@@ -518,28 +353,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             target.buildHistoryXmlFile = buildHistoryXmlFile;
 
             return target;
-        }
-        public SqlBuildHelper SetSqlBuildHelperValues(SqlBuildHelper sbh, SqlSyncBuildDataModel buildData)
-        {
-
-            ((ISqlBuildRunnerProperties)sbh).BuildDataModel = buildData;
-
-            string logFile = GetTrulyUniqueFile();
-            sbh.scriptLogFileName = logFile;
-
-            SqlSyncBuildDataModel buildHist = CreateSqlSyncSqlBuildDataModelObject();
-            ((ISqlBuildRunnerProperties)sbh).BuildHistoryModel = buildHist;
-
-            projectFileName = GetTrulyUniqueFile();
-            sbh.projectFileName = projectFileName;
-
-            buildHistoryXmlFile = GetTrulyUniqueFile();
-            sbh.buildHistoryXmlFile = buildHistoryXmlFile;
-            return sbh;
-        }
-        public Build GetRunBuildRow(SqlBuildHelper sqlBuildHelper)
-        {
-            return new Build();
         }
 
         public ScriptBatchCollection GetScriptBatchCollection()
@@ -610,13 +423,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             return sbc;
         }
 
-        public List<DatabaseOverride> GetDatabaseOverrides()
-        {
-            List<DatabaseOverride> o = new List<DatabaseOverride>();
-            o.Add(new DatabaseOverride(serverName, testDatabaseNames[0], testDatabaseNames[0]));
-            return o;
-
-        }
         public SqlBuildRunData GetSqlBuildRunData_TransactionalNotTrial(SqlSyncBuildDataModel buildData)
         {
             var uniqueId = Guid.NewGuid().ToString("N");
@@ -662,7 +468,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 allowObjectDelete: false);
         }
 
-        public int GetSqlBuildLoggingRowCountByBuildFileName(int databaseIndex)
+        public override int GetSqlBuildLoggingRowCountByBuildFileName(int databaseIndex)
         {
             try
             {
@@ -701,7 +507,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             }
 
         }
-        public int GetTestTableRowCount(int databaseIndex)
+        public override int GetTestTableRowCount(int databaseIndex)
         {
             try
             {

@@ -321,7 +321,7 @@ $testLogs = az container logs --name $testContainerName --resource-group $resour
 # Show test summary instead of full logs
 if ($testLogs) {
     $testLogsArray = $testLogs -split "`n"
-    Show-TestSummary -logs $testLogsArray
+    Show-TestSummary -logs $testLogsArray -startTime $startTime
 }
 else {
     Write-Host "No test logs available" -ForegroundColor Yellow

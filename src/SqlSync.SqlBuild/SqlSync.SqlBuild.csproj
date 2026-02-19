@@ -8,8 +8,11 @@
   <ItemGroup>
     <EmbeddedResource Include="AdHocQuery\Xml\QueryResult_html.xslt" />
     <EmbeddedResource Include="SqlLogging\LoggingTable.sql" />
+    <EmbeddedResource Include="SqlLogging\LoggingTable.PostgreSQL.sql" />
     <EmbeddedResource Include="SqlLogging\LoggingTableCommitCheckIndex.sql" />
+    <EmbeddedResource Include="SqlLogging\LoggingTableCommitCheckIndex.PostgreSQL.sql" />
     <EmbeddedResource Include="SqlLogging\LogScript.sql" />
+    <EmbeddedResource Include="SqlLogging\LogScript.PostgreSQL.sql" />
     <EmbeddedResource Include="SqlLogging\VersionsInsert.sql" />
     <EmbeddedResource Include="Status\Xml\ServerReport_csv.xslt" />
     <EmbeddedResource Include="Status\Xml\ServerReport_html.xslt" />

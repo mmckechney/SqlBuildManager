@@ -15,9 +15,17 @@ namespace SqlSync.SqlBuild.Services
 {
     internal class DefaultConnectionsService : IConnectionsService
     {
-        public DefaultConnectionsService()
-        {
+        private readonly IDbConnectionFactory _connectionFactory;
+        private readonly ITransactionManager _transactionManager;
 
+        public DefaultConnectionsService() : this(null, null)
+        {
+        }
+
+        public DefaultConnectionsService(IDbConnectionFactory connectionFactory = null, ITransactionManager transactionManager = null)
+        {
+            _connectionFactory = connectionFactory ?? new SqlSync.Connection.SqlServerConnectionFactory();
+            _transactionManager = transactionManager ?? new SqlServerTransactionManager();
         }
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private string GetDatabaseKey(string serverName, string databaseName)
@@ -30,12 +38,12 @@ namespace SqlSync.SqlBuild.Services
             {
                 if (buildConnectData.Connection.State != System.Data.ConnectionState.Open)
                 {
-                    var pollyConnection = Policy.Handle<SqlException>().WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
+                    var pollyConnection = Policy.Handle<System.Data.Common.DbException>().WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
                     pollyConnection.Execute(() => buildConnectData.Connection.Open());
                 }
                 if (isTransactional)
                 {
-                    buildConnectData.Transaction = buildConnectData.Transaction ?? buildConnectData.Connection.BeginTransaction(BuildTransaction.TransactionName);
+                    buildConnectData.Transaction = buildConnectData.Transaction ?? _transactionManager.BeginTransaction(buildConnectData.Connection);
                 }
 
                 return buildConnectData;
@@ -69,7 +77,7 @@ namespace SqlSync.SqlBuild.Services
                 if (Connections.ContainsKey(databaseKey) == false)
                 {
                     BuildConnectData cData = new BuildConnectData();
-                    cData.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, serverName,"","",AuthenticationType.Windows,20,"");
+                    cData.Connection = _connectionFactory.CreateConnection(databaseName, serverName,"","",AuthenticationType.Windows,20,"");
                     cData = PrepConnectionAndTransaction(cData, isTransactional);
                     cData.DatabaseName = databaseName;
                     cData.ServerName = serverName;
@@ -98,7 +106,7 @@ namespace SqlSync.SqlBuild.Services
                 if (Connections.ContainsKey(databaseKey) == false)
                 {
                     BuildConnectData cData = new BuildConnectData();
-                    cData.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, serverName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+                    cData.Connection = _connectionFactory.CreateConnection(databaseName, serverName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
                     cData = PrepConnectionAndTransaction(cData, isTransactional);
                     cData.DatabaseName = databaseName;
                     cData.ServerName = serverName;

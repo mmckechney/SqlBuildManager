@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Common;
 using Microsoft.Data.SqlClient;
 using System.Linq;
 using System.Threading;
@@ -31,9 +32,10 @@ namespace SqlSync.SqlBuild
         private readonly IBuildFinalizer _buildFinalizer;
         private readonly IProgressReporter _progressReporter;
         private readonly IBuildFinalizerContext _finalizerContext;
+        private readonly ITransactionManager _transactionManager;
 
 
-        public SqlBuildRunner(IConnectionsService connectionsService, ISqlBuildRunnerContext ctx, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null, ISqlBuildFileHelper fileHelper = null, IBuildFinalizer buildFinalizer = null, ISqlLoggingService sqlLoggingService = null, IProgressReporter progressReporter = null)
+        public SqlBuildRunner(IConnectionsService connectionsService, ISqlBuildRunnerContext ctx, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null, ISqlBuildFileHelper fileHelper = null, IBuildFinalizer buildFinalizer = null, ISqlLoggingService sqlLoggingService = null, IProgressReporter progressReporter = null, ITransactionManager transactionManager = null)
         {
             _ctx = ctx ?? throw new ArgumentNullException(nameof(ctx));
             _executor = executor ?? new SqlCommandExecutor(ctx.Log);
@@ -43,6 +45,7 @@ namespace SqlSync.SqlBuild
             _buildFinalizer = buildFinalizer ?? new DefaultBuildFinalizer(_sqlLoggingService, _progressReporter);
             _connectionsService = connectionsService ?? new DefaultConnectionsService();
             _finalizerContext = finalizerContext ?? throw new ArgumentNullException(nameof(finalizerContext));
+            _transactionManager = transactionManager ?? new SqlServerTransactionManager();
 
 
         }
@@ -283,7 +286,7 @@ namespace SqlSync.SqlBuild
             try
             {
                 if (_ctx.IsTransactional)
-                    cData.Transaction.Save(savePointName);
+                    _transactionManager.CreateSavePoint(cData.Transaction, savePointName);
             }
             catch (Exception mye)
             {
@@ -335,7 +338,7 @@ namespace SqlSync.SqlBuild
                     var span = DateTime.Now - start;
                     if (_ctx.IsTransactional)
                     {
-                        cData.Transaction.Rollback(savePointName);
+                        _transactionManager.RollbackToSavePoint(cData.Transaction, savePointName);
                         log.LogWarning($"Script Rolled Back for {fileName}");
                     }
                     else
@@ -360,7 +363,7 @@ namespace SqlSync.SqlBuild
                 {
                     logMsg.Clear(); logMsg.Append(invalExe.Message + Environment.NewLine);
                     currentRun.Results = (currentRun.Results ?? string.Empty) + logMsg.ToString();
-                    if (_ctx.IsTransactional && !invalExe.Message.Contains("no longer usable"))
+                    if (_ctx.IsTransactional && !_transactionManager.IsTransactionZombied(invalExe))
                     {
                         _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);
                         log.LogWarning($"Build Rolled Back");
@@ -427,7 +430,10 @@ namespace SqlSync.SqlBuild
 
             public SqlExecutionResult Execute(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional)
             {
-                var cmd = isTransactional ? new SqlCommand(sql, cData.Connection, cData.Transaction) : new SqlCommand(sql, cData.Connection);
+                var cmd = cData.Connection.CreateCommand();
+                cmd.CommandText = sql;
+                if (isTransactional)
+                    cmd.Transaction = cData.Transaction;
                 cmd.CommandTimeout = timeoutSeconds;
                 var sb = new StringBuilder();
                 try
@@ -464,7 +470,10 @@ namespace SqlSync.SqlBuild
 
             public async Task<SqlExecutionResult> ExecuteAsync(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional, CancellationToken cancellationToken = default)
             {
-                var cmd = isTransactional ? new SqlCommand(sql, cData.Connection, cData.Transaction) : new SqlCommand(sql, cData.Connection);
+                var cmd = cData.Connection.CreateCommand();
+                cmd.CommandText = sql;
+                if (isTransactional)
+                    cmd.Transaction = cData.Transaction;
                 cmd.CommandTimeout = timeoutSeconds;
                 var sb = new StringBuilder();
                 try

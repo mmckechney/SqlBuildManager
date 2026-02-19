@@ -236,6 +236,7 @@ namespace SqlBuildManager.Console.Threaded
                 }
                 connData.AuthenticationType = cmdArgs.AuthenticationArgs.AuthenticationType;
                 connData.ManagedIdentityClientId = cmdArgs.IdentityArgs.ClientId;
+                connData.DatabasePlatform = cmdArgs.AuthenticationArgs.DatabasePlatform;
             }
             catch (Exception exe)
             {
