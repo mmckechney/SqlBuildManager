@@ -76,9 +76,14 @@ resource pgFlexServer 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = {
 }
 
 // Entra ID (AAD) administrator for the PG Flexible Server
+// Must wait until the server is fully accessible (firewall rules applied) before setting Entra admin
 resource pgAadAdmin 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2024-08-01' = {
   parent: pgFlexServer
   name: pgAdminObjectId
+  dependsOn: [
+    pgFirewallAzureServices
+    pgFirewallRule
+  ]
   properties: {
     principalType: 'User'
     principalName: pgAdminLogin
@@ -110,6 +115,9 @@ resource pgFirewallAzureServices 'Microsoft.DBforPostgreSQL/flexibleServers/fire
 resource pgDatabases 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2024-08-01' = [for i in range(1, testDbCount): {
   parent: pgFlexServer
   name: 'sbm_pg_test${i}'
+  dependsOn: [
+    pgAadAdmin
+  ]
   properties: {
     charset: 'UTF8'
     collation: 'en_US.utf8'
