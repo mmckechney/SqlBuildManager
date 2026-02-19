@@ -21,7 +21,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string actual;
             actual = target.PolicyId;
             string expected = "GrantExecutePolicy";
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
 
         }
 
@@ -643,7 +643,7 @@ BEGIN
 	    SET NOCOUNT ON;
 	
 	    BEGIN TRY
-	        UPDATE [Employee] 
+	        UPDATE [HumanResources].[Employee] 
 	        SET [NationalIDNumber] = @NationalIDNumber 
 	            ,[BirthDate] = @BirthDate 
 	            ,[MaritalStatus] = @MaritalStatus 
@@ -674,7 +674,7 @@ BEGIN
 	    SET NOCOUNT ON;
 	
 	    BEGIN TRY
-	        UPDATE [Employee] 
+	        UPDATE [HumanResources].[Employee] 
 	        SET [NationalIDNumber] = @NationalIDNumber 
 	            ,[BirthDate] = @BirthDate 
 	            ,[MaritalStatus] = @MaritalStatus 
@@ -941,7 +941,7 @@ GO
             string actual;
             actual = target.LongDescription;
             string expected = "Checks that Stored Procedure and Function scripts have at least one \"GRANT EXECUTE\" statement";
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
 
         }
 
@@ -955,7 +955,7 @@ GO
             string actual;
             actual = target.ShortDescription;
             string expected = "Check for GRANT EXECUTE";
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
         }
     }
 }

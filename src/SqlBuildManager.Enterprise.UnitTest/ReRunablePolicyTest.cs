@@ -22,7 +22,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string actual;
             actual = target.PolicyId;
             string expected = "ReRunablePolicy";
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
 
         }
 

@@ -171,7 +171,7 @@ function Show-TestSummary {
             Write-Host $paddedLine -ForegroundColor Yellow
         }
         elseif ($line -match "^ - " -and $currentSection -eq "failed") {
-            Write-Host $paddedLine -ForegroundColor Yellow
+            Write-Host $paddedLine -ForegroundColor DarkGray
         }
         elseif ($line -match "^ - ") {
             Write-Host $paddedLine -ForegroundColor DarkGray

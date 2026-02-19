@@ -22,7 +22,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string actual;
             actual = target.PolicyId;
             string expected = "WithNoLockPolicy";
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
 
         }
         private TestContext testContextInstance;
@@ -146,7 +146,7 @@ INNER JOIN Table2 WITH (NOLOCK) ON TestTable.Column 1= Table2.Column3 WHERE Colu
             string actual;
             actual = target.ShortDescription;
             string expected = "WITH (NOLOCK)";
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
         }
 
         /// <summary>
