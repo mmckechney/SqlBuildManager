@@ -587,7 +587,7 @@ END
             string[] arrScripts = batcher.ReadBatchFromScriptText(script, true, false).ToArray();
             string hashFromArray;
             hashFromArray = fileHelper.GetSHA1Hash(arrScripts);
-            string hashFromString = fileHelper.GetSHA1Hash(script.ClearTrailingCarriageReturn());
+            string hashFromString = fileHelper.GetSHA1Hash(script.Replace("\r\n", "\n").Replace("\n", "\r\n").ClearTrailingCarriageReturn());
             Assert.AreEqual(hashFromString, hashFromArray);
         }
         #endregion
