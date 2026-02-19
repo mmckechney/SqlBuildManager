@@ -38,46 +38,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
         private static string GetLocalhostFolderName(string loggingRoot)
         {
-            // Find the "working" directory case-insensitively (production code uses "Working", Linux is case-sensitive)
-            string workingDir = Directory.Exists(loggingRoot)
-                ? Directory.GetDirectories(loggingRoot).FirstOrDefault(d => Path.GetFileName(d).Equals("working", StringComparison.OrdinalIgnoreCase))
-                : null;
-
-            if (workingDir == null)
-            {
-                throw new Exception($"Unable to find working directory at root: {loggingRoot}. Found: [{(Directory.Exists(loggingRoot) ? string.Join(", ", Directory.GetDirectories(loggingRoot).Select(Path.GetFileName)) : "root not found")}]");
-            }
-
-            // Build path segments from the test server name (e.g. "localhost\SQLEXPRESS" → "localhost","SQLEXPRESS")
-            string[] serverParts = Initialization.TestServer.Split('\\');
-            string candidatePath = Path.Combine(new[] { workingDir }.Concat(serverParts).ToArray());
-            if (Directory.Exists(candidatePath))
-            {
-                return candidatePath;
-            }
-
-            // Fallback: if there's exactly one server directory under working/, use it
-            var serverDirs = Directory.GetDirectories(workingDir);
-            if (serverDirs.Length == 1)
-            {
-                return serverDirs[0];
-            }
-
-            // Fallback: check well-known local paths for backward compatibility
-            if (Directory.Exists(Path.Combine(workingDir, "(local)", "SQLEXPRESS")))
-            {
-                return Path.Combine(workingDir, "(local)", "SQLEXPRESS");
-            }
-            else if (Directory.Exists(Path.Combine(workingDir, "localhost", "SQLEXPRESS")))
-            {
-                return Path.Combine(workingDir, "localhost", "SQLEXPRESS");
-            }
-            else if (Directory.Exists(Path.Combine(workingDir, "localhost")))
-            {
-                return Path.Combine(workingDir, "localhost");
-            }
-
-            throw new Exception($"Unable to find localhost temp directory at root: {loggingRoot}. Found under working/: [{string.Join(", ", serverDirs.Select(Path.GetFileName))}]");
+            return SqlBuildManager.Test.Common.TestPathHelper.FindServerLogDirectory(loggingRoot, Initialization.TestServer);
         }
         
 
@@ -419,7 +380,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 if (actual == -600)
                     Assert.Fail("Unable to completed test.");
 
-                Assert.AreEqual(expected, actual);
+                Assert.AreEqual(expected, actual, $"Execution results are {actual}, not the expected {expected}");
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 string[] executionLogFile = ReadLines(Path.Combine(loggingPath, "SqlBuildManager.ThreadedExecution.log")).ToArray();
                 //Should not all sequential!

@@ -1,3 +1,4 @@
+using SqlBuildManager.Test.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,30 +17,16 @@ namespace SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest
     /// </summary>
     class Initialization : IDisposable
     {
-        public static string Server;
-        public static string User;
-        public static string Password;
+        public static string Server => TestEnvironment.PostgresServer;
+        public static string User => TestEnvironment.PostgresUser;
+        public static string Password => TestEnvironment.PostgresPassword;
 
-        public static string[] GetAuthArgs()
-        {
-            return new[] {
-                "--authtype", AuthenticationType.Password.ToString(),
-                "--username", User,
-                "--password", Password
-            };
-        }
+        public static string[] GetAuthArgs() => TestEnvironment.GetPostgresAuthArgs();
 
-        public static string[] GetPlatformArgs()
-        {
-            return new[] { "--platform", DatabasePlatform.PostgreSQL.ToString() };
-        }
+        public static string[] GetPlatformArgs() => TestEnvironment.GetPostgresPlatformArgs();
 
         static Initialization()
         {
-            Server = Environment.GetEnvironmentVariable("SBM_TEST_POSTGRES_SERVER") ?? "localhost";
-            User = Environment.GetEnvironmentVariable("SBM_TEST_POSTGRES_USER") ?? "postgres";
-            Password = Environment.GetEnvironmentVariable("SBM_TEST_POSTGRES_PASSWORD") ?? "P0stSqlAdm1n";
-
             EnsureDatabases();
             EnsureTestTables();
         }
@@ -102,17 +89,17 @@ namespace SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest
         public Initialization()
         {
             tempFiles = new List<string>();
-            SqlBuildZipFileName = GetTrulyUniqueFile("sbm");
-            MultiDbFileName = GetTrulyUniqueFile("multidb");
-            DbConfigFileName = GetTrulyUniqueFile("cfg");
+            SqlBuildZipFileName = TestFileHelper.GetTrulyUniqueFile("sbm");
+            tempFiles.Add(SqlBuildZipFileName);
+            MultiDbFileName = TestFileHelper.GetTrulyUniqueFile("multidb");
+            tempFiles.Add(MultiDbFileName);
+            DbConfigFileName = TestFileHelper.GetTrulyUniqueFile("cfg");
+            tempFiles.Add(DbConfigFileName);
         }
 
         public static void CleanUp()
         {
-            foreach (string f in tempFiles)
-            {
-                try { File.Delete(f); } catch { }
-            }
+            TestFileHelper.CleanupTempFiles(tempFiles);
         }
 
         public void CopySbmFileToTestPath()
@@ -140,27 +127,9 @@ namespace SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest
             File.WriteAllBytes(DbConfigFileName, Properties.Resources.dbconfig_doubledb);
         }
 
-        public string GetTrulyUniqueFile(string extension)
-        {
-            if (extension.StartsWith(".")) extension = extension.Replace(".", "");
-            string tmpName = Path.GetTempFileName();
-            string newName = Path.Combine(Path.GetDirectoryName(tmpName), "SqlBuildManager-PG-Console-" + Guid.NewGuid().ToString() + "." + extension);
-            File.Move(tmpName, newName);
-            tempFiles.Add(newName);
-            return newName;
-        }
-
         public void Dispose()
         {
-            foreach (string file in tempFiles)
-            {
-                try
-                {
-                    if (File.Exists(file))
-                        File.Delete(file);
-                }
-                catch { }
-            }
+            TestFileHelper.CleanupTempFiles(tempFiles);
         }
     }
 }
