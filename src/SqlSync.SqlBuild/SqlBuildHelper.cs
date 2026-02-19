@@ -176,7 +176,7 @@ namespace SqlSync.SqlBuild
             }
             ConnectionsService = connectionsService ?? new Services.DefaultConnectionsService(
                 Connection.ConnectionHelper.GetFactory(platform), TransactionManager);
-            SqlLoggingService = new Services.DefaultSqlLoggingService(ConnectionsService, ProgressReporter, ResourceProvider);
+            SqlLoggingService = new Services.DefaultSqlLoggingService(ConnectionsService, ProgressReporter, ResourceProvider, SyntaxProvider);
             DatabaseUtility = databaseUtility ?? new Services.DefaultDatabaseUtility(ConnectionsService, SqlLoggingService, ProgressReporter, FileHelper, ResourceProvider);
             BuildFinalizer = buildFinalizer ?? new Services.DefaultBuildFinalizer(SqlLoggingService, ProgressReporter);
 
@@ -279,7 +279,7 @@ namespace SqlSync.SqlBuild
                 return prep.Build;
             }
 
-            var orchestrator = new Services.SqlBuildOrchestrator(this, this, this.RetryPolicy, this, ConnectionsService, SqlLoggingService, RunnerFactory);
+            var orchestrator = new Services.SqlBuildOrchestrator(this, this, this.RetryPolicy, this, ConnectionsService, SqlLoggingService, RunnerFactory, TransactionManager, BuildFinalizer);
             var buildResultsModel = await orchestrator.ExecuteAsync(runData, prep, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries, cancellationToken).ConfigureAwait(false);
 
             // Handle DacPac fallback for failed builds
@@ -371,6 +371,7 @@ namespace SqlSync.SqlBuild
                 log.LogInformation($"Creating Script Log File: {scriptLogFileName}");
 
                 
+                //TODO: this always seems to be output as an empty guid?
                 var nextBuildId = new Guid().ToString();
                 log.LogInformation($"Generating Build Record ID: {nextBuildId}");
 

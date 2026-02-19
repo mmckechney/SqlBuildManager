@@ -24,16 +24,18 @@ namespace SqlSync.SqlBuild.Services
         private readonly IConnectionsService connectionsService;
         private readonly IProgressReporter progressReporter;
         private readonly ISqlResourceProvider resourceProvider;
+        private readonly IScriptSyntaxProvider syntaxProvider;
 
         // Static cache for verified logging tables (server:database combinations that have been confirmed)
         private static readonly HashSet<string> _verifiedLoggingTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly object _cacheLock = new object();
 
-        public DefaultSqlLoggingService(IConnectionsService connectionsService, IProgressReporter progressReporter, ISqlResourceProvider resourceProvider = null) 
+        public DefaultSqlLoggingService(IConnectionsService connectionsService, IProgressReporter progressReporter, ISqlResourceProvider resourceProvider = null, IScriptSyntaxProvider syntaxProvider = null) 
         {
             this.connectionsService = connectionsService;
             this.progressReporter = progressReporter;
             this.resourceProvider = resourceProvider ?? new SqlServerResourceProvider();
+            this.syntaxProvider = syntaxProvider ?? new SqlServerSyntaxProvider();
         }
 
         private static string GetCacheKey(string serverName, string databaseName) => $"{serverName}:{databaseName}";
@@ -348,7 +350,7 @@ namespace SqlSync.SqlBuild.Services
                 var (script, row) = scripts[i];
                 
                 if (i > 0) sql.Append(",");
-                sql.AppendLine($"(@BuildFileName{i},@ScriptFileName{i},@ScriptId{i},@ScriptFileHash{i},@CommitDate{i},@Sequence{i},@UserId{i},1,@ScriptText{i},@Tag{i},@TargetDatabase{i},@RunWithVersion{i},@BuildProjectHash{i},@BuildRequestedBy{i},@ScriptRunStart{i},@ScriptRunEnd{i},@Description{i})");
+                sql.AppendLine($"(@BuildFileName{i},@ScriptFileName{i},@ScriptId{i},@ScriptFileHash{i},@CommitDate{i},@Sequence{i},@UserId{i},{syntaxProvider.BooleanTrueLiteral},@ScriptText{i},@Tag{i},@TargetDatabase{i},@RunWithVersion{i},@BuildProjectHash{i},@BuildRequestedBy{i},@ScriptRunStart{i},@ScriptRunEnd{i},@Description{i})");
 
                 AddParameter(cmd, $"@BuildFileName{i}", buildFileName);
                 AddParameter(cmd, $"@ScriptFileName{i}", row.FileName);
