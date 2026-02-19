@@ -88,25 +88,59 @@ Write-Host "Ensuring rdbms-connect extension is installed..." -ForegroundColor D
 az extension add --name rdbms-connect --yes 2>$null
 
 # Step 1: Create the managed identity role in the 'postgres' database
-# pgaadauth_create_principal only exists in the postgres database and creates a server-wide role
+# pgaadauth_create_principal only exists in the postgres database and creates a server-wide role.
+# IMPORTANT: This function can only be run by an Entra ID admin, not a local (password) admin.
+# We acquire an Azure AD token for the current user and authenticate with that.
 Write-Host "Ensuring Entra ID role '$identityName' exists..." -ForegroundColor DarkGreen
-$createRoleSql = "SELECT * FROM pgaadauth_create_principal('${identityName}', false, false)"
-$createOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$createRoleSql" --output none 2>&1
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "  ✓ Role '$identityName' created" -ForegroundColor Green
-} elseif ($createOutput -match "already exists") {
-    Write-Host "  Role '$identityName' already exists — OK" -ForegroundColor DarkGreen
-} else {
-    Write-Host "  ⚠ pgaadauth_create_principal failed, trying direct CREATE ROLE..." -ForegroundColor Yellow
-    $fallbackSql = "CREATE ROLE ""${identityName}"" WITH LOGIN"
-    $fallbackOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$fallbackSql" --output none 2>&1
+
+# Get Entra ID admin info from the server
+$aadAdmins = az rest --method get --uri "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/$resourceGroupName/providers/Microsoft.DBforPostgreSQL/flexibleServers/$pgServerName/administrators?api-version=2024-08-01" --query "value[0].properties.principalName" -o tsv 2>$null
+if ([string]::IsNullOrWhiteSpace($aadAdmins)) {
+    Write-Host "  ⚠ Could not determine Entra ID admin — falling back to local admin" -ForegroundColor Yellow
+    $aadAdmins = $null
+}
+
+$roleCreated = $false
+if ($null -ne $aadAdmins) {
+    # Authenticate as Entra ID admin using Azure AD token
+    $aadToken = az account get-access-token --resource-type oss-rdbms --query accessToken -o tsv 2>$null
+    if (-not [string]::IsNullOrWhiteSpace($aadToken)) {
+        $createRoleSql = "SELECT * FROM pgaadauth_create_principal('${identityName}', false, true)"
+        $createOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $aadAdmins --admin-password "$aadToken" --querytext "$createRoleSql" --output none 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  ✓ Role '$identityName' created (Entra ID auth)" -ForegroundColor Green
+            $roleCreated = $true
+        } elseif ($createOutput -match "already exists") {
+            Write-Host "  Role '$identityName' already exists — OK" -ForegroundColor DarkGreen
+            $roleCreated = $true
+        } else {
+            Write-Host "  ⚠ pgaadauth_create_principal via Entra ID admin failed: $createOutput" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "  ⚠ Could not acquire Azure AD token — falling back to local admin" -ForegroundColor Yellow
+    }
+}
+
+if (-not $roleCreated) {
+    # Fallback: try with local admin (will only work if the role already exists or for non-MI roles)
+    $createRoleSql = "SELECT * FROM pgaadauth_create_principal('${identityName}', false, true)"
+    $createOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$createRoleSql" --output none 2>&1
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "  ✓ Role '$identityName' created via CREATE ROLE" -ForegroundColor Green
-    } elseif ($fallbackOutput -match "already exists") {
+        Write-Host "  ✓ Role '$identityName' created" -ForegroundColor Green
+    } elseif ($createOutput -match "already exists") {
         Write-Host "  Role '$identityName' already exists — OK" -ForegroundColor DarkGreen
     } else {
-        Write-Host "  ERROR: Could not create role for managed identity. Grants may fail." -ForegroundColor Red
-        Write-Host "  $fallbackOutput" -ForegroundColor Red
+        Write-Host "  ⚠ pgaadauth_create_principal failed, trying direct CREATE ROLE..." -ForegroundColor Yellow
+        $fallbackSql = "CREATE ROLE ""${identityName}"" WITH LOGIN"
+        $fallbackOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$fallbackSql" --output none 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  ✓ Role '$identityName' created via CREATE ROLE" -ForegroundColor Green
+        } elseif ($fallbackOutput -match "already exists") {
+            Write-Host "  Role '$identityName' already exists — OK" -ForegroundColor DarkGreen
+        } else {
+            Write-Host "  ERROR: Could not create role for managed identity. Grants may fail." -ForegroundColor Red
+            Write-Host "  $fallbackOutput" -ForegroundColor Red
+        }
     }
 }
 
