@@ -149,7 +149,10 @@ if ($buildImage) {
         $tmpDir
     
     # Cleanup
+    $oldProgress = $ProgressPreference
+    $ProgressPreference = 'SilentlyContinue'
     Remove-Item -Path $tmpDir -Recurse -Force -ErrorAction SilentlyContinue
+    $ProgressPreference = $oldProgress
     Write-Host "Image built and pushed: ${testImageName}:${imageTag}" -ForegroundColor Green
 }
 
