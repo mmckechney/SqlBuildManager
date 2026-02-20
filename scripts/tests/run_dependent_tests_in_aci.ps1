@@ -57,6 +57,8 @@
 
 $ErrorActionPreference = "Stop"
 
+Clear-Host 
+
 # Dot-source shared ACI test helpers
 . (Join-Path $PSScriptRoot "aci_test_helpers.ps1")
 Initialize-TestSummaryState

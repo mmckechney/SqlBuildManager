@@ -470,7 +470,7 @@ function Download-TestResultsFromBlob {
                 Write-Host ""
                 Write-Host "WARNING: Unable to download test results - storage account firewall may be blocking access." -ForegroundColor Yellow
                 Write-Host "  You can download manually after updating firewall rules:" -ForegroundColor Yellow
-                Write-Host "  az storage blob download-batch --account-name $storageAccountName --source $blobContainerName --destination $localDestination --auth-mode login" -ForegroundColor DarkGray
+                Write-Host "  az storage blob download-batch --account-name $storageAccountName --source $blobContainerName --destination $localDestination --auth-mode login --overwrite" -ForegroundColor DarkGray
             } else {
                 Write-Host ""
                 Write-Host "WARNING: Failed to download test results (exit code: $LASTEXITCODE)" -ForegroundColor Yellow
