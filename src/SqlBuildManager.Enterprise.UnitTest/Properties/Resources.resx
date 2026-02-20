@@ -128,30 +128,30 @@
     <value>..\Resources\EnterpriseConfig.txt;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="MissingQualifierBeforeGroupBy" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\scriptresources\qualifiednamespolicy\missingqualifierbeforegroupby.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\ScriptResources\QualifiedNamesPolicy\MissingQualifierBeforeGroupBy.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="MissingQualifierWithBrackets" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\scriptresources\qualifiednamespolicy\missingqualifierwithbrackets.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\ScriptResources\QualifiedNamesPolicy\MissingQualifierWithBrackets.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="NoGrant" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\scriptresources\grantexecutetopublicpolicy\nogrant.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\ScriptResources\GrantExecuteToPublicPolicy\NoGrant.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="NonPublicGrant" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\scriptresources\grantexecutetopublicpolicy\nonpublicgrant.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\ScriptResources\GrantExecuteToPublicPolicy\NonPublicGrant.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="PolicyHelper_NoViolations" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\scriptresources\policyhelper\policyhelper_noviolations.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\ScriptResources\PolicyHelper\PolicyHelper_NoViolations.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="PolicyHelper_WithViolations" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\scriptresources\policyhelper\policyhelper_withviolations.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\ScriptResources\PolicyHelper\PolicyHelper_WithViolations.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="PublicGrant" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\scriptresources\grantexecutetopublicpolicy\publicgrant.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\ScriptResources\GrantExecuteToPublicPolicy\PublicGrant.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="PublicGrant_nobracket" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\scriptresources\grantexecutetopublicpolicy\publicgrant_nobracket.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\ScriptResources\GrantExecuteToPublicPolicy\PublicGrant_nobracket.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="QualifiedWithBrackets" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\scriptresources\qualifiednamespolicy\qualifiedwithbrackets.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\ScriptResources\QualifiedNamesPolicy\QualifiedWithBrackets.sql;System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
 </root>
