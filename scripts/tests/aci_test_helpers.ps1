@@ -366,8 +366,8 @@ function Wait-ForAciTests {
         # Container terminates when tests and upload are complete
         if ($state -eq "Terminated" -or $state -eq "Completed" -or $state2 -eq "Terminated" -or $state2 -eq "Completed") {
             $testsCompleted = $true
-            Write-Host ""
-            Write-Host "Container terminated. Tests complete." -ForegroundColor Cyan
+            Write-Debug ""
+            Write-Debug "Container terminated. Tests complete." 
             break
         }
         
@@ -436,14 +436,14 @@ function Download-TestResultsFromBlob {
         [string]$blobPath
     )
 
-    Write-Host ""
-    Write-Host "Downloading test results from blob storage..." -ForegroundColor Cyan
-    Write-Host "  Storage Account: $storageAccountName" -ForegroundColor DarkGreen
-    Write-Host "  Container:       $blobContainerName" -ForegroundColor DarkGreen
+    Write-Debug ""
+    Write-Debug "Downloading test results from blob storage..."
+    Write-Debug "  Storage Account: $storageAccountName"
+    Write-Debug "  Container:       $blobContainerName"
     if ($blobPath) {
-        Write-Host "  Blob Path:       $blobPath" -ForegroundColor DarkGreen
+        Write-Debug "  Blob Path:       $blobPath"
     }
-    Write-Host "  Local Path:      $localDestination" -ForegroundColor DarkGreen
+    Write-Debug "  Local Path:      $localDestination"
 
     # Ensure local directory exists
     if (-not (Test-Path $localDestination)) {
@@ -479,7 +479,7 @@ function Download-TestResultsFromBlob {
             return $false
         }
 
-        Write-Host "  Test results downloaded successfully." -ForegroundColor Green
+        Write-Host "Test results downloaded successfully." -ForegroundColor Green
         return $true
     }
     catch {
@@ -534,7 +534,7 @@ function Complete-AciTestRun {
         }
         Write-Host "Delete:           az container delete --name $containerName --resource-group $resourceGroupName --yes" -ForegroundColor DarkGray
     } else {
-        Write-Host "Cleaning up container..." -ForegroundColor DarkGreen
+        Write-Debug "Cleaning up container..."
         az container delete --name $containerName --resource-group $resourceGroupName --yes -o none
     }
     

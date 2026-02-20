@@ -351,7 +351,7 @@ Write-Debug ""
 # Write-Host ""
 
 # Download test results from blob storage
-Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContainerName $blobContainerName -localDestination "./testresults" -blobPath $blobPath
+$tmp = Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContainerName $blobContainerName -localDestination "./testresults" -blobPath $blobPath
 
 #############################################
 # Cleanup and report
