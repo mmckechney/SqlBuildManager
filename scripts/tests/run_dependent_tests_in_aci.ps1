@@ -12,6 +12,8 @@
     
     [string] $sqlPassword = "SqlBM_Test#2026!",
 
+    [string] $pgPassword = "P0stSqlAdm1n",
+
     [switch] $buildImage,
     
     [switch] $keepContainer,
@@ -143,6 +145,7 @@ Write-Debug "Deploying Container Group to ACI"
 Write-Debug "========================================" 
 Write-Debug "Test Image: $fullImageName" 
 Write-Debug "SQL Server: mcr.microsoft.com/mssql/server:2022-latest" 
+Write-Debug "PostgreSQL: docker.io/library/postgres:16" 
 Write-Debug ""
 
 $location = az group show --name $resourceGroupName --query location -o tsv
@@ -186,6 +189,20 @@ properties:
           memoryInGb: 4
       ports:
       - port: 1433
+  - name: postgres-server
+    properties:
+      image: docker.io/library/postgres:16
+      environmentVariables:
+      - name: POSTGRES_USER
+        value: "postgres"
+      - name: POSTGRES_PASSWORD
+        value: "$pgPassword"
+      resources:
+        requests:
+          cpu: 1
+          memoryInGb: 2
+      ports:
+      - port: 5432
   - name: test-runner
     properties:
       image: $fullImageName
@@ -203,7 +220,13 @@ properties:
       - name: SBM_TEST_SQL_PASSWORD
         value: "$sqlPassword"
       - name: SBM_TEST_DB_PATH
-        value: "/var/opt/mssql/data"$testFilterEnvVar
+        value: "/var/opt/mssql/data"
+      - name: SBM_TEST_POSTGRES_SERVER
+        value: localhost
+      - name: SBM_TEST_POSTGRES_USER
+        value: postgres
+      - name: SBM_TEST_POSTGRES_PASSWORD
+        value: "$pgPassword"$testFilterEnvVar
       resources:
         requests:
           cpu: 2
