@@ -41,6 +41,8 @@ function Show-TestSummary {
     #>
     param(
         [string[]]$logs,
+        [string] $testFilter,
+        [string] $imageName,
         [switch]$refresh
     )
     
@@ -98,10 +100,12 @@ function Show-TestSummary {
         $output += ""
     }
     
-    $output += "========================================================="
+    $output += "============================================"
     $output += "Test Summary ($(Get-Date -Format 'HH:mm:ss')$elapsedStr)"
-    $output += "========================================================="
-    $output += ""
+    $output += "============================================"
+    $output += "Image: $imageName"
+    $output += "Filter: $testFilter"
+
     
     $output += "$($passed.Count) Passed"
     if ($passed.Count -gt 0 -and $passed.Count -le 5) {
@@ -179,6 +183,12 @@ function Show-TestSummary {
         elseif ($line -match "truncated|showing last") {
             Write-Host $paddedLine -ForegroundColor DarkGray
         }
+        elseif( $line -match "^Image:") {
+            Write-Host $paddedLine -ForegroundColor DarkGray
+        }
+        elseif( $line -match "^Filter:") {
+            Write-Host $paddedLine -ForegroundColor DarkGray
+        }
         else {
             Write-Host $paddedLine
         }
@@ -218,10 +228,10 @@ function Remove-ExistingAciContainer {
         [string]$containerName,
         [string]$resourceGroupName
     )
-    Write-Host "Checking for existing test container..." -ForegroundColor DarkGreen
+    Write-Debug "Checking for existing test container..." 
     $existing = az container show --name $containerName --resource-group $resourceGroupName 2>$null
     if ($existing) {
-        Write-Host "Deleting existing test container..." -ForegroundColor Yellow
+        Write-Debug "Deleting existing test container..." 
         az container delete --name $containerName --resource-group $resourceGroupName --yes -o none
         Start-Sleep -Seconds 5
     }
@@ -257,10 +267,10 @@ function Deploy-AciFromYaml {
     $yamlFilePath = Join-Path $env:TEMP "$yamlFilePrefix-$(Get-Date -Format 'yyyyMMddHHmmss').yaml"
     $yamlContent | Set-Content -Path $yamlFilePath -Encoding UTF8
     
-    Write-Host "Generated ACI YAML:" -ForegroundColor DarkGray
-    Write-Host $yamlContent -ForegroundColor DarkGray
-    Write-Host ""
-    Write-Host "Deploying container to ACI..." -ForegroundColor DarkGreen
+    Write-Debug "Generated ACI YAML:" 
+    Write-Debug $yamlContent 
+    Write-Debug ""
+    Write-Debug "Deploying container to ACI..." 
     
     az container create --resource-group $resourceGroupName --file $yamlFilePath -o none
     Remove-Item $yamlFilePath -Force -ErrorAction SilentlyContinue
@@ -270,8 +280,8 @@ function Deploy-AciFromYaml {
         exit 1
     }
     
-    Write-Host "Container deployed. Waiting for tests to complete..." -ForegroundColor DarkGreen
-    Write-Host ""
+    Write-Debug "Container deployed. Waiting for tests to complete..." 
+    Write-Debug ""
 }
 
 #############################################
@@ -305,12 +315,14 @@ function Wait-ForAciTests {
         [int]$timeoutMinutes,
         [string]$logContainerName,
         [switch]$keepContainer,
-        [string]$sqlContainerName
+        [string]$sqlContainerName,
+        [string]$imageName,
+        [string]$testFilter
     )
     
-    Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host "Monitoring Test Execution" -ForegroundColor Cyan
-    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Debug "========================================" 
+    Write-Debug "Monitoring Test Execution" 
+    Write-Debug "========================================" 
 
     $startTime = Get-Date
     $script:monitoringStartTime = $startTime
@@ -342,11 +354,11 @@ function Wait-ForAciTests {
                 
                 # Show refreshing test summary
                 if ($script:lastRenderLineCount -eq 0) {
-                    Write-Host ""
-                    Write-Host "--- Live Test Progress ---" -ForegroundColor DarkGray
-                    Write-Host ""
+                    Write-Debug ""
+                    Write-Debug "--- Live Test Progress ---" 
+                    Write-Debug ""
                 }
-                Show-TestSummary -logs $recentLogs -refresh
+                Show-TestSummary -logs $recentLogs -refresh -imageName $imageName -testFilter $testFilter
             }
             $lastLogTime = $currentTime
         }
@@ -372,7 +384,7 @@ function Wait-ForAciTests {
             Write-Host "Retrieving test logs and generating summary..." -ForegroundColor Yellow
             $testLogs = Get-AciContainerLogs -containerName $containerName -resourceGroupName $resourceGroupName -logContainerName $logContainerName
             if ($testLogs) {
-                Show-TestSummary -logs $testLogs
+                Show-TestSummary -logs $testLogs -imageName $imageName -testFilter $testFilter
             } else {
                 Write-Host "No test logs available yet" -ForegroundColor Yellow
             }
@@ -531,11 +543,10 @@ function Complete-AciTestRun {
         Write-Host "========================================" -ForegroundColor Green
         Write-Host "TESTS PASSED" -ForegroundColor Green
         Write-Host "========================================" -ForegroundColor Green
-        exit 0
     } else {
         Write-Host "========================================" -ForegroundColor Red
         Write-Host "TESTS FAILED (Exit Code: $exitCode)" -ForegroundColor Red
         Write-Host "========================================" -ForegroundColor Red
-        exit $exitCode
     }
+    return $exitCode
 }

@@ -136,12 +136,12 @@ $fullImageName = "$acrLoginServer/${testImageName}:${imageTag}"
 #############################################
 # Deploy container group with SQL sidecar
 #############################################
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Deploying Container Group to ACI" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Test Image: $fullImageName" -ForegroundColor DarkGreen
-Write-Host "SQL Server: mcr.microsoft.com/mssql/server:2022-latest" -ForegroundColor DarkGreen
-Write-Host ""
+Write-Debug "========================================" 
+Write-Debug "Deploying Container Group to ACI" 
+Write-Debug "========================================" 
+Write-Debug "Test Image: $fullImageName" 
+Write-Debug "SQL Server: mcr.microsoft.com/mssql/server:2022-latest" 
+Write-Debug ""
 
 $location = az group show --name $resourceGroupName --query location -o tsv
 
@@ -224,34 +224,37 @@ $monitorResult = Wait-ForAciTests `
     -timeoutMinutes $timeoutMinutes `
     -logContainerName "test-runner" `
     -keepContainer:$keepContainer `
-    -sqlContainerName "sql-server"
+    -sqlContainerName "sql-server" `
+    -testFilter $testFilter `
+    -imageName $fullImageName
+
 $testExitCode = $monitorResult.TestExitCode
 
 #############################################
 # Results
 #############################################
-Write-Host ""
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Test Results" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
+# Write-Host ""
+# Write-Host "========================================" -ForegroundColor Cyan
+# Write-Host "Test Results" -ForegroundColor Cyan
+# Write-Host "========================================" -ForegroundColor Cyan
 
-if ($null -eq $testExitCode) {
-    $testExitCode = 1
-}
+# if ($null -eq $testExitCode) {
+#     $testExitCode = 1
+# }
 
-Write-Host ""
-Write-Host "Test Exit Code: $testExitCode" -ForegroundColor DarkGreen
-Write-Host "Results uploaded to: $blobContainerName/$blobPath" -ForegroundColor Cyan
-Write-Host ""
+# Write-Host ""
+# Write-Host "Test Exit Code: $testExitCode" -ForegroundColor DarkGreen
+# Write-Host "Results uploaded to: $blobContainerName/$blobPath" -ForegroundColor Cyan
+# Write-Host ""
 
-# Get and parse full test runner logs
-$fullTestLogs = Get-AciContainerLogs -containerName $testContainerName -resourceGroupName $resourceGroupName -logContainerName "test-runner"
-if ($fullTestLogs) {
-    Show-TestSummary -logs $fullTestLogs -startTime $startTime
-}
-else {
-    Write-Host "No test logs available" -ForegroundColor Yellow
-}
+# # Get and parse full test runner logs
+# $fullTestLogs = Get-AciContainerLogs -containerName $testContainerName -resourceGroupName $resourceGroupName -logContainerName "test-runner"
+# if ($fullTestLogs) {
+#     Show-TestSummary -logs $fullTestLogs -startTime $startTime
+# }
+# else {
+#     Write-Host "No test logs available" -ForegroundColor Yellow
+# }
 
 # Download test results from blob storage
 Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContainerName $blobContainerName -localDestination "./testresults" -blobPath $blobPath
@@ -259,4 +262,5 @@ Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContai
 #############################################
 # Cleanup
 #############################################
-Complete-AciTestRun -containerName $testContainerName -resourceGroupName $resourceGroupName -exitCode $testExitCode -keepContainer:$keepContainer -logContainerName "test-runner" -sqlContainerName "sql-server"
+$finalExitCode = Complete-AciTestRun -containerName $testContainerName -resourceGroupName $resourceGroupName -exitCode $testExitCode -keepContainer:$keepContainer -logContainerName "test-runner" -sqlContainerName "sql-server"
+exit $finalExitCode

@@ -97,38 +97,36 @@ $logDir = Join-Path $repoRoot "src\TestConfig\TestResults"
 if (-not (Test-Path $logDir)) {
     New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 }
-$logFileName = "test-results-$(Get-Date -Format 'yyyy-MM-dd-HHmmss')"
-if (-not [string]::IsNullOrWhiteSpace($customName)) {
-    $logFileName += "-$customName"
-}
-$logFileName += ".log"
-$logFilePath = Join-Path $logDir $logFileName
+# $logFileName = "test-results-$(Get-Date -Format 'yyyy-MM-dd-HHmmss')"
+# if (-not [string]::IsNullOrWhiteSpace($customName)) {
+#     $logFileName += "-$customName"
+# }
+#$logFileName += ".log"
+#$logFilePath = Join-Path $logDir $logFileName
 
-Write-Host ""
-Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "Integration Test Runner (ACI in VNet)" -ForegroundColor Cyan
-Write-Host "============================================" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
-Write-Host "Container Name: $testContainerName" -ForegroundColor DarkGreen
-Write-Host "VNet: $vnet" -ForegroundColor DarkGreen
-Write-Host "Subnet: $aciSubnet" -ForegroundColor DarkGreen
-Write-Host "Log File: $logFilePath" -ForegroundColor DarkGreen
-if ($testFilter) {
-    Write-Host "Test Filter: $testFilter" -ForegroundColor DarkGreen
-} else {
-    Write-Host "Test Filter: (all tests)" -ForegroundColor DarkGreen
-}
-Write-Host ""
+Write-Debug ""
+Write-Debug "============================================" 
+Write-Debug "Integration Test Runner (ACI in VNet)" 
+Write-Debug "============================================" 
+Write-Debug ""
+Write-Debug "Resource Group: $resourceGroupName" 
+Write-Debug "Container Name: $testContainerName" 
+Write-Debug "VNet: $vnet" 
+Write-Debug "Subnet: $aciSubnet" 
+#Write-Host "Log File: $logFilePath" 
 
 # Get resource information
 $subscriptionId = az account show --query id --output tsv
 $identity = az identity show --resource-group $resourceGroupName --name $identityName | ConvertFrom-Json
 $acrLoginServer = az acr show -g $resourceGroupName --name $containerRegistryName -o tsv --query loginServer
 
-Write-Host "Using Managed Identity: $identityName (ClientId: $($identity.clientId))" -ForegroundColor DarkGreen
-Write-Host "Using Container Registry: $acrLoginServer" -ForegroundColor DarkGreen
-Write-Host ""
+Write-Debug "Using Managed Identity: $identityName (ClientId: $($identity.clientId))" 
+Write-Debug "Using Container Registry: $acrLoginServer" 
+# if ($testFilter) {
+#     Write-Host "Test Filter: $testFilter" -ForegroundColor DarkGreen
+# } else {
+#     Write-Host "Test Filter: (all tests)" -ForegroundColor DarkGreen
+# }
 
 
 #############################################
@@ -164,19 +162,19 @@ $subnetId = Get-AciSubnetId -resourceGroupName $resourceGroupName -vnetName $vne
 #############################################
 # Build container command with test filter
 #############################################
-Write-Host "Test filter: $testFilter" -ForegroundColor DarkGray
+#Write-Host "Test filter: $testFilter" -ForegroundColor DarkGray
 
 #############################################
 # Deploy test container to ACI in VNet
 #############################################
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Deploying Test Container to ACI" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
+Write-Debug "========================================" 
+Write-Debug "Deploying Test Container to ACI" 
+Write-Debug "========================================" 
 
 $fullImageName = "$acrLoginServer/${testImageName}:${imageTag}"
-Write-Host "Image: $fullImageName" -ForegroundColor DarkGreen
-Write-Host "Deploying to VNet subnet for network access..." -ForegroundColor DarkGreen
-Write-Host ""
+#Write-Host "Image: $fullImageName" -ForegroundColor DarkGreen
+Write-Debug "Deploying to VNet subnet for network access..."
+Write-Debug ""
 
 # Build command array for YAML - override entrypoint to capture exit code and upload results
 $blobContainerName = "testresults"
@@ -202,7 +200,7 @@ $aksPreCmd = ""
 if ($testFilter -like "*Kubernetes*") {
     $aksClusterName = "$($prefix)aks"
     $aksPreCmd = "az aks install-cli; az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName --overwrite-existing; "
-    Write-Host "Kubernetes tests detected - will install kubectl and get AKS credentials" -ForegroundColor DarkGreen
+    Write-Debug "Kubernetes tests detected - will install kubectl and get AKS credentials"
 }
 
 # Create results directory first, then run tests, capture exit code, login and upload
@@ -272,7 +270,9 @@ $monitorResult = Wait-ForAciTests `
     -containerName $testContainerName `
     -resourceGroupName $resourceGroupName `
     -timeoutMinutes $timeoutMinutes `
-    -keepContainer:$keepContainer
+    -keepContainer:$keepContainer `
+    -imageName $fullImageName `
+    -testFilter $testFilter
 $testExitCode = $monitorResult.TestExitCode
 
 Write-Host ""
@@ -281,9 +281,9 @@ Write-Host ""
 #############################################
 # Get final results
 #############################################
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Test Results" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
+# Write-Host "========================================" -ForegroundColor Cyan
+# Write-Host "Test Results" -ForegroundColor Cyan
+# Write-Host "========================================" -ForegroundColor Cyan
 
 # Get container state with null checks
 $container = az container show --name $testContainerName --resource-group $resourceGroupName 2>$null | ConvertFrom-Json -Depth 10
@@ -310,45 +310,45 @@ if ($null -ne $testExitCode) {
     $exitCode = 1
 }
 
-Write-Host ""
-Write-Host "Container State: $containerState" -ForegroundColor DarkGreen
-Write-Host "Test Exit Code: $exitCode" -ForegroundColor DarkGreen
-Write-Host ""
+Write-Debug ""
+Write-Debug "Container State: $containerState" 
+Write-Debug "Test Exit Code: $exitCode" 
+Write-Debug ""
 
 # Get full logs and save to file
-$testLogs = az container logs --name $testContainerName --resource-group $resourceGroupName 2>&1 | Out-String
+# $testLogs = az container logs --name $testContainerName --resource-group $resourceGroupName 2>&1 | Out-String
 
 # Show test summary instead of full logs
-if ($testLogs) {
-    $testLogsArray = $testLogs -split "`n"
-    Show-TestSummary -logs $testLogsArray -startTime $startTime
-}
-else {
-    Write-Host "No test logs available" -ForegroundColor Yellow
-}
+# if ($testLogs) {
+#     $testLogsArray = $testLogs -split "`n"
+#     Show-TestSummary -logs $testLogsArray -startTime $startTime
+# }
+# else {
+#     Write-Host "No test logs available" -ForegroundColor Yellow
+# }
 
 # Save logs to file with proper formatting
-$logHeader = @"
-============================================
-Integration Test Results
-============================================
-Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
-Container Name: $testContainerName
-Resource Group: $resourceGroupName
-Test Filter: $(if ($testFilter) { $testFilter } else { "(all tests)" })
-Container State: $containerState
-Exit Code: $exitCode
-============================================
+# $logHeader = @"
+# ============================================
+# Integration Test Results
+# ============================================
+# Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
+# Container Name: $testContainerName
+# Resource Group: $resourceGroupName
+# Test Filter: $(if ($testFilter) { $testFilter } else { "(all tests)" })
+# Container State: $containerState
+# Exit Code: $exitCode
+# ============================================
 
-"@
+# "@
 
-$logHeader | Set-Content -Path $logFilePath -Encoding UTF8
-$testLogs | Add-Content -Path $logFilePath -Encoding UTF8
+# $logHeader | Set-Content -Path $logFilePath -Encoding UTF8
+# $testLogs | Add-Content -Path $logFilePath -Encoding UTF8
 
 # Test results are now uploaded to blob storage
-Write-Host ""
-Write-Host "Test results uploaded to blob storage: $blobContainerName/$blobPath" -ForegroundColor Cyan
-Write-Host ""
+# Write-Host ""
+# Write-Host "Test results uploaded to blob storage: $blobContainerName/$blobPath" -ForegroundColor Cyan
+# Write-Host ""
 
 # Download test results from blob storage
 Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContainerName $blobContainerName -localDestination "./testresults" -blobPath $blobPath
@@ -356,4 +356,6 @@ Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContai
 #############################################
 # Cleanup and report
 #############################################
-Complete-AciTestRun -containerName $testContainerName -resourceGroupName $resourceGroupName -exitCode $exitCode -keepContainer:$keepContainer
+$finalExitCode = Complete-AciTestRun -containerName $testContainerName -resourceGroupName $resourceGroupName -exitCode $exitCode -keepContainer:$keepContainer
+exit $finalExitCode
+
