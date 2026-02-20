@@ -5,6 +5,8 @@ param (
 )
 $exitCode = 0
 
+Clear-Host 
+
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "Integration Test Runners (ACI in VNet)" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
