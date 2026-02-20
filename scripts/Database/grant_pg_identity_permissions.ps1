@@ -60,16 +60,6 @@ $identityClientId = $identity.clientId
 Write-Host "Managed Identity Name: $identityName" -ForegroundColor DarkGreen
 Write-Host "Managed Identity Client ID: $identityClientId" -ForegroundColor DarkGreen
 
-# Get PG server info
-$pgServer = az postgres flexible-server show --resource-group $resourceGroupName --name $pgServerName | ConvertFrom-Json
-if ($null -eq $pgServer) {
-    Write-Host "ERROR: Could not find PostgreSQL server '$pgServerName'" -ForegroundColor Red
-    exit 1
-}
-
-$pgFqdn = $pgServer.fullyQualifiedDomainName
-Write-Host "PostgreSQL Server: $pgFqdn" -ForegroundColor DarkGreen
-
 # Get PG admin credentials
 $pgAdminUser = "${prefix}pgadmin"
 $pgAdminPassword = azd env get-value PG_ADMIN_PASSWORD 2>$null
@@ -86,6 +76,22 @@ if ([string]::IsNullOrWhiteSpace($pgAdminPassword) -or $pgAdminPassword -like "E
 # Ensure the rdbms-connect extension is installed (needed for az postgres flexible-server execute)
 Write-Host "Ensuring rdbms-connect extension is installed..." -ForegroundColor DarkGreen
 az extension add --name rdbms-connect --yes 2>$null
+
+# Process both PostgreSQL servers
+$pgServerNames = @($pgServerNameA, $pgServerNameB)
+
+foreach ($pgServerName in $pgServerNames) {
+
+# Get PG server info
+$pgServer = az postgres flexible-server show --resource-group $resourceGroupName --name $pgServerName | ConvertFrom-Json
+if ($null -eq $pgServer) {
+    Write-Host "ERROR: Could not find PostgreSQL server '$pgServerName'" -ForegroundColor Red
+    continue
+}
+
+$pgFqdn = $pgServer.fullyQualifiedDomainName
+Write-Host ""
+Write-Host "Processing PostgreSQL Server: $pgFqdn" -ForegroundColor Cyan
 
 # Step 1: Create the managed identity role in the 'postgres' database
 # pgaadauth_create_principal only exists in the postgres database and creates a server-wide role.
@@ -179,10 +185,12 @@ foreach ($db in $dbs) {
     }
 }
 
+} # end foreach pgServerName
+
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "PostgreSQL Identity Permissions Complete" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "The managed identity '$identityName' has been granted access to all PostgreSQL databases." -ForegroundColor Green
+Write-Host "The managed identity '$identityName' has been granted access to all PostgreSQL databases on both servers." -ForegroundColor Green
 Write-Host "Applications using this identity can now connect using Azure AD token authentication." -ForegroundColor Green

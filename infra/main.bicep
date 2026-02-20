@@ -179,7 +179,7 @@ module postgresql './modules/postgresql.bicep' = if(deployPostgreSQL && userIdGu
   scope: rg
   params: {
     namePrefix: namePrefix
-    testDbCount: testDbCountPerServer
+    testDbCountPerServer: testDbCountPerServer
     location: location
     currentIpAddress: currentIpAddress
     subnetNames: join(networkResource.outputs.subnetNames, ',')
@@ -353,7 +353,9 @@ output AKS_CLUSTER_ID string = deployAks ? aks!.outputs.clusterId : ''
 output AKS_FEDERATED_IDENTITY_NAME string = deployAks ? aks!.outputs.federatedIdName : ''
 output AKS_SERVICE_ACCOUNT_NAME string = deployAks ? aks!.outputs.serviceAccountName : ''
 
-output PG_SERVER_NAME string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerName : ''
-output PG_SERVER_FQDN string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerFqdn : ''
+output PG_SERVER_NAME_A string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerNameA : ''
+output PG_SERVER_FQDN_A string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerFqdnA : ''
+output PG_SERVER_NAME_B string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerNameB : ''
+output PG_SERVER_FQDN_B string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerFqdnB : ''
 output PG_ADMIN_USER string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgAdminUser : ''
-output PG_DATABASE_COUNT int = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgDatabaseCount : 0
+output PG_DATABASE_COUNT_PER_SERVER int = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgDatabaseCountPerServer : 0

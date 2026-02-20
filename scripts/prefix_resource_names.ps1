@@ -35,6 +35,7 @@ $serviceAccountName= $prefix + "serviceaccount"
 $federatedIdName = $prefix + "federatedidname"
 
 #Used with PostgreSQL Flexible Server
-$pgServerName = $prefix + "pgserver"
+$pgServerNameA = $prefix + "pgserver-a"
+$pgServerNameB = $prefix + "pgserver-b"
 
 

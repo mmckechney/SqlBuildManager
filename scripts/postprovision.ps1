@@ -252,11 +252,23 @@ if ($buildContainers -eq "true") {
     Write-Host "  azd env set BUILD_CONTAINER_IMAGES true" -ForegroundColor DarkGray
 }
 
-
-
-
-
-
+# Build and push Docker container images if BUILD_CONTAINER_IMAGES is set
+$buildContainers = Get-AzdEnvValue "BUILD_CONTAINER_IMAGES"
+if ($buildContainers -eq "true") {
+    Write-Host ""
+    Write-Host "========================================================" -ForegroundColor Cyan
+    Write-Host "Post-Provision: Building Dependent Tests Container Image" -ForegroundColor Cyan
+    Write-Host "========================================================" -ForegroundColor Cyan
+    
+    $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_dependenttest_image.ps1"
+    
+    if (Test-Path $containerScriptPath) {
+        & $containerScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -wait $true
+    } else {
+        Write-Host "Container build script not found at: $containerScriptPath" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_container_registry_dependenttest_image.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
+    }
+} 
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
