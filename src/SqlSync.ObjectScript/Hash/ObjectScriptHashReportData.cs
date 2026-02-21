@@ -27,7 +27,7 @@ namespace SqlSync.ObjectScript.Hash
 
         public string BaseLineServer
         {
-            get { return baseLineServer = null!; }
+            get { return baseLineServer; }
             set { baseLineServer = value; }
         }
         string baseLineDatabase = string.Empty;

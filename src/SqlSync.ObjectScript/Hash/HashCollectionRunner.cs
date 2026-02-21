@@ -16,7 +16,7 @@ namespace SqlSync.ObjectScript.Hash
 
         public ObjectScriptHashData HashData
         {
-            get { return hashData = null!; }
+            get { return hashData; }
             set { hashData = value; }
         }
         public HashCollectionRunner(string serverName, string databaseName)

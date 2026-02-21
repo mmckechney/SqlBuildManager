@@ -27,7 +27,7 @@ namespace SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest
 
         public TestContext TestContext
         {
-            get { return testContextInstance = null!; }
+            get { return testContextInstance; }
             set { testContextInstance = value; }
         }
 

@@ -60,7 +60,7 @@ namespace SqlBuildManager.Console.Threaded
         private string targetDatabases = string.Empty;
         public string TargetDatabases
         {
-            get { return targetDatabases = null!; }
+            get { return targetDatabases; }
         }
         private List<DatabaseOverride> overrides;
 

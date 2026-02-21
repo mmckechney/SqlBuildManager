@@ -22,7 +22,7 @@ namespace SqlSync.SqlBuild.Validator
 
         public string ValidityErrorMessage
         {
-            get { return validityErrorMessage = null!; }
+            get { return validityErrorMessage; }
             set { validityErrorMessage = value; }
         }
         private System.Text.StringBuilder sb = new System.Text.StringBuilder();

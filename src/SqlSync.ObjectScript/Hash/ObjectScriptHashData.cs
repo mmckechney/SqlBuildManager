@@ -30,7 +30,7 @@ namespace SqlSync.ObjectScript.Hash
 
         public string Server
         {
-            get { return server = null!; }
+            get { return server; }
             set { server = value; }
         }
         private string database = string.Empty;

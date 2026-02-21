@@ -19,7 +19,7 @@ namespace SqlSync.SqlBuild.Status
 
         public string BaseDatabase
         {
-            get { return baseDatabase = null!; }
+            get { return baseDatabase; }
             set { baseDatabase = value; }
         }
 
