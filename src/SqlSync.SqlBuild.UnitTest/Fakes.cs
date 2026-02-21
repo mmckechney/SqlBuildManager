@@ -96,10 +96,12 @@ namespace SqlSync.SqlBuild.UnitTest
         public ConnectionData ConnectionData => new();
         public List<DatabaseOverride> TargetDatabaseOverrides => new();
 
-        public event ScriptLogWriteEventHandler ScriptLogWriteEvent;
-        public event BuildCommittedEventHandler BuildCommittedEvent;
-        public event EventHandler BuildSuccessTrialRolledBackEvent;
-        public event EventHandler BuildErrorRollBackEvent;
+#pragma warning disable CS0067, CS0414 // Events required by interface but not raised in fakes
+        public event ScriptLogWriteEventHandler ScriptLogWriteEvent = null!;
+        public event BuildCommittedEventHandler BuildCommittedEvent = null!;
+        public event EventHandler BuildSuccessTrialRolledBackEvent = null!;
+        public event EventHandler BuildErrorRollBackEvent = null!;
+#pragma warning restore CS0067, CS0414
     }
 
 
@@ -109,10 +111,12 @@ namespace SqlSync.SqlBuild.UnitTest
         private readonly BackgroundWorker _bg = new BackgroundWorker { WorkerReportsProgress = true };
         private readonly string _projectFilePath;
 
-        public event ScriptLogWriteEventHandler ScriptLogWriteEvent;
-        public event BuildCommittedEventHandler BuildCommittedEvent;
-        public event EventHandler BuildSuccessTrialRolledBackEvent;
-        public event EventHandler BuildErrorRollBackEvent;
+#pragma warning disable CS0067, CS0414 // Events required by interface but not raised in fakes
+        public event ScriptLogWriteEventHandler ScriptLogWriteEvent = null!;
+        public event BuildCommittedEventHandler BuildCommittedEvent = null!;
+        public event EventHandler BuildSuccessTrialRolledBackEvent = null!;
+        public event EventHandler BuildErrorRollBackEvent = null!;
+#pragma warning restore CS0067, CS0414
 
         public LocalFakeRunnerContext()
         {

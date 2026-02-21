@@ -373,12 +373,13 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         [TestMethod]
         public async Task GetSHA1HashAsync_FileNotFound_ReturnsHashError()
         {
+            // Use a path where directory exists but file doesn't, to ensure FileNotFoundException on all platforms
+            var nonExistentFile = Path.Combine(Path.GetTempPath(), "NonExistent_SHA1Test_" + Guid.NewGuid().ToString("N") + ".sql");
             var (fileHash, textHash) = await SqlBuildFileHelper.GetSHA1HashAsync(
-                @"C:\NonExistent\File.sql", false, CancellationToken.None);
+                nonExistentFile, false, CancellationToken.None);
 
-            // When file not found, the catch block returns SHA1 Hash Error
-            Assert.AreEqual(SqlBuildFileHelper.Sha1HashError, fileHash);
-            Assert.AreEqual(SqlBuildFileHelper.Sha1HashError, textHash);
+            Assert.AreEqual(SqlBuildFileHelper.FileMissing, fileHash);
+            Assert.AreEqual(SqlBuildFileHelper.FileMissing, textHash);
         }
 
         [TestMethod]
@@ -410,11 +411,12 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         [TestMethod]
         public void GetSHA1Hash_FileNotFound_ReturnsHashError()
         {
-            SqlBuildFileHelper.GetSHA1Hash(@"C:\NonExistent\File.sql", out string fileHash, out string textHash, false);
+            // Use a path where directory exists but file doesn't, to ensure FileNotFoundException on all platforms
+            var nonExistentFile = Path.Combine(Path.GetTempPath(), "NonExistent_SHA1Test_" + Guid.NewGuid().ToString("N") + ".sql");
+            SqlBuildFileHelper.GetSHA1Hash(nonExistentFile, out string fileHash, out string textHash, false);
 
-            // When file is not found, the general catch returns SHA1 Hash Error
-            Assert.AreEqual(SqlBuildFileHelper.Sha1HashError, fileHash);
-            Assert.AreEqual(SqlBuildFileHelper.Sha1HashError, textHash);
+            Assert.AreEqual(SqlBuildFileHelper.FileMissing, fileHash);
+            Assert.AreEqual(SqlBuildFileHelper.FileMissing, textHash);
         }
 
         [TestMethod]

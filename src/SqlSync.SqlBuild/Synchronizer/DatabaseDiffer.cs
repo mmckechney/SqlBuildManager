@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using SqlSync.Connection;
 using System;
@@ -9,7 +9,7 @@ namespace SqlSync.SqlBuild.Synchronizer
 {
     public class DatabaseDiffer
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         public DatabaseRunHistory GetDatabaseHistoryDifference(string goldServer, string goldDatabase,
                                                                string toUpdateServer, string toUpdateDatabase)
@@ -87,8 +87,8 @@ namespace SqlSync.SqlBuild.Synchronizer
 
                         history.BuildFileHistory.Add(new BuildFileHistory()
                         {
-                            BuildFileHash = reader["BuildProjectHash"].ToString(),
-                            BuildFileName = reader["BuildFileName"].ToString(),
+                            BuildFileHash = reader["BuildProjectHash"].ToString() ?? string.Empty,
+                            BuildFileName = reader["BuildFileName"].ToString() ?? string.Empty,
                             CommitDate = (DateTime)reader["CommitDate"]
                         });
 
@@ -139,7 +139,7 @@ namespace SqlSync.SqlBuild.Synchronizer
 
                         history.BuildFileHistory.Add(new BuildFileHistory()
                         {
-                            BuildFileHash = reader["BuildProjectHash"].ToString(),
+                            BuildFileHash = reader["BuildProjectHash"].ToString() ?? string.Empty,
                             CommitDate = (DateTime)reader["CommitDate"]
                         });
 
@@ -166,8 +166,8 @@ namespace SqlSync.SqlBuild.Synchronizer
                     {
 
                         history.BuildFileHistory.FirstOrDefault(
-                            h => h.BuildFileHash == reader["BuildProjectHash"].ToString())
-                               .BuildFileName = reader["BuildFileName"].ToString();
+                            h => h.BuildFileHash == reader["BuildProjectHash"].ToString())!
+                               .BuildFileName = reader["BuildFileName"].ToString() ?? string.Empty;
                     }
                     conn.Close();
                 }

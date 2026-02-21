@@ -1,4 +1,4 @@
-﻿using Azure.Core;
+using Azure.Core;
 using Azure.ResourceManager;
 using azB = Azure.ResourceManager.Batch;
 using Azure.ResourceManager.Batch.Models;
@@ -38,7 +38,7 @@ namespace SqlBuildManager.Console.Batch
             Run,
             Query
         }
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private CommandLineArgs cmdLine;
 
         // Batch resource settings
@@ -163,7 +163,7 @@ namespace SqlBuildManager.Console.Batch
                 return (tmpValReturn.Item1, string.Empty);
             }
 
-            BatchClient batchClient = null;
+            BatchClient batchClient = null!;
 
             //Get the batch and storage values
             string jobId, poolId, storageContainerName;
@@ -187,14 +187,14 @@ namespace SqlBuildManager.Console.Batch
 
                 //Get storage ready - use Managed Identity if no storage key provided
                 BlobServiceClient storageSvcClient;
-                StorageSharedKeyCredential storageCreds = null;
+                StorageSharedKeyCredential storageCreds = null!;
                 string containerSasToken;
 
                 if (cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity || cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault)
                 {
                     log.LogDebug($"Generating SAS URL with Managed Identity for container '{storageContainerName}'");
                     storageSvcClient = new BlobServiceClient(new Uri($"https://{cmdLine.ConnectionArgs.StorageAccountName}.blob.core.windows.net"), Aad.AadHelper.TokenCredential);
-                    containerSasToken = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, null, storageContainerName, false).ConfigureAwait(false);
+                    containerSasToken = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, null!, storageContainerName, false).ConfigureAwait(false);
                 }
                 else
                 {
@@ -252,8 +252,8 @@ namespace SqlBuildManager.Console.Batch
                 var splitTargets = new List<string[]>();
                 if (string.IsNullOrEmpty(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
                 {
-                    int valRet = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, null, out MultiDbData multiDb, out errorMessages);
-                    List<IEnumerable<(string, List<DatabaseOverride>)>> concurrencyBuckets = null;
+                    int valRet = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, null!, out MultiDbData multiDb, out errorMessages);
+                    List<IEnumerable<(string, List<DatabaseOverride>)>> concurrencyBuckets = null!;
                     if (valRet == 0)
                     {
                         if (cmdLine.ConcurrencyType == ConcurrencyType.Count)
@@ -286,7 +286,7 @@ namespace SqlBuildManager.Console.Batch
                     splitTargets = Concurrency.ConvertBucketsToConfigLines(concurrencyBuckets);
 
                     //Write out each split file
-                    string rootPath = Path.GetDirectoryName(cmdLine.MultiDbRunConfigFileName);
+                    string rootPath = Path.GetDirectoryName(cmdLine.MultiDbRunConfigFileName)!;
                     for (int i = 0; i < splitTargets.Count; i++)
                     {
                         var tmpName = Path.Combine(rootPath, string.Format(baseTargetFormat, i));
@@ -632,10 +632,8 @@ namespace SqlBuildManager.Console.Batch
 
             azB.BatchAccountPoolData data = new azB.BatchAccountPoolData();
 
-            data.Identity = new ManagedServiceIdentity("UserAssigned")
-            {
-                UserAssignedIdentities = { [new ResourceIdentifier(cmdLine.IdentityArgs.ResourceId)] = new Azure.ResourceManager.Models.UserAssignedIdentity() }
-            };
+            data.Identity = new ManagedServiceIdentity("UserAssigned");
+            data.Identity!.UserAssignedIdentities![new ResourceIdentifier(cmdLine.IdentityArgs!.ResourceId)] = new Azure.ResourceManager.Models.UserAssignedIdentity();
 
             BatchImageReference imageReference;
             BatchVmConfiguration virtualMachineConfiguration;
@@ -778,28 +776,28 @@ namespace SqlBuildManager.Console.Batch
                 if (!string.IsNullOrWhiteSpace(threadCmdLine.BuildFileName))
                 {
                     var pkg = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.BuildFileName.ToLower()))).FirstOrDefault();
-                    threadCmdLine.BuildFileName = pkg.FilePath;
+                    threadCmdLine.BuildFileName = pkg!.FilePath;
                 }
 
                 //Set the Platinum DacPac name to the path on the node (if set)
                 if (!string.IsNullOrWhiteSpace(threadCmdLine.DacPacArgs.PlatinumDacpac))
                 {
                     var dac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac.ToLower()))).FirstOrDefault();
-                    threadCmdLine.DacPacArgs.PlatinumDacpac = dac.FilePath;
+                    threadCmdLine.DacPacArgs.PlatinumDacpac = dac!.FilePath;
                 }
 
                 //Set the target DacPac name to the path on the node (if set)
                 if (!string.IsNullOrWhiteSpace(threadCmdLine.DacPacArgs.TargetDacpac))
                 {
                     var tdac = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(cmdLine.DacPacArgs.TargetDacpac.ToLower()))).FirstOrDefault();
-                    threadCmdLine.DacPacArgs.TargetDacpac = tdac.FilePath;
+                    threadCmdLine.DacPacArgs.TargetDacpac = tdac!.FilePath;
                 }
 
                 //Set the queryfile name to the path on the node (if set)
                 if (threadCmdLine.QueryFile != null && !string.IsNullOrWhiteSpace(threadCmdLine.QueryFile.Name))
                 {
                     var qu = inputFiles.Where(x => x.FilePath.ToLower().Contains(Path.GetFileName(threadCmdLine.QueryFile.Name.ToLower()))).FirstOrDefault();
-                    threadCmdLine.QueryFile = new FileInfo(qu.FilePath);
+                    threadCmdLine.QueryFile = new FileInfo(qu!.FilePath);
                 }
 
                 //Update the RootLoggingPath as appropriate
@@ -883,7 +881,7 @@ namespace SqlBuildManager.Console.Batch
         {
             MultiDbData multiDb;
             string[] errorMessages;
-            int valRet = Validation.ValidateAndLoadMultiDbData(multiDBFileName, null, out multiDb, out errorMessages);
+            int valRet = Validation.ValidateAndLoadMultiDbData(multiDBFileName, null!, out multiDb, out errorMessages);
             string cfg = MultiDbHelper.ConvertMultiDbDataToTextConfig(multiDb);
             return cfg.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         }
@@ -1109,8 +1107,8 @@ namespace SqlBuildManager.Console.Batch
             }
         }
 
-        public event BatchMonitorEventHandler BatchProcessStartedEvent;
-        public event BatchMonitorEventHandler BatchExecutionCompletedEvent;
+        public event BatchMonitorEventHandler? BatchProcessStartedEvent;
+        public event BatchMonitorEventHandler? BatchExecutionCompletedEvent;
 
     }
 

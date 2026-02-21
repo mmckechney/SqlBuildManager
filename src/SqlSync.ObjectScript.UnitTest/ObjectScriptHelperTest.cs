@@ -93,7 +93,7 @@ GO
             StringBuilder sb = new StringBuilder();
 
             target.CollateScriptWithSchemaCheck(coll, schema, ref sb);
-            Assert.AreEqual(expected, sb.ToString());
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), sb.ToString().Replace("\r\n", "\n"));
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ GO
             StringBuilder sb = new StringBuilder();
 
             target.CollateScriptWithSchemaCheck(coll, schema, ref sb);
-            Assert.AreEqual(expected, sb.ToString());
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), sb.ToString().Replace("\r\n", "\n"));
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ GO
             StringBuilder sb = new StringBuilder();
 
             target.CollateScriptWithSchemaCheck(coll, schema, ref sb);
-            Assert.AreEqual(expected, sb.ToString());
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), sb.ToString().Replace("\r\n", "\n"));
         }
 
         /// <summary>

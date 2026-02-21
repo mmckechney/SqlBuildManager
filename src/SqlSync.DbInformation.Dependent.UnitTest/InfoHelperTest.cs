@@ -20,7 +20,7 @@ namespace SqlSync.DbInformation.Dependent.UnitTest
             _init = new Initialization();
         }
 
-        private ConnectionData GetConnData() => _init?.connData ?? new ConnectionData(@"(local)\SQLEXPRESS", "SqlBuildTest");
+        private ConnectionData GetConnData() => _init?.connData ?? SqlBuildManager.Test.Common.TestEnvironment.GetConnectionData("SqlBuildTest");
 
         #region GetColumnNames Tests
 

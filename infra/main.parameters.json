@@ -40,6 +40,12 @@
     },
     "usePrivateEndpoint": {
       "value": true
+    },
+    "deployPostgreSQL": {
+      "value": true
+    },
+    "pgAdminPassword": {
+      "value": "${PG_ADMIN_PASSWORD}"
     }
   }
 }

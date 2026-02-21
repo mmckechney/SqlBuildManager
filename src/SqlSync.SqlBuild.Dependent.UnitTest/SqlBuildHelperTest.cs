@@ -127,7 +127,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_FinishCommitted()
         {
             Initialization init = GetInitializationObject();
@@ -162,7 +162,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_FinishRollback()
         {
             Initialization init = GetInitializationObject();
@@ -195,7 +195,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts. Missing view containing scripts to run..
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_MissingViewData()
         {
             Initialization init = GetInitializationObject();
@@ -225,7 +225,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_UnableToConnectToDatabase()
         {
             Initialization init = GetInitializationObject();
@@ -258,7 +258,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_SingleRunScript()
         {
             Initialization init = GetInitializationObject();
@@ -291,7 +291,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_SkippingPreRunScript()
         {
             Initialization init = GetInitializationObject();
@@ -335,7 +335,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         [Ignore("With removal of background worker need to reintroduce cancellation token")]
         public async Task RunBuildScriptsTest_WithPendingCancellation()
         {
@@ -370,7 +370,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_TrialSuccessful()
         {
             Initialization init = GetInitializationObject();
@@ -405,7 +405,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_TrialWithFailure()
         {
             Initialization init = GetInitializationObject();
@@ -437,7 +437,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         }
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_WithFailureDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
@@ -470,7 +470,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         }
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_WithFailureDontRollbackDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
@@ -506,7 +506,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_WithPreBatchedScripts()
         {
             Initialization init = GetInitializationObject();
@@ -540,7 +540,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_AsScriptOnly()
         {
             Initialization init = GetInitializationObject();
@@ -572,7 +572,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         }
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_SelectData()
         {
             Initialization init = GetInitializationObject();
@@ -603,7 +603,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
 
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_AlternateLoggingDb()
         {
             Initialization init = GetInitializationObject();
@@ -641,7 +641,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_NonTransactional_FinishCommitted()
         {
             Initialization init = GetInitializationObject();
@@ -675,7 +675,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_NonTransactional_FinishCommittedWithScripting()
         {
             Initialization init = GetInitializationObject();
@@ -709,7 +709,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_NonTransactional_Failure()
         {
             Initialization init = GetInitializationObject();
@@ -741,7 +741,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_NonTransactional_WithFailureDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
@@ -777,7 +777,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_NonTransactional_WithFailureDontRollbackDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
@@ -813,7 +813,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         [Ignore("With removal of background worker need to reintroduce cancellation token")]
         public async Task RunBuildScriptsTest_NonTransactional_Cancelled()
         {
@@ -853,7 +853,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_GetDefaultBack()
         {
             Initialization init = GetInitializationObject();
@@ -870,7 +870,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_GetOverrideBack()
         {
             Initialization init = GetInitializationObject();
@@ -889,7 +889,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_DefaultSetToEmptyString()
         {
             Initialization init = GetInitializationObject();
@@ -907,7 +907,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_DefaultSetToNull()
         {
             Initialization init = GetInitializationObject();
@@ -926,7 +926,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_MultipleOverridesSet()
         {
             Initialization init = GetInitializationObject();
@@ -946,7 +946,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_DoesNotFindDefault()
         {
             Initialization init = GetInitializationObject();
@@ -1229,7 +1229,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_SingleServer()
         {
             Initialization init = GetInitializationObject();
@@ -1262,7 +1262,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_UseStaticOverride()
         {
             Initialization init = GetInitializationObject();
@@ -1418,17 +1418,16 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             object sender = null;
 
             //Create the "end" entry for an external log file...
-            string fileName = init.GetTrulyUniqueFile();
-            target.externalScriptLogFileName = fileName;
-            File.SetAttributes(fileName, FileAttributes.ReadOnly); //Make read-only so the copy throws an exception
+            // Use a path where a component is a regular file, so directory creation fails on all platforms (even Linux root)
+            string blockingFile = init.GetTrulyUniqueFile();
+            target.externalScriptLogFileName = Path.Combine(blockingFile, "unreachable.log");
 
             ScriptLogEventArgs e = new ScriptLogEventArgs(-10000, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], @"C:\test.sql", "Test Executed");
             target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e);
 
-            FileInfo inf = new FileInfo(target.externalScriptLogFileName);
-            Assert.IsTrue(inf.Length == 0); //file should be zero size because move should have failed.
+            Assert.IsFalse(File.Exists(target.externalScriptLogFileName)); //file should not exist because copy should have failed.
 
-            File.SetAttributes(fileName, FileAttributes.Normal); //Set back to normal for the test clean-up process.
+            File.Delete(blockingFile); //Clean up the blocking file.
 
         }
 
@@ -1486,7 +1485,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
-            BuildConnectData connData = target.ConnectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0], target.isTransactional);
+            BuildConnectData connData = target.ConnectionsService.GetOrAddBuildConnectionDataClass(init.connData, init.serverName, init.testDatabaseNames[0], target.isTransactional);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
 
             bool actual = target.BuildFinalizer.CommitBuild(target.ConnectionsService, target.isTransactional);
@@ -1503,7 +1502,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             Initialization init = GetInitializationObject();
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            BuildConnectData connData = target.ConnectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0], target.isTransactional);
+            BuildConnectData connData = target.ConnectionsService.GetOrAddBuildConnectionDataClass(init.connData, init.serverName, init.testDatabaseNames[0], target.isTransactional);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
             connData.Connection.Close();
             connData.Connection = null; //Set connection to null to create exception when trying to close.
@@ -1541,7 +1540,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             IConnectionsService connectionsService = new DefaultConnectionsService();
-            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0], target.isTransactional);
+            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClass(init.connData, init.serverName, init.testDatabaseNames[0], target.isTransactional);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
 
             bool actual = target.BuildFinalizer.RollbackBuild(target.ConnectionsService, target.isTransactional);
@@ -1559,7 +1558,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             IConnectionsService connectionsService = new DefaultConnectionsService();
-            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClassWithLocalAuth(init.serverName, init.testDatabaseNames[0], target.isTransactional);
+            BuildConnectData connData = connectionsService.GetOrAddBuildConnectionDataClass(init.connData, init.serverName, init.testDatabaseNames[0], target.isTransactional);
             connData.Transaction.Rollback(); //Rollback transaction to make it unusable
             connData.Connection.Close();
             connData.Connection = null; //Set connection to null to create exception when trying to close.
@@ -1575,7 +1574,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for PerformScriptTokenReplacement
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void PerformScriptTokenReplacementTest()
         {
             Initialization init = GetInitializationObject();
@@ -1603,7 +1602,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for PerformScriptTokenReplacement
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void PerformScriptTokenReplacementTest_NullBuildFileName()
         {
             Initialization init = GetInitializationObject();
@@ -1631,7 +1630,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for PerformScriptTokenReplacement
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void PerformScriptTokenReplacementTest_NullDescriptionValue()
         {
             Initialization init = GetInitializationObject();

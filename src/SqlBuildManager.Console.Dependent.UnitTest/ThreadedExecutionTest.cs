@@ -28,7 +28,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
     {
 
 
-        private TestContext testContextInstance;
+        public TestContext TestContext { get; set; }
         private static List<Initialization> initObjs = new List<Initialization>();
         private Initialization GetInitializationObject()
         {
@@ -38,35 +38,9 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
         private static string GetLocalhostFolderName(string loggingRoot)
         {
-            if (Directory.Exists(Path.Combine(loggingRoot, "working", "(local)", "SQLEXPRESS")))
-            {
-                return Path.Combine(loggingRoot, "working", "(local)", "SQLEXPRESS");
-            }
-            else if (Directory.Exists(Path.Combine(loggingRoot, "working", "localhost", "SQLEXPRESS")))
-            {
-                return Path.Combine(loggingRoot, "working", "localhost", "SQLEXPRESS");
-            }
-            else
-            {
-                throw new Exception($"Unable to find localhost temp directory at root: {loggingRoot}");
-            }
+            return SqlBuildManager.Test.Common.TestPathHelper.FindServerLogDirectory(loggingRoot, Initialization.TestServer);
         }
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
+        
 
         // 
         //You can use the following additional attributes as you write your tests:
@@ -406,7 +380,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 if (actual == -600)
                     Assert.Fail("Unable to completed test.");
 
-                Assert.AreEqual(expected, actual);
+                Assert.AreEqual(expected, actual, $"Execution results are {actual}, not the expected {expected}");
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 string[] executionLogFile = ReadLines(Path.Combine(loggingPath, "SqlBuildManager.ThreadedExecution.log")).ToArray();
                 //Should not all sequential!
@@ -443,8 +417,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-            localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
 
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
@@ -460,7 +434,6 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", "0",
-                "--authtype",
             }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
@@ -529,8 +502,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
@@ -639,8 +612,8 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
@@ -737,8 +710,8 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
@@ -834,8 +807,8 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest1,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
@@ -890,8 +863,8 @@ localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
@@ -1016,8 +989,8 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
@@ -1116,8 +1089,8 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
@@ -1214,8 +1187,8 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 

@@ -2103,7 +2103,8 @@ namespace SqlSync.ObjectScript
             {
                 sb.AppendLine(s);
                 sb.AppendLine("GO");
-                sb.AppendLine("\r\n");
+                sb.AppendLine();
+                sb.AppendLine();
             }
         }
         internal void CollateScriptWithSchemaCheck(StringCollection coll, string schema, ref StringBuilder sb)

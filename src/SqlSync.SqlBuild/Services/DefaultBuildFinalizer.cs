@@ -38,6 +38,7 @@ namespace SqlSync.SqlBuild.Services
                 {
                     log.LogInformation($"Committing transaction for {key}");
                     ((BuildConnectData)connectionsService.Connections[key]).Transaction.Commit();
+                    ((BuildConnectData)connectionsService.Connections[key]).Transaction = null;
                     log.LogInformation($"Commit Successful for {key}");
                 }
                 catch (Exception e)

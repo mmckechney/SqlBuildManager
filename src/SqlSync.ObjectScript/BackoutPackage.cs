@@ -396,7 +396,13 @@ namespace SqlSync.ObjectScript
         /// <returns>Backout package name</returns>
         public static string GetDefaultPackageName(string sourceSbmFullFileName)
         {
-            return Path.Combine(Path.GetDirectoryName(sourceSbmFullFileName), "Backout_" + Path.GetFileName(sourceSbmFullFileName));
+            // Handle both Windows and Unix path separators for cross-platform compatibility
+            int lastSep = Math.Max(sourceSbmFullFileName.LastIndexOf('/'), sourceSbmFullFileName.LastIndexOf('\\'));
+            if (lastSep >= 0)
+            {
+                return sourceSbmFullFileName.Substring(0, lastSep + 1) + "Backout_" + sourceSbmFullFileName.Substring(lastSep + 1);
+            }
+            return "Backout_" + sourceSbmFullFileName;
         }
 
         /// <summary>

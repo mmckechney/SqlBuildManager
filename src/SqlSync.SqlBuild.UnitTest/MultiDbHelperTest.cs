@@ -57,15 +57,15 @@ namespace SqlSync.SqlBuild.UnitTest
             string[] fileContents = new string[] { "SERVER:default,target;default2,target2", "SERVER2:default,target;default2,target2" };
             MultiDbData actual;
             actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
-            Assert.AreEqual(actual[0].ServerName, "SERVER");
-            Assert.AreEqual(actual[1].ServerName, "SERVER2");
+            Assert.AreEqual("SERVER", actual[0].ServerName);
+            Assert.AreEqual("SERVER2", actual[1].ServerName);
 
             DbOverrides seq = actual[0].Overrides;
-            Assert.AreEqual(seq[0].DefaultDbTarget, "default");
-            Assert.AreEqual(seq[1].OverrideDbTarget, "target2");
+            Assert.AreEqual("default", seq[0].DefaultDbTarget);
+            Assert.AreEqual("target2", seq[1].OverrideDbTarget);
             seq = actual[1].Overrides;
-            Assert.AreEqual(seq[1].DefaultDbTarget, "default2");
-            Assert.AreEqual(seq[0].OverrideDbTarget, "target");
+            Assert.AreEqual("default2", seq[1].DefaultDbTarget);
+            Assert.AreEqual("target", seq[0].OverrideDbTarget);
         }
 
         /// <summary>
@@ -93,15 +93,15 @@ namespace SqlSync.SqlBuild.UnitTest
             string[] fileContents = new string[] { "SERVER:default,target;default2,target2", "", "SERVER2:default,target;default2,target2" };
             MultiDbData actual;
             actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
-            Assert.AreEqual(actual[0].ServerName, "SERVER");
-            Assert.AreEqual(actual[1].ServerName, "SERVER2");
+            Assert.AreEqual("SERVER", actual[0].ServerName);
+            Assert.AreEqual("SERVER2", actual[1].ServerName);
 
             DbOverrides seq = actual[0].Overrides;
-            Assert.AreEqual(seq[0].DefaultDbTarget, "default");
-            Assert.AreEqual(seq[1].OverrideDbTarget, "target2");
+            Assert.AreEqual("default", seq[0].DefaultDbTarget);
+            Assert.AreEqual("target2", seq[1].OverrideDbTarget);
             seq = actual[1].Overrides;
-            Assert.AreEqual(seq[1].DefaultDbTarget, "default2");
-            Assert.AreEqual(seq[0].OverrideDbTarget, "target");
+            Assert.AreEqual("default2", seq[1].DefaultDbTarget);
+            Assert.AreEqual("target", seq[0].OverrideDbTarget);
         }
         /// <summary>
         ///A test for ImportMultiDbTextConfig
@@ -142,15 +142,15 @@ namespace SqlSync.SqlBuild.UnitTest
                 MultiDbData actual;
                 actual = MultiDbHelper.ImportMultiDbTextConfig(fileName);
 
-                Assert.AreEqual(actual[0].ServerName, "SERVER");
-                Assert.AreEqual(actual[1].ServerName, "SERVER2");
+                Assert.AreEqual("SERVER", actual[0].ServerName);
+                Assert.AreEqual("SERVER2", actual[1].ServerName);
 
                 DbOverrides seq = actual[0].Overrides;
-                Assert.AreEqual(seq[0].DefaultDbTarget, "default");
-                Assert.AreEqual(seq[1].OverrideDbTarget, "target2");
+                Assert.AreEqual("default", seq[0].DefaultDbTarget);
+                Assert.AreEqual("target2", seq[1].OverrideDbTarget);
                 seq = actual[1].Overrides;
-                Assert.AreEqual(seq[1].DefaultDbTarget, "default2");
-                Assert.AreEqual(seq[0].OverrideDbTarget, "target");
+                Assert.AreEqual("default2", seq[1].DefaultDbTarget);
+                Assert.AreEqual("target", seq[0].OverrideDbTarget);
             }
             finally
             {
@@ -240,10 +240,10 @@ namespace SqlSync.SqlBuild.UnitTest
                 actual = MultiDbHelper.DeserializeMultiDbConfiguration(fileName);
                 actual.IsTransactional = false;
 
-                Assert.AreEqual(actual[0].ServerName, "(local)");
+                Assert.AreEqual("(local)", actual[0].ServerName);
                 DbOverrides seq = actual[0].Overrides;
-                Assert.AreEqual(seq[0].DefaultDbTarget, "SqlBuildTest");
-                Assert.AreEqual(seq[0].OverrideDbTarget, "master");
+                Assert.AreEqual("SqlBuildTest", seq[0].DefaultDbTarget);
+                Assert.AreEqual("master", seq[0].OverrideDbTarget);
                 Assert.IsFalse(actual.IsTransactional);
 
             }

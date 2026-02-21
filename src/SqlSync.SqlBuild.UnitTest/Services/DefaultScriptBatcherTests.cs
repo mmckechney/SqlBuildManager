@@ -682,5 +682,51 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         #endregion
+
+        #region PostgreSQL Script Handling Tests
+
+        [TestMethod]
+        public void ReadBatchFromScriptText_PostgresMultiStatement_NoGO_ReturnsSingleBatch()
+        {
+            // PostgreSQL scripts don't use GO delimiters — multi-statement scripts stay as one batch
+            string script = "CREATE TABLE test (id SERIAL PRIMARY KEY);\r\nINSERT INTO test (id) VALUES (1);\r\nSELECT * FROM test LIMIT 1;";
+
+            var result = _batcher.ReadBatchFromScriptText(script, stripTransaction: false, maintainBatchDelimiter: false);
+
+            Assert.AreEqual(1, result.Count);
+            StringAssert.Contains(result[0], "CREATE TABLE test");
+            StringAssert.Contains(result[0], "INSERT INTO test");
+            StringAssert.Contains(result[0], "LIMIT 1");
+        }
+
+        [TestMethod]
+        public void ReadBatchFromScriptText_PostgresFunctions_NoSplitting()
+        {
+            // PG function body with $$ delimiters should remain as a single batch
+            string script = @"CREATE OR REPLACE FUNCTION add_numbers(a INTEGER, b INTEGER) RETURNS INTEGER AS $$
+BEGIN
+    RETURN a + b;
+END;
+$$ LANGUAGE plpgsql;";
+
+            var result = _batcher.ReadBatchFromScriptText(script, stripTransaction: false, maintainBatchDelimiter: false);
+
+            Assert.AreEqual(1, result.Count);
+            StringAssert.Contains(result[0], "LANGUAGE plpgsql");
+        }
+
+        [TestMethod]
+        public void ReadBatchFromScriptText_PostgresUUID_NoSplitting()
+        {
+            // Typical PostgreSQL script using gen_random_uuid() — no GO
+            string script = "INSERT INTO transactiontest (id, message, created_at) VALUES (gen_random_uuid(), 'INSERT TEST', now());";
+
+            var result = _batcher.ReadBatchFromScriptText(script, stripTransaction: false, maintainBatchDelimiter: false);
+
+            Assert.AreEqual(1, result.Count);
+            StringAssert.Contains(result[0], "gen_random_uuid()");
+        }
+
+        #endregion
     }
 }

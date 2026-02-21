@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
 namespace SqlSync.Connection.UnitTest
@@ -185,15 +186,13 @@ namespace SqlSync.Connection.UnitTest
             regServers.ServerGroup[0] = new ServerGroup() { Name = "Test" };
             regServers.ServerGroup[1] = new ServerGroup() { Name = "Test2" };
 
-            string fileName = Path.GetTempFileName();
-            File.SetAttributes(fileName, FileAttributes.ReadOnly);
+            // Use a path under a non-existent directory to reliably trigger a write failure
+            // on both Windows and Linux (even as root).
+            string fileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "nonexistent", "servers.xml");
             bool expected = false;
             bool actual;
             actual = RegisteredServerHelper.SerializeRegisteredServers(regServers, fileName);
             Assert.AreEqual(expected, actual);
-
-            File.SetAttributes(fileName, FileAttributes.Normal);
-            File.Delete(fileName);
         }
 
         /// <summary>

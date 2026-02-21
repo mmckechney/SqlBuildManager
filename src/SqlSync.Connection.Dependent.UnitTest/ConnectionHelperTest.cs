@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Test.Common;
 using System;
 
 namespace SqlSync.Connection.Dependent.UnitTest
@@ -9,33 +10,17 @@ namespace SqlSync.Connection.Dependent.UnitTest
     [TestClass]
     public class ConnectionHelperTest
     {
-        private static string TestServerName => Environment.GetEnvironmentVariable("SBM_TEST_SQL_SERVER") ?? @"localhost\SQLEXPRESS";
-        private static string TestSqlUser => Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER");
-        private static string TestSqlPassword => Environment.GetEnvironmentVariable("SBM_TEST_SQL_PASSWORD");
-        private static AuthenticationType TestAuthType => string.IsNullOrWhiteSpace(TestSqlUser) ? AuthenticationType.Windows : AuthenticationType.Password;
+        private static string TestServerName => TestEnvironment.SqlServer;
+        private static string TestSqlUser => TestEnvironment.SqlUser;
+        private static string TestSqlPassword => TestEnvironment.SqlPassword;
+        private static AuthenticationType TestAuthType => TestEnvironment.UseSqlAuth ? AuthenticationType.Password : AuthenticationType.Windows;
 
         public ConnectionHelperTest()
         {
 
         }
 
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; }
 
         #region Additional test attributes
         //

@@ -547,14 +547,34 @@ namespace SqlBuildManager.Console.CloudStorage
                 var taskId = Environment.GetEnvironmentVariable("AZ_BATCH_TASK_ID");
                 if (string.IsNullOrEmpty(taskId))
                 {
+                    taskId = Environment.GetEnvironmentVariable("CONTAINER_APP_REPLICA_NAME");
+                }
+                if (string.IsNullOrEmpty(taskId))
+                {
                     taskId = Environment.GetEnvironmentVariable("HOSTNAME");
                 }
+                if (string.IsNullOrEmpty(taskId))
+                {
+                    taskId = Environment.MachineName;
+                }
+                if (string.IsNullOrEmpty(taskId))
+                {
+                    taskId = Guid.NewGuid().ToString("N").Substring(0, 12);
+                }
                 string machine = Environment.MachineName;
+                log.LogInformation($"Using task identifier '{taskId}' for blob path prefixes");
 
                 foreach (var f in fileList)
                 {
                     try
                     {
+                        var fileInfo = new FileInfo(f);
+                        if (fileInfo.Length == 0)
+                        {
+                            log.LogDebug($"Skipping 0-byte file '{f}'");
+                            continue;
+                        }
+
                         var tmp = Path.GetRelativePath(rootLoggingPath, f);
 
                         if (Program.AppendLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
@@ -567,16 +587,10 @@ namespace SqlBuildManager.Console.CloudStorage
                         }
 
                         var bClient = containerClient.GetBlockBlobClient(tmp);
-                        //if (bClient.Exists()) //Check for duplicates (in case of a previous crash, and create a new as needed
-                        //{
-                        //    tmp = tmp + DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss");
-                        //    bClient = containerClient.GetBlockBlobClient(tmp);
-                        //}
                         log.LogInformation($"Saving File '{f}' as '{tmp}'");
                         using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                         {
                             await bClient.UploadAsync(fs);
-
                         }
                     }
                     catch (Exception e)

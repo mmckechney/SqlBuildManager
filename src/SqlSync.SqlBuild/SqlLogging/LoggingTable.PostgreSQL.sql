@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS sqlbuild_logging (
+    buildfilename VARCHAR(300) NOT NULL,
+    scriptfilename VARCHAR(300) NOT NULL,
+    scriptid UUID NOT NULL,
+    scriptfilehash VARCHAR(100) NULL,
+    commitdate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    sequence INT NOT NULL DEFAULT 0,
+    userid VARCHAR(100) NULL,
+    allowscriptblock BOOLEAN NOT NULL DEFAULT TRUE,
+    allowblockupdateid VARCHAR(200) NULL,
+    scripttext TEXT NULL,
+    tag VARCHAR(200) NULL,
+    targetdatabase VARCHAR(200) NULL,
+    runwithversion VARCHAR(50) NULL,
+    buildprojecthash VARCHAR(100) NULL,
+    buildrequestedby VARCHAR(200) NULL,
+    scriptrunstart TIMESTAMP NULL,
+    scriptrunend TIMESTAMP NULL,
+    description VARCHAR(500) NULL
+);

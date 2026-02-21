@@ -236,6 +236,15 @@ namespace SqlBuildManager.Console.Threaded
                 }
                 connData.AuthenticationType = cmdArgs.AuthenticationArgs.AuthenticationType;
                 connData.ManagedIdentityClientId = cmdArgs.IdentityArgs.ClientId;
+                connData.DatabasePlatform = cmdArgs.AuthenticationArgs.DatabasePlatform;
+
+                // For PG MI auth, use identity name as UserId (PG role name)
+                if (connData.DatabasePlatform == SqlSync.Connection.DatabasePlatform.PostgreSQL
+                    && string.IsNullOrEmpty(connData.UserId)
+                    && !string.IsNullOrEmpty(cmdArgs.IdentityArgs.IdentityName))
+                {
+                    connData.UserId = cmdArgs.IdentityArgs.IdentityName;
+                }
             }
             catch (Exception exe)
             {

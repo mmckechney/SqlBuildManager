@@ -38,6 +38,12 @@ namespace SqlBuildManager.Console.ContainerShared
                 log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.IdentityClientId}");
             }
 
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.IdentityName);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.IdentityArgs.IdentityName = tmp;
+            }
+
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.JobName);
             if (!string.IsNullOrWhiteSpace(tmp))
             {
@@ -103,6 +109,15 @@ namespace SqlBuildManager.Console.ContainerShared
             else
             {
                 log.LogWarning($"Unable to read or parse environment variable {ContainerEnvVariables.AuthType}");
+            }
+
+            if (Enum.TryParse<SqlSync.Connection.DatabasePlatform>(Environment.GetEnvironmentVariable(ContainerEnvVariables.DatabasePlatform), out SqlSync.Connection.DatabasePlatform dbPlatform))
+            {
+                cmdLine.DatabasePlatform = dbPlatform;
+            }
+            else
+            {
+                log.LogInformation($"Unable to read or parse environment variable {ContainerEnvVariables.DatabasePlatform}. Defaulting to SqlServer.");
             }
 
             var ehString = Environment.GetEnvironmentVariable(ContainerEnvVariables.EventHubLogging);

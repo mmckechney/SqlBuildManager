@@ -1,4 +1,4 @@
-﻿using Azure.Identity;
+using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -20,10 +20,10 @@ namespace SqlBuildManager.Console.KeyVault
         public const string UserName = "UserName";
         public const string Password = "Password";
         public const string ContainerRegistryPassword = "ContainerRegistryPassword";
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
 
-        private static SecretClient _secretClient = null;
+        private static SecretClient _secretClient = null!;
         internal static SecretClient SecretClient(string keyVaultName)
         {
 
@@ -48,17 +48,17 @@ namespace SqlBuildManager.Console.KeyVault
             catch (Azure.RequestFailedException rfe)
             {
                 log.LogWarning($"Unable to get secret '{secretName}' from vault {keyVaultName}: [RequestFailedException] {rfe.ErrorCode}");
-                return null;
+                return null!;
             }
             catch (AuthenticationFailedException afe)
             {
                 log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}: [AuthenticationFailedException] {afe.Message}");
-                return null;
+                return null!;
             }
             catch (Exception exe)
             {
                 log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}:[{exe.GetType()}] {exe.Message}");
-                return null;
+                return null!;
             }
         }
         public static string SaveSecret(string keyVaultName, string secretName, string secretValue)
@@ -66,7 +66,7 @@ namespace SqlBuildManager.Console.KeyVault
             if (string.IsNullOrEmpty(secretValue))
             {
                 //log.LogWarning($"Secret value for {secretName} was blank. Will not save to Key Vault {keyVaultName} ");
-                return null;
+                return null!;
             }
             try
             {
@@ -77,7 +77,7 @@ namespace SqlBuildManager.Console.KeyVault
             catch (Exception exe)
             {
                 log.LogError($"Unable to save secret '{secretName}' to vault {keyVaultName}: {exe.ToString()}");
-                return null;
+                return null!;
             }
         }
         public static List<string> SaveSecrets(CommandLineArgs cmdLine)

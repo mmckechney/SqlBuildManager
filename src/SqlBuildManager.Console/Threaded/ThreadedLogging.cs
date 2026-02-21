@@ -39,7 +39,7 @@ namespace SqlBuildManager.Console.Threaded
         public void InitThreadedLogging()
         {
 
-            log.LogInformation("Initilizing Threaded Execution loggers...");
+            log.LogInformation("Initializing Threaded Execution loggers...");
             if (ConnectionStringValidator.IsEventHubConnectionString(cmdLine.ConnectionArgs.EventHubConnectionString))
             {
                 logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.ConnectionArgs.EventHubConnectionString);

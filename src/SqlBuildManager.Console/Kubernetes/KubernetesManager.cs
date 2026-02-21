@@ -272,6 +272,11 @@ namespace SqlBuildManager.Console.Kubernetes
          yml.data.Concurrency = args.Concurrency.ToString();
          yml.data.ConcurrencyType = args.ConcurrencyType.ToString();
          yml.data.AuthType = args.AuthenticationArgs.AuthenticationType.ToString();
+         yml.data.DatabasePlatform = args.AuthenticationArgs.DatabasePlatform.ToString();
+         if (!string.IsNullOrWhiteSpace(args.IdentityArgs.IdentityName))
+         {
+            yml.data.IdentityName = args.IdentityArgs.IdentityName;
+         }
          yml.data.KeyVaultName = args.ConnectionArgs.KeyVaultName;
          yml.data.EventHubLogging = string.Join("|", args.EventHubArgs.Logging);
          if (args.QueryFile != null)
@@ -383,6 +388,21 @@ namespace SqlBuildManager.Console.Kubernetes
                args.AuthenticationType = auth;
             }
             log.LogDebug($"authType= {args.AllowObjectDelete}");
+         }
+
+         if (File.Exists("/etc/runtime/DatabasePlatform"))
+         {
+            if (Enum.TryParse<SqlSync.Connection.DatabasePlatform>(File.ReadAllText("/etc/runtime/DatabasePlatform"), out SqlSync.Connection.DatabasePlatform dbPlatform))
+            {
+               args.DatabasePlatform = dbPlatform;
+            }
+            log.LogDebug($"databasePlatform= {args.AuthenticationArgs.DatabasePlatform}");
+         }
+
+         if (File.Exists("/etc/runtime/IdentityName"))
+         {
+            args.IdentityArgs.IdentityName = File.ReadAllText("/etc/runtime/IdentityName").Trim();
+            log.LogDebug($"IdentityName= {args.IdentityArgs.IdentityName}");
          }
 
          if (File.Exists("/etc/runtime/EventHubConnectionString"))
@@ -574,6 +594,14 @@ namespace SqlBuildManager.Console.Kubernetes
          {
             args.AuthenticationType = auth;
          }
+
+         if (Enum.TryParse<SqlSync.Connection.DatabasePlatform>(GetValueFromConfigMapstring(filename, "DatabasePlatform"), out SqlSync.Connection.DatabasePlatform dbPlatform))
+         {
+            args.DatabasePlatform = dbPlatform;
+         }
+
+         tmp = GetValueFromConfigMapstring(filename, "IdentityName");
+         if (!string.IsNullOrWhiteSpace(tmp)) args.IdentityArgs.IdentityName = tmp;
 
          if (args.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
          {

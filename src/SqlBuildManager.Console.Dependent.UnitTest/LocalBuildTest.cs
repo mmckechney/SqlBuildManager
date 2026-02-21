@@ -22,7 +22,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
     {
 
 
-        private TestContext testContextInstance;
+        public TestContext TestContext { get; set; }
         private static List<Initialization> initObjs = new List<Initialization>();
         private Initialization GetInitializationObject()
         {
@@ -32,35 +32,9 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
         private static string GetLocalhostFolderName(string loggingRoot)
         {
-            if (Directory.Exists(Path.Combine(loggingRoot, "working", "(local)", "SQLEXPRESS")))
-            {
-                return Path.Combine(loggingRoot, "working", "(local)", "SQLEXPRESS");
-            }
-            else if (Directory.Exists(Path.Combine(loggingRoot, "working", "localhost", "SQLEXPRESS")))
-            {
-                return Path.Combine(loggingRoot, "working", "localhost", "SQLEXPRESS");
-            }
-            else
-            {
-                throw new Exception($"Unable to find localhost temp directory at root: {loggingRoot}");
-            }
+            return SqlBuildManager.Test.Common.TestPathHelper.FindServerLogDirectory(loggingRoot, Initialization.TestServer);
         }
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
+       
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
         [TestInitialize]
         public void ConfigureProcessInfo()
@@ -91,7 +65,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string[] args = (new string[] {
                 "build",
-                "--server", "localhost\\sqlexpress",
+                "--server", Initialization.TestServer,
                 "--database", "SqlBuildTest",
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
@@ -151,7 +125,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string[] args = (new string[] {
                 "build",
-                "--server", "localhost\\sqlexpress",
+                "--server", Initialization.TestServer,
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -210,7 +184,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string[] args = (new string[] {
                 "build",
-                "--server", "localhost\\sqlexpress",
+                "--server", Initialization.TestServer,
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -410,7 +384,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", "0", 
                 "--database", "master",
-                "--server", @"(local)\SQLEXPRESS"
+                "--server", Initialization.TestServer
 
 
             }).Concat(Initialization.GetAuthArgs()).ToArray();
