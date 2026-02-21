@@ -320,7 +320,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
 
             // Assert
             Assert.AreEqual(2, list.Count);
-            Assert.IsTrue(list.Find("Db1").IsManuallyEntered);
+            Assert.IsTrue(list.Find("Db1")!.IsManuallyEntered);
             Assert.IsNotNull(list.Find("Db2"));
         }
 

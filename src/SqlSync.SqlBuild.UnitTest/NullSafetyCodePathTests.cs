@@ -90,7 +90,7 @@ INSERT INTO dbo.Config VALUES ('key1', 'val1');");
             Assert.IsNotNull(result);
             Assert.AreEqual("ProdServer", result.SourceServer);
             Assert.AreEqual("ProdDb", result.SourceDatabase);
-            Assert.IsTrue(result.Query.Contains("SELECT ConfigKey"));
+            Assert.IsTrue(result.Query!.Contains("SELECT ConfigKey"));
             Assert.IsFalse(result.Query.Contains("*/"));
         }
 

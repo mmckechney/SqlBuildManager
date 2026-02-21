@@ -143,7 +143,7 @@ namespace SqlBuildManager.Console.Threaded
                     
                         if(target.ServerName.StartsWith("#"))
                         {
-                            target.ServerName = target.DbOverrideSequence[0].Server;
+                            target.ServerName = target.DbOverrideSequence[0].Server ?? string.Empty;
                         }
                         var runner = new QueryCollectionRunner(target.ServerName, targetDb, query, new List<QueryRowItem>(), ReportType.CSV, tmpOutput, cmdLine.DefaultScriptTimeout, connData);
                         var msg = new LogMsg() { DatabaseName = targetDb, ServerName = target.ServerName, RunId = this.runId, Message = "Queuing up thread", LogType = LogType.Message, ConcurrencyTag = target.ConcurrencyTag };

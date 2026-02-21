@@ -209,7 +209,7 @@ namespace SqlBuildManager.Console.Queue
                         TargetMessage data;
                         if (target.Item1.StartsWith("#"))
                         {
-                            data = new TargetMessage() { ServerName = target.Item2[0].Server, DbOverrideSequence = target.Item2, ConcurrencyTag = target.Item2[0].ConcurrencyTag };
+                            data = new TargetMessage() { ServerName = target.Item2[0].Server ?? string.Empty, DbOverrideSequence = target.Item2, ConcurrencyTag = target.Item2[0].ConcurrencyTag };
                         }else
                         {
                             data = new TargetMessage() { ServerName = target.Item1, DbOverrideSequence = target.Item2, ConcurrencyTag = target.Item2[0].ConcurrencyTag };

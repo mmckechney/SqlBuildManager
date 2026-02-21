@@ -99,7 +99,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
 
                 foreach (DatabaseOverride ovr in srv.Overrides)
                 {
-                    if (srv.ServerName.StartsWith("#")) srv.ServerName = ovr.Server;
+                    if (srv.ServerName.StartsWith("#")) srv.ServerName = ovr.Server ?? string.Empty;
                     db = srv.ServerName + "." + ovr.OverrideDbTarget;
 
                     QueryCollectionRunner runner = new QueryCollectionRunner(srv.ServerName, ovr.OverrideDbTarget, query, ovr.QueryRowData, reportType, resultsFilePath, scriptTimeout, connData);

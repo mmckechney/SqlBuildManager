@@ -52,7 +52,7 @@ namespace SqlBuildManager.Console.Threaded
             get { return returnValue; }
         }
 
-        private string server;
+        private string server = string.Empty;
         public string Server
         {
             get { return server; }
@@ -113,7 +113,7 @@ namespace SqlBuildManager.Console.Threaded
             _context = context ?? new BuildExecutionContext();
             if (serverName.StartsWith("#"))
             {
-                this.server = overrides[0].Server;
+                this.server = overrides[0].Server ?? string.Empty;
             }   
             else
             {

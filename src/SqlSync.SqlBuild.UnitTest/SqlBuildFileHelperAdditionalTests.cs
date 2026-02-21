@@ -100,7 +100,7 @@ INSERT INTO TestTable VALUES (1, 'Test');";
                 Assert.AreEqual("TestDatabase", result.SourceDatabase);
                 Assert.AreEqual("TestTable", result.SourceTable);
                 Assert.AreEqual("Id, Name", result.KeyCheckColumns);
-                Assert.IsTrue(result.Query.Contains("SELECT * FROM TestTable"));
+                Assert.IsTrue(result.Query!.Contains("SELECT * FROM TestTable"));
             }
             finally
             {

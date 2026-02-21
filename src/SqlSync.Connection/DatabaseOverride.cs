@@ -9,7 +9,7 @@ namespace SqlSync.Connection
     public class DatabaseOverride
     {
         public string ConcurrencyTag { get; set; } = string.Empty;
-        public string Server { get; set; } = string.Empty;
+        public string? Server { get; set; }
         public string DefaultDbTarget { get; set; } = string.Empty;
         private string overrideDbTarget = string.Empty;
         public string OverrideDbTarget

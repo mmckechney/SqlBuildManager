@@ -2,11 +2,11 @@ namespace SqlSync.SqlBuild.CodeTable
 {
     public class ScriptUpdates
     {
-        public string Query { get; set; } = string.Empty;
-        public string ShortFileName { get; set; } = string.Empty;
-        public string SourceTable { get; set; } = string.Empty;
-        public string SourceDatabase { get; set; } = string.Empty;
-        public string SourceServer { get; set; } = string.Empty;
-        public string KeyCheckColumns { get; set; } = string.Empty;
+        public string? Query { get; set; }
+        public string? ShortFileName { get; set; }
+        public string? SourceTable { get; set; }
+        public string? SourceDatabase { get; set; }
+        public string? SourceServer { get; set; }
+        public string? KeyCheckColumns { get; set; }
     }
 }
