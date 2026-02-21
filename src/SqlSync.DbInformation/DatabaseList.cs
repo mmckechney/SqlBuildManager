@@ -68,7 +68,7 @@ namespace SqlSync.DbInformation
 
             for (int i = 0; i < databases.Count; i++)
             {
-                DatabaseItem tmp = Find(databases[i].DatabaseName);
+                DatabaseItem? tmp = Find(databases[i].DatabaseName);
                 if (tmp != null)
                 {
                     tmp.IsManuallyEntered = databases[i].IsManuallyEntered;

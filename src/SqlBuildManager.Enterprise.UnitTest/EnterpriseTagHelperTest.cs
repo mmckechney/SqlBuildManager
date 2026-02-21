@@ -46,9 +46,10 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<ScriptTagInference> inferenceList = EnterpriseTagHelperTest.inferenceList;
             List<string> adGroupMembership = new List<string>() { "NotMyGroup", "MyGroup1" };
             List<string> expected = EnterpriseTagHelperTest.standardRegexValues;
-            List<string> actual;
+            List<string>? actual;
             actual = EnterpriseTagHelper.GetEnterpriseTagRegexValues(inferenceList, adGroupMembership);
-            Assert.AreEqual(expected[0], actual[0]);
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(expected[0], actual![0]);
             Assert.AreEqual(expected[1], actual[1]);
 
         }
@@ -62,7 +63,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<ScriptTagInference> inferenceList = EnterpriseTagHelperTest.inferenceList;
             List<string> adGroupMembership = new List<string>() { "NotMyGroup", "NotMyGroupAgain" };
             List<string> expected = EnterpriseTagHelperTest.standardRegexValues;
-            List<string> actual;
+            List<string>? actual;
             actual = EnterpriseTagHelper.GetEnterpriseTagRegexValues(inferenceList, adGroupMembership);
             Assert.IsNull(actual);
 
@@ -77,7 +78,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<ScriptTagInference> inferenceList = null!;
             List<string> adGroupMembership = new List<string>() { "NotMyGroup", "MyGroup1" };
             List<string> expected = EnterpriseTagHelperTest.standardRegexValues;
-            List<string> actual;
+            List<string>? actual;
             actual = EnterpriseTagHelper.GetEnterpriseTagRegexValues(inferenceList, adGroupMembership);
             Assert.IsNull(actual);
         }
@@ -91,7 +92,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<ScriptTagInference> inferenceList = new List<ScriptTagInference>();
             List<string> adGroupMembership = new List<string>() { "NotMyGroup", "MyGroup1" };
             List<string> expected = EnterpriseTagHelperTest.standardRegexValues;
-            List<string> actual;
+            List<string>? actual;
             actual = EnterpriseTagHelper.GetEnterpriseTagRegexValues(inferenceList, adGroupMembership);
             Assert.IsNull(actual);
         }
@@ -105,7 +106,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<ScriptTagInference> inferenceList = EnterpriseTagHelperTest.inferenceList;
             List<string> adGroupMembership = null!;
             List<string> expected = EnterpriseTagHelperTest.standardRegexValues;
-            List<string> actual;
+            List<string>? actual;
             actual = EnterpriseTagHelper.GetEnterpriseTagRegexValues(inferenceList, adGroupMembership);
             Assert.IsNull(actual);
 
@@ -120,7 +121,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<ScriptTagInference> inferenceList = EnterpriseTagHelperTest.inferenceList;
             List<string> adGroupMembership = new List<string>();
             List<string> expected = EnterpriseTagHelperTest.standardRegexValues;
-            List<string> actual;
+            List<string>? actual;
             actual = EnterpriseTagHelper.GetEnterpriseTagRegexValues(inferenceList, adGroupMembership);
             Assert.IsNull(actual);
 
@@ -136,7 +137,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             inferenceList.Add(null!);
             List<string> adGroupMembership = new List<string>() { "NotMyGroup", "MyGroup1" };
             List<string> expected = EnterpriseTagHelperTest.standardRegexValues;
-            List<string> actual;
+            List<string>? actual;
             actual = EnterpriseTagHelper.GetEnterpriseTagRegexValues(inferenceList, adGroupMembership);
             Assert.IsNull(actual);
 
