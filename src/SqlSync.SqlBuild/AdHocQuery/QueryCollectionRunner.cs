@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Polly;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.Status;
@@ -14,11 +14,11 @@ namespace SqlSync.SqlBuild.AdHocQuery
 {
     public class QueryCollectionRunner : IDisposable
     {
-        private ConnectionData masterConnData = null;
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private ConnectionData masterConnData = null!;
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private string serverName;
         private string databaseName;
-        private Policy pollyRetryPolicy = null;
+        private Policy pollyRetryPolicy = null!;
 
         private string query;
 
@@ -39,8 +39,8 @@ namespace SqlSync.SqlBuild.AdHocQuery
         {
             get;
             set;
-        }
-        private QueryResultData results;
+        } = string.Empty;
+        private QueryResultData results = null!;
 
         private ReportType reportType;
         private string tempWorkingDirectory;
@@ -112,11 +112,11 @@ namespace SqlSync.SqlBuild.AdHocQuery
 
                                 int fieldCount = 0;
                                 //Add column definitions...
-                                DataTable tbl = reader.GetSchemaTable();
-                                int columnCount = tbl.Rows.Count;
+                                DataTable tbl = reader.GetSchemaTable()!;
+                                int columnCount = tbl!.Rows.Count;
                                 for (int i = 0; i < columnCount; i++)
                                 {
-                                    columnName = tbl.Rows[i]["ColumnName"].ToString();
+                                    columnName = tbl.Rows[i]["ColumnName"].ToString() ?? string.Empty;
                                     if (columnName.Length == 0)
                                         columnName = "Column " + (i + 1).ToString();
                                     else if (results.ColumnDefinition.ContainsKey(columnName))
@@ -135,7 +135,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                                         if (reader[i] == DBNull.Value)
                                             tmp.Add(i.ToString(), "NULL");
                                         else
-                                            tmp.Add(i.ToString(), reader[i].ToString());
+                                            tmp.Add(i.ToString(), reader[i].ToString()!);
                                     }
                                     results.Results.Add(tmp);
                                     rowCount++;
@@ -173,7 +173,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 DumpResults();
                 string combined = MergeDumpFiles();
                 SerializeToTempFile(combined);
-                results = null;
+                results = null!;
                 return (queryResult, this.ResultsTempFile);
                 
             });
@@ -228,7 +228,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
             }
             else
             {
-                string tempLine = null;
+                string tempLine = null!;
                 using (StreamWriter sw = new StreamWriter(tmpCombined, true))
                 {
                     foreach (string partial in dumpFiles)
@@ -237,7 +237,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                         {
                             while (sr.Peek() > 0)
                             {
-                                tempLine = sr.ReadLine();
+                                tempLine = sr.ReadLine()!;
                                 if (tempLine.StartsWith("<?xml", StringComparison.InvariantCultureIgnoreCase) ||
                                     tempLine.StartsWith("<ArrayOfResult", StringComparison.InvariantCultureIgnoreCase) ||
                                     tempLine.StartsWith("</ArrayOfResult>"))
@@ -258,7 +258,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
 
         #endregion
 
-        public event QueryCollectionRunnerUpdateEventHandler QueryCollectionRunnerUpdate;
+        public event QueryCollectionRunnerUpdateEventHandler? QueryCollectionRunnerUpdate;
         public delegate void QueryCollectionRunnerUpdateEventHandler(object sender, QueryCollectionRunnerUpdateEventArgs e);
 
         /// <summary>
@@ -284,14 +284,14 @@ namespace SqlSync.SqlBuild.AdHocQuery
             }
 
             ResultsTempFile = Path.Combine(tempWorkingDirectory, String.Format("Combined-{0}.txt", Guid.NewGuid().ToString()));
-            string tmpLine = null;
+            string tmpLine = null!;
             using (StreamWriter sw = new StreamWriter(ResultsTempFile))
             {
                 using (StreamReader srShell = new StreamReader(tmpShell))
                 {
                     while (srShell.Peek() > 0)
                     {
-                        tmpLine = srShell.ReadLine();
+                        tmpLine = srShell.ReadLine()!;
                         if (tmpLine.Trim().StartsWith("<Results", StringComparison.InvariantCultureIgnoreCase))
                             break;
                         else

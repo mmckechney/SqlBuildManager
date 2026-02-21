@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 namespace SqlSync.SqlBuild.Dependent.UnitTest
 {
@@ -6,7 +6,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
     public class SqlBuildHelperTest_MultiDb
     {
 
-        private static List<Initialization> initColl;
+        private static List<Initialization> initColl = null!;
 
         [ClassInitialize()]
         public static void InitializeTests(TestContext testContext)

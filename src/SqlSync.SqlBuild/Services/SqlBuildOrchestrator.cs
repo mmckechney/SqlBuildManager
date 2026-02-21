@@ -25,9 +25,9 @@ namespace SqlSync.SqlBuild.Services
             IBuildFinalizerContext finalizerCtx, 
             IConnectionsService connectionsService, 
             ISqlLoggingService sqlLoggingService,
-            IRunnerFactory runnerFactory = null,
-            ITransactionManager transactionManager = null,
-            IBuildFinalizer buildFinalizer = null)
+            IRunnerFactory runnerFactory = null!,
+            ITransactionManager transactionManager = null!,
+            IBuildFinalizer buildFinalizer = null!)
         {
             _ctx = ctx;
             _props = props;
@@ -68,9 +68,9 @@ namespace SqlSync.SqlBuild.Services
             int allowableTimeoutRetries,
             CancellationToken cancellationToken)
         {
-            Build buildResultsModel = null;
+            Build buildResultsModel = null!;
             int buildRetries = 0;
-            var runner = _runnerFactory.Create(connectionsService, _ctx, _finalizerCtx, null, _transactionManager, _buildFinalizer, _sqlLoggingService);
+            var runner = _runnerFactory.Create(connectionsService, _ctx, _finalizerCtx, null!, _transactionManager, _buildFinalizer, _sqlLoggingService);
 
             while (buildRetries <= allowableTimeoutRetries &&
                 (buildResultsModel == null || buildResultsModel.FinalStatus == BuildItemStatus.FailedDueToScriptTimeout ))
@@ -97,7 +97,7 @@ namespace SqlSync.SqlBuild.Services
                 buildRetries++;
             }
 
-            return buildResultsModel;
+            return buildResultsModel!;
         }
     }
 }

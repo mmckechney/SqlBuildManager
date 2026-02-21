@@ -33,7 +33,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             set { endTime = value; }
         }
 
-        private System.Diagnostics.Process prc;
+        private System.Diagnostics.Process prc = null!;
 
         public int ExecuteProcess(string processName)
         {

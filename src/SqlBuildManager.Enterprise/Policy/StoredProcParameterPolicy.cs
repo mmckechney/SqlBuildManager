@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ namespace SqlBuildManager.Enterprise.Policy
 {
     class StoredProcParameterPolicy : shP.IScriptPolicyMultiple
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         #region IScriptPolicy Members
         public string PolicyId
         {
@@ -93,8 +93,8 @@ namespace SqlBuildManager.Enterprise.Policy
                 GetSchemaAndParamValues(out hasParam, out paramValue, out hasSchema, out schemaValue);
 
                 message = string.Empty;
-                Regex regSchema = null;
-                Regex regParameter = null;
+                Regex regSchema = null!;
+                Regex regParameter = null!;
                 if (arguments.Count == 0)
                 {
                     message = "Missing \"Schema\", \"Parameter\" arguments in setup. Please check your Enterprise configuration";

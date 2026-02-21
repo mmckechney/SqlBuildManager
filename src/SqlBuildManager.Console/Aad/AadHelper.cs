@@ -1,4 +1,4 @@
-﻿using Azure.Core;
+using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using System;
@@ -10,7 +10,7 @@ namespace SqlBuildManager.Console.Aad
     public class AadHelper
     {
         private static CancellationTokenSource src = new CancellationTokenSource();
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private static string _managedIdentityClientId = string.Empty;
         public static string ManagedIdentityClientId
         {
@@ -40,7 +40,7 @@ namespace SqlBuildManager.Console.Aad
             }
         }
 
-        private static TokenCredential _tokenCred = null;
+        private static TokenCredential _tokenCred = null!;
         internal static TokenCredential TokenCredential
         {
             get

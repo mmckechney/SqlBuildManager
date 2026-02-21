@@ -1,0 +1,8 @@
+  SqlBuildManager.Logging -> C:\Users\mimcke\source\repos\SqlBuildManager_vNext_2026\src\SqlBuildManager.Logging\bin\Debug\net10.0\SqlBuildManager.Logging.dll
+  SqlSync.Connection -> C:\Users\mimcke\source\repos\SqlBuildManager_vNext_2026\src\SqlSync.Connection\bin\Debug\net10.0\SqlSync.Connection.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.99

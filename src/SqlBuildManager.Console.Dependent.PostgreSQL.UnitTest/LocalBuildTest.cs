@@ -15,7 +15,7 @@ namespace SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest
     [DoNotParallelize]
     public class LocalBuildTest
     {
-        private TestContext testContextInstance;
+        private TestContext testContextInstance = null!;
         private static List<Initialization> initObjs = new List<Initialization>();
 
         private Initialization GetInitializationObject()
@@ -27,7 +27,7 @@ namespace SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest
 
         public TestContext TestContext
         {
-            get { return testContextInstance; }
+            get { return testContextInstance = null!; }
             set { testContextInstance = value; }
         }
 

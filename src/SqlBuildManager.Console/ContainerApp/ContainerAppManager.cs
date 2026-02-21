@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Arm;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.ContainerApp.Internal;
@@ -25,7 +25,7 @@ namespace SqlBuildManager.Console.ContainerApp
 {
     internal class ContainerAppManager
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         internal static async Task<bool> DeleteContainerApp(CommandLineArgs cmdLine)
         {

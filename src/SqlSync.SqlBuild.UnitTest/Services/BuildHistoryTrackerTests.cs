@@ -72,7 +72,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 userId: "TestUser");
 
             // Act
-            tracker.AddScriptRunToHistory(null, build);
+            tracker.AddScriptRunToHistory(null!, build);
 
             // Assert
             Assert.AreEqual(0, tracker.BuildHistoryModel.ScriptRun.Count);

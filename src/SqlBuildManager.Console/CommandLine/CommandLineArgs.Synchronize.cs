@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,8 +24,8 @@ namespace SqlBuildManager.Console.CommandLine
         [Serializable]
         public class Synchronize
         {
-            public virtual string GoldDatabase { get; set; }
-            public virtual string GoldServer { get; set; }
+            public virtual string GoldDatabase { get; set; } = string.Empty;
+            public virtual string GoldServer { get; set; } = string.Empty;
         }
     }
 }

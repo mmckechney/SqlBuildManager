@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Batch;
+using Microsoft.Azure.Batch;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using SqlBuildManager.Console.ContainerApp.Internal;
 using System.Collections.Generic;
@@ -73,7 +73,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
             this.labels = new JobLabels(jobName);
         }
         [YamlMember(Order = 1)]
-        public string name { get; set; }
+        public string name { get; set; } = string.Empty;
         [YamlMember(Order = 2)]
         public string @namespace { get; set; } = KubernetesManager.SbmNamespace;
         [YamlMember(Order = 3)]
@@ -188,7 +188,7 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
         [YamlMember(Order = 1)]
         public string name { get => k8jobname; }
         [YamlMember(Order = 2)]
-        public string image { get; internal set; }
+        public string image { get; internal set; } = string.Empty;
         [YamlMember(Order = 3)]
         public string imagePullPolicy { get => "Always"; }
 
@@ -214,9 +214,9 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
 
         public class Mounts
         {
-            public string name { get; internal set; }
-            public string mountPath { get; internal set; }
-            public string readOnly { get; internal set; }
+            public string name { get; internal set; } = string.Empty;
+            public string mountPath { get; internal set; } = string.Empty;
+            public string readOnly { get; internal set; } = string.Empty;
         }
     }
 }

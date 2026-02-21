@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -132,18 +132,18 @@ namespace SqlBuildManager.Console.CommandLine
 
             [DefaultValue(10)]
             public int BatchNodeCount { get; set; } = 10;
-            public string BatchVmSize { get; set; } = null;
+            public string BatchVmSize { get; set; } = null!;
             [JsonIgnore]
-            public string OutputContainerSasUrl { get; set; }
+            public string OutputContainerSasUrl { get; set; } = string.Empty;
             [DefaultValue(false)]
             public bool DeleteBatchPool { get; set; } = false;
             [DefaultValue(true)]
             public bool DeleteBatchJob { get; set; } = true;
             [JsonIgnore]
-            public string BatchJobName { get; set; } = null;
+            public string BatchJobName { get; set; } = null!;
             [DefaultValue(true)]
             public bool PollBatchPoolStatus { get; set; } = true;
-            public string BatchPoolName { get; set; } = null;
+            public string BatchPoolName { get; set; } = null!;
             [JsonConverter(typeof(JsonStringEnumConverter))]
             public OsType BatchPoolOs { get; set; }
             public string ApplicationPackage { get; set; } = string.Empty;

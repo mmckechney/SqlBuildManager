@@ -14,7 +14,7 @@ namespace SqlSync.SqlBuild.Services
 {
     public sealed class DefaultBuildFinalizer : IBuildFinalizer
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private readonly IProgressReporter progressReporter;
         private readonly ISqlLoggingService sqlLoggingService;
 
@@ -38,7 +38,7 @@ namespace SqlSync.SqlBuild.Services
                 {
                     log.LogInformation($"Committing transaction for {key}");
                     ((BuildConnectData)connectionsService.Connections[key]).Transaction.Commit();
-                    ((BuildConnectData)connectionsService.Connections[key]).Transaction = null;
+                    ((BuildConnectData)connectionsService.Connections[key]).Transaction = null!;
                     log.LogInformation($"Commit Successful for {key}");
                 }
                 catch (Exception e)
@@ -117,7 +117,7 @@ namespace SqlSync.SqlBuild.Services
                         cs.FileHash,
                         projectId));
                 }
-                buildDataModel.CommittedScript = list;
+                buildDataModel!.CommittedScript = list;
                 return buildDataModel;
             }
 

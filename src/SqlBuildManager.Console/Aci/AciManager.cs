@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using Azure.Core;
 using Azure.ResourceManager.ContainerInstance;
 using Azure.ResourceManager.ContainerInstance.Models;
@@ -23,7 +23,7 @@ namespace SqlBuildManager.Console.Aci
 {
     class AciManager
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         internal static async Task<string> DeployNetworkProfile(CommandLineArgs cmdLine)
         {
@@ -306,7 +306,7 @@ namespace SqlBuildManager.Console.Aci
             var resp = await ArmHelper.GetAciDeploymentDetails(subscriptionId, resourceGroupName, aciName);
             var aciResult = JsonSerializer.Deserialize<Aci.Arm.Deployment>(JsonSerializer.Serialize(resp));
 
-            return aciResult;
+            return aciResult!;
         }
 
         #region Container Worker Methods

@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,7 +17,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
     public class Initialization : InitializationBase
     {
         public int TableLockingLoopCount = 1000000;
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static string MissingDatabaseErrorMessage = "NOTE: To succesfully test, please make sure you have a SQL Server instance running. Set SBM_TEST_SQL_SERVER, SBM_TEST_SQL_USER, SBM_TEST_SQL_PASSWORD environment variables for non-default configuration.";
 
         public string connectionString;

@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace SqlSync.Connection.UnitTest
 
         #region Additional test attributes
 
-        private static string appNameString;
+        private static string appNameString = string.Empty;
         [ClassInitialize()]
         public static void MyClassInitialize(TestContext testContext)
         {
@@ -208,7 +208,7 @@ namespace SqlSync.Connection.UnitTest
             overrides.Add(new DatabaseOverride("server1", "default1", "override1"));
             overrides.Add(new DatabaseOverride("server1", "default2", "override2"));
 
-            string actual = ConnectionHelper.GetTargetDatabase(null, overrides);
+            string actual = ConnectionHelper.GetTargetDatabase(null!, overrides);
             Assert.AreEqual("override1", actual);
 
 
@@ -288,7 +288,7 @@ namespace SqlSync.Connection.UnitTest
         [TestMethod()]
         public void ValidateDatabaseOverridesTest_NullList()
         {
-            List<DatabaseOverride> overrides = null;
+            List<DatabaseOverride> overrides = null!;
             bool expected = false;
             bool actual;
             actual = ConnectionHelper.ValidateDatabaseOverrides(overrides);
@@ -304,7 +304,7 @@ namespace SqlSync.Connection.UnitTest
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
             overrides.Add(new DatabaseOverride("server1", "default1", "override1"));
             overrides.Add(new DatabaseOverride("server1", "default2", "override2"));
-            overrides.Add(null);
+            overrides.Add(null!);
             overrides.Add(new DatabaseOverride("server1", "MixedCASE", "override5"));
 
             bool expected = false;

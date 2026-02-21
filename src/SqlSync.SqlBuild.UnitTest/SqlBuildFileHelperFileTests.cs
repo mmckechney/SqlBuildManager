@@ -16,7 +16,7 @@ namespace SqlSync.SqlBuild.UnitTest
     [TestClass]
     public class SqlBuildFileHelperFileTests
     {
-        private string _testDirectory;
+        private string _testDirectory = string.Empty;
 
         [TestInitialize]
         public void Setup()

@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Enterprise.DefaultScripts;
 using SqlSync.SqlBuild.DefaultScripts;
 using System;
@@ -226,7 +226,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void GetApplicableDefaultScriptRegTest_NullRegistry()
         {
 
-            List<DefaultScriptRegistryFile> defaultScriptRegs = null;
+            List<DefaultScriptRegistryFile> defaultScriptRegs = null!;
 
             List<string> groupMemberships = new List<string>(new string[] { "MyGroup", "Group1", "Group2" });
 
@@ -257,7 +257,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             defaultScriptRegs.Add(srFile1);
             defaultScriptRegs.Add(srFile2);
 
-            List<string> groupMemberships = null;
+            List<string> groupMemberships = null!;
 
             DefaultScriptRegistryFile actual;
             actual = DefaultScriptHelper.GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);

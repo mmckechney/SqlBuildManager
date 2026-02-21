@@ -11,8 +11,8 @@ namespace SqlSync.SqlBuild.UnitTest.Services
     [TestClass]
     public class DefaultSqlLoggingServiceTests
     {
-        private Mock<IConnectionsService> _mockConnectionsService;
-        private Mock<IProgressReporter> _mockProgressReporter;
+        private Mock<IConnectionsService> _mockConnectionsService = null!;
+        private Mock<IProgressReporter> _mockProgressReporter = null!;
 
         [TestInitialize]
         public void Setup()
@@ -80,7 +80,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 _mockProgressReporter.Object);
 
             // Act - no exception expected now since we check Connections first
-            var result = await service.EnsureLogTablePresence(null, string.Empty);
+            var result = await service.EnsureLogTablePresence(null!, string.Empty);
 
             // Assert - should return empty string since there are no unconfirmed connections
             Assert.AreEqual(string.Empty, result);

@@ -20,14 +20,14 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
     {
         public TestContext TestContext { get; set; }
 
-        private CommandLineArgs cmdLine;
-        private List<string> overrideFileContents;
-        private string overrideFilePath;
-        private string settingsFilePath;
-        private string settingsFileKeyPath;
+        private CommandLineArgs cmdLine = null!;
+        private List<string> overrideFileContents = null!;
+        private string overrideFilePath = string.Empty;
+        private string settingsFilePath = string.Empty;
+        private string settingsFileKeyPath = string.Empty;
 
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
-        private TextWriter originalConsoleOut;
+        private TextWriter originalConsoleOut = null!;
 
         [TestInitialize]
         public void ConfigureProcessInfo()

@@ -61,7 +61,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             if (serverCount != dbCount.Length)
             {
-                return ("", null);
+                return ("", null!);
             }
             var tmpCfg = Path.GetTempPath() + Guid.NewGuid().ToString() + ".cfg";
             StringBuilder sb = new StringBuilder();

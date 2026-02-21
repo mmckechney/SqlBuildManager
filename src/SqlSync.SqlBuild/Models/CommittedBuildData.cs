@@ -17,7 +17,7 @@ namespace SqlSync.SqlBuild.Models {
 
         public System.DateTime CommitDate { get; set; }
 
-        public string Database { get; set; }
+        public string Database { get; set; } = string.Empty;
 
 
       

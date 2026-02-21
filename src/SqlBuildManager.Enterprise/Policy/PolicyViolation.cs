@@ -20,7 +20,7 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             get;
             set;
-        }
+        } = string.Empty;
     }
 
     [Serializable()]
@@ -43,7 +43,7 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             get;
             set;
-        }
+        } = string.Empty;
     }
 
 
@@ -91,25 +91,25 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             get;
             set;
-        }
+        } = string.Empty;
         [XmlAttribute()]
         public string Guid
         {
             get;
             set;
-        }
+        } = string.Empty;
         [XmlAttribute()]
         public string LastChangeDate
         {
             get;
             set;
-        }
+        } = string.Empty;
         [XmlAttribute()]
         public string LastChangeUserId
         {
             get;
             set;
-        }
+        } = string.Empty;
 
         public List<Violation> Violations
         {
@@ -144,20 +144,20 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             get;
             set;
-        }
+        } = string.Empty;
 
         [XmlAttribute()]
         public string Message
         {
             get;
             set;
-        }
+        } = string.Empty;
         [XmlAttribute()]
         public string Severity
         {
             get;
             set;
-        }
+        } = string.Empty;
     }
 
 }

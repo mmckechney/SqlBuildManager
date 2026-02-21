@@ -5,7 +5,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
     [TestClass]
     public class PostgresSyntaxProviderTests
     {
-        private SqlBuild.Services.PostgresSyntaxProvider provider;
+        private SqlBuild.Services.PostgresSyntaxProvider provider = null!;
 
         [TestInitialize]
         public void Init()

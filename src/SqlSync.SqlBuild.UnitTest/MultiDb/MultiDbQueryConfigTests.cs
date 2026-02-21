@@ -104,9 +104,9 @@ namespace SqlSync.SqlBuild.UnitTest.MultiDb
             var config = new MultiDbQueryConfig("Server", "DB", "Query");
 
             // Act
-            config.SourceServer = null;
-            config.Database = null;
-            config.Query = null;
+            config.SourceServer = null!;
+            config.Database = null!;
+            config.Query = null!;
 
             // Assert
             Assert.IsNull(config.SourceServer);

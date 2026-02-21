@@ -60,7 +60,7 @@ namespace SqlSync.SqlBuild.Services
             }
 
             var database = context.Prep.FilteredScripts[0].Database;
-            string targetDatabase = context.GetTargetDatabaseCallback(database);
+            string targetDatabase = context.GetTargetDatabaseCallback(database!);
             
             log.LogWarning($"Custom dacpac required for {context.ServerName} : {targetDatabase}. Generating file.");
             

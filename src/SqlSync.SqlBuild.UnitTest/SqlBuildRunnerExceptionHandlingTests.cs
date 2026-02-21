@@ -32,7 +32,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 ctx,
                 new Mock<IBuildFinalizerContext>().Object,
                 new SqlCommandExecutorThatThrows(CreateTimeoutException()),
-                null,
+                null!,
                 MockFactory.CreateMockBuildFinalizer().Object,
                 MockFactory.CreateMockSqlLoggingService().Object,
                 new NoopProgressReporter());
@@ -95,18 +95,18 @@ namespace SqlSync.SqlBuild.UnitTest
                 "proc", // procedure
                 0, // lineNumber
                 (uint)0, // win32ErrorCode
-                null // exception
+                null! // exception
             });
 
-            var errorCollection = (SqlErrorCollection)Activator.CreateInstance(typeof(SqlErrorCollection), true);
+            var errorCollection = (SqlErrorCollection)Activator.CreateInstance(typeof(SqlErrorCollection), true)!;
             typeof(SqlErrorCollection)
                 .GetMethod("Add", BindingFlags.Instance | BindingFlags.NonPublic)
                 ?.Invoke(errorCollection, new object[] { sqlError });
 
             var exceptionFactory = typeof(SqlException)
                 .GetMethod("CreateException", BindingFlags.NonPublic | BindingFlags.Static, null, new[] { typeof(SqlErrorCollection), typeof(string) }, null);
-            var sqlException = (SqlException)exceptionFactory.Invoke(null, new object[] { errorCollection, "7.0.0" });
-            return sqlException;
+            var sqlException = (SqlException)exceptionFactory!.Invoke(null, new object[] { errorCollection, "7.0.0" })!;
+            return sqlException!;
         }
 
         private sealed class SqlCommandExecutorThatThrows : ISqlCommandExecutor

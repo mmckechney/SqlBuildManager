@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Security.Cryptography;
@@ -11,7 +11,7 @@ namespace SqlSync.SqlBuild.Utilities
     /// </summary>
     public static class Cryptography
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static string EncryptText(string input, string password)
         {
             try
@@ -64,7 +64,7 @@ namespace SqlSync.SqlBuild.Utilities
 
         private static byte[] AES_Encrypt(byte[] bytesToBeEncrypted, byte[] passwordBytes)
         {
-            byte[] encryptedBytes = null;
+            byte[] encryptedBytes = null!;
             using (MemoryStream ms = new MemoryStream())
             {
                 using (var AES = Aes.Create())
@@ -92,7 +92,7 @@ namespace SqlSync.SqlBuild.Utilities
 
         private static byte[] AES_Decrypt(byte[] bytesToBeDecrypted, byte[] passwordBytes)
         {
-            byte[] decryptedBytes = null;
+            byte[] decryptedBytes = null!;
 
             using (MemoryStream ms = new MemoryStream())
             {

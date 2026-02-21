@@ -113,7 +113,7 @@ namespace SqlBuildManager.Console.ExternalTest
             }
             else
             {
-                return null;
+                return null!;
             }
 
         }

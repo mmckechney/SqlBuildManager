@@ -8,7 +8,7 @@ namespace SqlSync.SqlBuild.Models
     public class SqlBuildRunData
     {
 
-        public SqlSyncBuildDataModel BuildDataModel { get; set; } 
+        public SqlSyncBuildDataModel BuildDataModel { get; set; } = null!;
         public string BuildType { get; set; } = string.Empty;
         public string Server { get; set; } = string.Empty;
         public string BuildDescription { get; set; } = string.Empty;

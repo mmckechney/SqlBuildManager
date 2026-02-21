@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Enterprise.Tag;
 using System.Collections.Generic;
 
@@ -13,8 +13,8 @@ namespace SqlBuildManager.Enterprise.UnitTest
     [TestClass()]
     public class EnterpriseTagHelperTest
     {
-        private static List<ScriptTagInference> inferenceList;
-        private static List<string> standardRegexValues;
+        private static List<ScriptTagInference> inferenceList = null!;
+        private static List<string> standardRegexValues = null!;
 
         [ClassInitialize()]
         public static void MyClassInitialize(TestContext testContext)
@@ -74,7 +74,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void GetEnterpriseTagRegexValuesTest_NullInferenceList()
         {
-            List<ScriptTagInference> inferenceList = null;
+            List<ScriptTagInference> inferenceList = null!;
             List<string> adGroupMembership = new List<string>() { "NotMyGroup", "MyGroup1" };
             List<string> expected = EnterpriseTagHelperTest.standardRegexValues;
             List<string> actual;
@@ -103,7 +103,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void GetEnterpriseTagRegexValuesTest_NullADGroupMembership()
         {
             List<ScriptTagInference> inferenceList = EnterpriseTagHelperTest.inferenceList;
-            List<string> adGroupMembership = null;
+            List<string> adGroupMembership = null!;
             List<string> expected = EnterpriseTagHelperTest.standardRegexValues;
             List<string> actual;
             actual = EnterpriseTagHelper.GetEnterpriseTagRegexValues(inferenceList, adGroupMembership);
@@ -133,7 +133,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void GetEnterpriseTagRegexValuesTest_NullInferenceInGroup()
         {
             List<ScriptTagInference> inferenceList = EnterpriseTagHelperTest.inferenceList;
-            inferenceList.Add(null);
+            inferenceList.Add(null!);
             List<string> adGroupMembership = new List<string>() { "NotMyGroup", "MyGroup1" };
             List<string> expected = EnterpriseTagHelperTest.standardRegexValues;
             List<string> actual;

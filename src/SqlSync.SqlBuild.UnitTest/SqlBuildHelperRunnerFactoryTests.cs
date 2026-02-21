@@ -54,7 +54,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = await helper.RunBuildScriptsAsync(scripts, expectedBuild, "srv", false, null, buildData);
+            var result = await helper.RunBuildScriptsAsync(scripts, expectedBuild, "srv", false, null!, buildData);
 
             // Assert
             Assert.AreEqual(expectedBuild.BuildId, result.BuildId);
@@ -69,7 +69,7 @@ namespace SqlSync.SqlBuild.UnitTest
 
             public FakeRunnerFactory(BuildModels.Build result) => _result = result;
 
-            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null, ITransactionManager transactionManager = null, IBuildFinalizer buildFinalizer = null, ISqlLoggingService sqlLoggingService = null)
+            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null!, ITransactionManager transactionManager = null!, IBuildFinalizer buildFinalizer = null!, ISqlLoggingService sqlLoggingService = null!)
             {
                 CreateCalled = true;
                 return new FakeRunner(_result);

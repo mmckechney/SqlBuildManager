@@ -322,7 +322,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void GetTargetDatabase_NoOverrides_ReturnsDefaultDatabase()
         {
             var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
-            helper.targetDatabaseOverrides = null;
+            helper.targetDatabaseOverrides = null!;
 
             var result = helper.GetTargetDatabase("MyDefaultDb");
 
@@ -889,7 +889,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var scripts = new List<BuildModels.Script>();
             var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            var result = await helper.RunBuildScriptsAsync(scripts, expectedBuild, "srv", false, null, buildData);
+            var result = await helper.RunBuildScriptsAsync(scripts, expectedBuild, "srv", false, null!, buildData);
 
             Assert.AreEqual(expectedBuild.BuildId, result.BuildId);
             Assert.IsTrue(fakeFactory.CreateCalled);
@@ -902,7 +902,7 @@ namespace SqlSync.SqlBuild.UnitTest
 
             public TestRunnerFactory(BuildModels.Build result) => _result = result;
 
-            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null, ITransactionManager transactionManager = null, IBuildFinalizer buildFinalizer = null, ISqlLoggingService sqlLoggingService = null)
+            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null!, ITransactionManager transactionManager = null!, IBuildFinalizer buildFinalizer = null!, ISqlLoggingService sqlLoggingService = null!)
             {
                 CreateCalled = true;
                 return new TestRunner(_result);

@@ -9,7 +9,7 @@ namespace SqlSync.Connection
     /// </summary>
     public class SqlServerConnectionFactory : IDbConnectionFactory
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         public DbConnection CreateConnection(ConnectionData connData)
         {
@@ -79,7 +79,7 @@ namespace SqlSync.Connection
             return builder.ConnectionString;
         }
 
-        public DbCommand CreateCommand(string sql, DbConnection connection, DbTransaction transaction = null)
+        public DbCommand CreateCommand(string sql, DbConnection connection, DbTransaction transaction = null!)
         {
             var cmd = new SqlCommand(sql, (SqlConnection)connection);
             if (transaction != null)

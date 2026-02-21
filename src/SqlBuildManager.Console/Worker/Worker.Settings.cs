@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SqlBuildManager.Console.CommandLine;
@@ -35,18 +35,18 @@ namespace SqlBuildManager.Console
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
             {
                 //remove secrets from the command line so they are not saved to the config.
-                cmdLine.AuthenticationArgs.UserName = null;
-                cmdLine.AuthenticationArgs.Password = null;
-                cmdLine.ConnectionArgs.BatchAccountKey = null;
-                cmdLine.ConnectionArgs.StorageAccountKey = null;
+                cmdLine.AuthenticationArgs.UserName = null!;
+                cmdLine.AuthenticationArgs.Password = null!;
+                cmdLine.ConnectionArgs.BatchAccountKey = null!;
+                cmdLine.ConnectionArgs.StorageAccountKey = null!;
                 if (cmdLine.ContainerRegistryArgs != null)
                 {
-                    cmdLine.ContainerRegistryArgs.RegistryPassword = null;
+                    cmdLine.ContainerRegistryArgs.RegistryPassword = null!;
                 }
 
                 if (ConnectionStringValidator.IsEventHubConnectionString(cmdLine.ConnectionArgs.EventHubConnectionString))
                 {
-                    cmdLine.ConnectionArgs.EventHubConnectionString = null;
+                    cmdLine.ConnectionArgs.EventHubConnectionString = null!;
                 }
 
                 if (ConnectionStringValidator.IsServiceBusConnectionString(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
@@ -54,7 +54,7 @@ namespace SqlBuildManager.Console
                     if (cmdLine.ContainerAppArgs == null || string.IsNullOrWhiteSpace(cmdLine.ContainerAppArgs.EnvironmentName))
                     {
                         //will need this for KEDA in ContainerApps, so only remove if NOT for ContainerApps
-                        cmdLine.ConnectionArgs.ServiceBusTopicConnectionString = null;
+                        cmdLine.ConnectionArgs.ServiceBusTopicConnectionString = null!;
 
                     }
                 }
@@ -64,15 +64,15 @@ namespace SqlBuildManager.Console
             //Clear out username and password is AuthenticationType is ManagedIdentity
             if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
             {
-                cmdLine.AuthenticationArgs.UserName = null;
-                cmdLine.AuthenticationArgs.Password = null;
+                cmdLine.AuthenticationArgs.UserName = null!;
+                cmdLine.AuthenticationArgs.Password = null!;
             }
 
 
             if(cmdLine.EventHubLogging.Length > 0)
             {
                 cmdLine.EventHubArgs.Logging = cmdLine.EventHubLogging;
-                cmdLine.EventHubLogging = null;
+                cmdLine.EventHubLogging = null!;
             }
             if (!clearText)
             {
@@ -92,7 +92,7 @@ namespace SqlBuildManager.Console
                 if (File.Exists(cmdLine.SettingsFile) && !cmdLine.Silent)
                 {
                     System.Console.WriteLine($"The settings file '{cmdLine.SettingsFile}' already exists. Overwrite (Y/N)?");
-                    write = System.Console.ReadLine();
+                    write = System.Console.ReadLine()!;
                 }
 
                 if (write.ToLower() == "y")

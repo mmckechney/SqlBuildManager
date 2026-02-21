@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 namespace SqlBuildManager.Enterprise.Notification
 {
@@ -45,7 +45,7 @@ namespace SqlBuildManager.Enterprise.Notification
 
             if (matches.Count == 0)
             {
-                matches = null;
+                matches = null!;
                 return true;
             }
             else

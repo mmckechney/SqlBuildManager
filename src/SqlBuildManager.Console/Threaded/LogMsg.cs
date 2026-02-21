@@ -1,4 +1,4 @@
-﻿using SqlBuildManager.Interfaces.Console;
+using SqlBuildManager.Interfaces.Console;
 using System;
 using System.IO;
 using System.Text.Json.Serialization;
@@ -18,7 +18,7 @@ namespace SqlBuildManager.Console.Threaded
         /// <summary>
         /// Creates a LogMsg with the specified runId and sourceDacPac.
         /// </summary>
-        public LogMsg(string runId, string sourceDacPac = null)
+        public LogMsg(string runId, string sourceDacPac = null!)
         {
             this.runId = runId ?? string.Empty;
             if (!string.IsNullOrEmpty(sourceDacPac))
@@ -29,7 +29,7 @@ namespace SqlBuildManager.Console.Threaded
         }
         
         [JsonPropertyName("_typeTag")]
-        public string TypeTag { get; set; } = null;
+        public string TypeTag { get; set; } = null!;
         
         [JsonPropertyName("JobName")]
         public string JobName { get; set; } = string.Empty;
@@ -83,7 +83,7 @@ namespace SqlBuildManager.Console.Threaded
         public string ConcurrencyTag { get; set; } = string.Empty;
 
         [JsonPropertyName("ScriptLog")]
-        public ScriptLogData ScriptLog { get; set; } = null;
+        public ScriptLogData ScriptLog { get; set; } = null!;
             
     }
 

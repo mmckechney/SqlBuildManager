@@ -20,7 +20,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
     /// </summary>
     public class PostgresInitialization : InitializationBase
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         public string pgUser;
         public string pgPassword;
@@ -91,7 +91,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
                 {
                     using var checkCmd = new NpgsqlCommand("SELECT 1 FROM pg_database WHERE datname = @name", adminConn);
                     checkCmd.Parameters.AddWithValue("@name", dbName);
-                    object val = checkCmd.ExecuteScalar();
+                    object? val = checkCmd.ExecuteScalar();
 
                     if (val == null || val == DBNull.Value)
                     {

@@ -1,4 +1,4 @@
-﻿using Azure.ResourceManager.Network.Models;
+using Azure.ResourceManager.Network.Models;
 using SqlSync.Connection;
 using System.Collections.Generic;
 
@@ -6,8 +6,8 @@ namespace SqlBuildManager.Console.Queue
 {
     public class TargetMessage
     {
-        public string ServerName { get; set; }
-        public List<DatabaseOverride> DbOverrideSequence { get; set; }
+        public string ServerName { get; set; } = string.Empty;
+        public List<DatabaseOverride> DbOverrideSequence { get; set; } = null!;
 
         private string concurrencyTag = string.Empty;
         public string ConcurrencyTag

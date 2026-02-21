@@ -197,7 +197,7 @@ namespace SqlSync.SqlBuild.UnitTest
             File.WriteAllText(script1, Properties.Resources.CreateTestTablesScript);
             File.WriteAllText(script2, Properties.Resources.LoggingTable);
 
-            string expected = Path.Combine(Path.GetDirectoryName(sbxBuildControlFileName), Path.GetFileNameWithoutExtension(sbxBuildControlFileName) + ".sbm");
+            string expected = Path.Combine(Path.GetDirectoryName(sbxBuildControlFileName)!, Path.GetFileNameWithoutExtension(sbxBuildControlFileName) + ".sbm");
             string actual;
             actual = await SqlBuildFileHelper.PackageSbxFileIntoSbmFileAsync(sbxBuildControlFileName, System.Threading.CancellationToken.None);
             Directory.Delete(folder, true);

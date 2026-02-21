@@ -18,11 +18,11 @@ namespace SqlSync.SqlBuild.Validator
 
 
         }
-        private string validityErrorMessage;
+        private string validityErrorMessage = string.Empty;
 
         public string ValidityErrorMessage
         {
-            get { return validityErrorMessage; }
+            get { return validityErrorMessage = null!; }
             set { validityErrorMessage = value; }
         }
         private System.Text.StringBuilder sb = new System.Text.StringBuilder();
@@ -31,7 +31,7 @@ namespace SqlSync.SqlBuild.Validator
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void CheckValidity(object sender, ValidationEventArgs args)
+        private void CheckValidity(object? sender, ValidationEventArgs args)
         {
             validityErrorMessage += args.Message + "\r\n";
             isValid = false;
@@ -109,7 +109,7 @@ namespace SqlSync.SqlBuild.Validator
             }
             catch
             {
-                return null;
+                return null!;
             }
         }
 

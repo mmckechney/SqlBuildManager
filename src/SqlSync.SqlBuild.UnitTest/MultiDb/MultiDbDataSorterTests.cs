@@ -7,7 +7,7 @@ namespace SqlSync.SqlBuild.UnitTest.MultiDb
     [TestClass]
     public class MultiDbDataSorterTests
     {
-        private SqlSync.SqlBuild.MultiDb.MultiDbDataSorter _sorter;
+        private SqlSync.SqlBuild.MultiDb.MultiDbDataSorter _sorter = null!;
 
         [TestInitialize]
         public void TestInitialize()

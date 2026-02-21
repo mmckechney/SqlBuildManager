@@ -1,4 +1,4 @@
-﻿using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.Extensions.Logging;
 using MoreLinq;
@@ -17,7 +17,7 @@ namespace SqlBuildManager.Console.Queue
 {
     public class QueueManager : IDisposable
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         private readonly string topicSubscriptionName = "sbmsubscription";
         private readonly string topicSessionSubscriptionName = "sbmsubscriptionsession";
@@ -27,11 +27,11 @@ namespace SqlBuildManager.Console.Queue
         private string jobName;
         private ConcurrencyType concurrencyType;
 
-        private ServiceBusClient _client = null;
-        private ServiceBusAdministrationClient _adminClient = null;
-        private ServiceBusSessionReceiver _sessionReceiver = null;
-        private ServiceBusReceiver _messageReceiver = null;
-        private CancellationTokenSource tokenSource = null;
+        private ServiceBusClient _client = null!;
+        private ServiceBusAdministrationClient _adminClient = null!;
+        private ServiceBusSessionReceiver _sessionReceiver = null!;
+        private ServiceBusReceiver _messageReceiver = null!;
+        private CancellationTokenSource tokenSource = null!;
 
         public QueueManager(string topicConnectionString, string jobName, ConcurrencyType concurrencyType, bool unitest = false)
         {
@@ -223,7 +223,7 @@ namespace SqlBuildManager.Console.Queue
                                 {
                                     var message = $"A Concurrency Tag is required in the override settings when Concurrency Type '{cType.ToString()}' is set. Unable to queue messages.";
                                     log.LogError(message);
-                                    return null; 
+                                    return null!; 
                                 }
                                 break;
                             default:
@@ -251,7 +251,7 @@ namespace SqlBuildManager.Console.Queue
             catch (Exception exe)
             {
                 log.LogError(exe, "Unable to contruct Service Bus Messages from override targets");
-                return null;
+                return null!;
             }
 
         }
@@ -713,7 +713,7 @@ namespace SqlBuildManager.Console.Queue
                 if (ex.Message.Contains("already exists"))
                 {
                     log.LogInformation($"The subscription filter '{jobName}' already exists");
-                    _adminClient = null;
+                    _adminClient = null!;
                 }
                 else
                 {

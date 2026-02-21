@@ -48,12 +48,12 @@ namespace SqlSync.SqlBuild.Models
         {
             get;
             set;
-        }
+        } = null!;
         public string ScriptTag
         {
             get;
             set;
-        }
+        } = string.Empty;
         public bool StripTransactions
         {
             get;
@@ -64,7 +64,7 @@ namespace SqlSync.SqlBuild.Models
         {
             get;
             set;
-        }
+        } = string.Empty;
         public bool RollBackScript
         {
             get;
@@ -79,7 +79,7 @@ namespace SqlSync.SqlBuild.Models
         {
             get;
             set;
-        }
+        } = string.Empty;
         public bool AllowMultipleRuns
         {
             get;

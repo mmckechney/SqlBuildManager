@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Core;
 using System;
@@ -8,13 +8,13 @@ namespace SqlBuildManager.Logging
 {
     public class ApplicationLogging
     {
-        private static ILoggerFactory Factory = null;
+        private static ILoggerFactory Factory = null!;
         private static string _logFileName = string.Empty;
         private static bool addPath = false;
         private static Microsoft.Extensions.Logging.LogLevel logLevel = Microsoft.Extensions.Logging.LogLevel.Information;
         private static LoggingLevelSwitch levelSwitch = new LoggingLevelSwitch();
         private static List<string> loggingPaths = new List<string>();
-        private static Serilog.Core.Logger serilogLogger = null;
+        private static Serilog.Core.Logger serilogLogger = null!;
         public static void ConfigureStandardLogger(ILoggerFactory factory)
         {
             var logOutputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff } {Level:u3} TH:{ThreadId,3}] {SourceContext} - {Message}{NewLine}{Exception}";
@@ -153,7 +153,7 @@ namespace SqlBuildManager.Logging
             {
                 serilogLogger.Dispose();
             }
-            Factory = null;
+            Factory = null!;
 
         }
 

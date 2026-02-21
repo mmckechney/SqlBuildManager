@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+#nullable enable
+
 namespace SqlSync.SqlBuild.UnitTest
 {
     /// <summary>
@@ -46,7 +48,7 @@ namespace SqlSync.SqlBuild.UnitTest
             Assert.ThrowsExactly<ArgumentNullException>(() =>
                 new SqlBuildRunner(
                     new DefaultConnectionsService(),
-                    null,
+                    null!,
                     new Mock<IBuildFinalizerContext>().Object));
         }
 
@@ -58,7 +60,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 new SqlBuildRunner(
                     new DefaultConnectionsService(),
                     new FakeRunnerContext(),
-                    null));
+                    null!));
         }
 
         [TestMethod]
@@ -133,7 +135,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var runner = new SqlBuildRunner(new DefaultConnectionsService(), ctx, new Mock<IBuildFinalizerContext>().Object);
             var coll = new ScriptBatchCollection
             {
-                new ScriptBatch("file.sql", null, "script-id")
+                new ScriptBatch("file.sql", null!, "script-id")
             };
 
             var result = await runner.LoadBatchScriptsAsync("script-id", "file.sql", stripTransaction: false, scriptBatchColl: coll, default);
@@ -168,7 +170,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "ASYNC CONTEXT" } };
             var runner = new SqlBuildRunner(new DefaultConnectionsService(), ctx, new Mock<IBuildFinalizerContext>().Object);
 
-            var result = await runner.LoadBatchScriptsAsync("script-id", "file.sql", stripTransaction: false, scriptBatchColl: null, System.Threading.CancellationToken.None);
+            var result = await runner.LoadBatchScriptsAsync("script-id", "file.sql", stripTransaction: false, scriptBatchColl: null!, System.Threading.CancellationToken.None);
 
             CollectionAssert.AreEqual(new[] { "ASYNC CONTEXT" }, result);
         }

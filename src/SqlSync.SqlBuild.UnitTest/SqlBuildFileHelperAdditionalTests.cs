@@ -22,7 +22,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void GetFileDataForCodeTableUpdates_WithNullBuildData_ReturnsNull()
         {
-            SqlSyncBuildDataModel model = null;
+            SqlSyncBuildDataModel model = null!;
 
             var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates(model, "test.xml");
 
@@ -115,7 +115,7 @@ INSERT INTO TestTable VALUES (1, 'Test');";
         [TestMethod]
         public void GetFileDataForObjectUpdates_WithNullBuildData_ReturnsNull()
         {
-            SqlSyncBuildDataModel model = null;
+            SqlSyncBuildDataModel model = null!;
 
             var result = SqlBuildFileHelper.GetFileDataForObjectUpdates(model, "test.xml");
 
@@ -125,7 +125,7 @@ INSERT INTO TestTable VALUES (1, 'Test');";
         [TestMethod]
         public void GetFileDataForObjectUpdates_ModelVersion_WithNullModel_ReturnsNull()
         {
-            SqlSyncBuildDataModel model = null;
+            SqlSyncBuildDataModel model = null!;
 
             var result = SqlBuildFileHelper.GetFileDataForObjectUpdates(model, "test.xml");
 
@@ -138,7 +138,7 @@ INSERT INTO TestTable VALUES (1, 'Test');";
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             SqlBuildFileHelper.GetFileDataForObjectUpdates(model, "test.xml",
-                out List<ObjectUpdates> canUpdate, out List<string> canNotUpdate);
+                out List<ObjectUpdates>? canUpdate, out List<string>? canNotUpdate);
 
             Assert.IsNotNull(canUpdate);
             Assert.IsNotNull(canNotUpdate);
@@ -204,7 +204,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
                     "regular.sql", 1, "", true, true, "TestDb", false, "", false, true, "user", 30, Guid.NewGuid(), "");
 
                 SqlBuildFileHelper.GetFileDataForObjectUpdates(model, Path.Combine(tempDir, "test.xml"),
-                    out List<ObjectUpdates> canUpdate, out List<string> canNotUpdate);
+                    out List<ObjectUpdates>? canUpdate, out List<string>? canNotUpdate);
 
                 Assert.IsNotNull(canNotUpdate);
                 Assert.IsTrue(canNotUpdate.Contains("regular.sql"));
@@ -353,7 +353,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         [TestMethod]
         public async Task CalculateSha1HashFromPackage_WithNullString_ReturnsEmptyString()
         {
-            var result = await SqlBuildFileHelper.CalculateSha1HashFromPackageAsync(null);
+            var result = await SqlBuildFileHelper.CalculateSha1HashFromPackageAsync(null!);
 
             Assert.AreEqual(string.Empty, result);
         }
@@ -499,7 +499,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         [TestMethod]
         public async Task PackageSbxFileIntoSbmFile_WithNullFileName_ReturnsEmpty()
         {
-            var result = await SqlBuildFileHelper.PackageSbxFileIntoSbmFileAsync(null);
+            var result = await SqlBuildFileHelper.PackageSbxFileIntoSbmFileAsync(null!);
 
             Assert.AreEqual(string.Empty, result);
         }
@@ -527,7 +527,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         [TestMethod]
         public async Task PackageSbxFilesIntoSbmFiles_WithNullDirectory_ReturnsEmptyList()
         {
-            var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(null);
+            var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(null!);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(0, result.Count);
@@ -572,7 +572,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         [TestMethod]
         public async Task PackageSbxFilesIntoSbmFilesAsync_WithNullDirectory_ReturnsEmptyList()
         {
-            var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(null, CancellationToken.None);
+            var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(null!, CancellationToken.None);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(0, result.Count);
@@ -597,7 +597,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         [TestMethod]
         public async Task CalculateBuildPackageSHA1SignatureFromPath_WithNullBuildData_ReturnsError()
         {
-            SqlSyncBuildDataModel model = null;
+            SqlSyncBuildDataModel model = null!;
 
             var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(@"C:\Temp", model);
 

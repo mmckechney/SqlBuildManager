@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +8,10 @@ namespace SqlBuildManager.ScriptHandling
 {
     public class ScriptOptimization
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static string ProcessNoLockOptimization(string rawScript)
         {
-            return ProcessNoLockOptimization(rawScript, null);
+            return ProcessNoLockOptimization(rawScript, null!);
         }
 
         public static string ProcessNoLockOptimization(string rawScript, List<Match> commentBlockMatches)
@@ -42,7 +42,7 @@ namespace SqlBuildManager.ScriptHandling
                 int lengthToWhere;
                 Match current;
                 Match next;
-                Match previous = null;
+                Match previous = null!;
                 Regex regTokens = new Regex(@"(\bINNER JOIN\b)|(\bOUTER JOIN\b) |(\bFROM\b)|(\bWHERE\b)|(\bON\b)|(WITH \(NOLOCK\))|(WITH \(READPAST\))|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bINTO\b)|(\bJOIN\b)|(\bGROUP BY\b)|(\bDELETE FROM\b)|(\bUPDATE\b)|(\bset\b)|(\bINSERT INTO\b)|(\bVALUES\b)|(\))|(\binserted\b)|(\bdeleted\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
                 Regex regSelects = new Regex(@"(\bINNER JOIN\b)|(\bOUTER JOIN\b) |(\bFROM\b)|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bJOIN\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
                 Regex regWheres = new Regex(@"(\bWHERE\b)|(\bON\b)|(\bINNER JOIN\b)|(\bOUTER JOIN\b)|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bJOIN\b)|(\))", RegexOptions.IgnoreCase | RegexOptions.Compiled);

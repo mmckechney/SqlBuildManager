@@ -81,10 +81,10 @@ namespace SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest
             }
         }
 
-        private static List<string> tempFiles;
-        public static string SqlBuildZipFileName;
-        public static string MultiDbFileName;
-        public static string DbConfigFileName;
+        private static List<string> tempFiles = null!;
+        public static string SqlBuildZipFileName = null!;
+        public static string MultiDbFileName = null!;
+        public static string DbConfigFileName = null!;
 
         public Initialization()
         {

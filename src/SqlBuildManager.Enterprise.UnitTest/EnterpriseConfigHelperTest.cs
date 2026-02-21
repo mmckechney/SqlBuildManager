@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 
 namespace SqlBuildManager.Enterprise.UnitTest
@@ -19,7 +19,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void EnterpriseConfigTest_NullConfig()
         {
-            EnterpriseConfigHelper.EnterpriseConfig = null; //force a re-read.
+            EnterpriseConfigHelper.EnterpriseConfig = null!; //force a re-read.
             EnterpriseConfiguration actual;
             actual = EnterpriseConfigHelper.EnterpriseConfig;
             Assert.IsNotNull(actual, "The Enterprise config object should have at least a default object value");
@@ -32,9 +32,9 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void LoadEnterpriseConfigurationTest_WithConfigPath()
         {
-            EnterpriseConfigHelper.EnterpriseConfig = null; //force a re-read.
-            string configPath = System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"];
-            configPath = Path.GetFullPath(configPath);
+            EnterpriseConfigHelper.EnterpriseConfig = null!; //force a re-read.
+            string configPath = System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"]!;
+            configPath = Path.GetFullPath(configPath!);
             EnterpriseConfiguration actual;
             actual = EnterpriseConfigHelper.LoadEnterpriseConfiguration(configPath);
             Assert.Inconclusive();
@@ -50,7 +50,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void LoadEnterpriseConfigurationTest_NoParameter()
         {
-            EnterpriseConfigHelper.EnterpriseConfig = null; //force a re-read.
+            EnterpriseConfigHelper.EnterpriseConfig = null!; //force a re-read.
             EnterpriseConfiguration actual;
             actual = EnterpriseConfigHelper.LoadEnterpriseConfiguration();
             Assert.AreEqual(1, actual.TableWatch.Length);

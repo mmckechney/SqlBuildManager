@@ -25,21 +25,21 @@ namespace SqlBuildManager.Console.ExternalTest
     {
         public TestContext TestContext { get; set; }
 
-        private CommandLineArgs cmdLine;
-        private List<string> overrideFileContents;
+        private CommandLineArgs cmdLine = null!;
+        private List<string> overrideFileContents = null!;
 
-        private string overrideFilePath;
-        private string overrideFileWithBadTargetsPath;
-        private string settingsFilePath;
-        private string linuxSettingsFilePath;
-        private string settingsFileKeyPath;
-        private string overrideWithTagFilePath;
-        private string un;
-        private string pw;
-        private string server;
+        private string overrideFilePath = string.Empty;
+        private string overrideFileWithBadTargetsPath = string.Empty;
+        private string settingsFilePath = string.Empty;
+        private string linuxSettingsFilePath = string.Empty;
+        private string settingsFileKeyPath = string.Empty;
+        private string overrideWithTagFilePath = string.Empty;
+        private string un = string.Empty;
+        private string pw = string.Empty;
+        private string server = string.Empty;
 
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
-        private TextWriter originalConsoleOut;
+        private TextWriter originalConsoleOut = null!;
 
         [TestInitialize]
         public void ConfigureProcessInfo()
@@ -95,7 +95,7 @@ namespace SqlBuildManager.Console.ExternalTest
             using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 0x1000, FileOptions.SequentialScan))
             using (var sr = new StreamReader(fs, Encoding.UTF8))
             {
-                string line;
+                string? line;
                 while ((line = sr.ReadLine()) != null)
                 {
                     yield return line;
@@ -421,7 +421,7 @@ namespace SqlBuildManager.Console.ExternalTest
             //get the size of the log file before we start
             int startingLine = LogFileCurrentLineCount();
             string jobName = GetUniqueBatchJobName("batch-sqlsbm");
-            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFilePath), Guid.NewGuid().ToString() + ".cfg");
+            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFilePath)!, Guid.NewGuid().ToString() + ".cfg");
 
             var args = new string[]{
                 "--loglevel", "Debug",
@@ -1474,10 +1474,10 @@ namespace SqlBuildManager.Console.ExternalTest
             settingsFile = Path.GetFullPath(settingsFile);
             string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
-            string settingFileNoEventHub = Path.Combine(Path.GetDirectoryName(settingsFile), "settingsfile-no-eventhub.json");
+            string settingFileNoEventHub = Path.Combine(Path.GetDirectoryName(settingsFile)!, "settingsfile-no-eventhub.json");
 
             CommandLineArgs cmdLine = new CommandLineArgs() { FileInfoSettingsFile = new FileInfo(settingsFile) };
-            cmdLine.ConnectionArgs.EventHubConnectionString = null;
+            cmdLine.ConnectionArgs.EventHubConnectionString = null!;
             var updatedJson = JsonSerializer.Serialize<CommandLineArgs>(cmdLine, new JsonSerializerOptions
             {
                 WriteIndented = true,
@@ -1848,7 +1848,7 @@ namespace SqlBuildManager.Console.ExternalTest
             string sbmFileName = TestHelper.GetLongRunningSbm();
             string jobName = GetUniqueBatchJobName("batch-long");
             int startingLine = LogFileCurrentLineCount();
-            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFilePath), Guid.NewGuid().ToString() + ".cfg");
+            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFilePath)!, Guid.NewGuid().ToString() + ".cfg");
             File.WriteAllLines(tmpOverride, overrideFileContents.Take(3).ToList().ToArray());
             
             var args = new string[]{

@@ -1,10 +1,10 @@
-﻿using SqlSync.Connection;
+using SqlSync.Connection;
 using System.Collections.Generic;
 namespace SqlSync.SqlBuild.Models
 {
     public class OverrideData
     {
-        private static List<DatabaseOverride> targetDatabaseOverrides = null;
+        private static List<DatabaseOverride> targetDatabaseOverrides = null!;
         public static List<DatabaseOverride> TargetDatabaseOverrides
         {
             get { return targetDatabaseOverrides; }

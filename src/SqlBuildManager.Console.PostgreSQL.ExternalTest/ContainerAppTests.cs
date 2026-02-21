@@ -19,7 +19,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
     {
         public TestContext TestContext { get; set; }
 
-        private string settingsFileKeyPath;
+        private string settingsFileKeyPath = string.Empty;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
 
         [TestInitialize]

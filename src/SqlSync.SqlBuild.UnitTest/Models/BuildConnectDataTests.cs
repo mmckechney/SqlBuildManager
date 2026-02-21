@@ -94,7 +94,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             var data = new BuildConnectData();
 
             // Act
-            data.Connection = null;
+            data.Connection = null!;
 
             // Assert
             Assert.IsNull(data.Connection);
@@ -107,7 +107,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             var data = new BuildConnectData();
 
             // Act
-            data.Transaction = null;
+            data.Transaction = null!;
 
             // Assert
             Assert.IsNull(data.Transaction);

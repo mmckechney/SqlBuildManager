@@ -6,7 +6,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
     [TestClass]
     public class PostgresTransactionManagerTests
     {
-        private SqlBuild.Services.PostgresTransactionManager manager;
+        private SqlBuild.Services.PostgresTransactionManager manager = null!;
 
         [TestInitialize]
         public void Init()

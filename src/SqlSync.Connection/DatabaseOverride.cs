@@ -9,7 +9,7 @@ namespace SqlSync.Connection
     public class DatabaseOverride
     {
         public string ConcurrencyTag { get; set; } = string.Empty;
-        public string Server { get; set; }
+        public string Server { get; set; } = string.Empty;
         public string DefaultDbTarget { get; set; } = string.Empty;
         private string overrideDbTarget = string.Empty;
         public string OverrideDbTarget
@@ -58,7 +58,7 @@ namespace SqlSync.Connection
         {
             for (int i = startIndex; i < dataArray.Length; i++)
             {
-                queryRowData.Add(new QueryRowItem(cols[i].ColumnName, dataArray[i].ToString()));
+                queryRowData.Add(new QueryRowItem(cols[i].ColumnName, dataArray[i].ToString()!));
             }
         }
     }
@@ -94,10 +94,10 @@ namespace SqlSync.Connection
     // Create a node sorter that implements the IComparer interface.
     public class DatabaseOverrideSorter : System.Collections.IComparer
     {
-        public int Compare(object x, object y)
+        public int Compare(object? x, object? y)
         {
 
-            return string.Compare(((DatabaseOverride)x).OverrideDbTarget, ((DatabaseOverride)y).OverrideDbTarget);
+            return string.Compare(((DatabaseOverride)x!).OverrideDbTarget, ((DatabaseOverride)y!).OverrideDbTarget);
         }
     }
 }

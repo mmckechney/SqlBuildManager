@@ -39,7 +39,7 @@ namespace SqlBuildManager.Console
                 })
                 .ConfigureAppConfiguration((hostContext, appConfiguration) =>
                 {
-                    appConfiguration.SetBasePath(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
+                    appConfiguration.SetBasePath(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!);
                     appConfiguration.AddJsonFile("local.settings.json", optional: true, reloadOnChange: true);
                     appConfiguration.AddEnvironmentVariables();
                 })

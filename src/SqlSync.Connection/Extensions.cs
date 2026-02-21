@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Reflection;
 
@@ -9,13 +9,13 @@ namespace SqlSync.Connection
         public static string GetDescription(this Enum value)
         {
             Type type = value.GetType();
-            string name = Enum.GetName(type, value);
+            string? name = Enum.GetName(type, value);
             if (name != null)
             {
-                FieldInfo field = type.GetField(name);
+                FieldInfo? field = type.GetField(name);
                 if (field != null)
                 {
-                    DescriptionAttribute attr = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
+                    DescriptionAttribute? attr = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
                     if (attr != null)
                     {
                         return attr.Description;
@@ -23,7 +23,7 @@ namespace SqlSync.Connection
                 }
             }
 
-            return null;
+            return null!;
         }
         public static T GetValueFromDescription<T>(string description)
         {
@@ -36,12 +36,12 @@ namespace SqlSync.Connection
                 if (attribute != null)
                 {
                     if (attribute.Description == description)
-                        return (T)field.GetValue(null);
+                        return (T)field.GetValue(null)!;
                 }
                 else
                 {
                     if (field.Name == description)
-                        return (T)field.GetValue(null);
+                        return (T)field.GetValue(null)!;
                 }
             }
             throw new ArgumentException("Not found.", "description");

@@ -6,8 +6,8 @@ namespace SqlSync.Connection.UnitTest
     [TestClass]
     public class PostgresConnectionFactoryTest
     {
-        private PostgresConnectionFactory factory;
-        private static string appNameString;
+        private PostgresConnectionFactory factory = null!;
+        private static string appNameString = string.Empty;
 
         [ClassInitialize]
         public static void ClassInit(TestContext context)

@@ -70,11 +70,11 @@ namespace SqlSync.SqlBuild.Status
             }
             return GenerateReport(coll, fileName, reportType);
         }
-        private void ProcessThreadedScriptStatus(object runnerObj)
+        private void ProcessThreadedScriptStatus(object? runnerObj)
         {
             try
             {
-                StatusReportRunner runner = (StatusReportRunner)runnerObj;
+                StatusReportRunner runner = (StatusReportRunner)runnerObj!;
                 runner.RetrieveStatus();
             }
             finally

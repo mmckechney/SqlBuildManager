@@ -19,7 +19,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
     {
         public TestContext TestContext { get; set; }
 
-        private string settingsFileKeyPath;
+        private string settingsFileKeyPath = string.Empty;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
 
         [TestInitialize]
@@ -273,7 +273,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 Assert.Inconclusive("PostgreSQL database targets config file not found.");
             }
 
-            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFile), Guid.NewGuid().ToString() + ".cfg");
+            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFile)!, Guid.NewGuid().ToString() + ".cfg");
             File.WriteAllLines(tmpOverride, File.ReadAllLines(overrideFile).Where(l => !string.IsNullOrWhiteSpace(l)).Take(6).ToArray());
             try
             {

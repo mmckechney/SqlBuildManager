@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlSync.Connection;
 using System;
 using System.Collections.Generic;
@@ -8,9 +8,11 @@ namespace SqlSync.SqlBuild.AdHocQuery
     [Serializable()]
     public class QueryResultData
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private QueryResultData()
         {
+            Server = string.Empty;
+            Database = string.Empty;
         }
         public QueryResultData(string server, string database)
         {

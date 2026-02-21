@@ -134,7 +134,7 @@ namespace SqlSync.SqlBuild.UnitTest.Logging
             EventHubLogging.EventHubLoggerFactory = customFactory;
 
             // Act
-            EventHubLogging.EventHubLoggerFactory = null;
+            EventHubLogging.EventHubLoggerFactory = null!;
 
             // Assert - getting it again should create a new one
             var result = EventHubLogging.EventHubLoggerFactory;
@@ -157,7 +157,7 @@ namespace SqlSync.SqlBuild.UnitTest.Logging
 
             // Assert
             Assert.IsNotNull(method);
-            Assert.AreEqual(2, parameters.Length);
+            Assert.AreEqual(2, parameters!.Length);
             Assert.AreEqual(typeof(Type), parameters[0].ParameterType);
             Assert.AreEqual(typeof(string), parameters[1].ParameterType);
         }
@@ -174,7 +174,7 @@ namespace SqlSync.SqlBuild.UnitTest.Logging
 
             // Assert
             Assert.IsNotNull(method);
-            Assert.AreEqual(4, parameters.Length);
+            Assert.AreEqual(4, parameters!.Length);
             Assert.AreEqual(typeof(Type), parameters[0].ParameterType);
             Assert.AreEqual(typeof(string), parameters[1].ParameterType);
             Assert.AreEqual(typeof(string), parameters[2].ParameterType);

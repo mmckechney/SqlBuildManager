@@ -35,7 +35,7 @@ namespace SqlSync.SqlBuild
         private readonly ITransactionManager _transactionManager;
 
 
-        public SqlBuildRunner(IConnectionsService connectionsService, ISqlBuildRunnerContext ctx, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null, ISqlBuildFileHelper fileHelper = null, IBuildFinalizer buildFinalizer = null, ISqlLoggingService sqlLoggingService = null, IProgressReporter progressReporter = null, ITransactionManager transactionManager = null)
+        public SqlBuildRunner(IConnectionsService connectionsService, ISqlBuildRunnerContext ctx, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null!, ISqlBuildFileHelper fileHelper = null!, IBuildFinalizer buildFinalizer = null!, ISqlLoggingService sqlLoggingService = null!, IProgressReporter progressReporter = null!, ITransactionManager transactionManager = null!)
         {
             _ctx = ctx ?? throw new ArgumentNullException(nameof(ctx));
             _executor = executor ?? new SqlCommandExecutor(ctx.Log);
@@ -102,7 +102,7 @@ namespace SqlSync.SqlBuild
 
                     BuildConnectData cData;
                     var scriptRunRowId = Guid.NewGuid();
-                    BuildModels.ScriptRun currentRun = null;
+                    BuildModels.ScriptRun currentRun = null!;
                     try
                     {
                         cData = _connectionsService.GetOrAddBuildConnectionDataClass(_ctx.ConnectionData, serverName, targetDatabase, _ctx.IsTransactional);
@@ -138,7 +138,7 @@ namespace SqlSync.SqlBuild
                     string textHash = _fileHelper.GetSHA1Hash(batchScripts);
                     currentRun.FileHash = textHash;
                     var scriptText = _fileHelper.JoinBatchedScripts(batchScripts);
-                    var tmpCommitted = new LoggingCommittedScript(new Guid(scriptId), currentRun.FileHash, runSequence++, scriptText, script.Tag, cData.ServerName, cData.DatabaseName);
+                    var tmpCommitted = new LoggingCommittedScript(new Guid(scriptId), currentRun.FileHash, runSequence++, scriptText, script.Tag!, cData.ServerName, cData.DatabaseName);
 
                     var savePointName = scriptId.Replace("-", "");
                     TryCreateSavePoint(cData, savePointName, serverName, targetDatabase, fileName);
@@ -243,7 +243,7 @@ namespace SqlSync.SqlBuild
 
         internal async Task<string[]> LoadBatchScriptsAsync(string scriptId, string fileName, bool stripTransaction, ScriptBatchCollection scriptBatchColl, CancellationToken cancellationToken)
         {
-            string[] batchScripts = null;
+            string[] batchScripts = null!;
             if (scriptBatchColl != null)
             {
                 var b = scriptBatchColl.GetScriptBatch(scriptId);

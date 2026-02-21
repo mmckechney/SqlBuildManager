@@ -12,8 +12,8 @@ namespace SqlSync.ObjectScript
     /// </summary>
     public class ObjectValidator
     {
-        Connection.ConnectionData connData = null;
-        BackgroundWorker bgWorker;
+        Connection.ConnectionData connData = null!;
+        BackgroundWorker bgWorker = null!;
         public ObjectValidator()
         {
 
@@ -51,18 +51,18 @@ namespace SqlSync.ObjectScript
                     return;
                 }
                 conn.ConnectionString = SqlSync.Connection.ConnectionHelper.GetConnectionString(connData);
-                string objectName = procRow["Name"].ToString().Sanitize();
+                string objectName = procRow["Name"].ToString()!.Sanitize();
                 string quoted_ident = Convert.ToBoolean(procRow["quoted_ident_on"]) ? "ON" : "OFF".Sanitize();
                 string ansi_nulls_on = Convert.ToBoolean(procRow["ansi_nulls_on"]) ? "ON" : "OFF".Sanitize();
-                string owner = procRow["owner"].ToString().Sanitize();
-                string type = procRow["type"].ToString().Sanitize();
-                string schema = procRow["schema"].ToString().Sanitize();
+                string owner = procRow["owner"].ToString()!.Sanitize();
+                string type = procRow["type"].ToString()!.Sanitize();
+                string schema = procRow["schema"].ToString()!.Sanitize();
 
                 //call sp_helptext to the create command
                 string getObjTextSql = string.Format("exec sp_helptext '{1}.{0}'", objectName, schema);
                 cmd = new SqlCommand(getObjTextSql, conn);
 
-                SqlDataReader textRdr = null;
+                SqlDataReader textRdr = null!;
                 try
                 {
                     if (conn.State == ConnectionState.Closed)
@@ -84,7 +84,7 @@ namespace SqlSync.ObjectScript
                 {
                     while (textRdr.Read())
                     {
-                        string thisText = textRdr["text"].ToString();
+                        string thisText = textRdr["text"].ToString()!;
                         if (detectedCrossDatabase == false && crossDbCheck.Match(thisText).Success && !thisText.Trim().StartsWith("--")) //Check for 3 part declaration for cross DB check.
                             detectedCrossDatabase = true;
 

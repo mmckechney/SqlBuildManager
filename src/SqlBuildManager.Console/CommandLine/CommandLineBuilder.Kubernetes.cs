@@ -64,7 +64,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var cleanupOnFailure = parseResult.GetValue(k8sCleanupOnFailureOption);
                     var unittest = parseResult.GetValue(unitTestOption);
                     var stream = parseResult.GetValue(streamEventsOption);
-                    return await Worker.KubernetesRun(cmdLine, overrideFile, packagename, platinumdacpac, force, allowObjectDelete, cleanupOnFailure, unittest, stream);
+                    return await Worker.KubernetesRun(cmdLine, overrideFile!, packagename!, platinumdacpac!, force, allowObjectDelete, cleanupOnFailure, unittest, stream);
                 });
                 return cmd;
 
@@ -221,7 +221,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var concurrencytype = parseResult.GetValue(threadedConcurrencyTypeOption);
                     var servicebustopicconnection = parseResult.GetValue(serviceBusconnectionOption);
                     var overrideFile = parseResult.GetValue(overrideAsFileOption);
-                    return await Worker.KubernetesEnqueueOverrideTargets(cmdLine, secretsFile, runtimeFile, keyvaultname, jobname, concurrencytype, servicebustopicconnection, overrideFile);
+                    return await Worker.KubernetesEnqueueOverrideTargets(cmdLine, secretsFile!, runtimeFile!, keyvaultname!, jobname!, concurrencytype, servicebustopicconnection!, overrideFile!);
                 });
 
 
@@ -292,7 +292,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var unittest = parseResult.GetValue(unitTestOption);
                     var stream = parseResult.GetValue(streamEventsOption);
                     var consolidateLogs = true; // default parameter
-                    return await Worker.KubernetesMonitorRuntimeProgress(cmdLine, secretsFile, runtimeFile, unittest, stream, consolidateLogs);
+                    return await Worker.KubernetesMonitorRuntimeProgress(cmdLine, secretsFile!, runtimeFile!, unittest, stream, consolidateLogs);
                 });
                 return cmd;
             }
@@ -331,7 +331,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
                     var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
                     var force = parseResult.GetValue(forceOption);
-                    var (retVal, _) = await Worker.KubernetesUploadBuildPackage(cmdLine, secretsFile, runtimeFile, packagename, platinumdacpac, force);
+                    var (retVal, _) = await Worker.KubernetesUploadBuildPackage(cmdLine, secretsFile!, runtimeFile!, packagename!, platinumdacpac!, force);
                     return retVal;
                 });
                 return cmd;
@@ -365,7 +365,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var jobname = parseResult.GetValue(jobnameOption);
                     var concurrencytype = parseResult.GetValue(threadedConcurrencyTypeOption);
                     var servicebustopicconnection = parseResult.GetValue(serviceBusconnectionOption);
-                    return await Worker.KubernetesDequeueOverrideTargets(cmdLine, secretsFile, runtimeFile, keyvaultname, jobname, concurrencytype, servicebustopicconnection);
+                    return await Worker.KubernetesDequeueOverrideTargets(cmdLine, secretsFile!, runtimeFile!, keyvaultname!, jobname!, concurrencytype, servicebustopicconnection!);
                 });
                 return cmd;
             }

@@ -31,7 +31,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             public void ReportProgress(int percent, object userState) { }
         }
 
-        private static List<PostgresInitialization> initColl;
+        private static List<PostgresInitialization> initColl = null!;
         private static bool isPostgresAvailable = false;
 
         [ClassInitialize]
@@ -78,7 +78,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
                 builds.Add(myBuildModel);
                 buildDataModel = new SqlSyncBuildDataModel(
                     sqlSyncBuildProject: buildDataModel.SqlSyncBuildProject,
-                    script: buildDataModel.Script,
+                    script: buildDataModel.Script!,
                     build: builds,
                     scriptRun: buildDataModel.ScriptRun,
                     committedScript: buildDataModel.CommittedScript);
@@ -135,7 +135,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus, "Build should be committed");
 
@@ -156,7 +156,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus, "Build should be rolled back");
 
@@ -177,7 +177,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus, "SELECT script should be committed");
         }
@@ -194,7 +194,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus, "Multi-script build should be committed");
         }
@@ -236,7 +236,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus, "Single-run script should commit");
 
@@ -260,7 +260,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             // Script should be skipped since it was "pre-run" — no new rows
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus, "Build should commit (script skipped)");
@@ -281,7 +281,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = true;
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.TrialRolledBack, actual.FinalStatus, "Trial build should roll back");
 
@@ -302,7 +302,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             Build myBuild = init.GetRunBuildRow(sbh);
             sbh.isTrialBuild = true;
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus, "Trial with failure should roll back");
 
@@ -331,7 +331,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             // PostgreSQL rolls back the whole transaction on any error
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus, "PostgreSQL aborts transaction on error, causing rollback");
@@ -355,7 +355,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus, "PostgreSQL aborts transaction on error");
 
@@ -379,7 +379,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus, "Bad database should cause rollback");
 
@@ -432,7 +432,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             Build myBuild = init.GetRunBuildRow(sbh);
             sbh.runScriptOnly = true;
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus, "Script-only should report committed");
 
@@ -457,7 +457,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -485,7 +485,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
 
             Build myBuild = init.GetRunBuildRow(target);
 
-            var actual = await RunBuildScriptsAsync(target, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(target, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus, "Alternate logging should commit");
 
@@ -511,7 +511,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus, "Non-transactional should commit");
 
@@ -531,7 +531,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, true); // withScriptLog = true
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus, "Non-transactional with scripting should commit");
 
@@ -552,7 +552,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.FailedNoTransaction, actual.FinalStatus, "Non-transactional failure should report FailedNoTransaction");
 
@@ -577,7 +577,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             // PostgreSQL non-transactional: successful script's data persists regardless
             Assert.IsTrue(actual.FinalStatus == BuildItemStatus.Committed || actual.FinalStatus == BuildItemStatus.FailedNoTransaction,
@@ -598,7 +598,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.IsTrue(actual.FinalStatus == BuildItemStatus.Committed || actual.FinalStatus == BuildItemStatus.FailedNoTransaction,
                 $"Expected Committed or FailedNoTransaction, got {actual.FinalStatus}");
@@ -679,7 +679,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             IConnectionsService connectionsService = new DefaultConnectionsService();
             var resourceProvider = new PostgresResourceProvider();
             ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter, resourceProvider);
-            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null, resourceProvider);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null!, resourceProvider);
 
             bool actual = dbUtil.HasBlockingSqlLog(scriptId, init.connData, databaseName, out string scriptHash, out string scriptTextHash, out DateTime commitDate);
 
@@ -700,7 +700,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             IConnectionsService connectionsService = new DefaultConnectionsService();
             var resourceProvider = new PostgresResourceProvider();
             ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter, resourceProvider);
-            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null, resourceProvider);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null!, resourceProvider);
 
             bool actual = dbUtil.HasBlockingSqlLog(scriptId, init.connData, databaseName, out string scriptHash, out string scriptTextHash, out DateTime commitDate);
 
@@ -720,7 +720,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             IConnectionsService connectionsService = new DefaultConnectionsService();
             var resourceProvider = new PostgresResourceProvider();
             ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter, resourceProvider);
-            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null, resourceProvider);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null!, resourceProvider);
 
             bool actual = dbUtil.HasBlockingSqlLog(scriptId, init.connData, "invalidDatabaseName", out string scriptHash, out string scriptTextHash, out DateTime commitDate);
 
@@ -748,13 +748,13 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             connData.DatabaseName = init.connData.DatabaseName;
             connData.HasLoggingTable = true;
             connData.ServerName = init.serverName;
-            connData.Transaction = null;
+            connData.Transaction = null!;
 
             IProgressReporter progressReporter = new NullProgressReporter();
             IConnectionsService connectionsService = new DefaultConnectionsService();
             var resourceProvider = new PostgresResourceProvider();
             ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter, resourceProvider);
-            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null, resourceProvider);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null!, resourceProvider);
 
             try
             {
@@ -808,11 +808,11 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             ISqlBuildFileHelper fileHelper = new DefaultSqlBuildFileHelper();
             IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, fileHelper, resourceProvider);
 
-            string[] scripts = new string[] { Guid.NewGuid().ToString(), buildData.Script[0].ScriptId };
+            string[] scripts = new string[] { Guid.NewGuid().ToString(), buildData.Script[0].ScriptId! };
             ClearScriptData scrData = new ClearScriptData(scripts, buildData, init.projectFileName, init.projectFileName);
 
             IProgressReporter reporter = new NullProgressReporter();
-            dbUtil.ClearScriptBlocks(scrData, connData, reporter, null);
+            dbUtil.ClearScriptBlocks(scrData, connData, reporter, null!);
             Assert.AreEqual(false, buildData.CommittedScript[0].AllowScriptBlock);
         }
 
@@ -864,7 +864,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             IConnectionsService connectionsService = new DefaultConnectionsService();
             var resourceProvider = new PostgresResourceProvider();
             ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter, resourceProvider);
-            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null, resourceProvider);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null!, resourceProvider);
 
             var actual = dbUtil.GetScriptRunLog(scriptId, connData);
             Assert.IsTrue(actual.Count > 0, string.Format("Missing rows for pre-run script. {0}", PostgresInitialization.MissingDatabaseErrorMessage));
@@ -888,7 +888,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             IConnectionsService connectionsService = new DefaultConnectionsService();
             var resourceProvider = new PostgresResourceProvider();
             ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter, resourceProvider);
-            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null, resourceProvider);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null!, resourceProvider);
 
             Assert.ThrowsExactly<ApplicationException>(() => dbUtil.GetScriptRunLog(scriptId, connData));
         }
@@ -906,7 +906,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             PostgresInitialization init = GetInitializationObject();
             SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
-            target.projectFileName = null;
+            target.projectFileName = null!;
             await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
         }
 
@@ -933,7 +933,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.projectFileName = init.projectFileName;
-            target.buildHistoryXmlFile = null;
+            target.buildHistoryXmlFile = null!;
             await Assert.ThrowsExactlyAsync<ArgumentException>(() => target.BuildFinalizer.SaveBuildDataModelAsync(target, false));
         }
 
@@ -969,7 +969,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -993,7 +993,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
@@ -1018,7 +1018,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
@@ -1040,7 +1040,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             Build myBuild = init.GetRunBuildRow(sbh);
 
             // isMultiDbRun = true
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, true, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, true, null!);
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
         }
@@ -1061,7 +1061,7 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
             SqlBuildHelper sbh = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             Build myBuild = init.GetRunBuildRow(sbh);
 
-            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null);
+            var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
             // Non-transactional with non-failing failure should still complete  
             Assert.AreNotEqual(BuildItemStatus.RolledBack, actual.FinalStatus, "Should not be RolledBack in non-transactional mode");

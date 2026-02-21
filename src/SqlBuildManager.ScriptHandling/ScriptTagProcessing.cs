@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.ScriptHandling.Tags;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Models;
@@ -10,7 +10,7 @@ namespace SqlBuildManager.ScriptHandling
 {
     public class ScriptTagProcessing
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         #region .: Methods to infer script tags :.
         /// <summary>
         /// Used to infer script tags for an entire build package
@@ -67,7 +67,7 @@ namespace SqlBuildManager.ScriptHandling
             if (regexFormats == null || regexFormats.Count == 0)
                 return string.Empty;
 
-            Match tmpLastMatch = null;
+            Match tmpLastMatch = null!;
             foreach (string reg in regexFormats)
             {
                 Regex tmpRegex = new Regex(reg, RegexOptions.IgnoreCase);

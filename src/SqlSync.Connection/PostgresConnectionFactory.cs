@@ -12,7 +12,7 @@ namespace SqlSync.Connection
     /// </summary>
     public class PostgresConnectionFactory : IDbConnectionFactory
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         /// <summary>
         /// The Azure AD scope for Azure Database for PostgreSQL.
@@ -126,7 +126,7 @@ namespace SqlSync.Connection
             }
         }
 
-        public DbCommand CreateCommand(string sql, DbConnection connection, DbTransaction transaction = null)
+        public DbCommand CreateCommand(string sql, DbConnection connection, DbTransaction transaction = null!)
         {
             var cmd = new NpgsqlCommand(sql, (NpgsqlConnection)connection);
             if (transaction != null)

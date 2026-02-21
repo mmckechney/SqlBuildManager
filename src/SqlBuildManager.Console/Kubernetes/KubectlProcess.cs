@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 
 namespace SqlBuildManager.Console.Kubernetes
 {
    internal class KubectlProcess
    {
-      private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+      private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
       public static int ApplyFile(string fileName)
       {
          (int resp, string output, string error) = RunKubectl($"apply -f \"{fileName}\"");

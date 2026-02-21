@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.ScriptHandling;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ namespace SqlBuildManager.Enterprise.Policy
 {
     class QualifiedNamesPolicy : shP.IScriptPolicy
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         #region IScriptPolicy Members
         public string PolicyId
         {
@@ -121,7 +121,7 @@ namespace SqlBuildManager.Enterprise.Policy
                         if (regFromWithTableName.Match(rawScript, current.Index).Value.Length > 0)
                         {
                             Match subMatch = regFromWithTableName.Match(rawScript, current.Index);
-                            if (subMatch != null & subMatch.Value.Length > 0)
+                            if (subMatch != null & subMatch!.Value.Length > 0)
                             {
                                 subStr = subMatch.Value.Substring(4);
                                 if (subStr.IndexOf('.') == -1 && !subStr.Trim().StartsWith("@") && !subStr.Trim().StartsWith("#") && !ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))

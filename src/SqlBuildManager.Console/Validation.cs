@@ -1,4 +1,4 @@
-﻿using Azure.ResourceManager.Network.Models;
+using Azure.ResourceManager.Network.Models;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.KeyVault;
@@ -15,7 +15,7 @@ namespace SqlBuildManager.Console
 {
     class Validation
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static int ValidateUserNameAndPassword(CommandLineArgs cmdLine, out string[] errorMessages)
         {
             string error = string.Empty;
@@ -214,7 +214,7 @@ namespace SqlBuildManager.Console
             string message = string.Empty;
             string error;
             errorMessages = new string[0];
-            multiData = null;
+            multiData = null!;
             string extension = Path.GetExtension(multiDbOverrideSettingFileName).ToLowerInvariant();
 
             switch (extension)
@@ -266,7 +266,7 @@ namespace SqlBuildManager.Console
             if (!ValidateMultiDatabaseTags(multiData, cmdLine == null? ConcurrencyType.Count : cmdLine.ConcurrencyType))
             {
 
-                error = $"There are database targets that do not have a concurrency tag. This is required when the Concurrency Type is '{cmdLine.ConcurrencyType}'. Please add a concurrency tag to all database targets.";
+                error = $"There are database targets that do not have a concurrency tag. This is required when the Concurrency Type is '{cmdLine!.ConcurrencyType}'. Please add a concurrency tag to all database targets.";
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.MissingOverrideTags };
                 log.LogError(error);
                 return (int)ExecutionReturn.MissingOverrideTags;

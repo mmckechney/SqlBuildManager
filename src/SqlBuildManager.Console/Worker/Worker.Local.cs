@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
@@ -48,7 +48,7 @@ namespace SqlBuildManager.Console
 
                 //We need an override setting. if not provided, we need to glean it from the SqlSyncBuildProject.xml file 
                 List<DatabaseOverride> overrides = new List<DatabaseOverride>();
-                MultiDbData multiDbData = null;
+                MultiDbData multiDbData = null!;
                 if (!string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
                 {
                     var x = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out MultiDbData multiData, out string[] errorMessages);
@@ -237,7 +237,7 @@ namespace SqlBuildManager.Console
 
         internal static Task<int> RunThreadedExecutionAsync(CommandLineArgs cmdLine, bool unittest)
         {
-            return RunThreadedExecutionAsync(cmdLine, unittest, null);
+            return RunThreadedExecutionAsync(cmdLine, unittest, null!);
         }
 
         internal static async Task<int> RunThreadedExecutionAsync(CommandLineArgs cmdLine, bool unittest, BuildExecutionContext context)
@@ -266,7 +266,7 @@ namespace SqlBuildManager.Console
             log.LogDebug(cmdLine.ToStringExtension(StringType.Basic));
             log.LogDebug(cmdLine.ToStringExtension(StringType.Batch));
             log.LogInformation("Running Threaded Execution...");
-            ThreadedManager tManager = new ThreadedManager(cmdLine, null, context);
+            ThreadedManager tManager = new ThreadedManager(cmdLine, null!, context);
             int retVal = await tManager.ExecuteAsync();
             ExecutionReturn exeResult;
             if (Enum.TryParse<ExecutionReturn>(retVal.ToString(), out exeResult))
@@ -308,9 +308,9 @@ namespace SqlBuildManager.Console
 
         private static class LocalRunInfo
         {
-            public static sqlM.SqlSyncBuildDataModel Sq1SyncBuildData { get; set; }
-            public static string WorkingDirectory { get; set; }
-            public static string BuildZipFileName { get; set; }
+            public static sqlM.SqlSyncBuildDataModel Sq1SyncBuildData { get; set; } = null!;
+            public static string WorkingDirectory { get; set; } = string.Empty;
+            public static string BuildZipFileName { get; set; } = string.Empty;
             public static bool Success { get; set; } = true;
         }
     }

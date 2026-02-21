@@ -118,7 +118,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
                     var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
                     var force = parseResult.GetValue(forceOption);
-                    return await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine, packagename, platinumdacpac, force);
+                    return await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine, packagename!, platinumdacpac!, force);
                 });
 
                 return cmd;

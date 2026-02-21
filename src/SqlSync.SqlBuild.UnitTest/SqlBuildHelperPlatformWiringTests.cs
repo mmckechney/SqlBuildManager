@@ -74,7 +74,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void Constructor_NullConnData_DefaultsToSqlServer()
         {
-            var helper = new SqlBuildHelper(null, createScriptRunLogFile: false);
+            var helper = new SqlBuildHelper(null!, createScriptRunLogFile: false);
 
             Assert.IsInstanceOfType(helper.TransactionManager, typeof(SqlServerTransactionManager));
             Assert.IsInstanceOfType(helper.SyntaxProvider, typeof(SqlServerSyntaxProvider));

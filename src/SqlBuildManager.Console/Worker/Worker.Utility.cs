@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Enterprise.Policy;
@@ -35,7 +35,7 @@ namespace SqlBuildManager.Console
 
 
             string fullName = Path.GetFullPath(cmdLine.DacpacName);
-            string path = Path.GetDirectoryName(fullName);
+            string path = Path.GetDirectoryName(fullName)!;
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
@@ -75,7 +75,7 @@ namespace SqlBuildManager.Console
             #endregion
 
             string name;
-            cmdLine.RootLoggingPath = Path.GetDirectoryName(cmdLine.OutputSbm);
+            cmdLine.RootLoggingPath = Path.GetDirectoryName(cmdLine.OutputSbm)!;
 
             var status = Worker.GetSbmFromDacPac(cmdLine, new SqlSync.SqlBuild.MultiDb.MultiDbData(), out name, true);
             if (status == sqlB.DacpacDeltasStatus.Success)
@@ -166,7 +166,7 @@ namespace SqlBuildManager.Console
             if (Path.GetExtension(cmdLine.OutputSbm).ToLower() == ".sbx")
             {
                 string sbxFileName = cmdLine.OutputSbm;
-                string workingDir = Path.GetDirectoryName(cmdLine.OutputSbm);
+                string workingDir = Path.GetDirectoryName(cmdLine.OutputSbm)!;
                 if (string.IsNullOrWhiteSpace(workingDir))
                 {
                     workingDir = Directory.GetCurrentDirectory();
@@ -179,7 +179,7 @@ namespace SqlBuildManager.Console
                 var counter = 1.0;
                 foreach (var file in cmdLine.Scripts)
                 {
-                    if (file.Directory.ToString().ToLower() != workingDir.ToLower())
+                    if (file!.Directory!.ToString().ToLower() != workingDir.ToLower())
                     {
                         File.Copy(file.FullName, Path.Combine(workingDir, file.Name));
                     }
@@ -202,7 +202,7 @@ namespace SqlBuildManager.Console
                     List<string> copied = new List<string>();
                     cmdLine.Scripts.ToList().ForEach(f =>
                     {
-                        if (f.Directory.ToString().ToLower() != workingDir.ToLower() && !File.Exists(Path.Combine(workingDir, f.Name)))
+                        if (f!.Directory!.ToString().ToLower() != workingDir.ToLower() && !File.Exists(Path.Combine(workingDir, f.Name)))
                         {
                             File.Copy(f.FullName, Path.Combine(workingDir, f.Name));
                             copied.Add(Path.Combine(workingDir, f.Name));
@@ -265,7 +265,7 @@ namespace SqlBuildManager.Console
                 log.LogError($"The output file '{sbmFileName}' already exists. Please delete the file or use 'sbm add' if you want to add new scripts to the file");
                 return -343;
             }
-            string path = Path.GetDirectoryName(sbmFileName);
+            string path = Path.GetDirectoryName(sbmFileName)!;
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
@@ -394,7 +394,7 @@ namespace SqlBuildManager.Console
                 return -432;
             }
 
-            string workingDir = Path.GetDirectoryName(cmdLine.OutputSbm);
+            string workingDir = Path.GetDirectoryName(cmdLine.OutputSbm)!;
             if (string.IsNullOrWhiteSpace(workingDir))
             {
                 workingDir = Directory.GetCurrentDirectory();
@@ -402,7 +402,7 @@ namespace SqlBuildManager.Console
             if (Path.GetExtension(cmdLine.OutputSbm).ToLower() == ".sbx")
             {
                 string sbxFileName = cmdLine.OutputSbm;
-                workingDir = Path.GetDirectoryName(cmdLine.OutputSbm);
+                workingDir = Path.GetDirectoryName(cmdLine.OutputSbm)!;
                 if (string.IsNullOrWhiteSpace(workingDir))
                 {
                     workingDir = Directory.GetCurrentDirectory();
@@ -415,7 +415,7 @@ namespace SqlBuildManager.Console
                 var counter = 1.0;
                 foreach (var file in cmdLine.Scripts)
                 {
-                    if (file.Directory.ToString().ToLower() != workingDir.ToLower() && !File.Exists(Path.Combine(workingDir, file.Name)))
+                    if (file!.Directory!.ToString().ToLower() != workingDir.ToLower() && !File.Exists(Path.Combine(workingDir, file.Name)))
                     {
                         File.Copy(file.FullName, Path.Combine(workingDir, file.Name));
                     }
@@ -430,7 +430,7 @@ namespace SqlBuildManager.Console
                 List<string> copied = new List<string>();
                 cmdLine.Scripts.ToList().ForEach(f =>
                 {
-                    if (f.Directory.ToString().ToLower() != workingDir.ToLower() && !File.Exists(Path.Combine(workingDir, f.Name)))
+                    if (f!.Directory!.ToString().ToLower() != workingDir.ToLower() && !File.Exists(Path.Combine(workingDir, f.Name)))
                     {
                         File.Copy(f.FullName, Path.Combine(workingDir, f.Name));
                         copied.Add(Path.Combine(workingDir, f.Name));
@@ -653,7 +653,7 @@ namespace SqlBuildManager.Console
             }
             else
             {
-                tmpFile = Path.Combine(Path.GetDirectoryName(cmdLine.OutputFile.FullName), $"{Guid.NewGuid().ToString()}.sql");
+                tmpFile = Path.Combine(Path.GetDirectoryName(cmdLine.OutputFile.FullName)!, $"{Guid.NewGuid().ToString()}.sql");
                 File.WriteAllText(tmpFile, cmdLine.ScriptText);
                 cmdLine.ScriptFile = new FileInfo(tmpFile);
                 cmdLine.MultiDbRunConfigFileName = tmpFile;

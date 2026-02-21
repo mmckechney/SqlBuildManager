@@ -80,7 +80,7 @@ namespace SqlSync.DbInformation
                 }
             }
         }
-        public DatabaseItem Find(string databaseName)
+        public DatabaseItem? Find(string databaseName)
         {
             for (int i = 0; i < Count; i++)
             {
@@ -101,9 +101,9 @@ namespace SqlSync.DbInformation
     }
     public class DatabaseListComparer : IComparer<DatabaseItem>
     {
-        public int Compare(DatabaseItem x, DatabaseItem y)
+        public int Compare(DatabaseItem? x, DatabaseItem? y)
         {
-            return string.Compare(x.DatabaseName, y.DatabaseName);
+            return string.Compare(x?.DatabaseName, y?.DatabaseName);
         }
     }
 

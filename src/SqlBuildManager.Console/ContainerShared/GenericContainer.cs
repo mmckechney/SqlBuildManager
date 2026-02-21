@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Threaded;
@@ -14,7 +14,7 @@ namespace SqlBuildManager.Console.ContainerShared
 {
     internal class GenericContainer
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         internal static async Task<int> GenericContainerWorker_RunQueueBuild(CommandLineArgs cmdLine)
         {
             int result = 1;
@@ -94,7 +94,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 log.LogInformation($"Using Query file '{cmdLine.QueryFile?.Name}'");
 
                 bool keepGoing = true;
-                log.LogInformation($"Writing query file '{cmdLine.QueryFile.Name}' to local storage");
+                log!.LogInformation($"Writing query file '{cmdLine.QueryFile!.Name}' to local storage");
                 cmdLine.QueryFile = new FileInfo(await CloudStorage.StorageManager.WriteFileToLocalStorage(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, cmdLine.QueryFile.Name));
                 if (cmdLine.QueryFile == null)
                 {
@@ -155,7 +155,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 return -1;
             }
 
-            (bool retVal, string sbmName) = await ValidateAndUploadContainerBuildFilesToStorage(cmdLine, packageName, platinumDacpac, force);
+            (bool retVal, string sbmName) = await ValidateAndUploadContainerBuildFilesToStorage(cmdLine, packageName!, platinumDacpac, force);
             if (retVal)
             {
                 return 0;
@@ -196,7 +196,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 {
                     if (Path.GetFileNameWithoutExtension(sbmName) != Path.GetFileNameWithoutExtension(platinumDacpac.FullName))
                     {
-                        var newSbmName = Path.Combine(Path.GetDirectoryName(platinumDacpac.FullName), Path.GetFileNameWithoutExtension(platinumDacpac.FullName) + ".sbm");
+                        var newSbmName = Path.Combine(Path.GetDirectoryName(platinumDacpac.FullName)!, Path.GetFileNameWithoutExtension(platinumDacpac.FullName) + ".sbm");
                         File.Copy(sbmName, newSbmName, true);
                         packageName = new FileInfo(newSbmName);
                     }
@@ -251,7 +251,7 @@ namespace SqlBuildManager.Console.ContainerShared
 
             if (sbmGenerated)
             {
-                log.LogInformation($"An SBM Package file was generated and uploaded with the DACPAC. When running the `deploy` command, please use this argument: --packagename \"{packageName.FullName}\"");
+                log.LogInformation($"An SBM Package file was generated and uploaded with the DACPAC. When running the `deploy` command, please use this argument: --packagename \"{packageName!.FullName}\"");
                 return (true, packageName.FullName);
             }
 

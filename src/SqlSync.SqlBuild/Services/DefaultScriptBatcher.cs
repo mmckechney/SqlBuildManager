@@ -13,7 +13,7 @@ namespace SqlSync.SqlBuild.Services
 {
     public sealed class DefaultScriptBatcher : IScriptBatcher
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         public List<string> ReadBatchFromScriptText(string scriptContents, bool stripTransaction, bool maintainBatchDelimiter)
         {
@@ -33,7 +33,7 @@ namespace SqlSync.SqlBuild.Services
             }
 
             //Needed when we are going to be removing the batch delimiter text.
-            Regex regBackwardEndOfLine = null;
+            Regex regBackwardEndOfLine = null!;
             int previousEndOfLine = 0;
             if (!maintainBatchDelimiter)
                 regBackwardEndOfLine = new Regex(Properties.Resources.RegexEndOfLine, RegexOptions.IgnoreCase | RegexOptions.RightToLeft);

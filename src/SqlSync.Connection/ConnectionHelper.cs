@@ -18,15 +18,15 @@ namespace SqlSync.Connection
             }
         }
 
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static string appName = "Sql Build Manager v{0} [{1}];";
         static ConnectionHelper()
         {
             string version;
             if (System.Reflection.Assembly.GetEntryAssembly() != null)
-                version = System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString();
+                version = System.Reflection.Assembly.GetEntryAssembly()!.GetName().Version!.ToString();
             else
-                version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version!.ToString();
 
             appName = string.Format($"Sql Build Manager v{version} [{System.Environment.UserName}];");
         }
@@ -57,7 +57,7 @@ namespace SqlSync.Connection
         public static DbConnection GetDbConnection(ConnectionData connData)
         {
             if (connData == null)
-                return null;
+                return null!;
             return GetFactory(connData).CreateConnection(connData);
         }
 
@@ -71,7 +71,7 @@ namespace SqlSync.Connection
         public static SqlConnection GetConnection(ConnectionData connData)
         {
             if (connData == null)
-                return null;
+                return null!;
 
             return GetConnection(connData.DatabaseName,
                 connData.SQLServerName,
@@ -193,7 +193,7 @@ namespace SqlSync.Connection
         }
         public static bool TestDatabaseConnection(ConnectionData connData)
         {
-            DbConnection conn = null;
+            DbConnection conn = null!;
             try
             {
                 connData.ScriptTimeout = 60;

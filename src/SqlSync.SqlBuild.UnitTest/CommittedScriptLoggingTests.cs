@@ -62,7 +62,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void CommittedScript_WithNullValues_Accepted()
         {
-            var script = new CommittedScript(Guid.Empty, null, 0, null, null, null, null);
+            var script = new CommittedScript(Guid.Empty, null!, 0, null!, null!, null!, null!);
 
             Assert.AreEqual(Guid.Empty, script.ScriptId);
             Assert.IsNull(script.FileHash);

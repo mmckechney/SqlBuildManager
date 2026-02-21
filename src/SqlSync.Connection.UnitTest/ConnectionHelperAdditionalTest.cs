@@ -9,7 +9,7 @@ namespace SqlSync.Connection.UnitTest
     [TestClass]
     public class ConnectionHelperAdditionalTest
     {
-        private static string appNameString;
+        private static string appNameString = string.Empty;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
@@ -89,7 +89,7 @@ namespace SqlSync.Connection.UnitTest
         [TestMethod]
         public void GetConnectionString_NullConnectionData_ShouldReturnEmptyString()
         {
-            string result = ConnectionHelper.GetConnectionString(null);
+            string result = ConnectionHelper.GetConnectionString(null!);
 
             Assert.AreEqual(string.Empty, result);
         }
@@ -101,7 +101,7 @@ namespace SqlSync.Connection.UnitTest
         [TestMethod]
         public void GetConnection_NullConnectionData_ShouldReturnNull()
         {
-            var result = ConnectionHelper.GetConnection(null);
+            var result = ConnectionHelper.GetConnection(null!);
 
             Assert.IsNull(result);
         }
@@ -166,7 +166,7 @@ namespace SqlSync.Connection.UnitTest
         [TestMethod]
         public void GetTargetDatabase_NullOverrides_ShouldReturnDefaultDatabase()
         {
-            string result = ConnectionHelper.GetTargetDatabase("defaultDb", null);
+            string result = ConnectionHelper.GetTargetDatabase("defaultDb", null!);
 
             Assert.AreEqual("defaultDb", result);
         }

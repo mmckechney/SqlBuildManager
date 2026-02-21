@@ -58,7 +58,7 @@ namespace SqlSync.SqlBuild.Services
 
                 try
                 {
-                    string tmpPath = Path.GetDirectoryName(context.ExternalScriptLogFileName);
+                    string tmpPath = Path.GetDirectoryName(context.ExternalScriptLogFileName)!;
                     if (!Directory.Exists(tmpPath))
                     {
                         log.LogInformation($"Creating External Log file directory '{tmpPath}'");

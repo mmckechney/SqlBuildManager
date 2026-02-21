@@ -175,7 +175,7 @@ namespace SqlBuildManager.Console.CommandLine
             _registry.Register(CommandLineBuilder.outputFileRequiredOption, (args, v) => args.OutputFile = v);
 
             // Directory
-            _registry.Register(CommandLineBuilder.unpackDirectoryOption, (args, v) => args.Directory = v?.FullName);
+            _registry.Register(CommandLineBuilder.unpackDirectoryOption, (args, v) => args.Directory = v?.FullName!);
 
             // DACPAC name
             _registry.Register(CommandLineBuilder.dacpacOutputOption, (args, v) => args.DacpacName = v);

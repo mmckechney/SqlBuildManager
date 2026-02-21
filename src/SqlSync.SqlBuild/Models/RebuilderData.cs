@@ -36,7 +36,7 @@ namespace SqlSync.SqlBuild.Models {
                         this.ScriptFileName = ((string)(System.Convert.ChangeType(reader["ScriptFileName"], typeof(string))));
                     }
                     if ((reader["ScriptId"].Equals(System.DBNull.Value) == false)) {
-                        this.ScriptId = new System.Guid(reader["ScriptId"].ToString());
+                        this.ScriptId = new System.Guid(reader["ScriptId"].ToString()!);
                     }
                     if ((reader["Sequence"].Equals(System.DBNull.Value) == false)) {
                         this.Sequence = ((int)(System.Convert.ChangeType(reader["Sequence"], typeof(int))));

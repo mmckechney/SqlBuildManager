@@ -18,7 +18,7 @@ namespace SqlBuildManager.Test.Common
             if (!Directory.Exists(loggingRoot))
                 throw new DirectoryNotFoundException($"Logging root not found: {loggingRoot}");
 
-            string workingDir = Directory.GetDirectories(loggingRoot)
+            string? workingDir = Directory.GetDirectories(loggingRoot)
                 .FirstOrDefault(d => Path.GetFileName(d).Equals("working", StringComparison.OrdinalIgnoreCase));
 
             if (workingDir == null)
