@@ -1,4 +1,4 @@
-﻿using Azure.Core;
+using Azure.Core;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Dac;
@@ -16,7 +16,7 @@ namespace SqlSync.SqlBuild
 {
     public class DacPacHelper
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private static IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
 
         public static bool ExtractDacPac(string sourceDatabase, string sourceServer, AuthenticationType authType, string userName, string password, string dacPacFileName, int timeouts, string managedIdentityClientId)
@@ -51,7 +51,7 @@ namespace SqlSync.SqlBuild
                     log.LogInformation($"Connection to {sourceServer}/{sourceDatabase} with authentication type {authType} was successful");
                 }
                 var connString = ConnectionHelper.GetConnectionString(connData);
-                Version ver = Assembly.GetExecutingAssembly().GetName().Version;
+                Version ver = Assembly.GetExecutingAssembly().GetName().Version!;
                 DacServices service = new DacServices(connString);
                 service.Extract(dacPacFileName, sourceDatabase, "Sql Build Manager", ver, "Sql Build Manager",null, opts);
                 log.LogInformation($"DACPAC from {sourceServer}.{sourceDatabase} saved to {dacPacFileName}");
@@ -118,7 +118,7 @@ namespace SqlSync.SqlBuild
         public static async System.Threading.Tasks.Task<(DacpacDeltasStatus status, string buildPackageName)> CreateSbmFromDacPacDifferencesAsync(string platinumDacPacFileName, string targetDacPacFileName, bool batchScripts, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete, System.Threading.CancellationToken cancellationToken = default)
         {
             log.LogInformation($"Generating SBM build from dacpac differences: {Path.GetFileName(platinumDacPacFileName)} vs {Path.GetFileName(targetDacPacFileName)}");
-            string path = Path.GetDirectoryName(targetDacPacFileName);
+            string path = Path.GetDirectoryName(targetDacPacFileName)!;
             string buildPackageName = string.Empty;
             string rawScript = ScriptDacPacDeltas(platinumDacPacFileName, targetDacPacFileName, path, allowObjectDelete, false);
             if (!string.IsNullOrEmpty(rawScript))
@@ -251,7 +251,7 @@ namespace SqlSync.SqlBuild
             {
                 matchFound = true;
                 //get the "GO" delimiter after this match
-                index = 2 + Regex.Matches(cleanedScript, "GO").Where(m => m.Index > endMatch.Index).FirstOrDefault().Index;
+                index = 2 + Regex.Matches(cleanedScript, "GO").Where(m => m.Index > endMatch.Index).FirstOrDefault()!.Index;
                 cleanedScript = cleanedScript.Substring(index);
             }
 
@@ -305,7 +305,7 @@ namespace SqlSync.SqlBuild
                 return (DacpacDeltasStatus.ExtractionFailure, runDataModel);
             }
 
-            var (stat, sbmFileName) = await CreateSbmFromDacPacDifferencesAsync(runDataModel.PlatinumDacPacFileName, tmpDacPacName, false, buildRevision, defaultScriptTimeout, allowObjectDelete, cancellationToken).ConfigureAwait(false);
+            var (stat, sbmFileName) = await CreateSbmFromDacPacDifferencesAsync(runDataModel.PlatinumDacPacFileName!, tmpDacPacName, false, buildRevision, defaultScriptTimeout, allowObjectDelete, cancellationToken).ConfigureAwait(false);
             if (stat != DacpacDeltasStatus.Success)
             {
                 return (stat, runDataModel);
@@ -313,7 +313,7 @@ namespace SqlSync.SqlBuild
 
 
             string projectFilePath = Path.GetTempPath() + Guid.NewGuid().ToString();
-            string projectFileName = null;
+            string projectFileName = null!;
 
             log.LogInformation("Preparing build package for processing");
             var extractResult = await SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(sbmFileName, workingDirectory, resetWorkingDirectory: false, overwriteExistingProjectFiles: false, cancellationToken).ConfigureAwait(false);

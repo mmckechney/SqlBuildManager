@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.DirectoryServices;
@@ -6,7 +6,7 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
 {
     public class AdHelper
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public AdHelper()
         {
         }
@@ -30,7 +30,7 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
                     SearchResultCollection grpColl = ds.FindAll();
                     for (int i = 0; i < grpColl.Count; i++)
                     {
-                        groups.Add(grpColl[i].Properties["name"][0].ToString());
+                        groups.Add(grpColl[i].Properties["name"][0].ToString()!);
                     }
 
 
@@ -71,7 +71,7 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
                     SearchResultCollection grpColl = ds.FindAll();
                     for (int i = 0; i < grpColl.Count; i++)
                     {
-                        groups.Add(grpColl[i].Properties["name"][0].ToString());
+                        groups.Add(grpColl[i].Properties["name"][0].ToString()!);
                     }
 
 
@@ -96,10 +96,10 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
                 {
                     ds.Filter = String.Format("(&(objectCategory=person)(objectClass=user)(samaccountname={0}))", userName);
                     ds.PropertiesToLoad.Add("distinguishedname");
-                    SearchResult dnResult = ds.FindOne();
+                    SearchResult? dnResult = ds.FindOne();
                     if (dnResult != null && dnResult.Properties.Contains("distinguishedname"))
                     {
-                        string distinguishedName = dnResult.Properties["distinguishedname"][0].ToString();
+                        string distinguishedName = dnResult.Properties["distinguishedname"][0].ToString() ?? string.Empty;
                         log.LogDebug($"Distinguished name for {userName} is {distinguishedName}");
                         return distinguishedName;
                     }
@@ -124,10 +124,10 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
                 {
                     ds.Filter = String.Format("(&(objectclass=group)(name={0}))", groupName);
                     ds.PropertiesToLoad.Add("distinguishedname");
-                    SearchResult dnResult = ds.FindOne();
+                    SearchResult? dnResult = ds.FindOne();
                     if (dnResult != null && dnResult.Properties.Contains("distinguishedname"))
                     {
-                        string distinguishedName = dnResult.Properties["distinguishedname"][0].ToString();
+                        string distinguishedName = dnResult.Properties["distinguishedname"][0].ToString() ?? string.Empty;
                         log.LogDebug($"Distinguished name for {groupName} is {distinguishedName}");
                         return distinguishedName;
                     }

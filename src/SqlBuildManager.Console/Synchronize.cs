@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.SqlBuild.Synchronizer;
 using System;
@@ -8,13 +8,13 @@ namespace SqlBuildManager.Console
 {
     public class Synchronize
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static string GetDatabaseRunHistoryTextDifference(CommandLineArgs cmdLine)
         {
             cmdLine = ValidateFlags(cmdLine);
             if (cmdLine == null)
             {
-                return null;
+                return null!;
             }
 
             DatabaseDiffer differ = new DatabaseDiffer();
@@ -33,7 +33,7 @@ namespace SqlBuildManager.Console
         {
             if (cmdLine == null)
             {
-                return null;
+                return null!;
             }
             DatabaseDiffer differ = new DatabaseDiffer();
             return differ.GetDatabaseHistoryDifference(cmdLine.SynchronizeArgs.GoldServer, cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.Server,
@@ -68,25 +68,25 @@ namespace SqlBuildManager.Console
             if (string.IsNullOrEmpty(cmdLine.SynchronizeArgs.GoldDatabase))
             {
                 log.LogError("Missing --golddatabase=\"<database>\" flag");
-                return null;
+                return null!;
             }
 
             if (string.IsNullOrEmpty(cmdLine.SynchronizeArgs.GoldServer))
             {
                 log.LogError("Missing --goldserver=\"<server>\" flag");
-                return null;
+                return null!;
             }
 
             if (string.IsNullOrEmpty(cmdLine.Database))
             {
                 log.LogError("Missing --database=\"<database>\" flag");
-                return null;
+                return null!;
             }
 
             if (string.IsNullOrEmpty(cmdLine.Server))
             {
                 log.LogError("Missing --server=\"<server>\" flag");
-                return null;
+                return null!;
             }
             return cmdLine;
         }

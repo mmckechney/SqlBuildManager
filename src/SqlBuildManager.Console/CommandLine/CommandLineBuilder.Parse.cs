@@ -13,7 +13,7 @@ namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineBuilder
     {
-        private static RootCommand _rootCommand;
+        private static RootCommand _rootCommand = null!;
 
         /// <summary>
         /// Gets the configured RootCommand for parsing. Caches the result.
@@ -24,7 +24,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 _rootCommand = SetUp();
             }
-            return _rootCommand;
+            return _rootCommand = null!;
         }
 
         /// <summary>
@@ -59,12 +59,12 @@ namespace SqlBuildManager.Console.CommandLine
             // so the caller can invoke the parse result to display help
             if (args.Any(a => a == "-?" || a == "-h" || a == "--help"))
             {
-                return (null, string.Empty);
+                return (null!, string.Empty);
             }
 
             if (parseResult.Errors.Count > 0)
             {
-                return (null, string.Join<string>(System.Environment.NewLine, parseResult.Errors.Select(e => e.Message).ToArray()));
+                return (null!, string.Join<string>(System.Environment.NewLine, parseResult.Errors.Select(e => e.Message).ToArray()));
             }
 
             // Use our explicit binder instead of the deprecated ModelBinder
@@ -121,7 +121,7 @@ namespace SqlBuildManager.Console.CommandLine
             var rootCommand = GetRootCommand();
 
             var commands = rootCommand.Subcommands;
-            cmdDocs.AddRange(commands.Select(c => new CommandDoc { ParentCommand = c.Name, ParentCommandDescription = c.Description }));
+            cmdDocs.AddRange(commands.Select(c => new CommandDoc { ParentCommand = c.Name, ParentCommandDescription = c.Description ?? string.Empty }));
 
             foreach (var cmd in commands)
             {
@@ -133,30 +133,30 @@ namespace SqlBuildManager.Console.CommandLine
                 foreach (var sub in cmd.Subcommands)
                 {
 
-                    if (!sub.Hidden) { targetParent.SubCommands.Add(new SubCommand() { Name = sub.Name, Description = sub.Description }); } else { continue; }
+                    if (!sub!.Hidden) { targetParent!.SubCommands.Add(new SubCommand() { Name = sub.Name, Description = sub.Description ?? string.Empty }); } else { continue; }
                     foreach (var sub2 in sub.Subcommands)
                     {
                         if (!sub2.Hidden)
-                            targetParent.SubCommands.Add(new SubCommand() { Name = $"{sub.Name} {sub2.Name}", Description = sub2.Description });
+                            targetParent!.SubCommands.Add(new SubCommand() { Name = $"{sub.Name} {sub2.Name}", Description = sub2.Description ?? string.Empty });
                         else
                             continue;
                         foreach (var sub3 in sub2.Subcommands)
                         {
                             if (!sub3.Hidden)
-                                targetParent.SubCommands.Add(new SubCommand() { Name = $"{sub.Name} {sub2.Name} {sub2.Name}", Description = sub3.Description });
+                                targetParent!.SubCommands.Add(new SubCommand() { Name = $"{sub.Name} {sub2.Name} {sub2.Name}", Description = sub3.Description ?? string.Empty });
                         }
                     }
                 }
-                filledCmdDocs.Add(targetParent);
+                filledCmdDocs.Add(targetParent!);
             }
 
             return filledCmdDocs;
         }
 
-        public static Command FirstBuildRunCommand { get; private set; }
-        public static Command FirstUtilityCommand { get; private set; }
-        public static Command FirstPackageManagementCommand { get; private set; }
-        public static Command FirstPackageInformationCommand { get; private set; }
-        public static Command FirstAdditionalCommand { get; private set; }
+        public static Command FirstBuildRunCommand { get; private set; } = null!;
+        public static Command FirstUtilityCommand { get; private set; } = null!;
+        public static Command FirstPackageManagementCommand { get; private set; } = null!;
+        public static Command FirstPackageInformationCommand { get; private set; } = null!;
+        public static Command FirstAdditionalCommand { get; private set; } = null!;
     }
 }
