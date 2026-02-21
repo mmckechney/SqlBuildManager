@@ -127,7 +127,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_FinishCommitted()
         {
             Initialization init = GetInitializationObject();
@@ -162,7 +162,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_FinishRollback()
         {
             Initialization init = GetInitializationObject();
@@ -195,7 +195,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts. Missing view containing scripts to run..
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_MissingViewData()
         {
             Initialization init = GetInitializationObject();
@@ -225,7 +225,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_UnableToConnectToDatabase()
         {
             Initialization init = GetInitializationObject();
@@ -258,7 +258,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_SingleRunScript()
         {
             Initialization init = GetInitializationObject();
@@ -291,7 +291,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_SkippingPreRunScript()
         {
             Initialization init = GetInitializationObject();
@@ -335,7 +335,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         [Ignore("With removal of background worker need to reintroduce cancellation token")]
         public async Task RunBuildScriptsTest_WithPendingCancellation()
         {
@@ -370,7 +370,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_TrialSuccessful()
         {
             Initialization init = GetInitializationObject();
@@ -405,7 +405,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_TrialWithFailure()
         {
             Initialization init = GetInitializationObject();
@@ -437,7 +437,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         }
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_WithFailureDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
@@ -470,7 +470,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         }
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_WithFailureDontRollbackDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
@@ -506,7 +506,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_WithPreBatchedScripts()
         {
             Initialization init = GetInitializationObject();
@@ -540,7 +540,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_AsScriptOnly()
         {
             Initialization init = GetInitializationObject();
@@ -572,7 +572,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
         }
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_SelectData()
         {
             Initialization init = GetInitializationObject();
@@ -603,7 +603,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
 
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_AlternateLoggingDb()
         {
             Initialization init = GetInitializationObject();
@@ -641,7 +641,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_NonTransactional_FinishCommitted()
         {
             Initialization init = GetInitializationObject();
@@ -675,7 +675,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_NonTransactional_FinishCommittedWithScripting()
         {
             Initialization init = GetInitializationObject();
@@ -709,7 +709,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_NonTransactional_Failure()
         {
             Initialization init = GetInitializationObject();
@@ -741,7 +741,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_NonTransactional_WithFailureDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
@@ -777,7 +777,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public async Task RunBuildScriptsTest_NonTransactional_WithFailureDontRollbackDontCauseFailure()
         {
             Initialization init = GetInitializationObject();
@@ -813,7 +813,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for RunBuildScripts
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         [Ignore("With removal of background worker need to reintroduce cancellation token")]
         public async Task RunBuildScriptsTest_NonTransactional_Cancelled()
         {
@@ -853,7 +853,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_GetDefaultBack()
         {
             Initialization init = GetInitializationObject();
@@ -870,7 +870,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_GetOverrideBack()
         {
             Initialization init = GetInitializationObject();
@@ -889,7 +889,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_DefaultSetToEmptyString()
         {
             Initialization init = GetInitializationObject();
@@ -907,7 +907,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_DefaultSetToNull()
         {
             Initialization init = GetInitializationObject();
@@ -926,7 +926,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_MultipleOverridesSet()
         {
             Initialization init = GetInitializationObject();
@@ -946,7 +946,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_DoesNotFindDefault()
         {
             Initialization init = GetInitializationObject();
@@ -1229,7 +1229,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_SingleServer()
         {
             Initialization init = GetInitializationObject();
@@ -1262,7 +1262,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for GetTargetDatabase
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void GetTargetDatabaseTest_UseStaticOverride()
         {
             Initialization init = GetInitializationObject();
@@ -1574,7 +1574,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for PerformScriptTokenReplacement
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void PerformScriptTokenReplacementTest()
         {
             Initialization init = GetInitializationObject();
@@ -1602,7 +1602,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for PerformScriptTokenReplacement
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void PerformScriptTokenReplacementTest_NullBuildFileName()
         {
             Initialization init = GetInitializationObject();
@@ -1630,7 +1630,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         ///A test for PerformScriptTokenReplacement
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SQLSync.SqlBuild.dll")]
+        [DeploymentItem("SqlSync.SqlBuild.dll")]
         public void PerformScriptTokenReplacementTest_NullDescriptionValue()
         {
             Initialization init = GetInitializationObject();

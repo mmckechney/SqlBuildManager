@@ -278,13 +278,13 @@ namespace SqlBuildManager.Console
 
             if (string.IsNullOrWhiteSpace(cmdLine.JobName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName))
             {
-                log.LogError("Values for --jobname, and --storageaccountname are required as prameters or included in the --secretsfile and --runtimefile");
+                log.LogError("Values for --jobname, and --storageaccountname are required as parameters or included in the --secretsfile and --runtimefile");
                 return (1, cmdLine);
 
             }
             //if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey) && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
             //{
-            //    log.LogError("A value for --storageaccountkey are required as prameters or included in the --secretsfile and --runtimefile");
+            //    log.LogError("A value for --storageaccountkey are required as parameters or included in the --secretsfile and --runtimefile");
             //    return 1;
 
             //}

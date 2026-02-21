@@ -85,9 +85,9 @@ $testContainerName = "$prefix-test-runner-$customName"
 $testImageName = "sqlbuildmanager-dependent-tests"
 
 Write-Host ""
-Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "Dependent Test Runner (ACI + SQL Sidecar)" -ForegroundColor Cyan
-Write-Host "============================================" -ForegroundColor Cyan
+Write-Host "=======================================================================" -ForegroundColor Cyan
+Write-Host "Unit Test and Local DB Test Runner (ACI with SQL & PostgreSQL Sidecars)" -ForegroundColor Cyan
+Write-Host "=======================================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 Write-Host "Container Name: $testContainerName" -ForegroundColor DarkGreen

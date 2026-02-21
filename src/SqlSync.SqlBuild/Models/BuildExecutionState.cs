@@ -140,13 +140,21 @@ namespace SqlSync.SqlBuild.Models
             BuildDescription = runData.BuildDescription ?? string.Empty;
             StartIndex = runData.StartIndex ?? 0;
             ProjectFileName = runData.ProjectFileName ?? string.Empty;
-            ProjectFilePath = !string.IsNullOrWhiteSpace(runData.ProjectFileName) 
-                ? System.IO.Path.GetDirectoryName(runData.ProjectFileName) ?? string.Empty 
-                : string.Empty;
+            if (!string.IsNullOrWhiteSpace(runData.ProjectFileName))
+            {
+                int lastSep = Math.Max(runData.ProjectFileName.LastIndexOf('/'), runData.ProjectFileName.LastIndexOf('\\'));
+                ProjectFilePath = lastSep >= 0 ? runData.ProjectFileName.Substring(0, lastSep) : string.Empty;
+            }
+            else
+            {
+                ProjectFilePath = string.Empty;
+            }
             IsTrialBuild = runData.IsTrial ?? false;
             RunItemIndexes = runData.RunItemIndexes?.ToArray() ?? Array.Empty<double>();
             RunScriptOnly = runData.RunScriptOnly ?? false;
-            BuildFileName = System.IO.Path.GetFileName(runData.BuildFileName ?? string.Empty);
+            var buildFile = runData.BuildFileName ?? string.Empty;
+            int buildLastSep = Math.Max(buildFile.LastIndexOf('/'), buildFile.LastIndexOf('\\'));
+            BuildFileName = buildLastSep >= 0 ? buildFile.Substring(buildLastSep + 1) : buildFile;
             TargetDatabaseOverrides = runData.TargetDatabaseOverrides?.ToList();
             LogToDatabaseName = runData.LogToDatabaseName ?? string.Empty;
             IsTransactional = runData.IsTransactional ?? true;

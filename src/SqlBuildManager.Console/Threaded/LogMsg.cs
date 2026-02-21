@@ -1,4 +1,5 @@
 ﻿using SqlBuildManager.Interfaces.Console;
+using System;
 using System.IO;
 using System.Text.Json.Serialization;
 
@@ -22,7 +23,8 @@ namespace SqlBuildManager.Console.Threaded
             this.runId = runId ?? string.Empty;
             if (!string.IsNullOrEmpty(sourceDacPac))
             {
-                this.sourceDacPac = Path.GetFileName(sourceDacPac);
+                int lastSep = Math.Max(sourceDacPac.LastIndexOf('/'), sourceDacPac.LastIndexOf('\\'));
+                this.sourceDacPac = lastSep >= 0 ? sourceDacPac.Substring(lastSep + 1) : sourceDacPac;
             }
         }
         
@@ -60,7 +62,18 @@ namespace SqlBuildManager.Console.Threaded
         public string SourceDacPac
         {
             get => sourceDacPac;
-            set => sourceDacPac = string.IsNullOrEmpty(value) ? string.Empty : Path.GetFileName(value);
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    sourceDacPac = string.Empty;
+                }
+                else
+                {
+                    int lastSep = Math.Max(value.LastIndexOf('/'), value.LastIndexOf('\\'));
+                    sourceDacPac = lastSep >= 0 ? value.Substring(lastSep + 1) : value;
+                }
+            }
         }
 
         [JsonPropertyName("ComputeHostName")]
