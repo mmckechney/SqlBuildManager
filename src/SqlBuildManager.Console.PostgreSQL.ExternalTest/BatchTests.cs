@@ -214,7 +214,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
         public void Batch_PG_Query_Override_SelectSuccess(string batchMethod, string settingsFile)
         {
