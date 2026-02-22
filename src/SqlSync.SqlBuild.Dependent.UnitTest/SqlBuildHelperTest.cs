@@ -8,10 +8,10 @@ using SqlSync.SqlBuild.Services;
 using SqlSync.SqlBuild.SqlLogging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using BuildModels = SqlSync.SqlBuild.Models;
 using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
@@ -55,7 +55,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Build myBuildModel,
             string serverName,
             bool isMultiDbRun,
-            ScriptBatchCollection scriptBatchColl)
+            ScriptBatchCollection scriptBatchColl,
+            CancellationToken cancellationToken = default)
             
         {
             var scripts = buildDataModel.Script ?? new List<BuildModels.Script>();
@@ -71,7 +72,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                     scriptRun: buildDataModel.ScriptRun,
                     committedScript: buildDataModel.CommittedScript);
             }
-            return await sbh.RunBuildScriptsAsync(scripts, myBuildModel, serverName, isMultiDbRun, scriptBatchColl, buildDataModel);
+            return await sbh.RunBuildScriptsAsync(scripts, myBuildModel, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, cancellationToken);
         }
         [ClassCleanup()]
         public static void Cleanup()
@@ -336,7 +337,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [Ignore("With removal of background worker need to reintroduce cancellation token")]
         public async Task RunBuildScriptsTest_WithPendingCancellation()
         {
             Initialization init = GetInitializationObject();
@@ -355,8 +355,12 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             Build myBuild = init.GetRunBuildRow(sbh);
 
+            //Create a pre-cancelled token to simulate pending cancellation
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
             //Execute the run...
-            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, cts.Token);
 
             Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
 
@@ -814,7 +818,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///</summary>
         [TestMethod()]
         [DeploymentItem("SqlSync.SqlBuild.dll")]
-        [Ignore("With removal of background worker need to reintroduce cancellation token")]
         public async Task RunBuildScriptsTest_NonTransactional_Cancelled()
         {
             Initialization init = GetInitializationObject();
@@ -826,7 +829,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             bool isMultiDbRun = false;
             ScriptBatchCollection scriptBatchColl = null!; //Want this null for this test
-            DoWorkEventArgs workEventArgs = new DoWorkEventArgs(null);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -835,8 +837,12 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             //Get BuildRow...
             Build myBuild = init.GetRunBuildRow(sbh);
 
+            //Create a pre-cancelled token to simulate cancellation during non-transactional run
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
             //Execute the run...
-            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl);
+            actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, isMultiDbRun, scriptBatchColl, cts.Token);
 
             Assert.AreEqual(BuildItemStatus.FailedNoTransaction, actual.FinalStatus);
 
