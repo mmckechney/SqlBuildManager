@@ -204,6 +204,21 @@ namespace SqlBuildManager.Console.CommandLine
                      }
                      break;
 
+                  case "OutputFile":
+                     if (toStringType == StringType.Batch)
+                     {
+                        // For batch mode, use ToString() to preserve the original path
+                        // (e.g. "$AZ_BATCH_TASK_DIR/file.csv") without CWD resolution.
+                        var oFile = (FileInfo)property.GetValue(obj)!;
+                        args.AddRange(new string[] { "--outputfile", oFile.ToString().Quoted() });
+                     }
+                     else
+                     {
+                        var oFile = (FileInfo)property.GetValue(obj)!;
+                        args.AddRange(new string[] { "--outputfile", oFile.FullName.Quoted() });
+                     }
+                     break;
+
                   case "BatchJobName": //Ignore this because it will be counted as a duplicate for JobName
                   case "OverrideDesignated":
                   case "CliVersion":
