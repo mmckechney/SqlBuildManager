@@ -79,10 +79,10 @@ namespace SqlBuildManager.Console.CommandLine
             if (method != null)
             {
                 var genericMethod = method.MakeGenericMethod(valueType);
-                return genericMethod.Invoke(null, new object[] { parseResult, option });
+                return genericMethod.Invoke(null, new object[] { parseResult, option })!;
             }
 
-            return null;
+            return null!;
         }
 
         /// <summary>
@@ -108,9 +108,9 @@ namespace SqlBuildManager.Console.CommandLine
         {
             if (option is Option<T> typedOption)
             {
-                return parseResult.GetValue(typedOption);
+                return parseResult.GetValue(typedOption)!;
             }
-            return default;
+            return default!;
         }
     }
 }

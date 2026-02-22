@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.ContainerShared;
 using SqlBuildManager.Console.KeyVault;
@@ -16,7 +16,7 @@ namespace SqlBuildManager.Console.Kubernetes
    public class KubernetesManager
    {
       public static readonly string SbmNamespace = "sqlbuildmanager";
-      private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+      private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
       #region "Local" Command Line methods
       public static Task<KubernetesFiles> SaveKubernetesYamlFiles(CommandLineArgs cmdLine, string prefix, DirectoryInfo path)
@@ -663,7 +663,7 @@ namespace SqlBuildManager.Console.Kubernetes
             var des = new DeserializerBuilder().Build();
             var sec = des.Deserialize<dynamic>(File.ReadAllText(fileName));
             var name = sec["data"][key];
-            return name as string;
+            return name as string ?? string.Empty;
          }
          catch
          {

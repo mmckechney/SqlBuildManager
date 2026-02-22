@@ -154,12 +154,12 @@ namespace SqlSync.SqlBuild.UnitTest.CodeTable
             scriptUpdates.Query = "Initial";
 
             // Act
-            scriptUpdates.Query = null;
-            scriptUpdates.ShortFileName = null;
-            scriptUpdates.SourceTable = null;
-            scriptUpdates.SourceDatabase = null;
-            scriptUpdates.SourceServer = null;
-            scriptUpdates.KeyCheckColumns = null;
+            scriptUpdates.Query = null!;
+            scriptUpdates.ShortFileName = null!;
+            scriptUpdates.SourceTable = null!;
+            scriptUpdates.SourceDatabase = null!;
+            scriptUpdates.SourceServer = null!;
+            scriptUpdates.KeyCheckColumns = null!;
 
             // Assert
             Assert.IsNull(scriptUpdates.Query);

@@ -20,7 +20,7 @@ namespace SqlSync.SqlBuild.Services
     internal sealed class DefaultSqlLoggingService : ISqlLoggingService
     {
         private string sqlInfoMessage = string.Empty;
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private readonly IConnectionsService connectionsService;
         private readonly IProgressReporter progressReporter;
         private readonly ISqlResourceProvider resourceProvider;
@@ -30,7 +30,7 @@ namespace SqlSync.SqlBuild.Services
         private static readonly HashSet<string> _verifiedLoggingTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly object _cacheLock = new object();
 
-        public DefaultSqlLoggingService(IConnectionsService connectionsService, IProgressReporter progressReporter, ISqlResourceProvider resourceProvider = null, IScriptSyntaxProvider syntaxProvider = null) 
+        public DefaultSqlLoggingService(IConnectionsService connectionsService, IProgressReporter progressReporter, ISqlResourceProvider resourceProvider = null!, IScriptSyntaxProvider syntaxProvider = null!) 
         {
             this.connectionsService = connectionsService;
             this.progressReporter = progressReporter;
@@ -83,8 +83,8 @@ namespace SqlSync.SqlBuild.Services
             }
             //Self healing: add the table if needed
             sqlInfoMessage = string.Empty;
-            DbCommand createTableCmd = null;
-            DbCommand createCommitIndex = null;
+            DbCommand createTableCmd = null!;
+            DbCommand createCommitIndex = null!;
             Dictionary<string, BuildConnectData>.KeyCollection keys = unconfirmedLogTable.Keys;
             foreach (string key in keys)
             {
@@ -113,10 +113,10 @@ namespace SqlSync.SqlBuild.Services
                         sqlConn1.InfoMessage += new SqlInfoMessageEventHandler(Connection_InfoMessage);
 
                     //If there is an alternate target for logging, check to see if this connection is for that database, if not, skip it.
-                    if (logToDatabaseName.Length > 0 && !createTableCmd.Connection.Database.Equals(logToDatabaseName, StringComparison.CurrentCultureIgnoreCase))
+                    if (logToDatabaseName!.Length > 0 && !createTableCmd.Connection!.Database.Equals(logToDatabaseName, StringComparison.CurrentCultureIgnoreCase))
                         continue;
 
-                    if (createTableCmd.Connection.State == ConnectionState.Closed)
+                    if (createTableCmd.Connection!.State == ConnectionState.Closed)
                         createTableCmd.Connection.Open();
 
                     if (connData.Transaction != null)
@@ -132,11 +132,11 @@ namespace SqlSync.SqlBuild.Services
                         sqlConn2.InfoMessage += new SqlInfoMessageEventHandler(Connection_InfoMessage);
 
                     //If there is an alternate target for logging, check to see if this connection is for that database, if not, skip it.
-                    if (logToDatabaseName.Length > 0 && !createCommitIndex.Connection.Database.Equals(logToDatabaseName, StringComparison.CurrentCultureIgnoreCase))
+                    if (logToDatabaseName!.Length > 0 && !createCommitIndex.Connection!.Database.Equals(logToDatabaseName, StringComparison.CurrentCultureIgnoreCase))
                         continue;
 
 
-                    if (createCommitIndex.Connection.State == ConnectionState.Closed)
+                    if (createCommitIndex.Connection!.State == ConnectionState.Closed)
                         createCommitIndex.Connection.Open();
 
                     if (connData.Transaction != null)
@@ -151,7 +151,7 @@ namespace SqlSync.SqlBuild.Services
                 }
                 catch (Exception e)
                 {
-                    log.LogError(e, $"Error ensuring log table presence/indexes for {createTableCmd.Connection.DataSource}.{createTableCmd.Connection.Database}");
+                    log!.LogError(e, $"Error ensuring log table presence/indexes for {createTableCmd.Connection!.DataSource}.{createTableCmd.Connection!.Database}");
                 }
                 finally
                 {
@@ -177,10 +177,10 @@ namespace SqlSync.SqlBuild.Services
             {
                 DbCommand cmd = conn.CreateCommand();
                 cmd.CommandText = resourceProvider.CheckTableExistsQuery("SqlBuild_Logging");
-                if (cmd.Connection.State == ConnectionState.Closed)
+                if (cmd!.Connection!.State == ConnectionState.Closed)
                     cmd.Connection.Open();
 
-                object result = await cmd.ExecuteScalarAsync();
+                object? result = await cmd.ExecuteScalarAsync();
                 if (result == null || result == System.DBNull.Value)
                     return false;
                 else
@@ -223,7 +223,7 @@ namespace SqlSync.SqlBuild.Services
             // Build a dictionary for fast script lookup by ScriptId
             var scriptLookup = runnerProperties.BuildDataModel.Script?
                 .Where(s => !string.IsNullOrEmpty(s.ScriptId))
-                .ToDictionary(s => s.ScriptId, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(s => s.ScriptId!, StringComparer.OrdinalIgnoreCase)
                 ?? new Dictionary<string, Script>();
 
             // Common parameters that are the same for all scripts
@@ -231,7 +231,7 @@ namespace SqlSync.SqlBuild.Services
                 ? runnerProperties.BuildFileName 
                 : Path.GetFileName(runnerProperties.ProjectFileName);
             string userId = System.Environment.UserName;
-            string runWithVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            string runWithVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version!.ToString();
             string buildProjectHash = runnerProperties.BuildPackageHash;
             string buildRequestedBy = string.IsNullOrEmpty(runnerProperties.BuildRequestedBy) 
                 ? System.Environment.UserDomainName + "\\" + System.Environment.UserName 
@@ -353,7 +353,7 @@ namespace SqlSync.SqlBuild.Services
                 sql.AppendLine($"(@BuildFileName{i},@ScriptFileName{i},@ScriptId{i},@ScriptFileHash{i},@CommitDate{i},@Sequence{i},@UserId{i},{syntaxProvider.BooleanTrueLiteral},@ScriptText{i},@Tag{i},@TargetDatabase{i},@RunWithVersion{i},@BuildProjectHash{i},@BuildRequestedBy{i},@ScriptRunStart{i},@ScriptRunEnd{i},@Description{i})");
 
                 AddParameter(cmd, $"@BuildFileName{i}", buildFileName);
-                AddParameter(cmd, $"@ScriptFileName{i}", row.FileName);
+                AddParameter(cmd, $"@ScriptFileName{i}", row.FileName!);
                 AddParameter(cmd, $"@ScriptId{i}", script.ScriptId);
                 AddParameter(cmd, $"@ScriptFileHash{i}", script.FileHash);
                 AddParameter(cmd, $"@CommitDate{i}", commitDate);

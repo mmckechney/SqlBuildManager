@@ -583,7 +583,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void ScriptRequiresBuildDescription_ReturnsFalseForNull()
         {
-            var result = SqlBuildFileHelper.ScriptRequiresBuildDescription(null);
+            var result = SqlBuildFileHelper.ScriptRequiresBuildDescription(null!);
 
             Assert.IsFalse(result);
         }
@@ -949,7 +949,7 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            var result = await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, Path.GetTempPath(), null, false);
+            var result = await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, Path.GetTempPath(), null!, false);
 
             Assert.IsTrue(result);
         }
@@ -967,7 +967,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public async Task PackageProjectFileIntoZip_ReturnsFalseForNullModel()
         {
-            SqlSyncBuildDataModel model = null;
+            SqlSyncBuildDataModel model = null!;
 
             var result = await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, Path.GetTempPath(), "test.sbm", false);
 
@@ -1510,7 +1510,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public async Task PackageSbxFileIntoSbmFile_NullFileName_ReturnsEmpty()
         {
-            var result = await SqlBuildFileHelper.PackageSbxFileIntoSbmFileAsync(null);
+            var result = await SqlBuildFileHelper.PackageSbxFileIntoSbmFileAsync(null!);
 
             Assert.AreEqual(string.Empty, result);
         }

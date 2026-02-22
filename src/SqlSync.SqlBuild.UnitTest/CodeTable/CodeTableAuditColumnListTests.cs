@@ -352,10 +352,10 @@ namespace SqlSync.SqlBuild.UnitTest.CodeTable
         {
             // Arrange
             var list = new CodeTableAuditColumnList();
-            list.UpdateDateColumns = null;
-            list.UpdateIdColumns = null;
-            list.CreateDateColumns = null;
-            list.CreateIdColumns = null;
+            list.UpdateDateColumns = null!;
+            list.UpdateIdColumns = null!;
+            list.CreateDateColumns = null!;
+            list.CreateIdColumns = null!;
 
             // Act
             var isValid = list.IsValid;

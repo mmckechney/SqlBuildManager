@@ -1,4 +1,4 @@
-﻿using SqlBuildManager.Test.Common;
+using SqlBuildManager.Test.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,11 +25,11 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             ConnectionString = TestEnvironment.GetSqlConnectionStringTemplate();
         }
 
-        private static List<string> tempFiles;
-        public static string SqlBuildZipFileName;
-        public static string MultiDbFileName;
-        public static string DbConfigFileName;
-        public static string SqlScriptOverrideFileName;
+        private static List<string> tempFiles = null!;
+        public static string SqlBuildZipFileName = null!;
+        public static string MultiDbFileName = null!;
+        public static string DbConfigFileName = null!;
+        public static string SqlScriptOverrideFileName = null!;
 
         public Initialization()
         {

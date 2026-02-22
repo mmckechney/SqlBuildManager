@@ -92,7 +92,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             { 
                 ServerName = "Server1", 
                 DatabaseName = "Db1",
-                Transaction = null
+                Transaction = null!
             });
 
             // Act - should not throw
@@ -111,7 +111,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             { 
                 ServerName = "Server1", 
                 DatabaseName = "Db1",
-                Connection = null
+                Connection = null!
             });
 
             // Act - should not throw
@@ -272,11 +272,11 @@ namespace SqlSync.SqlBuild.UnitTest.Services
 
             // Act - using reflection since the class is internal
             var service = Activator.CreateInstance(
-                typeof(DefaultConnectionsService).Assembly.GetType("SqlSync.SqlBuild.Services.DefaultSqlLoggingService"),
+                typeof(DefaultConnectionsService).Assembly.GetType("SqlSync.SqlBuild.Services.DefaultSqlLoggingService")!,
                 mockConnectionsService.Object,
                 mockProgressReporter.Object,
-                (ISqlResourceProvider)null,
-                (IScriptSyntaxProvider)null);
+                (ISqlResourceProvider?)null,
+                (IScriptSyntaxProvider?)null);
 
             // Assert
             Assert.IsNotNull(service);
@@ -293,13 +293,13 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockConnectionsService.Setup(x => x.Connections).Returns(new Dictionary<string, BuildConnectData>());
             
             // Create instance using internal constructor
-            var serviceType = typeof(DefaultConnectionsService).Assembly.GetType("SqlSync.SqlBuild.Services.DefaultSqlLoggingService");
-            var service = Activator.CreateInstance(serviceType, mockConnectionsService.Object, mockProgressReporter.Object, (ISqlResourceProvider)null, (IScriptSyntaxProvider)null) as ISqlLoggingService;
+            var serviceType = typeof(DefaultConnectionsService).Assembly.GetType("SqlSync.SqlBuild.Services.DefaultSqlLoggingService")!;
+            var service = Activator.CreateInstance(serviceType, mockConnectionsService.Object, mockProgressReporter.Object, (ISqlResourceProvider?)null, (IScriptSyntaxProvider?)null) as ISqlLoggingService;
 
             var emptyConnections = new Dictionary<string, BuildConnectData>();
 
             // Act
-            var result = await service.EnsureLogTablePresence(emptyConnections, string.Empty);
+            var result = await service!.EnsureLogTablePresence(emptyConnections, string.Empty);
 
             // Assert
             Assert.AreEqual(string.Empty, result);

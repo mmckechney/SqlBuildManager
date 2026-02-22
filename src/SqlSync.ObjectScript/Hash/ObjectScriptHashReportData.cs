@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace SqlSync.ObjectScript.Hash
@@ -23,14 +23,14 @@ namespace SqlSync.ObjectScript.Hash
             get { return databaseData; }
             set { databaseData = value; }
         }
-        string baseLineServer;
+        string baseLineServer = string.Empty;
 
         public string BaseLineServer
         {
             get { return baseLineServer; }
             set { baseLineServer = value; }
         }
-        string baseLineDatabase;
+        string baseLineDatabase = string.Empty;
 
         public string BaseLineDatabase
         {

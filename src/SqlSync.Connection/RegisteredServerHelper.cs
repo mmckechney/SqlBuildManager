@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -10,7 +10,7 @@ namespace SqlSync.Connection
 {
     public class RegisteredServerHelper
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private static string resisteredServerFileName = string.Empty;
         public static string RegisteredServerFileName
         {
@@ -31,7 +31,7 @@ namespace SqlSync.Connection
             }
         }
 
-        private static RegisteredServers registeredServerData = null;
+        private static RegisteredServers registeredServerData = null!;
         public static RegisteredServers RegisteredServerData
         {
             get
@@ -45,7 +45,7 @@ namespace SqlSync.Connection
         }
         public static bool ReloadRegisteredServerData(string fileName)
         {
-            registeredServerData = null;
+            registeredServerData = null!;
             RegisteredServerHelper.RegisteredServerFileName = fileName;
             RegisteredServers tmp = RegisteredServerHelper.RegisteredServerData;
             RegisteredServerHelper.RegisteredServerFileName = string.Empty;
@@ -111,7 +111,7 @@ namespace SqlSync.Connection
             }
             else
             {
-                return null;
+                return null!;
             }
         }
 
@@ -122,7 +122,7 @@ namespace SqlSync.Connection
                 using (StringReader sr = new StringReader(serverFileContents))
                 {
                     XmlSerializer xmlS = new XmlSerializer(typeof(RegisteredServers));
-                    object tmp = xmlS.Deserialize(sr);
+                    object tmp = xmlS.Deserialize(sr)!;
                     if (tmp != null)
                         return (RegisteredServers)tmp;
                 }
@@ -132,7 +132,7 @@ namespace SqlSync.Connection
                 log.LogError(exe,"Error deserializing registered server contents");
             }
 
-            return null;
+            return null!;
         }
         internal static bool SerializeRegisteredServers(RegisteredServers regServers, string fileName)
         {
@@ -149,7 +149,7 @@ namespace SqlSync.Connection
             }
             try
             {
-                System.Xml.XmlTextWriter tw = null;
+                System.Xml.XmlTextWriter tw = null!;
                 try
                 {
                     XmlSerializer xmlS = new XmlSerializer(typeof(RegisteredServers));

@@ -6,7 +6,7 @@ namespace SqlSync.SqlBuild.Services
     /// </summary>
     internal class PostgresSyntaxProvider : IScriptSyntaxProvider
     {
-        public string BatchDelimiterPattern => null;
+        public string BatchDelimiterPattern => null!;
 
         public bool RequiresBatchSplitting => false;
 

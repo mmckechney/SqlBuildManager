@@ -28,7 +28,7 @@ namespace SqlBuildManager.Console.CommandLine
 				cmd.SetAction(async (parseResult, ct) => {
 					var packages = parseResult.GetValue(packagesOption);
 					var withHash = parseResult.GetValue(withHashOption);
-					await Worker.ListPackageScripts(packages, withHash);
+					await Worker.ListPackageScripts(packages!, withHash);
 					return 0;
 				});
 				return cmd;
@@ -147,7 +147,7 @@ namespace SqlBuildManager.Console.CommandLine
 				cmd.SetAction(async (parseResult, ct) => {
 					var directory = parseResult.GetValue(unpackDirectoryOption);
 					var package = parseResult.GetValue(unpackPackageOption);
-					await Worker.UnpackSbmFile(directory, package);
+					await Worker.UnpackSbmFile(directory!, package!);
 					return 0;
 				});
 				return cmd;
@@ -309,7 +309,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.SetAction((parseResult) => {
 					var cmdLine = CommandLineArgsBinder.Bind(parseResult);
 					var settingsfilekey = parseResult.GetValue(settingsfileKeyRequiredOption);
-					Worker.DecryptSettingsFile(cmdLine, settingsfilekey);
+					Worker.DecryptSettingsFile(cmdLine, settingsfilekey!);
 					return 0;
 				});
 				cmd.Hidden = true;

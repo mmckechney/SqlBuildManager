@@ -108,7 +108,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             };
 
             // Act
-            state.PopulateFromRunData(null);
+            state.PopulateFromRunData(null!);
 
             // Assert - should not throw and should not change state
             Assert.AreEqual("Original", state.BuildDescription);

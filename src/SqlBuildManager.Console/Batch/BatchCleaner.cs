@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Batch;
+using Microsoft.Azure.Batch;
 using Microsoft.Azure.Batch.Auth;
 using Microsoft.Azure.Batch.Common;
 using Microsoft.Extensions.Logging;
@@ -13,7 +13,7 @@ namespace SqlBuildManager.Console.Batch
 {
     public class BatchCleaner
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         /// <summary>
         /// Creates a BatchClient using either Managed Identity (preferred) or shared key credentials (fallback)

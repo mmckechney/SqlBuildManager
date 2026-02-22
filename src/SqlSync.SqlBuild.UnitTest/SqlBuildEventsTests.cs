@@ -79,7 +79,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void Constructor_WithNullStrings_SetsNullProperties()
         {
             // Arrange & Act
-            var args = new ScriptLogEventArgs(0, null, null, null, null);
+            var args = new ScriptLogEventArgs(0, null!, null!, null!, null!);
 
             // Assert
             Assert.IsNull(args.SqlScript);
@@ -148,7 +148,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void Constructor_WithNullStatus_AcceptsNull()
         {
             // Act
-            var args = new ScriptRunStatusEventArgs(null, TimeSpan.FromSeconds(1));
+            var args = new ScriptRunStatusEventArgs(null!, TimeSpan.FromSeconds(1));
 
             // Assert
             Assert.IsNull(args.Status);
@@ -227,7 +227,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void Constructor_WithNullMessage_AcceptsNull()
         {
             // Act
-            var args = new GeneralStatusEventArgs(null);
+            var args = new GeneralStatusEventArgs(null!);
 
             // Assert
             Assert.IsNull(args.StatusMessage);
@@ -264,7 +264,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void Constructor_WithNullError_AcceptsNull()
         {
             // Act
-            var args = new CommitFailureEventArgs(null);
+            var args = new CommitFailureEventArgs(null!);
 
             // Assert
             Assert.IsNull(args.ErrorMessage);

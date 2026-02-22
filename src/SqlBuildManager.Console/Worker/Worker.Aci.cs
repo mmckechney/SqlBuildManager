@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CloudStorage;
@@ -19,14 +19,14 @@ namespace SqlBuildManager.Console
     {
         internal static int SaveAndEncryptAciSettings(CommandLineArgs cmdLine, bool clearText)
         {
-            cmdLine.BatchArgs = null;
-            cmdLine.KubernetesArgs = null;
-            cmdLine.ContainerAppArgs = null;
-            cmdLine.ConnectionArgs.BatchAccountKey = null;
-            cmdLine.ConnectionArgs.BatchAccountName = null;
-            cmdLine.ConnectionArgs.BatchAccountUrl = null;
-            cmdLine.IdentityArgs.PrincipalId = null;
-            cmdLine.IdentityArgs.ResourceId = null;
+            cmdLine.BatchArgs = null!;
+            cmdLine.KubernetesArgs = null!;
+            cmdLine.ContainerAppArgs = null!;
+            cmdLine.ConnectionArgs.BatchAccountKey = null!;
+            cmdLine.ConnectionArgs.BatchAccountName = null!;
+            cmdLine.ConnectionArgs.BatchAccountUrl = null!;
+            cmdLine.IdentityArgs.PrincipalId = null!;
+            cmdLine.IdentityArgs.ResourceId = null!;
             
 
             return SaveAndEncryptSettings(cmdLine, clearText);
@@ -43,7 +43,7 @@ namespace SqlBuildManager.Console
                 cmdLine.PlatinumDacpac = platinumDacpac.FullName;
             }
             (var x, cmdLine) = Init(cmdLine);
-            var res = await AciPrepAndUploadBuildPackage(cmdLine, packageName, platinumDacpac, force);
+            var res = await AciPrepAndUploadBuildPackage(cmdLine, packageName!, platinumDacpac!, force);
             if (res != 0)
             {
                 log.LogError("Failed to upload build package to Blob storage");
@@ -104,7 +104,7 @@ namespace SqlBuildManager.Console
                 log.LogError("If --keyvaultname is not provided as an argument or in the --settingsfile, then --storageaccountname is required");
                 return -1;
             }
-            (bool retVal, string sbmName) = await GenericContainer.ValidateAndUploadContainerBuildFilesToStorage(cmdLine, packageName, platinumDacpac, force);
+            (bool retVal, string sbmName) = await GenericContainer.ValidateAndUploadContainerBuildFilesToStorage(cmdLine, packageName!, platinumDacpac, force);
             if (!retVal)
             {
                 return -1;

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Security.Cryptography;
@@ -11,7 +11,7 @@ namespace SqlSync.SqlBuild.Utilities
     /// </summary>
     public static class Cryptography
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static string EncryptText(string input, string password)
         {
             try
@@ -64,7 +64,7 @@ namespace SqlSync.SqlBuild.Utilities
 
         private static byte[] AES_Encrypt(byte[] bytesToBeEncrypted, byte[] passwordBytes)
         {
-            byte[] encryptedBytes = null;
+            byte[] encryptedBytes = null!;
             using (MemoryStream ms = new MemoryStream())
             {
                 using (var AES = Aes.Create())
@@ -72,9 +72,12 @@ namespace SqlSync.SqlBuild.Utilities
                     AES.KeySize = 256;
                     AES.BlockSize = 128;
 
-                    var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1);
-                    AES.Key = key.GetBytes(AES.KeySize / 8);
-                    AES.IV = key.GetBytes(AES.BlockSize / 8);
+                    // var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1);
+                    // AES.Key = key.GetBytes(AES.KeySize / 8);
+                    // AES.IV = key.GetBytes(AES.BlockSize / 8);
+
+                    AES.Key= Rfc2898DeriveBytes.Pbkdf2(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1, AES.KeySize / 8);
+                    AES.IV = Rfc2898DeriveBytes.Pbkdf2(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1,AES.BlockSize / 8);
 
                     AES.Mode = CipherMode.CBC;
 
@@ -92,7 +95,7 @@ namespace SqlSync.SqlBuild.Utilities
 
         private static byte[] AES_Decrypt(byte[] bytesToBeDecrypted, byte[] passwordBytes)
         {
-            byte[] decryptedBytes = null;
+            byte[] decryptedBytes = null!;
 
             using (MemoryStream ms = new MemoryStream())
             {
@@ -101,9 +104,12 @@ namespace SqlSync.SqlBuild.Utilities
                     AES.KeySize = 256;
                     AES.BlockSize = 128;
 
-                    var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1);
-                    AES.Key = key.GetBytes(AES.KeySize / 8);
-                    AES.IV = key.GetBytes(AES.BlockSize / 8);
+                    // var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1);
+                    // AES.Key = key.GetBytes(AES.KeySize / 8);
+                    // AES.IV = key.GetBytes(AES.BlockSize / 8);
+
+                    AES.Key= Rfc2898DeriveBytes.Pbkdf2(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1, AES.KeySize / 8);
+                    AES.IV = Rfc2898DeriveBytes.Pbkdf2(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1,AES.BlockSize / 8);
 
                     AES.Mode = CipherMode.CBC;
 

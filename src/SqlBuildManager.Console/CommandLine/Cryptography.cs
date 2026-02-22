@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using sqlB = SqlSync.SqlBuild.Utilities;
@@ -10,7 +10,7 @@ namespace SqlBuildManager.Console.CommandLine
     /// </summary>
     public static class Cryptography
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private static readonly string keyEnvronmentVariableName = "sbm-settingsfilekey";
 
         public static CommandLineArgs EncryptSensitiveFields(CommandLineArgs cmdLine)

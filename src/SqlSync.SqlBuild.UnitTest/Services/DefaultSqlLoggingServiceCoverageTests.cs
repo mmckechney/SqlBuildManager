@@ -14,8 +14,8 @@ namespace SqlSync.SqlBuild.UnitTest.Services
     [TestClass]
     public class DefaultSqlLoggingServiceCoverageTests
     {
-        private Mock<IConnectionsService> _mockConnectionsService;
-        private Mock<IProgressReporter> _mockProgressReporter;
+        private Mock<IConnectionsService> _mockConnectionsService = null!;
+        private Mock<IProgressReporter> _mockProgressReporter = null!;
 
         [TestInitialize]
         public void Setup()
@@ -30,7 +30,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         public void Constructor_WithNullConnectionsService_CreatesInstance()
         {
             // Act - should not throw
-            var service = new DefaultSqlLoggingService(null, _mockProgressReporter.Object);
+            var service = new DefaultSqlLoggingService(null!, _mockProgressReporter.Object);
 
             // Assert
             Assert.IsNotNull(service);
@@ -40,7 +40,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         public void Constructor_WithNullProgressReporter_CreatesInstance()
         {
             // Act
-            var service = new DefaultSqlLoggingService(_mockConnectionsService.Object, null);
+            var service = new DefaultSqlLoggingService(_mockConnectionsService.Object, null!);
 
             // Assert
             Assert.IsNotNull(service);
@@ -50,7 +50,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         public void Constructor_WithBothNull_CreatesInstance()
         {
             // Act
-            var service = new DefaultSqlLoggingService(null, null);
+            var service = new DefaultSqlLoggingService(null!, null!);
 
             // Assert
             Assert.IsNotNull(service);

@@ -10,9 +10,11 @@ COPY . .
 
 # Restore all projects
 RUN dotnet restore SqlBuildManager.Console.ExternalTest/SqlBuildManager.Console.ExternalTest.csproj
+RUN dotnet restore SqlBuildManager.Console.PostgreSQL.ExternalTest/SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj
 
-# Build the test project (this also builds dependencies)
+# Build the test projects (this also builds dependencies)
 RUN dotnet build SqlBuildManager.Console.ExternalTest/SqlBuildManager.Console.ExternalTest.csproj --configuration Release --no-restore -o /tests
+RUN dotnet build SqlBuildManager.Console.PostgreSQL.ExternalTest/SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj --configuration Release --no-restore -o /tests
 
 # Copy TestConfig files to test output directory
 RUN cp -r TestConfig /tests/TestConfig

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using YamlDotNet.Serialization;
 
 namespace SqlBuildManager.Console.Kubernetes.Yaml
@@ -34,10 +34,10 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
     }
     public class SecretsData
     {
-        public string EventHubConnectionString { get; set; } = null;
-        public string ServiceBusTopicConnectionString { get; set; } = null;
-        public string UserName { get; set; } = null;
-        public string Password { get; set; } = null;
-        public string StorageAccountKey { get; set; } = null;
+        public string EventHubConnectionString { get; set; } = null!;
+        public string ServiceBusTopicConnectionString { get; set; } = null!;
+        public string UserName { get; set; } = null!;
+        public string Password { get; set; } = null!;
+        public string StorageAccountKey { get; set; } = null!;
     }
 }

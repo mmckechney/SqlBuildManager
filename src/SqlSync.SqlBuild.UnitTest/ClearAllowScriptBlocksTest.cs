@@ -36,7 +36,7 @@ namespace SqlSync.SqlBuild.UnitTest
             IProgressReporter progressReporter = new NullProgressReporter();
             IConnectionsService connectionsService = new DefaultConnectionsService();
             ISqlLoggingService sqlLoggingService = new DefaultSqlLoggingService(connectionsService, progressReporter);
-            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null);
+            IDatabaseUtility dbUtil = new DefaultDatabaseUtility(connectionsService, sqlLoggingService, progressReporter, null!);
             var updated = dbUtil.ClearAllowScriptBlocks(model, "ServerA", new [] { "id-1" });
 
             Assert.AreEqual(false, updated.CommittedScript[0].AllowScriptBlock);

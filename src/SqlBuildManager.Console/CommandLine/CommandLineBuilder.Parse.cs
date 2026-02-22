@@ -24,7 +24,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 _rootCommand = SetUp();
             }
-            return _rootCommand = null!;
+            return _rootCommand;
         }
 
         /// <summary>

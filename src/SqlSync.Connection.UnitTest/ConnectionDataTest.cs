@@ -290,7 +290,7 @@ namespace SqlSync.Connection.UnitTest
         public void DatabaseName_NullValue_CanBeSet()
         {
             var target = new ConnectionData();
-            target.DatabaseName = null;
+            target.DatabaseName = null!;
             Assert.IsNull(target.DatabaseName);
         }
 

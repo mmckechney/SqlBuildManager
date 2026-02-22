@@ -1,4 +1,4 @@
-﻿using Azure.Messaging.EventHubs;
+using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Consumer;
 using Azure.Messaging.EventHubs.Processor;
 using Azure.Storage.Blobs;
@@ -22,7 +22,7 @@ namespace SqlBuildManager.Console.Events
 {
     public class EventManager : IDisposable
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private string eventHubconnectionString = "";
         private string storageAccountName = "";
         private string storageAccountKey = "";
@@ -77,7 +77,7 @@ namespace SqlBuildManager.Console.Events
             this.eventHubSubscription = eventHubSubscription;
         }
 
-        private BlobContainerClient _blobClient = null;
+        private BlobContainerClient _blobClient = null!;
         private BlobContainerClient BlobClient
         {
             get
@@ -90,7 +90,7 @@ namespace SqlBuildManager.Console.Events
             }
         }
 
-        private EventProcessorClient _eventClient = null;
+        private EventProcessorClient _eventClient = null!;
         private EventProcessorClient EventClient
         {
             get
@@ -213,7 +213,7 @@ namespace SqlBuildManager.Console.Events
             {
                 
                 var msg = JsonSerializer.Deserialize<EventHubMessageFormat>(Encoding.UTF8.GetString(eventArgs.Data.Body.ToArray()));
-                if ((!string.IsNullOrWhiteSpace(msg.Properties.LogMsg.JobName) && msg.Properties.LogMsg.JobName.ToLower() == jobName.ToLower()) || (this.jobName.ToLower() == "all"))
+                if ((!string.IsNullOrWhiteSpace(msg!.Properties.LogMsg.JobName) && msg.Properties.LogMsg.JobName.ToLower() == jobName.ToLower()) || (this.jobName.ToLower() == "all"))
                 {
                     IncrementEventsScanned(); //only count events that are relevant to this job
                     if (log.IsEnabled(LogLevel.Debug) || this.jobName.ToLower() == "all")
@@ -366,13 +366,13 @@ namespace SqlBuildManager.Console.Events
                 _eventClient.StopProcessing();
                 _eventClient.ProcessEventAsync -= ProcessEventHandler;
                 _eventClient.ProcessErrorAsync -= ProcessErrorHandler;
-                _eventClient = null;
+                _eventClient = null!;
 
                 RemoveCustomConsumerGroup();
             }
             if (_blobClient != null)
             {
-                _blobClient = null;
+                _blobClient = null!;
             }
         }
     }

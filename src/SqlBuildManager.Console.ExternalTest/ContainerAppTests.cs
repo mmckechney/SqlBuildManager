@@ -20,7 +20,7 @@ namespace SqlBuildManager.Console.ExternalTest
     {
         public TestContext TestContext { get; set; }
 
-        private string settingsFileKeyPath;
+        private string settingsFileKeyPath = string.Empty;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
 
         [TestInitialize]
@@ -109,7 +109,7 @@ namespace SqlBuildManager.Console.ExternalTest
         {
             settingsFile = Path.GetFullPath(settingsFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFile), Guid.NewGuid().ToString() + ".cfg");
+            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFile)!, Guid.NewGuid().ToString() + ".cfg");
             File.WriteAllLines(tmpOverride, File.ReadAllLines(overrideFile).Take(6).ToArray());
             try
             {
@@ -451,7 +451,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
                 Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
 
-                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName), Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
+                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName)!, Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
 
 
 
@@ -573,7 +573,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
                 Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
 
-                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName), Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
+                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName)!, Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
 
                 //get the size of the log file before we start
                 int startingLine = TestHelper.LogFileCurrentLineCount();
@@ -694,7 +694,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
                 Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
 
-                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName), Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
+                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName)!, Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
 
                 //get the size of the log file before we start
                 int startingLine = TestHelper.LogFileCurrentLineCount();
@@ -783,7 +783,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [TestMethod]
         public void ContainerApp_WorkerTest_SBMSource_Success(string settingsFile, int concurrency, ConcurrencyType concurrencyType)
         {
-            string jobName = null;
+            string jobName = null!;
             settingsFile = Path.GetFullPath(settingsFile);
             try
             {

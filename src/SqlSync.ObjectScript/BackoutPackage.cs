@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlSync.Connection;
 using SqlSync.Constants;
 using SqlSync.DbInformation;
@@ -15,7 +15,7 @@ namespace SqlSync.ObjectScript
 {
     public class BackoutPackage
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         /// <summary>
         /// Async version of CreateBackoutPackage. Creates a backout package from the source build file.
@@ -26,7 +26,7 @@ namespace SqlSync.ObjectScript
                                                 List<string> manualScriptsCanNotUpdate, string sourceBuildZipFileName,
                                                 string destinationBuildZipFileName, string sourceServer, string sourceDb,
                                                 bool removeNewObjectsFromPackage, bool markManualScriptsAsRunOnce,
-                                                bool dropNewRoutines, IProgress<string> progress = null,
+                                                bool dropNewRoutines, IProgress<string> progress = null!,
                                                 CancellationToken cancellationToken = default)
         {
             void ReportProgress(string message)
@@ -321,7 +321,7 @@ namespace SqlSync.ObjectScript
         /// <summary>
         /// This method should only really be used with a command line, unattended execution.
         /// </summary>
-        public static async Task<string> CreateDefaultBackoutPackageAsync(ConnectionData connData, string sourceBuildZipFileName, string sourceServer, string sourceDb, IProgress<string> progress = null, CancellationToken cancellationToken = default)
+        public static async Task<string> CreateDefaultBackoutPackageAsync(ConnectionData connData, string sourceBuildZipFileName, string sourceServer, string sourceDb, IProgress<string> progress = null!, CancellationToken cancellationToken = default)
         {
             /*How to create a backout package:
              * 
@@ -330,8 +330,8 @@ namespace SqlSync.ObjectScript
              * 3. Targeting your "old" source, and see what scriptable objects are not there (i.e. are "new" in the package)
              *
              */
-            List<string> manualScriptsCanNotUpdate;
-            List<ObjectUpdates> initialCanUpdateList;
+            List<string>? manualScriptsCanNotUpdate;
+            List<ObjectUpdates>? initialCanUpdateList;
             string workingDirectory = string.Empty;
             string projectFilePath = string.Empty;
             string projectFileName = string.Empty;
@@ -360,19 +360,19 @@ namespace SqlSync.ObjectScript
 
             //Get object that are also on the target (ie are "existing") -- only these will be updated
             log.LogDebug($"Getting list of objects can be rolled back from {sourceServer}:{sourceDb}");
-            List<ObjectUpdates> canUpdate = GetObjectThatCanBeUpdated(initialCanUpdateList, connData, sourceServer, sourceDb);
+            List<ObjectUpdates> canUpdate = GetObjectThatCanBeUpdated(initialCanUpdateList!, connData, sourceServer, sourceDb);
             SetBackoutSourceDatabaseAndServer(ref canUpdate, sourceServer, sourceDb);
 
             //Get the scriptable objects that are not found on the target (i.e. are "new") -- these will be dropped
             log.LogDebug($"Getting list of objects can not be rolled back from {sourceServer}:{sourceDb}");
-            List<ObjectUpdates> notPresentOnTarget = GetObjectsNotPresentTargetDatabase(initialCanUpdateList, connData, sourceServer, sourceDb);
+            List<ObjectUpdates> notPresentOnTarget = GetObjectsNotPresentTargetDatabase(initialCanUpdateList!, connData, sourceServer, sourceDb);
 
             //Get the name of the new package
             string backoutPackageName = GetDefaultPackageName(sourceBuildZipFileName);
 
             //Create the package!!
             log.LogDebug($"Creating backout package {backoutPackageName} from source package {sourceBuildZipFileName}");
-            success = await CreateBackoutPackageAsync(connData, canUpdate, notPresentOnTarget, manualScriptsCanNotUpdate,
+            success = await CreateBackoutPackageAsync(connData, canUpdate, notPresentOnTarget, manualScriptsCanNotUpdate!,
                                                 sourceBuildZipFileName, backoutPackageName,
                                                 sourceServer, sourceDb, true, true, true, progress, cancellationToken).ConfigureAwait(false);
 

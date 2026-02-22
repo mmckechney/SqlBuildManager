@@ -61,7 +61,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 BuildPackageHash: "hash");
 
             var doa = new DoWorkEventArgs(null);
-            var result = await orchestrator.ExecuteAsync(runData, prep, "srv", false, null, allowableTimeoutRetries: 2, CancellationToken.None);
+            var result = await orchestrator.ExecuteAsync(runData, prep, "srv", false, null!, allowableTimeoutRetries: 2, CancellationToken.None);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(BuildItemStatus.CommittedWithTimeoutRetries, result.FinalStatus);
@@ -73,7 +73,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             private readonly Func<ISqlBuildRunnerContext, SqlBuildRunner> _factory;
             public FakeRunnerFactory(Func<ISqlBuildRunnerContext, SqlBuildRunner> factory) => _factory = factory;
 
-            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null, ITransactionManager transactionManager = null, IBuildFinalizer buildFinalizer = null, ISqlLoggingService sqlLoggingService = null)
+            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null!, ITransactionManager transactionManager = null!, IBuildFinalizer buildFinalizer = null!, ISqlLoggingService sqlLoggingService = null!)
             {
                 return _factory(context);
             }

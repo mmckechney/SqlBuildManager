@@ -169,7 +169,7 @@ namespace SqlSync.SqlBuild.UnitTest
             dict.Add("key", "value");
 
             // Act
-            bool result = dict.TryGetValue("key", out string value);
+            bool result = dict.TryGetValue("key", out string? value);
 
             // Assert
             Assert.IsTrue(result);
@@ -183,7 +183,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var dict = new SerializableDictionary<string, string>();
 
             // Act
-            bool result = dict.TryGetValue("nonexistent", out string value);
+            bool result = dict.TryGetValue("nonexistent", out string? value);
 
             // Assert
             Assert.IsFalse(result);
@@ -364,7 +364,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SerializableDictionary<string, string> deserialized;
             using (var reader = new StringReader(xml))
             {
-                deserialized = (SerializableDictionary<string, string>)serializer.Deserialize(reader);
+                deserialized = (SerializableDictionary<string, string>)serializer.Deserialize(reader)!;
             }
 
             // Assert
@@ -400,7 +400,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SerializableDictionary<string, string> deserialized;
             using (var reader = new StringReader(xml))
             {
-                deserialized = (SerializableDictionary<string, string>)serializer.Deserialize(reader);
+                deserialized = (SerializableDictionary<string, string>)serializer.Deserialize(reader)!;
             }
 
             // Assert
@@ -428,7 +428,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SerializableDictionary<string, string> deserialized;
             using (var reader = new StringReader(xml))
             {
-                deserialized = (SerializableDictionary<string, string>)serializer.Deserialize(reader);
+                deserialized = (SerializableDictionary<string, string>)serializer.Deserialize(reader)!;
             }
 
             // Assert
@@ -458,7 +458,7 @@ namespace SqlSync.SqlBuild.UnitTest
             SerializableDictionary<string, string> deserialized;
             using (var reader = new StringReader(xml))
             {
-                deserialized = (SerializableDictionary<string, string>)serializer.Deserialize(reader);
+                deserialized = (SerializableDictionary<string, string>)serializer.Deserialize(reader)!;
             }
 
             // Assert

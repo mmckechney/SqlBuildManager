@@ -64,7 +64,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 0x1000, FileOptions.SequentialScan))
             using (var sr = new StreamReader(fs, Encoding.UTF8))
             {
-                string line;
+                string? line;
                 while ((line = sr.ReadLine()) != null)
                 {
                     yield return line;
@@ -529,7 +529,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             using var lockCts = new CancellationTokenSource();
             // Use a signal to know when the lock is actually acquired
             using var lockAcquired = new ManualResetEventSlim(false);
-            Task lockTask = null;
+            Task lockTask = null!;
 
             try
             {
@@ -637,7 +637,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             // Use a cancellation token to properly clean up the locking task
             using var lockCts = new CancellationTokenSource();
             using var lockAcquired = new ManualResetEventSlim(false);
-            Task lockTask = null;
+            Task lockTask = null!;
 
             try
             {
@@ -735,7 +735,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             // Use a cancellation token to properly clean up the locking task
             using var lockCts = new CancellationTokenSource();
             using var lockAcquired = new ManualResetEventSlim(false);
-            Task lockTask = null;
+            Task lockTask = null!;
 
             try
             {
@@ -1013,7 +1013,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             // Use a cancellation token to properly clean up the locking task
             using var lockCts = new CancellationTokenSource();
             using var lockAcquired = new ManualResetEventSlim(false);
-            Task lockTask = null;
+            Task lockTask = null!;
 
             try
             {
@@ -1115,7 +1115,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             // Use a cancellation token to properly clean up the locking task
             using var lockCts = new CancellationTokenSource();
             using var lockAcquired = new ManualResetEventSlim(false);
-            Task lockTask = null;
+            Task lockTask = null!;
 
             try
             {
@@ -1212,7 +1212,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             // Use a cancellation token to properly clean up the locking task
             using var lockCts = new CancellationTokenSource();
             using var lockAcquired = new ManualResetEventSlim(false);
-            Task lockTask = null;
+            Task lockTask = null!;
 
             try
             {

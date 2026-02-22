@@ -1,4 +1,4 @@
-﻿using SqlSync.Connection;
+using SqlSync.Connection;
 namespace SqlSync.ObjectScript.Hash
 {
     public class HashCollectionRunner
@@ -12,7 +12,7 @@ namespace SqlSync.ObjectScript.Hash
             get { return isBaseLine; }
             set { isBaseLine = value; }
         }
-        private ObjectScriptHashData hashData;
+        private ObjectScriptHashData hashData = null!;
 
         public ObjectScriptHashData HashData
         {
@@ -52,7 +52,7 @@ namespace SqlSync.ObjectScript.Hash
                 HashCollectionRunnerUpdate(this, new HashCollectionRunnerUpdateEventArgs(serverName, databaseName, e.Message));
 
         }
-        public event HashCollectionRunnerUpdateEventHandler HashCollectionRunnerUpdate;
+        public event HashCollectionRunnerUpdateEventHandler HashCollectionRunnerUpdate = null!;
         public delegate void HashCollectionRunnerUpdateEventHandler(object sender, HashCollectionRunnerUpdateEventArgs e);
     }
     public class HashCollectionRunnerUpdateEventArgs

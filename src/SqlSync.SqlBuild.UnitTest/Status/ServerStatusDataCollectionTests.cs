@@ -162,7 +162,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             var serializer = new XmlSerializer(typeof(ServerStatusDataCollection));
             using (var reader = new StringReader("<ServerStatusDataCollection></ServerStatusDataCollection>"))
             {
-                return (ServerStatusDataCollection)serializer.Deserialize(reader);
+                return (ServerStatusDataCollection)serializer.Deserialize(reader)!;
             }
         }
     }

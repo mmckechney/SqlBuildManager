@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,7 +17,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
     public class Initialization : InitializationBase
     {
         public int TableLockingLoopCount = 1000000;
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static string MissingDatabaseErrorMessage = "NOTE: To succesfully test, please make sure you have a SQL Server instance running. Set SBM_TEST_SQL_SERVER, SBM_TEST_SQL_USER, SBM_TEST_SQL_PASSWORD environment variables for non-default configuration.";
 
         public string connectionString;
@@ -237,7 +237,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                                 SET LOCK_TIMEOUT 10000; -- 10 second lock timeout
                                 IF EXISTS (SELECT 1 FROM sys.objects WHERE name = 'SqlBuild_Logging' AND type = 'U') 
                                 BEGIN 
-                                    DELETE FROM SqlBuild_Logging WHERE BuildFileName LIKE 'SqlSyncTest-%' OR CommitDate < @CutoffDate 
+                                    DELETE FROM SqlBuild_Logging WITH (ROWLOCK, READPAST) WHERE BuildFileName LIKE 'SqlSyncTest-%' OR CommitDate < @CutoffDate 
                                 END";
                             using (SqlCommand cmd = new SqlCommand(cleaner, conn))
                             {

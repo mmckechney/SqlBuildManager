@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.ScriptHandling.Policy;
 using System;
@@ -19,7 +19,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestInitialize()]
         public void ClearPolicyList()
         {
-            PolicyHelper.activePolicies = null;
+            PolicyHelper.activePolicies = null!;
         }
 
         [TestMethod()]
@@ -175,7 +175,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod]
         public void ValidateScriptAgainstPoliciesTest_NoViolations()
         {
-            EnterpriseConfigHelper.EnterpriseConfig = null;
+            EnterpriseConfigHelper.EnterpriseConfig = null!;
             string script = Properties.Resources.PolicyHelper_NoViolations;
             script = script.Replace("<<date>>", DateTime.Now.ToString("MM/dd/yyyy"));
             Script actual;
@@ -204,7 +204,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod]
         public void ValidateScriptsAgainstPoliciesTest_NoViolations()
         {
-            EnterpriseConfigHelper.EnterpriseConfig = null;
+            EnterpriseConfigHelper.EnterpriseConfig = null!;
             string script = Properties.Resources.PolicyHelper_NoViolations;
             script = script.Replace("<<date>>", DateTime.Now.ToString("MM/dd/yyyy"));
             List<KeyValuePair<string, string>> scripts = new List<KeyValuePair<string, string>>();
@@ -236,7 +236,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod]
         public void ValidateFileAgainstPolicies_NoViolations()
         {
-            EnterpriseConfigHelper.EnterpriseConfig = null;
+            EnterpriseConfigHelper.EnterpriseConfig = null!;
             string script = Properties.Resources.PolicyHelper_NoViolations;
             script = script.Replace("<<date>>", DateTime.Now.ToString("MM/dd/yyyy"));
             string fileName = string.Empty;
@@ -317,7 +317,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod]
         public void ValidateFilesAgainstPolicies_NoViolations()
         {
-            EnterpriseConfigHelper.EnterpriseConfig = null;
+            EnterpriseConfigHelper.EnterpriseConfig = null!;
             string script = Properties.Resources.PolicyHelper_NoViolations;
             script = script.Replace("<<date>>", DateTime.Now.ToString("MM/dd/yyyy"));
             string fileName = string.Empty;

@@ -1,4 +1,4 @@
-﻿using Azure.Storage;
+using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
@@ -19,10 +19,10 @@ namespace SqlBuildManager.Console.CloudStorage
 {
     public class StorageManager
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         internal static BlobServiceClient CreateStorageClient(string storageAccountName, string storageAccountKey)
         {
-            BlobServiceClient serviceClient = null;
+            BlobServiceClient serviceClient = null!;
             if (string.IsNullOrWhiteSpace(storageAccountKey))
             {
                 serviceClient = new BlobServiceClient(new Uri($"https://{storageAccountName}.blob.core.windows.net"), Aad.AadHelper.TokenCredential);
@@ -503,7 +503,7 @@ namespace SqlBuildManager.Console.CloudStorage
                             using (StreamReader reader = new StreamReader(tmp))
                             {
                                 var s = reader.ReadLine(); //dump the first line
-                                reader.BaseStream.Position = Encoding.UTF8.GetBytes(s).Length;
+                                reader.BaseStream.Position = Encoding.UTF8.GetBytes(s!).Length;
                                 destinationBlob.AppendBlock(reader.BaseStream);
 
                             }
@@ -608,7 +608,7 @@ namespace SqlBuildManager.Console.CloudStorage
         }
         internal static BlobContainerClient GetBlobContainerClient(string storageAccountName, string storageAccountKey, string containerName)
         {
-            BlobContainerClient containerClient = null;
+            BlobContainerClient containerClient = null!;
             if (string.IsNullOrWhiteSpace(storageAccountKey))
             {
                 var url = $"https://{storageAccountName}.blob.core.windows.net/{containerName}";
@@ -628,7 +628,7 @@ namespace SqlBuildManager.Console.CloudStorage
         }
         private static BlockBlobClient GetBlockBlobClient(string storageAccountName, string storageAccountKey, string containerName, string blobName)
         {
-            BlockBlobClient containerClient = null;
+            BlockBlobClient containerClient = null!;
             if (string.IsNullOrWhiteSpace(storageAccountKey))
             {
                 var url = $"https://{storageAccountName}.blob.core.windows.net/{containerName}/{blobName}";

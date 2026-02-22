@@ -88,9 +88,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             var method = type.GetMethod("DetermineScriptRunStatus");
 
             // Act
-            var parameters = method.GetParameters();
-
-            // Assert - should have 8 parameters including 2 out parameters
+            var parameters = method!.GetParameters();
             Assert.AreEqual(8, parameters.Length);
         }
 
@@ -102,9 +100,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             var method = type.GetMethod("SetScriptRunStatusAndDates");
 
             // Act
-            var parameters = method.GetParameters();
-
-            // Assert - buildData (ref), dbUtil, connData, projectFilePath
+            var parameters = method!.GetParameters();
             Assert.AreEqual(4, parameters.Length);
         }
 

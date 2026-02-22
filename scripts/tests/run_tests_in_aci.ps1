@@ -14,7 +14,9 @@
     
     [switch] $keepContainer,
     
-    [int] $timeoutMinutes = 30
+    [int] $timeoutMinutes = 30, 
+
+    [string] $timestamp = (Get-Date -Format 'yyyy-MM-dd-HHmmss')
 )
 
 <#
@@ -178,18 +180,25 @@ Write-Debug ""
 
 # Build command array for YAML - override entrypoint to capture exit code and upload results
 $blobContainerName = "testresults"
-$timestamp = Get-Date -Format 'yyyy-MM-dd-HHmmss'
-$blobPath = "$testContainerName/$timestamp"
+$blobPath = "$timestamp/$testContainerName"
 
 # Build the test command with filter - quote arguments containing semicolons
 # Use --ResultsDirectory to capture all test output including logs
 # Use html logger to capture per-test output, and --Diag for diagnostics
 # Use --Blame to capture per-test diagnostic data and crash dumps
 # Use tee to capture console output to a log file while still displaying it
-if ($testFilter) {
-    $testCmd = "dotnet vstest SqlBuildManager.Console.ExternalTest.dll '--logger:trx;LogFileName=TestResults.trx' '--logger:html;LogFileName=TestResults.html' '--logger:console;verbosity=detailed' '--TestCaseFilter:$testFilter' --ResultsDirectory:/tests/TestResults --Diag:/tests/TestResults/diag.log 2>&1 | tee /tests/TestResults/console-output.log"
+
+# Determine which test DLL to run based on the filter
+if ($testFilter -like "*PostgreSQL.ExternalTest*") {
+    $testDll = "SqlBuildManager.Console.PostgreSQL.ExternalTest.dll"
 } else {
-    $testCmd = "dotnet vstest SqlBuildManager.Console.ExternalTest.dll '--logger:trx;LogFileName=TestResults.trx' '--logger:html;LogFileName=TestResults.html' '--logger:console;verbosity=detailed' --ResultsDirectory:/tests/TestResults --Diag:/tests/TestResults/diag.log 2>&1 | tee /tests/TestResults/console-output.log"
+    $testDll = "SqlBuildManager.Console.ExternalTest.dll"
+}
+
+if ($testFilter) {
+    $testCmd = "dotnet vstest $testDll '--logger:trx;LogFileName=TestResults.trx' '--logger:html;LogFileName=TestResults.html' '--logger:console;verbosity=detailed' '--TestCaseFilter:$testFilter' --ResultsDirectory:/tests/TestResults --Diag:/tests/TestResults/diag.log 2>&1 | tee /tests/TestResults/console-output.log"
+} else {
+    $testCmd = "dotnet vstest $testDll '--logger:trx;LogFileName=TestResults.trx' '--logger:html;LogFileName=TestResults.html' '--logger:console;verbosity=detailed' --ResultsDirectory:/tests/TestResults --Diag:/tests/TestResults/diag.log 2>&1 | tee /tests/TestResults/console-output.log"
 }
 
 # Upload entire TestResults directory (includes TRX and log attachments)

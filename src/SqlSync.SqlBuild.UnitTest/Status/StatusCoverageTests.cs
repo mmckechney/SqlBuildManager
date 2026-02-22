@@ -18,7 +18,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
     [TestClass]
     public class StatusReportingCoverageTests
     {
-        private Mock<IDatabaseUtility> _mockDbUtil;
+        private Mock<IDatabaseUtility> _mockDbUtil = null!;
 
         [TestInitialize]
         public void Setup()
@@ -250,7 +250,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
 
             // Act
             using var reader = new StringReader(xml);
-            var collection = (ServerStatusDataCollection)serializer.Deserialize(reader);
+            var collection = (ServerStatusDataCollection)serializer.Deserialize(reader)!;
 
             // Assert
             Assert.IsNotNull(collection);
@@ -262,7 +262,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             // Arrange
             var serializer = new XmlSerializer(typeof(ServerStatusDataCollection));
             using var reader = new StringReader("<ServerStatusDataCollection></ServerStatusDataCollection>");
-            var collection = (ServerStatusDataCollection)serializer.Deserialize(reader);
+            var collection = (ServerStatusDataCollection)serializer.Deserialize(reader)!;
 
             // Act
             collection.BuildFileNameFull = @"C:\Some\Path\TestBuild.sbm";
@@ -277,7 +277,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             // Arrange
             var serializer = new XmlSerializer(typeof(ServerStatusDataCollection));
             using var reader = new StringReader("<ServerStatusDataCollection></ServerStatusDataCollection>");
-            var collection = (ServerStatusDataCollection)serializer.Deserialize(reader);
+            var collection = (ServerStatusDataCollection)serializer.Deserialize(reader)!;
 
             // Act
             var databases = collection["NewServer"];
@@ -292,7 +292,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             // Arrange
             var serializer = new XmlSerializer(typeof(ServerStatusDataCollection));
             using var reader = new StringReader("<ServerStatusDataCollection></ServerStatusDataCollection>");
-            var collection = (ServerStatusDataCollection)serializer.Deserialize(reader);
+            var collection = (ServerStatusDataCollection)serializer.Deserialize(reader)!;
 
             // Act
             var databases1 = collection["Server1"];

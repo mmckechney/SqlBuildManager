@@ -57,12 +57,12 @@ namespace SqlBuildManager.Console.Threaded
         /// <summary>
         /// The pre-batched set of scripts to be run
         /// </summary>
-        public ScriptBatchCollection BatchCollection { get; set; }
+        public ScriptBatchCollection BatchCollection { get; set; } = null!;
 
         /// <summary>
         /// The build data model containing script metadata
         /// </summary>
-        public SqlSyncBuildDataModel BuildDataModel { get; set; }
+        public SqlSyncBuildDataModel BuildDataModel { get; set; } = null!;
 
         /// <summary>
         /// Resets all context values for a new run.
@@ -75,8 +75,8 @@ namespace SqlBuildManager.Console.Threaded
             PlatinumDacPacFileName = string.Empty;
             RootLoggingPath = string.Empty;
             WorkingDirectory = string.Empty;
-            BatchCollection = null;
-            BuildDataModel = null;
+            BatchCollection = null!;
+            BuildDataModel = null!;
         }
     }
 }

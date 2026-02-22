@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,8 +9,8 @@ namespace SqlBuildManager.Console.CommandLine
     public class CommandDoc
     {
         public CommandDoc() { }
-        public string ParentCommand { get; set; }
-        public string ParentCommandDescription { get; set; }
+        public string ParentCommand { get; set; } = string.Empty;
+        public string ParentCommandDescription { get; set; } = string.Empty;
         
         public List<SubCommand> SubCommands { get; set; } = new List<SubCommand>();
   
@@ -19,7 +19,7 @@ namespace SqlBuildManager.Console.CommandLine
     public class SubCommand
     {
         public SubCommand() { }
-        public string Name { get; set; }
-        public string Description { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
     }
 }

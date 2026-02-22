@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Polly;
 using SqlSync.Connection;
@@ -18,16 +18,16 @@ namespace SqlSync.SqlBuild.Services
         private readonly IDbConnectionFactory _connectionFactory;
         private readonly ITransactionManager _transactionManager;
 
-        public DefaultConnectionsService() : this(null, null)
+        public DefaultConnectionsService() : this(null!, null!)
         {
         }
 
-        public DefaultConnectionsService(IDbConnectionFactory connectionFactory = null, ITransactionManager transactionManager = null)
+        public DefaultConnectionsService(IDbConnectionFactory connectionFactory = null!, ITransactionManager transactionManager = null!)
         {
             _connectionFactory = connectionFactory ?? new SqlSync.Connection.SqlServerConnectionFactory();
             _transactionManager = transactionManager ?? new SqlServerTransactionManager();
         }
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private string GetDatabaseKey(string serverName, string databaseName)
         {
             return serverName.ToUpper() + ":" + databaseName.ToUpper();

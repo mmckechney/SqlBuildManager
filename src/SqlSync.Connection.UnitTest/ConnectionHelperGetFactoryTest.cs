@@ -38,7 +38,7 @@ namespace SqlSync.Connection.UnitTest
         [TestMethod]
         public void GetFactory_FromNullConnectionData_ReturnsSqlServerFactory()
         {
-            var factory = ConnectionHelper.GetFactory((ConnectionData)null);
+            var factory = ConnectionHelper.GetFactory((ConnectionData)null!);
             Assert.IsInstanceOfType(factory, typeof(SqlServerConnectionFactory));
         }
 
@@ -81,7 +81,7 @@ namespace SqlSync.Connection.UnitTest
         [TestMethod]
         public void GetDbConnection_NullConnData_ReturnsNull()
         {
-            var conn = ConnectionHelper.GetDbConnection(null);
+            var conn = ConnectionHelper.GetDbConnection(null!);
             Assert.IsNull(conn);
         }
     }

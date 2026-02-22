@@ -44,7 +44,7 @@ namespace SqlSync.SqlBuild.Status
         }
         #region IXmlSerializable Members
 
-        public System.Xml.Schema.XmlSchema GetSchema()
+        public System.Xml.Schema.XmlSchema? GetSchema()
         {
 
             return null;
@@ -71,10 +71,10 @@ namespace SqlSync.SqlBuild.Status
 
                 reader.ReadStartElement(itemName);
                 reader.ReadStartElement(keyName);
-                string key = (string)keySerializer.Deserialize(reader);
+                string key = (string)keySerializer.Deserialize(reader)!;
                 reader.ReadStartElement(valueName);
 
-                TValue value = (TValue)valueSerializer.Deserialize(reader);
+                TValue value = (TValue)valueSerializer.Deserialize(reader)!;
 
                 reader.ReadEndElement();
 

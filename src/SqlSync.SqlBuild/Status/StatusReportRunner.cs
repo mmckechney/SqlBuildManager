@@ -1,4 +1,4 @@
-﻿using SqlSync.Connection;
+using SqlSync.Connection;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Services;
 using System;
@@ -15,7 +15,7 @@ namespace SqlSync.SqlBuild.Status
             get { return serverName; }
             set { serverName = value; }
         }
-        private string baseDatabase;
+        private string baseDatabase = string.Empty;
 
         public string BaseDatabase
         {

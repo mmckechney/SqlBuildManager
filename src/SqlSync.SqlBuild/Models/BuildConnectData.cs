@@ -13,9 +13,9 @@ namespace SqlSync.SqlBuild.Models {
     {
         public BuildConnectData() { }
 
-        public DbConnection Connection { get; set; } = null;
+        public DbConnection Connection { get; set; } = null!;
 
-        public DbTransaction Transaction { get; set; } = null;
+        public DbTransaction Transaction { get; set; } = null!;
 
         public string DatabaseName { get; set; } = string.Empty;
 

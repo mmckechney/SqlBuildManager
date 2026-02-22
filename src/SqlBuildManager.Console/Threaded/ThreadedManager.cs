@@ -1,4 +1,4 @@
-﻿using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Queue;
@@ -19,8 +19,8 @@ namespace SqlBuildManager.Console.Threaded
 {
     public class ThreadedManager
     {
-        private static ILogger log = Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        public ThreadedLogging threadedLog;
+        private static ILogger log = Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+        public ThreadedLogging threadedLog = null!;
         
         /// <summary>
         /// The execution context containing shared state for this run.
@@ -32,11 +32,11 @@ namespace SqlBuildManager.Console.Threaded
         /// </summary>
         public BuildExecutionContext Context => _context;
 
-        MultiDbData multiData = null;
+        MultiDbData multiData = null!;
         DateTime startTime;
         bool hasError = false;
-        private CommandLineArgs cmdLine = null;
-        private QueueManager qManager = null;
+        private CommandLineArgs cmdLine = null!;
+        private QueueManager qManager = null!;
         private int queueReturnValue = 0;
         
         string projectFilePath = string.Empty;
@@ -44,7 +44,7 @@ namespace SqlBuildManager.Console.Threaded
         private string buildRequestedBy = string.Empty;
 
         private readonly IScriptBatcher _scriptBatcher;
-        public ThreadedManager(CommandLineArgs cmd, IScriptBatcher scriptBatcher = null, BuildExecutionContext context = null)
+        public ThreadedManager(CommandLineArgs cmd, IScriptBatcher scriptBatcher = null!, BuildExecutionContext context = null!)
         {
             cmdLine = cmd;
             _scriptBatcher = scriptBatcher ?? new DefaultScriptBatcher();
@@ -483,7 +483,7 @@ namespace SqlBuildManager.Console.Threaded
                 msg.Message = "Thread complete";
                 msg.LogType = LogType.Message;
                 threadedLog.WriteToLog(msg);
-                runner = null;
+                runner = null!;
 
             }
             catch (Exception exe)
@@ -511,7 +511,7 @@ namespace SqlBuildManager.Console.Threaded
                     LogType = LogType.Error
                 };
                 threadedLog.WriteToLog(msg);
-                return ((int)ExecutionReturn.BuildFileExtractionError, null);
+                return ((int)ExecutionReturn.BuildFileExtractionError, null!);
 
             }
             _context.WorkingDirectory = extractResult.workingDirectory;
@@ -527,7 +527,7 @@ namespace SqlBuildManager.Console.Threaded
                     LogType = LogType.Error
                 };
                 threadedLog.WriteToLog(msg);
-                return ((int)ExecutionReturn.LoadProjectFileError, null);
+                return ((int)ExecutionReturn.LoadProjectFileError, null!);
             }
 
             return (0, model);

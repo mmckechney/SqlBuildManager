@@ -33,29 +33,29 @@ namespace SqlSync.SqlBuild.Services
     /// </summary>
     internal sealed class DacPacFallbackContext
     {
-        public SqlBuildRunDataModel RunData { get; set; }
-        public BuildPreparationResult Prep { get; set; }
-        public string ServerName { get; set; }
+        public SqlBuildRunDataModel RunData { get; set; } = null!;
+        public BuildPreparationResult Prep { get; set; } = null!;
+        public string ServerName { get; set; } = string.Empty;
         public bool IsMultiDbRun { get; set; }
-        public ScriptBatchCollection ScriptBatchColl { get; set; }
+        public ScriptBatchCollection ScriptBatchColl { get; set; } = null!;
         public int AllowableTimeoutRetries { get; set; }
-        public ConnectionData ConnectionData { get; set; }
-        public string ProjectFilePath { get; set; }
+        public ConnectionData ConnectionData { get; set; } = null!;
+        public string ProjectFilePath { get; set; } = string.Empty;
         
         /// <summary>
         /// Async callback to recursively execute a build with updated run data.
         /// </summary>
-        public Func<SqlBuildRunDataModel, int, string, ScriptBatchCollection, CancellationToken, Task<Build>> ProcessBuildCallbackAsync { get; set; }
+        public Func<SqlBuildRunDataModel, int, string, ScriptBatchCollection, CancellationToken, Task<Build>> ProcessBuildCallbackAsync { get; set; } = null!;
         
         /// <summary>
         /// Callback to get the target database with overrides.
         /// </summary>
-        public Func<string, string> GetTargetDatabaseCallback { get; set; }
+        public Func<string, string> GetTargetDatabaseCallback { get; set; } = null!;
         
         /// <summary>
         /// Event to raise when build is committed.
         /// </summary>
-        public Action<RunnerReturn> RaiseBuildCommittedEvent { get; set; }
+        public Action<RunnerReturn> RaiseBuildCommittedEvent { get; set; } = null!;
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -63,9 +63,9 @@ namespace SqlBuildManager.Console.CommandLine
         public class DacPac : ArgsBase
         {
             public virtual string PlatinumDacpac { get; set; } = string.Empty;
-            public virtual string TargetDacpac { get; set; }
-            public string PlatinumDbSource { get; set; }
-            public string PlatinumServerSource { get; set; }
+            public virtual string TargetDacpac { get; set; } = string.Empty;
+            public string PlatinumDbSource { get; set; } = string.Empty;
+            public string PlatinumServerSource { get; set; } = string.Empty;
             [DefaultValue(false)]
             public bool ForceCustomDacPac { get; set; }
         }

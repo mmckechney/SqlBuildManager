@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -66,7 +66,7 @@ namespace SqlSync.Connection.UnitTest
         [DeploymentItem("SqlSync.Connection.dll")]
         public void DeserializeRegisteredServersTest_NullContents()
         {
-            string serverFileContents = null;
+            string serverFileContents = null!;
 
             RegisteredServers actual;
             actual = RegisteredServerHelper.DeserializeRegisteredServers(serverFileContents);
@@ -136,7 +136,7 @@ namespace SqlSync.Connection.UnitTest
         [TestMethod()]
         public void SaveRegisteredServersTest_NullRegisteredServersSave()
         {
-            RegisteredServers regServers = null;
+            RegisteredServers regServers = null!;
 
             bool expected = false;
             bool actual;
@@ -202,7 +202,7 @@ namespace SqlSync.Connection.UnitTest
         [DeploymentItem("SqlSync.Connection.dll")]
         public void SerializeRegisteredServersTest_SerializationWithNullObject()
         {
-            RegisteredServers regServers = null;
+            RegisteredServers regServers = null!;
 
             string fileName = Path.GetTempFileName();
             bool expected = false;

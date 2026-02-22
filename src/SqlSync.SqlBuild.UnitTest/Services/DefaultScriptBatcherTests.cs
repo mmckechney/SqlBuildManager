@@ -11,8 +11,8 @@ namespace SqlSync.SqlBuild.UnitTest.Services
     [TestClass]
     public class DefaultScriptBatcherTests
     {
-        private DefaultScriptBatcher _batcher;
-        private string _testDir;
+        private DefaultScriptBatcher _batcher = null!;
+        private string _testDir = string.Empty;
 
         [TestInitialize]
         public void Setup()

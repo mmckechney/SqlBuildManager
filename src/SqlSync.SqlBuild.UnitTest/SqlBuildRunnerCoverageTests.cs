@@ -78,7 +78,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var ctx = new FakeRunnerContext();
             var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
 
-            var result = runner.ShouldSkipDueToCommittedScripts("any-id", null);
+            var result = runner.ShouldSkipDueToCommittedScripts("any-id", null!);
 
             Assert.IsFalse(result);
         }
@@ -93,7 +93,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 script: new List<Script>(),
                 build: new List<Build>(),
                 scriptRun: new List<ScriptRun>(),
-                committedScript: null);
+                committedScript: null!);
 
             var result = runner.ShouldSkipDueToCommittedScripts("any-id", model);
 
@@ -110,7 +110,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "SELECT 1;", "SELECT 2;" } };
             var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
 
-            var result = await runner.LoadBatchScriptsAsync("script-id", "file.sql", stripTransaction: false, scriptBatchColl: null, default);
+            var result = await runner.LoadBatchScriptsAsync("script-id", "file.sql", stripTransaction: false, scriptBatchColl: null!, default);
 
             CollectionAssert.AreEqual(new[] { "SELECT 1;", "SELECT 2;" }, result);
         }
@@ -192,7 +192,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Empty scripts cause an exception which is caught and results in a failed build
-            var result = await runner.RunAsync(scripts, build, "Server", false, null, model);
+            var result = await runner.RunAsync(scripts, build, "Server", false, null!, model);
             
             Assert.IsNotNull(result);
         }
@@ -212,7 +212,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Null scripts cause an exception which is caught and results in a failed build
-            var result = await runner.RunAsync(null, build, "Server", false, null, model);
+            var result = await runner.RunAsync(null!, build, "Server", false, null!, model);
             
             Assert.IsNotNull(result);
         }
@@ -232,7 +232,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var build = new Build("Test", null, null, null, null, null, null, null);
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            var result = await runner.RunAsync(scripts, build, "Server", false, null, model, CancellationToken.None);
+            var result = await runner.RunAsync(scripts, build, "Server", false, null!, model, CancellationToken.None);
             
             Assert.IsNotNull(result);
         }
@@ -251,7 +251,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var build = new Build("Test", null, null, null, null, null, null, null);
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            var result = await runner.RunAsync(null, build, "Server", false, null, model, CancellationToken.None);
+            var result = await runner.RunAsync(null!, build, "Server", false, null!, model, CancellationToken.None);
             
             Assert.IsNotNull(result);
         }

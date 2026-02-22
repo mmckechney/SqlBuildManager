@@ -1,9 +1,9 @@
-﻿namespace SqlBuildManager.Console.Kubernetes
+namespace SqlBuildManager.Console.Kubernetes
 {
     public class KubernetesFiles
     {
-        public string RuntimeConfigMapFile { get; set; }
-        public string SecretsFile { get; set; }
-        public string JobFileName { get; set; }
+        public string RuntimeConfigMapFile { get; set; } = string.Empty;
+        public string SecretsFile { get; set; } = string.Empty;
+        public string JobFileName { get; set; } = string.Empty;
     }
 }

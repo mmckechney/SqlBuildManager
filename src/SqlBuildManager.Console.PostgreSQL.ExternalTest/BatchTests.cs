@@ -20,14 +20,14 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
     {
         public TestContext TestContext { get; set; }
 
-        private CommandLineArgs cmdLine;
-        private List<string> overrideFileContents;
-        private string overrideFilePath;
-        private string settingsFilePath;
-        private string settingsFileKeyPath;
+        private CommandLineArgs cmdLine = null!;
+        private List<string> overrideFileContents = null!;
+        private string overrideFilePath = string.Empty;
+        private string settingsFilePath = string.Empty;
+        private string settingsFileKeyPath = string.Empty;
 
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
-        private TextWriter originalConsoleOut;
+        private TextWriter originalConsoleOut = null!;
 
         [TestInitialize]
         public void ConfigureProcessInfo()
@@ -214,7 +214,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
         public void Batch_PG_Query_Override_SelectSuccess(string batchMethod, string settingsFile)
         {

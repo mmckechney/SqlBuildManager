@@ -39,7 +39,7 @@ namespace SqlSync.SqlBuild.UnitTest
 
             // Act & Assert
             Assert.ThrowsExactly<ArgumentNullException>(() =>
-                new SqlBuildRunner(connectionsService, null, finalizerContext));
+                new SqlBuildRunner(connectionsService, null!, finalizerContext));
         }
 
         [TestMethod]
@@ -51,7 +51,7 @@ namespace SqlSync.SqlBuild.UnitTest
 
             // Act & Assert
             Assert.ThrowsExactly<ArgumentNullException>(() =>
-                new SqlBuildRunner(connectionsService, ctx, null));
+                new SqlBuildRunner(connectionsService, ctx, null!));
         }
 
         [TestMethod]
@@ -134,7 +134,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
 
             // Act
-            var result = runner.ShouldSkipDueToCommittedScripts("any-id", null);
+            var result = runner.ShouldSkipDueToCommittedScripts("any-id", null!);
 
             // Assert
             Assert.IsFalse(result);
@@ -196,7 +196,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
 
             // Act
-            var result = await runner.LoadBatchScriptsAsync("id", "file.sql", false, null, default);
+            var result = await runner.LoadBatchScriptsAsync("id", "file.sql", false, null!, default);
 
             // Assert
             CollectionAssert.AreEqual(expectedScripts, result);
@@ -233,7 +233,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 ctx, 
                 new Mock<IBuildFinalizerContext>().Object,
                 new SuccessfulExecutor(),
-                null,
+                null!,
                 MockFactory.CreateMockBuildFinalizer().Object,
                 MockFactory.CreateMockSqlLoggingService().Object,
                 new NoopProgressReporter());
@@ -242,7 +242,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var emptyScripts = new List<BuildModels.Script>();
 
             // Act
-            var result = await runner.RunAsync(emptyScripts, build, "srv", false, null, model);
+            var result = await runner.RunAsync(emptyScripts, build, "srv", false, null!, model);
 
             // Assert - Should complete but context should have error
             Assert.IsNotNull(result);
@@ -258,7 +258,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 ctx, 
                 new Mock<IBuildFinalizerContext>().Object,
                 new SuccessfulExecutor(),
-                null,
+                null!,
                 MockFactory.CreateMockBuildFinalizer().Object,
                 MockFactory.CreateMockSqlLoggingService().Object,
                 new NoopProgressReporter());
@@ -266,7 +266,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = await runner.RunAsync(null, build, "srv", false, null, model);
+            var result = await runner.RunAsync(null!, build, "srv", false, null!, model);
 
             // Assert - Should complete but return build with failure state
             Assert.IsNotNull(result);
@@ -283,7 +283,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 ctx,
                 new Mock<IBuildFinalizerContext>().Object,
                 exec,
-                null,
+                null!,
                 MockFactory.CreateMockBuildFinalizer().Object,
                 MockFactory.CreateMockSqlLoggingService().Object,
                 new NoopProgressReporter());
@@ -314,7 +314,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 ctx,
                 new Mock<IBuildFinalizerContext>().Object,
                 exec,
-                null,
+                null!,
                 MockFactory.CreateMockBuildFinalizer().Object,
                 MockFactory.CreateMockSqlLoggingService().Object,
                 new NoopProgressReporter());
@@ -375,7 +375,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 ctx, 
                 new Mock<IBuildFinalizerContext>().Object,
                 new SuccessfulExecutor(),
-                null,
+                null!,
                 MockFactory.CreateMockBuildFinalizer().Object,
                 MockFactory.CreateMockSqlLoggingService().Object,
                 new NoopProgressReporter());
@@ -383,7 +383,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act - ValidateScriptsInput throws but is caught
-            var result = await runner.RunAsync(new List<BuildModels.Script>(), build, "srv", false, null, model, CancellationToken.None);
+            var result = await runner.RunAsync(new List<BuildModels.Script>(), build, "srv", false, null!, model, CancellationToken.None);
 
             // Assert - Should complete, errors are handled internally
             Assert.IsNotNull(result);

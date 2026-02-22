@@ -12,7 +12,7 @@ namespace SqlSync.SqlBuild
             {
                 var scripts = buildData.Script
                     .Where(s => s.BuildOrder.HasValue && s.BuildOrder.Value < (int)ResequenceIgnore.StartNumber)
-                    .OrderByDescending(s => s.BuildOrder.Value)
+                    .OrderByDescending(s => s.BuildOrder!.Value)
                     .ToList();
                 if (scripts.Count > 0)
                 {

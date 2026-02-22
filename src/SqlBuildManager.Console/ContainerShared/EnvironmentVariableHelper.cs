@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
@@ -11,11 +11,11 @@ namespace SqlBuildManager.Console.ContainerShared
 
     internal class EnvironmentVariableHelper
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         internal static CommandLineArgs ReadRuntimeEnvironmentVariables(CommandLineArgs cmdLine)
         {
             log.LogInformation("Reading environment variables for Container worker");
-            string tmp;
+            string? tmp;
 
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.KeyVaultName);
             if (!string.IsNullOrWhiteSpace(tmp))

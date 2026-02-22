@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using System;
 using System.IO;
@@ -6,9 +6,9 @@ namespace SqlBuildManager.Logging.Threaded
 {
     public class SuccessDatabaseLogging
     {
-        private static ILoggerFactory _LoggerFactory = null;
+        private static ILoggerFactory _LoggerFactory = null!;
         private static string _rootLoggingPath = string.Empty;
-        private static Serilog.Core.Logger serilogLogger = null;
+        private static Serilog.Core.Logger serilogLogger = null!;
         public static void ConfigureLogger(ILoggerFactory factory)
         {
 
@@ -43,7 +43,7 @@ namespace SqlBuildManager.Logging.Threaded
             }
             catch
             {
-                return null;
+                return null!;
             }
         }
 
@@ -53,7 +53,7 @@ namespace SqlBuildManager.Logging.Threaded
             {
                 serilogLogger.Dispose();
             }
-            _LoggerFactory = null;
+            _LoggerFactory = null!;
         }
     }
 }

@@ -26,7 +26,7 @@ namespace SqlSync.DbInformation {
         
         public bool HasUpdateTrigger { get; set; } = false;
         
-        public object LookUpTableRow { get; set; } = null;
+        public object LookUpTableRow { get; set; } = null!;
         
         
        

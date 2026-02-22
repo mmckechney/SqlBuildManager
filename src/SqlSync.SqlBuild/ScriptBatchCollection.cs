@@ -11,7 +11,7 @@ namespace SqlSync.SqlBuild
                 if (b.ScriptId == scriptId)
                     return b;
             }
-            return null;
+            return null!;
         }
     }
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -11,14 +11,14 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
     [TestClass]
     public class SqlBuildHelperTest_ProcessBuild
     {
-        private static List<Initialization> initColl;
+        private static List<Initialization> initColl = null!;
 
         // Used to signal when the locking thread has acquired its lock
-        private ManualResetEventSlim _lockAcquiredEvent;
+        private ManualResetEventSlim _lockAcquiredEvent = null!;
         // Used to signal the locking thread to release and exit
-        private CancellationTokenSource _lockingCts;
+        private CancellationTokenSource _lockingCts = null!;
         // Reference to the locking connection for cleanup
-        private SqlConnection _lockingConnection;
+        private SqlConnection _lockingConnection = null!;
         // Duration to hold lock (null = indefinite until cancelled)
         private TimeSpan? _lockDuration;
 
@@ -47,7 +47,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             _lockAcquiredEvent = new ManualResetEventSlim(false);
             _lockingCts = new CancellationTokenSource();
-            _lockingConnection = null;
+            _lockingConnection = null!;
             _lockDuration = null; // Default: hold indefinitely
         }
 
@@ -129,7 +129,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 3;
 
-            Thread lockingThread = null;
+            Thread lockingThread = null!;
             try
             {
                 // Hold lock indefinitely for this test
@@ -170,7 +170,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 0;
 
-            Thread lockingThread = null;
+            Thread lockingThread = null!;
             try
             {
                 // Hold lock indefinitely for this test
@@ -211,7 +211,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 30;
 
-            Thread lockingThread = null;
+            Thread lockingThread = null!;
             try
             {
                 // Hold lock for only 8 seconds, then release so retry can succeed

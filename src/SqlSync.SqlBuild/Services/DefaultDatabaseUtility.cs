@@ -13,11 +13,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+#nullable enable
+
 namespace SqlSync.SqlBuild.Services
 {
     internal class DefaultDatabaseUtility :IDatabaseUtility
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private readonly ISqlLoggingService sqlLoggingService;
         private readonly IConnectionsService connectionsService;
         private readonly IProgressReporter progressReporter;
@@ -25,7 +27,7 @@ namespace SqlSync.SqlBuild.Services
 
         private readonly ISqlResourceProvider resourceProvider;
 
-        public DefaultDatabaseUtility(IConnectionsService connectionsService, ISqlLoggingService sqlLoggingService, IProgressReporter progressReporter, ISqlBuildFileHelper fileHelper, ISqlResourceProvider resourceProvider = null) 
+        public DefaultDatabaseUtility(IConnectionsService connectionsService, ISqlLoggingService sqlLoggingService, IProgressReporter progressReporter, ISqlBuildFileHelper fileHelper, ISqlResourceProvider? resourceProvider = null) 
         {
             this.connectionsService = connectionsService;
             this.sqlLoggingService = sqlLoggingService;
@@ -66,7 +68,7 @@ namespace SqlSync.SqlBuild.Services
             cmd.Parameters.Add(param);
             try
             {
-                cmd.Connection.Open();
+                cmd.Connection!.Open();
                 int i = 0;
                 using (DbDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
                 {
@@ -74,9 +76,9 @@ namespace SqlSync.SqlBuild.Services
                     {
                         if (i == 0)
                         {
-                            scriptHash = (reader[1] == DBNull.Value) ? string.Empty : reader[1].ToString();
-                            commitDate = (reader[2] == DBNull.Value) ? DateTime.MinValue : DateTime.Parse(reader[2].ToString());
-                            scriptTextHash = (reader[3] == DBNull.Value) ? string.Empty : fileHelper.GetSHA1Hash(reader[3].ToString());
+                            scriptHash = (reader[1] == DBNull.Value) ? string.Empty : reader[1].ToString() ?? string.Empty;
+                            commitDate = (reader[2] == DBNull.Value) ? DateTime.MinValue : DateTime.Parse(reader[2].ToString()!);
+                            scriptTextHash = (reader[3] == DBNull.Value) ? string.Empty : fileHelper.GetSHA1Hash(reader[3].ToString()!);
                             i++;
                         }
 
@@ -97,12 +99,12 @@ namespace SqlSync.SqlBuild.Services
             }
             catch (Exception exe)
             {
-                log.LogWarning(exe, $"Unable to check for blocking SQL for script {scriptId.ToString()} on database {cmd.Connection.DataSource}.{cmd.Connection.Database}");
+                log.LogWarning(exe, $"Unable to check for blocking SQL for script {scriptId.ToString()} on database {cmd.Connection!.DataSource}.{cmd.Connection.Database}");
                 return false;
             }
             finally
             {
-                cmd.Connection.Close();
+                cmd.Connection!.Close();
             }
         }
         /// <summary>
@@ -122,7 +124,7 @@ namespace SqlSync.SqlBuild.Services
                 param.ParameterName = "@ScriptId";
                 param.Value = scriptId;
                 cmd.Parameters.Add(param);
-                object has = cmd.ExecuteScalar();
+                object? has = cmd.ExecuteScalar();
                 if (has == null || has == DBNull.Value)
                     return false;
                 else

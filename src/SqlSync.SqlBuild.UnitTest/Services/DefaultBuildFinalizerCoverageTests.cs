@@ -17,9 +17,9 @@ namespace SqlSync.SqlBuild.UnitTest.Services
     [TestClass]
     public class DefaultBuildFinalizerCoverageTests
     {
-        private Mock<ISqlLoggingService> _mockSqlLoggingService;
-        private Mock<IProgressReporter> _mockProgressReporter;
-        private DefaultBuildFinalizer _finalizer;
+        private Mock<ISqlLoggingService> _mockSqlLoggingService = null!;
+        private Mock<IProgressReporter> _mockProgressReporter = null!;
+        private DefaultBuildFinalizer _finalizer = null!;
 
         [TestInitialize]
         public void Setup()
@@ -235,7 +235,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         {
             // Arrange
             var mockConnectionsService = new Mock<IConnectionsService>();
-            mockConnectionsService.Setup(x => x.Connections).Returns((Dictionary<string, BuildConnectData>)null);
+            mockConnectionsService.Setup(x => x.Connections).Returns((Dictionary<string, BuildConnectData>)null!);
 
             // Act & Assert
             Assert.ThrowsExactly<NullReferenceException>(() =>
@@ -280,7 +280,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         {
             // Arrange
             var mockConnectionsService = new Mock<IConnectionsService>();
-            mockConnectionsService.Setup(x => x.Connections).Returns((Dictionary<string, BuildConnectData>)null);
+            mockConnectionsService.Setup(x => x.Connections).Returns((Dictionary<string, BuildConnectData>)null!);
 
             // Act & Assert
             Assert.ThrowsExactly<NullReferenceException>(() =>
@@ -349,7 +349,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         public void Constructor_BothNull_CreatesInstance()
         {
             // Act
-            var finalizer = new DefaultBuildFinalizer(null, null);
+            var finalizer = new DefaultBuildFinalizer(null!, null!);
 
             // Assert
             Assert.IsNotNull(finalizer);
@@ -360,7 +360,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         {
             // Act & Assert
             Assert.ThrowsExactly<NullReferenceException>(() =>
-                _finalizer.RecordCommittedScripts(new List<LoggingCommittedScript>(), null));
+                _finalizer.RecordCommittedScripts(new List<LoggingCommittedScript>(), null!));
         }
 
         #endregion

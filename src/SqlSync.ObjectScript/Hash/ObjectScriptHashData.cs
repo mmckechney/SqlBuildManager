@@ -1,4 +1,4 @@
-﻿namespace SqlSync.ObjectScript.Hash
+namespace SqlSync.ObjectScript.Hash
 {
     public class ObjectScriptHashData
     {
@@ -26,14 +26,14 @@
             set { isBaseLine = value; }
         }
 
-        private string server;
+        private string server = string.Empty;
 
         public string Server
         {
             get { return server; }
             set { server = value; }
         }
-        private string database;
+        private string database = string.Empty;
 
         public string Database
         {

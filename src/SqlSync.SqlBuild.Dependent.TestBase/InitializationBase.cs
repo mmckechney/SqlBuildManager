@@ -18,16 +18,16 @@ namespace SqlSync.SqlBuild.Dependent.TestBase
     /// </summary>
     public abstract class InitializationBase : IDisposable
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
-        public List<string> testDatabaseNames = null;
-        public List<string> tempFiles = null;
+        public List<string> testDatabaseNames = null!;
+        public List<string> tempFiles = null!;
         public Guid testGuid;
         public DateTime testTimeStamp;
-        public ConnectionData connData = null;
-        public string projectFileName = null;
-        public string buildHistoryXmlFile = null;
-        public string serverName;
+        public ConnectionData connData = null!;
+        public string projectFileName = null!;
+        public string buildHistoryXmlFile = null!;
+        public string serverName = string.Empty;
 
         /// <summary>
         /// The table name used for test INSERT/SELECT scripts. 
@@ -90,7 +90,7 @@ namespace SqlSync.SqlBuild.Dependent.TestBase
             }
             catch
             {
-                return null;
+                return null!;
             }
         }
 
@@ -109,7 +109,7 @@ namespace SqlSync.SqlBuild.Dependent.TestBase
         public SqlBuildHelper CreateSqlBuildHelper_Basic()
         {
             SqlBuildHelper helper = new SqlBuildHelper(connData);
-            return SetSqlBuildHelperValues(helper, null);
+            return SetSqlBuildHelperValues(helper, null!);
         }
 
         public SqlBuildHelper SetSqlBuildHelperValues(SqlBuildHelper sbh, SqlSyncBuildDataModel buildData)

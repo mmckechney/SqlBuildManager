@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Interfaces.Console;
@@ -13,13 +13,13 @@ namespace SqlBuildManager.Console.Threaded
 {
     public class ThreadedLogging
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static ILogger logEventHub;
-        private static ILogger logCommitRun;
-        private static ILogger logErrorRun;
-        private static ILogger logFailures;
-        private static ILogger logSuccess;
-        private static ILogger logRuntime;
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+        private static ILogger logEventHub = null!;
+        private static ILogger logCommitRun = null!;
+        private static ILogger logErrorRun = null!;
+        private static ILogger logFailures = null!;
+        private static ILogger logSuccess = null!;
+        private static ILogger logRuntime = null!;
         public static bool TheadedLoggingInitiated = false;
         private string runId;
         CommandLineArgs cmdLine;
@@ -42,21 +42,21 @@ namespace SqlBuildManager.Console.Threaded
             log.LogInformation("Initializing Threaded Execution loggers...");
             if (ConnectionStringValidator.IsEventHubConnectionString(cmdLine.ConnectionArgs.EventHubConnectionString))
             {
-                logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.ConnectionArgs.EventHubConnectionString);
+                logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!, cmdLine.ConnectionArgs.EventHubConnectionString);
             }
             else
             {
                 (string namespacename, string ehName) = ehM.GetEventHubNamespaceAndName(cmdLine.ConnectionArgs.EventHubConnectionString);
                 log.LogInformation($"Using Managed Identity '{cmdLine.IdentityArgs.ClientId}' for Event Logging");
-                logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, namespacename, ehName, cmdLine.IdentityArgs.ClientId);
+                logEventHub = SqlBuildManager.Logging.Threaded.EventHubLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!, namespacename, ehName, cmdLine.IdentityArgs.ClientId);
             }
-            logRuntime = SqlBuildManager.Logging.Threaded.RuntimeLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
+            logRuntime = SqlBuildManager.Logging.Threaded.RuntimeLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!, cmdLine.RootLoggingPath);
 
-            logFailures = SqlBuildManager.Logging.Threaded.FailureDatabaseLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
-            logSuccess = SqlBuildManager.Logging.Threaded.SuccessDatabaseLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
+            logFailures = SqlBuildManager.Logging.Threaded.FailureDatabaseLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!, cmdLine.RootLoggingPath);
+            logSuccess = SqlBuildManager.Logging.Threaded.SuccessDatabaseLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!, cmdLine.RootLoggingPath);
 
-            logCommitRun = SqlBuildManager.Logging.Threaded.CommitLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
-            logErrorRun = SqlBuildManager.Logging.Threaded.ErrorLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, cmdLine.RootLoggingPath);
+            logCommitRun = SqlBuildManager.Logging.Threaded.CommitLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!, cmdLine.RootLoggingPath);
+            logErrorRun = SqlBuildManager.Logging.Threaded.ErrorLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!, cmdLine.RootLoggingPath);
 
             ThreadedLogging.TheadedLoggingInitiated = true;
             this.isVerboseEhMessages = cmdLine.EventHubLogging.Contains(EventHubLogging.VerboseMessages);

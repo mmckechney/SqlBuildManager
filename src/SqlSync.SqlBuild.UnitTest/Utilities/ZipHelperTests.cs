@@ -13,7 +13,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
     [TestClass]
     public class ZipHelperTests
     {
-        private string _testDir;
+        private string _testDir = string.Empty;
 
         [TestInitialize]
         public void Setup()
@@ -641,7 +641,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
 
             // Act & Assert
             Assert.ThrowsExactly<ArgumentNullException>(() =>
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(null, file1, "file1.txt", CompressionLevel.Fastest));
+                SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(null!, file1, "file1.txt", CompressionLevel.Fastest));
         }
 
         [TestMethod]
@@ -653,7 +653,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             {
                 // Act & Assert
                 Assert.ThrowsExactly<ArgumentNullException>(() =>
-                    SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, null, "file1.txt", CompressionLevel.Fastest));
+                    SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, null!, "file1.txt", CompressionLevel.Fastest));
             }
         }
 
@@ -668,7 +668,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             {
                 // Act & Assert
                 Assert.ThrowsExactly<ArgumentNullException>(() =>
-                    SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, null, CompressionLevel.Fastest));
+                    SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, null!, CompressionLevel.Fastest));
             }
         }
 
@@ -690,7 +690,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Read))
             {
                 var entry = archive.GetEntry("file1.txt");
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry, extractPath);
+                SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry!, extractPath);
             }
 
             // Assert
@@ -717,7 +717,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Read))
             {
                 var entry = archive.GetEntry("file1.txt");
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry, extractPath, overwrite: true);
+                SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry!, extractPath, overwrite: true);
             }
 
             // Assert
@@ -729,7 +729,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
         {
             // Act & Assert
             Assert.ThrowsExactly<ArgumentNullException>(() =>
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(null, "test.txt"));
+                SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(null!, "test.txt"));
         }
 
         [TestMethod]
@@ -749,7 +749,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             {
                 var entry = archive.GetEntry("file1.txt");
                 Assert.ThrowsExactly<ArgumentNullException>(() =>
-                    SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry, null));
+                    SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry!, null!));
             }
         }
 

@@ -15,7 +15,7 @@ namespace SqlSync.SqlBuild.UnitTest
     [TestClass]
     public class SqlBuildFileHelperFinalCoverageTests
     {
-        private string _testDir;
+        private string _testDir = string.Empty;
 
         [TestInitialize]
         public void Setup()
@@ -520,7 +520,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public async Task CalculateBuildPackageSHA1SignatureFromPath_WithNullData_ReturnsError()
         {
             // Act
-            var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(_testDir, (SqlSyncBuildDataModel)null);
+            var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(_testDir, (SqlSyncBuildDataModel)null!);
 
             // Assert
             Assert.AreEqual("Error calculating hash", result);
@@ -533,7 +533,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(null, model);
+            var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(null!, model);
 
             // Assert
             Assert.AreEqual("Error calculating hash", result);
@@ -560,7 +560,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public async Task CalculateSha1HashFromPackage_WithNullFileName_ReturnsEmpty()
         {
             // Act
-            var result = await SqlBuildFileHelper.CalculateSha1HashFromPackageAsync(null);
+            var result = await SqlBuildFileHelper.CalculateSha1HashFromPackageAsync(null!);
 
             // Assert
             Assert.AreEqual(string.Empty, result);
@@ -647,7 +647,7 @@ namespace SqlSync.SqlBuild.UnitTest
     [TestClass]
     public class SqlBuildFileHelperAsyncMethodTests
     {
-        private string _testDir;
+        private string _testDir = string.Empty;
 
         [TestInitialize]
         public void Setup()

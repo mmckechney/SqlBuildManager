@@ -77,18 +77,18 @@ namespace SqlSync.DbInformation {
             }
         }
         
-        public virtual string[] Validate() {
+        public virtual string[]? Validate() {
             System.Collections.ArrayList missingValues = new System.Collections.ArrayList();
-            if ((((bool)(System.Convert.ChangeType(this._validationDict["UpdateDateColumns"], typeof(bool)))) == false)) {
+            if ((((bool)(System.Convert.ChangeType(this._validationDict["UpdateDateColumns"], typeof(bool))!)) == false)) {
                 missingValues.Add("UpdateDateColumns");
             }
-            if ((((bool)(System.Convert.ChangeType(this._validationDict["UpdateIdColumns"], typeof(bool)))) == false)) {
+            if ((((bool)(System.Convert.ChangeType(this._validationDict["UpdateIdColumns"], typeof(bool))!)) == false)) {
                 missingValues.Add("UpdateIdColumns");
             }
-            if ((((bool)(System.Convert.ChangeType(this._validationDict["CreateDateColumns"], typeof(bool)))) == false)) {
+            if ((((bool)(System.Convert.ChangeType(this._validationDict["CreateDateColumns"], typeof(bool))!)) == false)) {
                 missingValues.Add("CreateDateColumns");
             }
-            if ((((bool)(System.Convert.ChangeType(this._validationDict["CreateIdColumns"], typeof(bool)))) == false)) {
+            if ((((bool)(System.Convert.ChangeType(this._validationDict["CreateIdColumns"], typeof(bool))!)) == false)) {
                 missingValues.Add("CreateIdColumns");
             }
             if ((missingValues.Count > 0)) {

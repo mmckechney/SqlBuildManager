@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Enterprise.Feature;
 using System.Collections.Generic;
 namespace SqlBuildManager.Enterprise.UnitTest
@@ -50,7 +50,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         {
             string featureKey = FeatureKey.RemoteExecution;
             string loginId = "TestId";
-            FeatureAccess[] accessCfg = null;
+            FeatureAccess[] accessCfg = null!;
             bool expected = false;
             bool actual;
             actual = FeatureAccessHelper.IsFeatureEnabled(featureKey, loginId, new List<string>(), accessCfg);

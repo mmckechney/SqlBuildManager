@@ -104,7 +104,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var unittest = parseResult.GetValue(unitTestOption);
                     var force = parseResult.GetValue(forceOption);
                     var allowObjectDelete = parseResult.GetValue(allowForObjectDeletionOption);
-                    return await Worker.AciRun(cmdLine, packagename, platinumdacpac, monitor, unittest, force, allowObjectDelete);
+                    return await Worker.AciRun(cmdLine, packagename!, platinumdacpac!, monitor, unittest, force, allowObjectDelete);
                 });
                 return cmd;
             }
@@ -190,7 +190,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
                     var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
                     var force = parseResult.GetValue(forceOption);
-                    return await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine, packagename, platinumdacpac, force);
+                    return await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine, packagename!, platinumdacpac!, force);
                 });
 
                 return cmd;
@@ -265,7 +265,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var monitor = parseResult.GetValue(aciMonitorOption);
                     var unittest = parseResult.GetValue(unitTestOption);
                     var allowObjectDelete = parseResult.GetValue(allowForObjectDeletionOption);
-                    return await Worker.AciDeploy(cmdLine, packagename, platinumdacpac, monitor, unittest, allowObjectDelete);
+                    return await Worker.AciDeploy(cmdLine, packagename!, platinumdacpac!, monitor, unittest, allowObjectDelete);
                 });
                 return cmd;
             }

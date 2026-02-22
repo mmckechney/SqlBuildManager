@@ -36,7 +36,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
 
         public System.Xml.Schema.XmlSchema GetSchema()
         {
-            return null;
+            return null!;
         }
 
         public void ReadXml(System.Xml.XmlReader reader)

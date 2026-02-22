@@ -68,7 +68,7 @@ namespace SqlSync.DbInformation
 
             for (int i = 0; i < databases.Count; i++)
             {
-                DatabaseItem tmp = Find(databases[i].DatabaseName);
+                DatabaseItem? tmp = Find(databases[i].DatabaseName);
                 if (tmp != null)
                 {
                     tmp.IsManuallyEntered = databases[i].IsManuallyEntered;
@@ -80,7 +80,7 @@ namespace SqlSync.DbInformation
                 }
             }
         }
-        public DatabaseItem Find(string databaseName)
+        public DatabaseItem? Find(string databaseName)
         {
             for (int i = 0; i < Count; i++)
             {
@@ -101,9 +101,9 @@ namespace SqlSync.DbInformation
     }
     public class DatabaseListComparer : IComparer<DatabaseItem>
     {
-        public int Compare(DatabaseItem x, DatabaseItem y)
+        public int Compare(DatabaseItem? x, DatabaseItem? y)
         {
-            return string.Compare(x.DatabaseName, y.DatabaseName);
+            return string.Compare(x?.DatabaseName, y?.DatabaseName);
         }
     }
 

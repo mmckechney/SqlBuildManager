@@ -20,10 +20,10 @@ namespace SqlSync.SqlBuild.UnitTest.Services
     [TestClass]
     public class DefaultBuildFinalizerFinalTests
     {
-        private Mock<ISqlLoggingService> _mockSqlLoggingService;
-        private Mock<IProgressReporter> _mockProgressReporter;
-        private DefaultBuildFinalizer _finalizer;
-        private string _testDir;
+        private Mock<ISqlLoggingService> _mockSqlLoggingService = null!;
+        private Mock<IProgressReporter> _mockProgressReporter = null!;
+        private DefaultBuildFinalizer _finalizer = null!;
+        private string _testDir = string.Empty;
 
         [TestInitialize]
         public void Setup()
@@ -54,7 +54,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         {
             // Arrange
             var mockContext = new Mock<ISqlBuildRunnerProperties>();
-            mockContext.Setup(x => x.ProjectFileName).Returns((string)null);
+            mockContext.Setup(x => x.ProjectFileName).Returns((string)null!);
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
             // Act & Assert
@@ -85,7 +85,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var mockContext = new Mock<ISqlBuildRunnerProperties>();
             mockContext.Setup(x => x.ProjectFileName).Returns(projFileName);
             mockContext.Setup(x => x.BuildFileName).Returns(buildFileName);
-            mockContext.Setup(x => x.BuildHistoryXmlFile).Returns((string)null);
+            mockContext.Setup(x => x.BuildHistoryXmlFile).Returns((string)null!);
             mockContext.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
 
             // Act & Assert
@@ -125,7 +125,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
 
             // Act & Assert
             await Assert.ThrowsExactlyAsync<ArgumentNullException>(() =>
-                _finalizer.PerformRunScriptFinalizationAsync(null, mockConnectionsService.Object, mockFinalizerContext.Object, false, build));
+                _finalizer.PerformRunScriptFinalizationAsync(null!, mockConnectionsService.Object, mockFinalizerContext.Object, false, build));
         }
 
         [TestMethod]

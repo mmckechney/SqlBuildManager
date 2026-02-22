@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
@@ -15,7 +15,7 @@ namespace SqlBuildManager.Console.Threaded
 {
     class ThreadedRunner
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private string defaultDatabaseName = string.Empty;
 
         /// <summary>
@@ -52,12 +52,12 @@ namespace SqlBuildManager.Console.Threaded
             get { return returnValue; }
         }
 
-        private string server;
+        private string server = string.Empty;
         public string Server
         {
             get { return server; }
         }
-        private string targetDatabases;
+        private string targetDatabases = string.Empty;
         public string TargetDatabases
         {
             get { return targetDatabases; }
@@ -104,16 +104,16 @@ namespace SqlBuildManager.Console.Threaded
         private string password = string.Empty;
         private AuthenticationType authType = AuthenticationType.Password;
         private string buildRequestedBy = string.Empty;
-        private ThreadedLogging threadedLog = null;
+        private ThreadedLogging threadedLog = null!;
         private string jobName = string.Empty;
         private readonly BuildExecutionContext _context;
 
-        public ThreadedRunner(string serverName, List<DatabaseOverride> overrides, CommandLineArgs cmdArgs, string buildRequestedBy, bool forceCustomDacpac, BuildExecutionContext context = null)
+        public ThreadedRunner(string serverName, List<DatabaseOverride> overrides, CommandLineArgs cmdArgs, string buildRequestedBy, bool forceCustomDacpac, BuildExecutionContext context = null!)
         {
             _context = context ?? new BuildExecutionContext();
             if (serverName.StartsWith("#"))
             {
-                this.server = overrides[0].Server;
+                this.server = overrides[0].Server ?? string.Empty;
             }   
             else
             {
@@ -155,7 +155,7 @@ namespace SqlBuildManager.Console.Threaded
             returnValue = RunnerReturn.BuildResultInconclusive;
             this.threadedLog = threadedLog;
             this.jobName = cmdArgs.JobName;
-            ConnectionData connData = null;
+            ConnectionData connData = null!;
             SqlBuildRunDataModel runDataModel = new SqlBuildRunDataModel();
             string targetDatabase = overrides[0].OverrideDbTarget;
             string loggingDirectory = Path.Combine(_context.WorkingDirectory, server, targetDatabase);
@@ -277,7 +277,7 @@ namespace SqlBuildManager.Console.Threaded
                 if(runDataModel.BuildDataModel == null) runDataModel.BuildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
                 var result = await helper.ProcessBuildAsync(runDataModel, cmdArgs.TimeoutRetryCount, buildRequestedBy, _context.BatchCollection);
-                returnValue = result.FinalStatus.Value.ToRunnerReturn();
+                returnValue = result.FinalStatus!.Value.ToRunnerReturn();
 
 
             }
@@ -387,13 +387,13 @@ namespace SqlBuildManager.Console.Threaded
             }
         }
 
-        void helper_BuildSuccessTrialRolledBackEvent(object sender, EventArgs e)
+        void helper_BuildSuccessTrialRolledBackEvent(object? sender, EventArgs e)
         {
             log.LogDebug(TargetTag + " BuildSuccessTrialRolledBackEvent status: " + Enum.GetName(typeof(RunnerReturn), RunnerReturn.SuccessWithTrialRolledBack));
             returnValue = RunnerReturn.SuccessWithTrialRolledBack;
         }
 
-        void helper_BuildErrorRollBackEvent(object sender, EventArgs e)
+        void helper_BuildErrorRollBackEvent(object? sender, EventArgs e)
         {
             if (IsTransactional)
             {

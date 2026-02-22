@@ -9,9 +9,9 @@ namespace SqlSync.SqlBuild.Services
             IConnectionsService connectionsService,
             ISqlBuildRunnerContext context,
             IBuildFinalizerContext finalizerContext,
-            ISqlCommandExecutor executor = null,
-            ITransactionManager transactionManager = null,
-            IBuildFinalizer buildFinalizer = null,
-            ISqlLoggingService sqlLoggingService = null);
+            ISqlCommandExecutor executor = null!,
+            ITransactionManager transactionManager = null!,
+            IBuildFinalizer buildFinalizer = null!,
+            ISqlLoggingService sqlLoggingService = null!);
     }
 }

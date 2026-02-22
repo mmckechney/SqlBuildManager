@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 
 namespace SqlBuildManager.Console.ExternalTest
@@ -34,7 +34,7 @@ namespace SqlBuildManager.Console.ExternalTest
             set { endTime = value; }
         }
 
-        private System.Diagnostics.Process prc;
+        private System.Diagnostics.Process prc = null!;
 
         public ProcessHelper()
         {

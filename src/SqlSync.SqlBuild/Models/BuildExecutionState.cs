@@ -25,7 +25,7 @@ namespace SqlSync.SqlBuild.Models
         public bool RunScriptOnly { get; set; } = false;
 
         /// <summary>Database override mappings.</summary>
-        public List<DatabaseOverride> TargetDatabaseOverrides { get; set; }
+        public List<DatabaseOverride> TargetDatabaseOverrides { get; set; } = null!;
 
         /// <summary>The current build data model.</summary>
         public SqlSyncBuildDataModel BuildDataModel { get; set; } = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -56,7 +56,7 @@ namespace SqlSync.SqlBuild.Models
         public string BuildFileName { get; set; } = string.Empty;
 
         /// <summary>Path to the script execution log file.</summary>
-        public string ScriptLogFileName { get; set; }
+        public string ScriptLogFileName { get; set; } = string.Empty;
 
         /// <summary>Path to external log file for copying results.</summary>
         public string ExternalScriptLogFileName { get; set; } = string.Empty;
@@ -81,7 +81,7 @@ namespace SqlSync.SqlBuild.Models
         #region Runtime State
 
         /// <summary>Multi-database run data when running across multiple databases.</summary>
-        public MultiDbData MultiDbRunData { get; set; }
+        public MultiDbData MultiDbRunData { get; set; } = null!;
 
         /// <summary>Accumulated SQL informational messages.</summary>
         public string SqlInfoMessage { get; set; } = string.Empty;
@@ -105,7 +105,7 @@ namespace SqlSync.SqlBuild.Models
             IsTransactional = true;
             IsTrialBuild = false;
             RunScriptOnly = false;
-            TargetDatabaseOverrides = null;
+            TargetDatabaseOverrides = null!;
             BuildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             BuildPackageHash = string.Empty;
             BuildType = string.Empty;
@@ -114,14 +114,14 @@ namespace SqlSync.SqlBuild.Models
             ProjectFileName = string.Empty;
             ProjectFilePath = string.Empty;
             BuildFileName = string.Empty;
-            ScriptLogFileName = null;
+            ScriptLogFileName = null!;
             ExternalScriptLogFileName = string.Empty;
             BuildHistoryXmlFile = string.Empty;
             LogToDatabaseName = string.Empty;
             BuildRequestedBy = string.Empty;
             RunItemIndexes = Array.Empty<double>();
             ErrorOccurred = false;
-            MultiDbRunData = null;
+            MultiDbRunData = null!;
             SqlInfoMessage = string.Empty;
             LastSqlMessage = string.Empty;
             CurrentBuildId = Guid.Empty;
@@ -155,7 +155,7 @@ namespace SqlSync.SqlBuild.Models
             var buildFile = runData.BuildFileName ?? string.Empty;
             int buildLastSep = Math.Max(buildFile.LastIndexOf('/'), buildFile.LastIndexOf('\\'));
             BuildFileName = buildLastSep >= 0 ? buildFile.Substring(buildLastSep + 1) : buildFile;
-            TargetDatabaseOverrides = runData.TargetDatabaseOverrides?.ToList();
+            TargetDatabaseOverrides = runData.TargetDatabaseOverrides?.ToList()!;
             LogToDatabaseName = runData.LogToDatabaseName ?? string.Empty;
             IsTransactional = runData.IsTransactional ?? true;
         }

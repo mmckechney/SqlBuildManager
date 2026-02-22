@@ -55,8 +55,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                     Database = database,
                     Username = pgUser,
                     Password = pgPassword,
-                    SslMode = SslMode.Require,
-                    TrustServerCertificate = true
+                    SslMode = SslMode.Require
                 };
 
                 try

@@ -21,7 +21,7 @@ namespace SqlBuildManager.Console.ExternalTest
     {
         public TestContext TestContext { get; set; }
 
-        private string settingsFileKeyPath;
+        private string settingsFileKeyPath = string.Empty;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
 
         [TestInitialize]
@@ -398,7 +398,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 result = val.Result;
                 Assert.AreEqual(0, result);
 
-                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName), Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
+                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName)!, Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
 
                 //monitor for completion
                 args = new string[]{
@@ -502,7 +502,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
                 DatabaseHelper.CreateRandomTable(cmdLine, thirdOverride);
 
-                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName), Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
+                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName)!, Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
 
                 //monitor for completion
                 args = new string[]{
@@ -615,7 +615,7 @@ namespace SqlBuildManager.Console.ExternalTest
         {
             settingsFile = Path.GetFullPath(settingsFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFile), Guid.NewGuid().ToString() + ".cfg");
+            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFile)!, Guid.NewGuid().ToString() + ".cfg");
             File.WriteAllLines(tmpOverride, File.ReadAllLines(overrideFile).Take(6).ToArray());
 
             try

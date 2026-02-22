@@ -19,7 +19,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             // Assert
             Assert.AreEqual(1, project.SqlSyncBuildProjectId);
             Assert.AreEqual("TestProject", project.ProjectName);
-            Assert.IsTrue(project.ScriptTagRequired.Value);
+            Assert.IsTrue(project.ScriptTagRequired!.Value);
         }
 
         [TestMethod]
@@ -48,7 +48,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             // Assert
             Assert.AreEqual(2, project.SqlSyncBuildProjectId);
             Assert.AreEqual("Modified", project.ProjectName);
-            Assert.IsTrue(project.ScriptTagRequired.Value);
+            Assert.IsTrue(project.ScriptTagRequired!.Value);
         }
 
         #endregion
@@ -97,13 +97,13 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual("test.sql", script.FileName);
             Assert.AreEqual(1.5, script.BuildOrder);
             Assert.AreEqual("Test script", script.Description);
-            Assert.IsTrue(script.RollBackOnError.Value);
-            Assert.IsTrue(script.CausesBuildFailure.Value);
+            Assert.IsTrue(script.RollBackOnError!.Value);
+            Assert.IsTrue(script.CausesBuildFailure!.Value);
             Assert.AreEqual(dateAdded, script.DateAdded);
             Assert.AreEqual(scriptId, script.ScriptId);
             Assert.AreEqual("TestDB", script.Database);
-            Assert.IsTrue(script.StripTransactionText.Value);
-            Assert.IsFalse(script.AllowMultipleRuns.Value);
+            Assert.IsTrue(script.StripTransactionText!.Value);
+            Assert.IsFalse(script.AllowMultipleRuns!.Value);
             Assert.AreEqual("testuser", script.AddedBy);
             Assert.AreEqual(60, script.ScriptTimeOut);
             Assert.AreEqual(dateModified, script.DateModified);
@@ -128,7 +128,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual("modified.sql", script.FileName);
             Assert.AreEqual(2.0, script.BuildOrder);
             Assert.AreEqual("Modified description", script.Description);
-            Assert.IsTrue(script.RollBackOnError.Value);
+            Assert.IsTrue(script.RollBackOnError!.Value);
             Assert.AreEqual(120, script.ScriptTimeOut);
         }
 
@@ -252,7 +252,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual(1.0, scriptRun.RunOrder);
             Assert.AreEqual(runStart, scriptRun.RunStart);
             Assert.AreEqual(runEnd, scriptRun.RunEnd);
-            Assert.IsTrue(scriptRun.Success.Value);
+            Assert.IsTrue(scriptRun.Success!.Value);
             Assert.AreEqual("TestDB", scriptRun.Database);
             Assert.AreEqual(scriptRunId, scriptRun.ScriptRunId);
             Assert.AreEqual(buildId, scriptRun.BuildId);
@@ -265,7 +265,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             var scriptRun = new ScriptRun { Success = false };
 
             // Assert
-            Assert.IsFalse(scriptRun.Success.Value);
+            Assert.IsFalse(scriptRun.Success!.Value);
         }
 
         #endregion
@@ -307,7 +307,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual(scriptId, committedScript.ScriptId);
             Assert.AreEqual("PROD-SQL", committedScript.ServerName);
             Assert.AreEqual(committedDate, committedScript.CommittedDate);
-            Assert.IsTrue(committedScript.AllowScriptBlock.Value);
+            Assert.IsTrue(committedScript.AllowScriptBlock!.Value);
             Assert.AreEqual("HASH123", committedScript.ScriptHash);
             Assert.AreEqual(1, committedScript.SqlSyncBuildProjectId);
         }
@@ -319,7 +319,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             var committedScript = new CommittedScript { AllowScriptBlock = false };
 
             // Assert
-            Assert.IsFalse(committedScript.AllowScriptBlock.Value);
+            Assert.IsFalse(committedScript.AllowScriptBlock!.Value);
         }
 
         #endregion
@@ -460,18 +460,18 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual("Production deployment", model.BuildDescription);
             Assert.AreEqual(1.0, model.StartIndex);
             Assert.AreEqual("project.sbx", model.ProjectFileName);
-            Assert.IsFalse(model.IsTrial.Value);
-            Assert.AreEqual(2, model.RunItemIndexes.Count);
-            Assert.IsFalse(model.RunScriptOnly.Value);
+            Assert.IsFalse(model.IsTrial!.Value);
+            Assert.AreEqual(2, model.RunItemIndexes!.Count);
+            Assert.IsFalse(model.RunScriptOnly!.Value);
             Assert.AreEqual("build.sbm", model.BuildFileName);
             Assert.AreEqual("LogDb", model.LogToDatabaseName);
-            Assert.IsTrue(model.IsTransactional.Value);
+            Assert.IsTrue(model.IsTransactional!.Value);
             Assert.AreEqual("baseline.dacpac", model.PlatinumDacPacFileName);
             Assert.IsNotNull(model.TargetDatabaseOverrides);
-            Assert.IsFalse(model.ForceCustomDacpac.Value);
+            Assert.IsFalse(model.ForceCustomDacpac!.Value);
             Assert.AreEqual("1.0.0", model.BuildRevision);
             Assert.AreEqual(120, model.DefaultScriptTimeout);
-            Assert.IsTrue(model.AllowObjectDelete.Value);
+            Assert.IsTrue(model.AllowObjectDelete!.Value);
         }
 
         #endregion

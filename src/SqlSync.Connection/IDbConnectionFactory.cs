@@ -12,7 +12,7 @@ namespace SqlSync.Connection
         DbConnection CreateConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId);
         string BuildConnectionString(ConnectionData connData);
         string BuildConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId);
-        DbCommand CreateCommand(string sql, DbConnection connection, DbTransaction transaction = null);
+        DbCommand CreateCommand(string sql, DbConnection connection, DbTransaction transaction = null!);
         DbParameter CreateParameter(string name, object value);
     }
 }

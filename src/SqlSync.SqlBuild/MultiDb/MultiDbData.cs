@@ -28,7 +28,7 @@ namespace SqlSync.SqlBuild.MultiDb
         {
             get;
             set;
-        }
+        } = string.Empty;
         [XmlIgnore()]
         public string UserName { get; set; } = string.Empty;
         [XmlIgnore()]

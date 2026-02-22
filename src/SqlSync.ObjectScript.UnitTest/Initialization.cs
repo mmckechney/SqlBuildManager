@@ -1,4 +1,4 @@
-﻿using SqlBuildManager.Test.Common;
+using SqlBuildManager.Test.Common;
 using SqlSync.Connection;
 using System;
 using System.Collections.Generic;
@@ -6,13 +6,13 @@ namespace SqlSync.ObjectScript.UnitTest
 {
     class Initialization
     {
-        public List<string> testDatabaseNames = null;
-        public List<string> tempFiles = null;
+        public List<string> testDatabaseNames = null!;
+        public List<string> tempFiles = null!;
         public Guid testGuid;
         public DateTime testTimeStamp;
-        public ConnectionData connData = null;
-        public string projectFileName = null;
-        public string buildHistoryXmlFile = null;
+        public ConnectionData connData = null!;
+        public string projectFileName = null!;
+        public string buildHistoryXmlFile = null!;
 
         public string connectionString;
         public string serverName;

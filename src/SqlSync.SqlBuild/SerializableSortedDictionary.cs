@@ -9,7 +9,7 @@ namespace SqlSync.SqlBuild
 
     [XmlRoot("dictionary")]
 
-    public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable
+    public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable where TKey : notnull
     {
         private string keyName = "key";
 
@@ -47,7 +47,7 @@ namespace SqlSync.SqlBuild
         public System.Xml.Schema.XmlSchema GetSchema()
         {
 
-            return null;
+            return null!;
 
         }
 
@@ -83,7 +83,7 @@ namespace SqlSync.SqlBuild
 
                 reader.ReadStartElement(keyName);
 
-                TKey key = (TKey)keySerializer.Deserialize(reader);
+                TKey key = (TKey)keySerializer.Deserialize(reader)!;
 
                 reader.ReadEndElement();
 
@@ -91,13 +91,13 @@ namespace SqlSync.SqlBuild
 
                 reader.ReadStartElement(valueName);
 
-                TValue value = (TValue)valueSerializer.Deserialize(reader);
+                TValue value = (TValue)valueSerializer.Deserialize(reader)!;
 
                 reader.ReadEndElement();
 
 
 
-                Add(key, value);
+                Add(key!, value!);
 
 
 

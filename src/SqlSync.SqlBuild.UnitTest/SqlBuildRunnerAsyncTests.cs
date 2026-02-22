@@ -24,7 +24,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 ctx, 
                 new Mock<IBuildFinalizerContext>().Object,
                 new NoopExecutor(),
-                null,
+                null!,
                 MockFactory.CreateMockBuildFinalizer().Object,
                 MockFactory.CreateMockSqlLoggingService().Object,
                 new NoopProgressReporter());
@@ -32,7 +32,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var myBuild = new BuildModels.Build("name", "type", DateTime.UtcNow, null, "srv", null, Guid.NewGuid().ToString(), "u");
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null, model, CancellationToken.None);
+            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null!, model, CancellationToken.None);
             Assert.IsNotNull(result);
         }
 
@@ -46,7 +46,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 ctx,
                 new Mock<IBuildFinalizerContext>().Object,
                 exec,
-                null,
+                null!,
                 MockFactory.CreateMockBuildFinalizer().Object,
                 MockFactory.CreateMockSqlLoggingService().Object,
                 new NoopProgressReporter());
@@ -57,7 +57,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var myBuild = new BuildModels.Build("name", "type", DateTime.UtcNow, null, "srv", null, Guid.NewGuid().ToString(), "u");
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null, model, CancellationToken.None);
+            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null!, model, CancellationToken.None);
 
             Assert.IsNotNull(result);
         }
@@ -73,7 +73,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 ctx,
                 new Mock<IBuildFinalizerContext>().Object,
                 exec,
-                null,
+                null!,
                 MockFactory.CreateMockBuildFinalizer().Object,
                 MockFactory.CreateMockSqlLoggingService().Object,
                 new NoopProgressReporter());
@@ -85,7 +85,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var myBuild = new BuildModels.Build("name", "type", DateTime.UtcNow, null, "srv", null, Guid.NewGuid().ToString(), "u");
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
    
-            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null, model, cts.Token);
+            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null!, model, cts.Token);
 
             Assert.IsNotNull(result);
         }

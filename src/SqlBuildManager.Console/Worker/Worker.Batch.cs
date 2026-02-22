@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Rest.TransientFaultHandling;
 using SqlBuildManager.Console.Batch;
 using SqlBuildManager.Console.CloudStorage;
@@ -16,10 +16,10 @@ namespace SqlBuildManager.Console
     {
         internal static int SaveAndEncryptBatchSettings(CommandLineArgs cmdLine, bool clearText)
         {
-            cmdLine.AciArgs = null;
-            cmdLine.ContainerAppArgs = null;
-            cmdLine.KubernetesArgs = null;
-            cmdLine.ContainerRegistryArgs = null;
+            cmdLine.AciArgs = null!;
+            cmdLine.ContainerAppArgs = null!;
+            cmdLine.KubernetesArgs = null!;
+            cmdLine.ContainerRegistryArgs = null!;
 
             return SaveAndEncryptSettings(cmdLine, clearText);
         }
@@ -123,7 +123,7 @@ namespace SqlBuildManager.Console
             log.LogInformation("Running Batch Execution...");
             int retVal;
             string readOnlySas;
-            Task monitorTask = null;
+            Task monitorTask = null!;
 
             //If using queue and subscription doesn't already exist from a `sbm batch enqueue` command, create it and enqueue targets
             var enqueueRes = await CheckAndEnqueueDatabaseTargets(cmdLine);
@@ -175,7 +175,7 @@ namespace SqlBuildManager.Console
             return retVal;
         }
 
-        private static Task<int> batchMonitorTask = null;
+        private static Task<int> batchMonitorTask = null!;
         private static void Batch_MonitorStart(object sender, BatchMonitorEventArgs e)
         {
             batchMonitorTask = MonitorServiceBusRuntimeProgress(e.CmdLine, e.Stream, DateTime.UtcNow, e.UnitTest, false);

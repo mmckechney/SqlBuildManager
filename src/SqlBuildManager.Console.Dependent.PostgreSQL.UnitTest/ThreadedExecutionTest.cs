@@ -15,7 +15,7 @@ namespace SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest
     [DoNotParallelize]
     public class ThreadedExecutionTest
     {
-        private TestContext testContextInstance;
+        private TestContext testContextInstance = null!;
         private static List<Initialization> initObjs = new List<Initialization>();
 
         private Initialization GetInitializationObject()
@@ -42,7 +42,7 @@ namespace SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest
         {
             using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 0x1000, FileOptions.SequentialScan);
             using var sr = new StreamReader(fs, Encoding.UTF8);
-            string line;
+            string? line;
             while ((line = sr.ReadLine()) != null)
             {
                 yield return line;
