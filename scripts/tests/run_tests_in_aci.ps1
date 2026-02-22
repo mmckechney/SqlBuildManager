@@ -14,7 +14,9 @@
     
     [switch] $keepContainer,
     
-    [int] $timeoutMinutes = 30
+    [int] $timeoutMinutes = 30, 
+
+    [string] $timestamp = (Get-Date -Format 'yyyy-MM-dd-HHmmss')
 )
 
 <#
@@ -178,8 +180,7 @@ Write-Debug ""
 
 # Build command array for YAML - override entrypoint to capture exit code and upload results
 $blobContainerName = "testresults"
-$timestamp = Get-Date -Format 'yyyy-MM-dd-HHmmss'
-$blobPath = "$testContainerName/$timestamp"
+$blobPath = "$timestamp/$testContainerName"
 
 # Build the test command with filter - quote arguments containing semicolons
 # Use --ResultsDirectory to capture all test output including logs
