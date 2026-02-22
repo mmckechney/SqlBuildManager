@@ -18,12 +18,16 @@ namespace SqlSync.SqlBuild.Services
         public void CreateSavePoint(DbTransaction transaction, string savePointName)
         {
             using var cmd = transaction.Connection!.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandText = $"SAVEPOINT \"{savePointName}\"";
             cmd.ExecuteNonQuery();
         }
 
         public void RollbackToSavePoint(DbTransaction transaction, string savePointName)
         {
             using var cmd = transaction.Connection!.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandText = $"ROLLBACK TO SAVEPOINT \"{savePointName}\"";
             cmd.ExecuteNonQuery();
         }
 
