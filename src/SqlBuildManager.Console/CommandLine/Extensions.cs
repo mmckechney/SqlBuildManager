@@ -187,6 +187,23 @@ namespace SqlBuildManager.Console.CommandLine
                         args.AddRange(new string[] { $"--{property.Name!.ToLower()}", property.GetValue(obj)!.ToString()! });
                      }
                      break;
+                  case "QueryFile":
+                     if (toStringType == StringType.Batch)
+                     {
+                        // For batch mode, use just the filename since the file is downloaded
+                        // as a resource file to the batch node's working directory.
+                        // FileInfo.FullName resolves against the orchestrator's CWD which
+                        // produces an invalid path on the batch node.
+                        var qFile = (FileInfo)property.GetValue(obj)!;
+                        args.AddRange(new string[] { "--queryfile", qFile.Name.Quoted() });
+                     }
+                     else
+                     {
+                        var qFile = (FileInfo)property.GetValue(obj)!;
+                        args.AddRange(new string[] { "--queryfile", qFile.FullName.Quoted() });
+                     }
+                     break;
+
                   case "BatchJobName": //Ignore this because it will be counted as a duplicate for JobName
                   case "OverrideDesignated":
                   case "CliVersion":
