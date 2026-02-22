@@ -433,22 +433,6 @@ namespace SqlSync.SqlBuild
         {
             return GetSbmFromDacPacAsync(rootLoggingPath, platinumDacPac, string.Empty, database, server, authType, username, password, buildRevision, defaultScriptTimeout, multiDb, batchScripts, allowObjectDelete, managedIdentityClientId, cancellationToken);
         }
-
-        [Obsolete("Use GetSbmFromDacPacAsync instead. Will be removed in future version.")]
-        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, AuthenticationType authType, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName, bool batchScripts, bool allowObjectDelete, string managedIdentityClientId)
-        {
-            var result = GetSbmFromDacPacAsync(rootLoggingPath, platinumDacPac, targetDacpac, database, server, authType, username, password, buildRevision, defaultScriptTimeout, multiDb, batchScripts, allowObjectDelete, managedIdentityClientId).GetAwaiter().GetResult();
-            sbmName = result.sbmName;
-            return result.status;
-        }
-
-        [Obsolete("Use GetSbmFromDacPacAsync instead. Will be removed in future version.")]
-        public static DacpacDeltasStatus GetSbmFromDacPac(string rootLoggingPath, string platinumDacPac, string database, AuthenticationType authType, string server, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, out string sbmName, bool batchScripts, bool allowObjectDelete, string managedIdentityClientId)
-        {
-            return GetSbmFromDacPac(rootLoggingPath, platinumDacPac, string.Empty, database, server, authType, username, password, buildRevision, defaultScriptTimeout, multiDb, out sbmName, batchScripts, allowObjectDelete, managedIdentityClientId);
-        }
-
-
     }
 
 

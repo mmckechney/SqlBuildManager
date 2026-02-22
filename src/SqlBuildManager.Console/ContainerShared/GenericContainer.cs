@@ -191,7 +191,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 }
                 string sbmName;
                 cmdLine.PlatinumDacpac = platinumDacpac.FullName;
-                var stat = Worker.GetSbmFromDacPac(cmdLine, multiData, out sbmName, true);
+                (var stat, sbmName) = await Worker.GetSbmFromDacPacAsync(cmdLine, multiData, true);
                 if (stat == sqlB.DacpacDeltasStatus.Success)
                 {
                     if (Path.GetFileNameWithoutExtension(sbmName) != Path.GetFileNameWithoutExtension(platinumDacpac.FullName))

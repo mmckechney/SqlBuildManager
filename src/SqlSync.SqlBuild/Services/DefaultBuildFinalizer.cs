@@ -153,7 +153,6 @@ namespace SqlSync.SqlBuild.Services
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
-            var finalizationErrorOccurred = false;
             var updatedDataModel = context.BuildDataModel;
             BuildResultStatus finalBuildResult;
             DateTime end = DateTime.Now;
@@ -163,7 +162,6 @@ namespace SqlSync.SqlBuild.Services
 
             if (buildFailure)
             {
-                finalizationErrorOccurred = true;
                 if (context.IsTransactional)
                     myBuild.FinalStatus = BuildItemStatus.RolledBack;
                 else

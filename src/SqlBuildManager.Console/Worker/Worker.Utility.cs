@@ -77,7 +77,7 @@ namespace SqlBuildManager.Console
             string name;
             cmdLine.RootLoggingPath = Path.GetDirectoryName(cmdLine.OutputSbm)!;
 
-            var status = Worker.GetSbmFromDacPac(cmdLine, new SqlSync.SqlBuild.MultiDb.MultiDbData(), out name, true);
+            (var status, name)= await Worker.GetSbmFromDacPacAsync(cmdLine, new SqlSync.SqlBuild.MultiDb.MultiDbData(), true);
             if (status == sqlB.DacpacDeltasStatus.Success)
             {
                 File.Move(name, cmdLine.OutputSbm);
@@ -566,12 +566,12 @@ namespace SqlBuildManager.Console
         }
 
 
-        internal static sqlB.DacpacDeltasStatus GetSbmFromDacPac(CommandLineArgs cmd, MultiDbData multiDb, out string sbmName, bool batchScripts = false)
+        internal static async Task<(sqlB.DacpacDeltasStatus status, string sbmName)> GetSbmFromDacPacAsync(CommandLineArgs cmd, MultiDbData multiDb, bool batchScripts = false)
         {
             if (cmd.MultiDbRunConfigFileName.Trim().ToLower().EndsWith("sql"))
             {
                 //if we are getting the list from a SQL statement, then the database and server settings mean something different! Dont pass them in.
-                return sqlB.DacPacHelper.GetSbmFromDacPac(cmd.RootLoggingPath,
+                return await sqlB.DacPacHelper.GetSbmFromDacPacAsync(cmd.RootLoggingPath,
                    cmd.DacPacArgs.PlatinumDacpac,
                    cmd.DacPacArgs.TargetDacpac,
                    string.Empty,
@@ -581,11 +581,12 @@ namespace SqlBuildManager.Console
                    cmd.AuthenticationArgs.Password,
                    cmd.BuildRevision,
                    cmd.DefaultScriptTimeout,
-                   multiDb, out sbmName, batchScripts, cmd.AllowObjectDelete, cmd.IdentityArgs.ClientId);
+                   multiDb, batchScripts, cmd.AllowObjectDelete, cmd.IdentityArgs.ClientId);
+
             }
             else
             {
-                return sqlB.DacPacHelper.GetSbmFromDacPac(cmd.RootLoggingPath,
+                return await sqlB.DacPacHelper.GetSbmFromDacPacAsync(cmd.RootLoggingPath,
                     cmd.DacPacArgs.PlatinumDacpac,
                     cmd.DacPacArgs.TargetDacpac,
                     cmd.Database,
@@ -595,7 +596,7 @@ namespace SqlBuildManager.Console
                     cmd.AuthenticationArgs.Password,
                     cmd.BuildRevision,
                     cmd.DefaultScriptTimeout,
-                    multiDb, out sbmName, batchScripts, cmd.AllowObjectDelete, cmd.IdentityArgs.ClientId);
+                    multiDb, batchScripts, cmd.AllowObjectDelete, cmd.IdentityArgs.ClientId);
             }
         }
 

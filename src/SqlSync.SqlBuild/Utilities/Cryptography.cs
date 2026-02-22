@@ -72,9 +72,12 @@ namespace SqlSync.SqlBuild.Utilities
                     AES.KeySize = 256;
                     AES.BlockSize = 128;
 
-                    var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1);
-                    AES.Key = key.GetBytes(AES.KeySize / 8);
-                    AES.IV = key.GetBytes(AES.BlockSize / 8);
+                    // var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1);
+                    // AES.Key = key.GetBytes(AES.KeySize / 8);
+                    // AES.IV = key.GetBytes(AES.BlockSize / 8);
+
+                    AES.Key= Rfc2898DeriveBytes.Pbkdf2(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1, AES.KeySize / 8);
+                    AES.IV = Rfc2898DeriveBytes.Pbkdf2(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1,AES.BlockSize / 8);
 
                     AES.Mode = CipherMode.CBC;
 
@@ -101,9 +104,12 @@ namespace SqlSync.SqlBuild.Utilities
                     AES.KeySize = 256;
                     AES.BlockSize = 128;
 
-                    var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1);
-                    AES.Key = key.GetBytes(AES.KeySize / 8);
-                    AES.IV = key.GetBytes(AES.BlockSize / 8);
+                    // var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1);
+                    // AES.Key = key.GetBytes(AES.KeySize / 8);
+                    // AES.IV = key.GetBytes(AES.BlockSize / 8);
+
+                    AES.Key= Rfc2898DeriveBytes.Pbkdf2(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1, AES.KeySize / 8);
+                    AES.IV = Rfc2898DeriveBytes.Pbkdf2(passwordBytes, saltBytes, 1000, HashAlgorithmName.SHA1,AES.BlockSize / 8);
 
                     AES.Mode = CipherMode.CBC;
 
