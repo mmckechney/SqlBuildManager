@@ -73,6 +73,7 @@ Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 # Get resource information
 $subscriptionId = az account show --query id --output tsv
 $tenantId = az account show -o tsv --query tenantId
+$identity = az identity show --resource-group $resourceGroupName --name $identityName | ConvertFrom-Json
 
 Write-Host "Using Storage Account: $storageAccountName" -ForegroundColor DarkGreen
 Write-Host "Using Event Hub Namespace: $eventHubNamespaceName" -ForegroundColor DarkGreen
@@ -97,7 +98,6 @@ if ($false -eq (Test-Path $keyFile)) {
 
 # Build parameters (NO KEYS!)
 $params = @("k8s", "savesettings")
-$params += @("--settingsfilekey", """$keyFile""")
 $params += @("--concurrency", "5")
 $params += @("--concurrencytype", "Count")
 $params += @("--registry", $containerRegistryName)
@@ -105,6 +105,8 @@ $params += @("--tag", "latest-vNext")
 $params += @("--tenantid", $tenantId)
 $params += @("--serviceaccountname", $serviceAccountName)
 $params += @("--identityname", $identityName)
+$params += @("--clientid", $identity.clientId)
+$params += @("--idrg", $resourceGroupName)
 $params += @("--force")
 $params += @("--podcount", $podCount)
 $params += @("--eventhublogging", "ScriptErrors")

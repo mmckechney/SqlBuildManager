@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -227,6 +228,19 @@ namespace SqlBuildManager.Console.CommandLine
                         {
                            args.AddRange(new string[] { $"--eventhublogging", value.ToString().Quoted() });
                         }
+                     }
+                     else if (property.PropertyType == typeof(FileInfo[]))
+                     {
+                        var files = (FileInfo[])property.GetValue(obj)!;
+                        foreach (var file in files)
+                        {
+                           args.AddRange(new string[] { $"--{property.Name!.ToLower()}", file.FullName.Quoted() });
+                        }
+                     }
+                     else if (property.PropertyType == typeof(FileInfo))
+                     {
+                        var file = (FileInfo)property.GetValue(obj)!;
+                        args.AddRange(new string[] { $"--{property.Name!.ToLower()}", file.FullName.Quoted() });
                      }
                      else
                      {

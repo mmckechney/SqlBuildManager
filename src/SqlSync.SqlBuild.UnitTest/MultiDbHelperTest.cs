@@ -365,7 +365,7 @@ ServerB:default5,override5
 ";
             string actual;
             actual = MultiDbHelper.ConvertMultiDbDataToTextConfig(cfg);
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), actual.Replace("\r\n", "\n"));
         }
 
         [TestMethod()]
@@ -388,7 +388,7 @@ ServerB:default5,override5
             actual = MultiDbHelper.SerializeMultiDbConfigurationToXml(cfg);
 
             var expected = Properties.Resources.serialized_multidb_xml;
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), actual.Replace("\r\n", "\n"));
 
         }
 
@@ -411,7 +411,7 @@ ServerB:default5,override5
             string actual;
             actual = MultiDbHelper.SerializeMultiDbConfigurationToJson(cfg);
             var expected = Properties.Resources.serialized_multidb_json;
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), actual.Replace("\r\n", "\n"));
 
         }
 
@@ -434,7 +434,7 @@ ServerB:default5,override5
             string actual;
             actual = MultiDbHelper.SerializeMultiDbConfigurationToJson(cfg);
             var expected = Properties.Resources.serialized_multidb_json_withtag_json;
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), actual.Replace("\r\n", "\n"));
 
         }
 
@@ -457,7 +457,7 @@ ServerB:default5,override5
             string actual;
             actual = MultiDbHelper.SerializeMultiDbConfigurationToJson(cfg);
             var expected = Properties.Resources.serialized_multidb_json;
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), actual.Replace("\r\n", "\n"));
 
             var deserialized = MultiDbHelper.DeserializeMultiDbConfigurationString(actual);
 
