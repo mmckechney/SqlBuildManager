@@ -237,7 +237,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                                 SET LOCK_TIMEOUT 10000; -- 10 second lock timeout
                                 IF EXISTS (SELECT 1 FROM sys.objects WHERE name = 'SqlBuild_Logging' AND type = 'U') 
                                 BEGIN 
-                                    DELETE FROM SqlBuild_Logging WHERE BuildFileName LIKE 'SqlSyncTest-%' OR CommitDate < @CutoffDate 
+                                    DELETE FROM SqlBuild_Logging WITH (ROWLOCK, READPAST) WHERE BuildFileName LIKE 'SqlSyncTest-%' OR CommitDate < @CutoffDate 
                                 END";
                             using (SqlCommand cmd = new SqlCommand(cleaner, conn))
                             {

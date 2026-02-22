@@ -101,9 +101,10 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                         {
                             conn.Open();
                             
-                            // Clean SqlBuild_Logging table
-                            using (var cmd = new SqlCommand("DELETE FROM SqlBuild_Logging WHERE BuildFileName LIKE 'SqlSyncTest-%'", conn))
+                            // Clean SqlBuild_Logging table - use lock timeout to avoid blocking on prior test connections
+                            using (var cmd = new SqlCommand("SET LOCK_TIMEOUT 3000; DELETE FROM SqlBuild_Logging WITH (ROWLOCK, READPAST) WHERE BuildFileName LIKE 'SqlSyncTest-%'", conn))
                             {
+                                cmd.CommandTimeout = 30;
                                 cmd.ExecuteNonQuery();
                             }
                             
