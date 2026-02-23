@@ -206,7 +206,7 @@ $uploadCmd = "az storage blob upload-batch --account-name $storageAccountName --
 
 # Build Kubernetes pre-requisite commands if test filter contains "Kubernetes"
 $aksPreCmd = ""
-if ($testFilter -like "*Kubernetes*") {
+if ($testFilter -like "*Kubernetes*" -or $testFilter -like "*PostgreSQL.ExternalTest*") {
     $aksClusterName = "$($prefix)aks"
     $aksPreCmd = "az aks install-cli; az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName --overwrite-existing; "
     Write-Debug "Kubernetes tests detected - will install kubectl and get AKS credentials"
