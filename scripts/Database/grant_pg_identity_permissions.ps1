@@ -171,7 +171,7 @@ foreach ($db in $dbs) {
 
     $allSucceeded = $true
     foreach ($grantSql in $grantStatements) {
-        az postgres flexible-server execute --name $pgServerName --database-name $db --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$grantSql" --output none 2>&1
+        az postgres flexible-server execute --name $pgServerName --database-name $db --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$grantSql" --output none 2>&1 3>$null
         if ($LASTEXITCODE -ne 0) {
             $allSucceeded = $false
             Write-Host "    ⚠ Grant statement failed: $grantSql" -ForegroundColor Yellow

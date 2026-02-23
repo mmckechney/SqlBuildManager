@@ -250,6 +250,9 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.Add(sectionPlaceholderOption);
                 cmd.Add(silentOption);
+                cmd.Add(identityNameNotReqOption);
+                cmd.Add(identityResourceGroupNotReqOption);
+                cmd.Add(clientIdOption);
 
 
                 cmd.SetAction((parseResult) => {
