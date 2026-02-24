@@ -340,7 +340,7 @@ namespace SqlSync.SqlBuild.UnitTest
         ///A test for ConvertMultiDbDataToTextConfig
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public void ConvertMultiDbDataToTextConfigTest()
         {
             MultiDbData cfg = new MultiDbData
@@ -369,7 +369,7 @@ ServerB:default5,override5
         }
 
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public void SerializeMultiDbAsXMl_Test()
         {
             MultiDbData cfg = new MultiDbData
@@ -393,7 +393,7 @@ ServerB:default5,override5
         }
 
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public void SerializeMultiDbAsJson_Test()
         {
             MultiDbData cfg = new MultiDbData
@@ -416,7 +416,7 @@ ServerB:default5,override5
         }
 
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public void SerializeMultiDbWithTagAsJson_Test()
         {
             MultiDbData cfg = new MultiDbData
@@ -439,7 +439,7 @@ ServerB:default5,override5
         }
 
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public void SerializeAndDeserializeMultiDbAsJson_Test()
         {
             MultiDbData cfg = new MultiDbData

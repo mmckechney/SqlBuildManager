@@ -10,7 +10,7 @@ namespace SqlSync.Connection.Dependent.UnitTest
         ///A test for GetRegisteredServers
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.Connection.dll")]
+        
         public void GetRegisteredServersTest_GoodFile()
         {
             string xmlFile = Path.Combine(SqlBuildManager.Logging.Configure.AppDataPath, "RegisteredServers.xml");
@@ -53,7 +53,7 @@ namespace SqlSync.Connection.Dependent.UnitTest
         ///A test for GetRegisteredServers
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.Connection.dll")]
+        
         public void GetRegisteredServersTest_BadFile()
         {
             string xmlFile = Path.Combine(SqlBuildManager.Logging.Configure.AppDataPath, "RegisteredServers.xml");

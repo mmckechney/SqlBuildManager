@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.DirectoryServices;
+using System.Runtime.InteropServices;
 namespace SqlBuildManager.Enterprise.ActiveDirectory
 {
     public class AdHelper
@@ -13,6 +14,11 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
         public static IList<string> GetGroupMemberships(string userName)
         {
             List<string> groups = new List<string>();
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                log.LogInformation("Active Directory Group memberships only available on Windows Platform");
+                return groups;
+            }            
             try
             {
 
@@ -50,6 +56,11 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
         public static IList<string> GetMembersForGroup(string groupName)
         {
             List<string> groups = new List<string>();
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                log.LogInformation("Active Directory Group members only available on Windows Platform");
+                return groups;
+            }
 
             if (groupName.Length == 0)
                 return groups;
@@ -91,6 +102,11 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
         {
             try
             {
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                   log.LogInformation("Active Directory distinguished name only available on Windows Platform");
+                   return "";
+                }
                 DirectoryEntry de = new DirectoryEntry();
                 using (DirectorySearcher ds = new DirectorySearcher(de))
                 {
@@ -108,7 +124,7 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
             }
             catch (Exception exe)
             {
-                log.LogError(exe, "Failure to retrived Distinguished Name value. Returning empty string.");
+                log.LogError(exe, "Failure to retrieve Distinguished Name value. Returning empty string.");
                 return string.Empty;
             }
 
@@ -117,6 +133,11 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
         }
         internal static string GetDistinguishedNameForGroup(string groupName)
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                log.LogInformation("Active Directory distinguished name only available on Windows Platform");
+                return "";
+            }
             try
             {
                 DirectoryEntry de = new DirectoryEntry();
@@ -136,7 +157,7 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
             }
             catch (Exception exe)
             {
-                log.LogError(exe, "Failure to retrived Distinguished Name value. Returning empty string.");
+                log.LogError(exe, "Failure to retrieve Distinguished Name value. Returning empty string.");
                 return string.Empty;
             }
 

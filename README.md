@@ -1,16 +1,16 @@
 # SQL Build Manager
 
-SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases. It provides a comprehensive set of command line options for the management from one to many thousands of databases.
+SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases (both SQL Server and PostgreSQL). It provides a comprehensive set of command line options for the management from one to many thousands of databases.
 
 ![.NET Core Build](https://github.com/mmckechney/SqlBuildManager/workflows/.NET%20Core%20Build/badge.svg)
 
 
- **Kubernetes and ACI breaking changes in 15.0, be sure to review the change log**
+
 #### _Be sure to review the [change log](CHANGELOG.md) for the latest updates, enhancements and bug fixes_
 
 
 ---
-### **PostgreSQL Support**
+### **Highlighted feature update, v16+: PostgreSQL Support**
 
 SQL Build Manager now supports **PostgreSQL** as an alternative database target alongside Microsoft SQL Server. Use `--platform PostgreSQL` in any build command to target PostgreSQL databases. See the [PostgreSQL documentation](docs/postgresql.md) for full details.
 
@@ -21,6 +21,10 @@ Features **not yet available** for PostgreSQL:
 - Some SQL Server-specific script policies (`WithNoLockPolicy`, `QualifiedNamesPolicy`)
 
 ---
+
+ **Kubernetes and ACI breaking changes in 15.0, be sure to review the change log**
+ 
+---
 ### **Key feature enhancement with Version 14.4+: Expanded use of Azure User Assigned Managed Identity**
 
 With this update, it significantly reduces the the need to save and manage secrets and connection strings. For full details on leveraging Managed Identity to connect to the other Azure resources such as SQL Database, Blob storage, Service Bus, Event Hub, Key Vault and Azure Container registry, see the [Managed Identity documentation here](/docs/managed_identity.md).
@@ -29,23 +33,29 @@ With this update, it significantly reduces the the need to save and manage secre
 
 ## Contents
 
-- [Important Concepts!](#important-concepts)
-- [Key Features - Why use SQL Build Manager?](#key-features)
-- [PostgreSQL Support](docs/postgresql.md)
-- [Running builds](#running-builds-command-line)
-  - [Querying across databases](#querying-across-databases-command-line)
-- [Runtime Process Flow](docs/threaded_build_process_flow.md)
-- [Command Line Reference/ Quickstart](docs/commandline.md)
-- [Running Locally](docs/local_build.md)
-- [Massively Parallel Database Builds](docs/massively_parallel.md)
-  - [Azure Container Apps](docs/containerapp.md)
-  - [Azure Batch](docs/azure_batch.md)
-  - [Kubernetes](docs/kubernetes.md)
-  - [Azure Container Instances (ACI)](docs/aci.md)
-- [Change log](CHANGELOG.md)
-- For contributors: [Notes on Building and Unit Testing](docs/setup_azure_environment.md)
-- For users of the Windows Form app: [SQL Build Manager Manual](docs/SqlBuildManagerManual.md)\
-  (Note: this isn't 100% up to date, so the screen shots may vary from the current app)
+- [SQL Build Manager](#sql-build-manager)
+      - [_Be sure to review the change log for the latest updates, enhancements and bug fixes_](#be-sure-to-review-the-change-log-for-the-latest-updates-enhancements-and-bug-fixes)
+    - [**PostgreSQL Support**](#postgresql-support)
+    - [**Key feature enhancement with Version 14.4+: Expanded use of Azure User Assigned Managed Identity**](#key-feature-enhancement-with-version-144-expanded-use-of-azure-user-assigned-managed-identity)
+  - [Contents](#contents)
+  - [Important Concepts](#important-concepts)
+    - [**"Build"**](#build)
+    - [**"Package"**](#package)
+    - [**"Override" file**](#override-file)
+    - [**Remote Build Execution**](#remote-build-execution)
+    - [**"Settings" file**](#settings-file)
+    - [**"jobname"**](#jobname)
+  - [Key Features](#key-features)
+  - [Running Builds (command line)](#running-builds-command-line)
+    - [**Local**](#local)
+    - [**Threaded**](#threaded)
+    - [**Batch**](#batch)
+    - [**Azure Container Apps**](#azure-container-apps)
+    - [**Kubernetes**](#kubernetes)
+    - [**Azure Container Instance (ACI)**](#azure-container-instance-aci)
+  - [Querying across databases (command line)](#querying-across-databases-command-line)
+    - [Threaded](#threaded-1)
+    - [Batch, Kubernetes and ACI](#batch-kubernetes-and-aci)
 
 ---
 

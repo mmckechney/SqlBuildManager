@@ -73,7 +73,7 @@ namespace SqlSync.ObjectScript.UnitTest
         ///A test for CollateScriptWithSchemaCheck
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.ObjectScript.dll")]
+        
         public void CollateScriptWithSchemaCheckTest_NothingToDo()
         {
             ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());
@@ -100,7 +100,7 @@ GO
         ///A test for CollateScriptWithSchemaCheck
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.ObjectScript.dll")]
+        
         public void CollateScriptWithSchemaCheckTest_HasObjectIdButNothingToDo()
         {
             ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());
@@ -126,7 +126,7 @@ GO
         ///A test for CollateScriptWithSchemaCheck
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.ObjectScript.dll")]
+        
         public void CollateScriptWithSchemaCheckTest_NeedsSchema()
         {
             ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());
@@ -148,7 +148,7 @@ CREATE TABLE [dbo].[MyObject](
         ///A test for CollateScriptWithSchemaCheck
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.ObjectScript.dll")]
+        
         public void CollateScriptWithSchemaCheckTest_MultipleGoodWithSchema()
         {
             ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());
@@ -173,7 +173,7 @@ GO
         ///A test for CollateScriptWithSchemaCheck
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.ObjectScript.dll")]
+        
         public void CollateScriptWithSchemaCheckTest_MultipleNeedingSchema()
         {
             ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());

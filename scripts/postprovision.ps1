@@ -213,14 +213,14 @@ if ($buildContainers -eq "true") {
     Write-Host "Post-Provision: Building Container Images" -ForegroundColor Cyan
     Write-Host "=========================================" -ForegroundColor Cyan
     
-    $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_image_fromprefix.ps1"
+    $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_runtime_image_fromprefix.ps1"
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $containerScriptPath) {
         & $containerScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -wait $true
     } else {
         Write-Host "Container build script not found at: $containerScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\ContainerRegistry\build_container_registry_image_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_runtime_image_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
     }
 } else {
     Write-Host ""
@@ -237,14 +237,14 @@ if ($buildContainers -eq "true") {
     Write-Host "Post-Provision: Building Testing Container Image" -ForegroundColor Cyan
     Write-Host "================================================" -ForegroundColor Cyan
     
-    $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_testimage.ps1"
+    $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_external_test_image.ps1"
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $containerScriptPath) {
         & $containerScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -wait $true
     } else {
         Write-Host "Container build script not found at: $containerScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\ContainerRegistry\build_container_registry_testimage.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_external_test_image.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
     }
 } else {
     Write-Host ""
@@ -260,13 +260,13 @@ if ($buildContainers -eq "true") {
     Write-Host "Post-Provision: Building Dependent Tests Container Image" -ForegroundColor Cyan
     Write-Host "========================================================" -ForegroundColor Cyan
     
-    $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_dependenttest_image.ps1"
+    $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_dependent_test_image.ps1"
     
     if (Test-Path $containerScriptPath) {
         & $containerScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -wait $true
     } else {
         Write-Host "Container build script not found at: $containerScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\ContainerRegistry\build_container_registry_dependenttest_image.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_dependent_test_image.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
     }
 } 
 

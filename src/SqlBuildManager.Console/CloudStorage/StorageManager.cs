@@ -571,7 +571,7 @@ namespace SqlBuildManager.Console.CloudStorage
                         var fileInfo = new FileInfo(f);
                         if (fileInfo.Length == 0)
                         {
-                            log.LogDebug($"Skipping 0-byte file '{f}'");
+                            log.LogDebug($"No errors logged — '{f}' is empty");
                             continue;
                         }
 

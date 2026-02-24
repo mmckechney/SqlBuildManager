@@ -12,6 +12,7 @@ namespace SqlBuildManager.Console.Aad
         private static CancellationTokenSource src = new CancellationTokenSource();
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private static string _managedIdentityClientId = string.Empty;
+        private static bool _managedIdentityClientIdLogged = false;
         public static string ManagedIdentityClientId
         {
             get
@@ -23,11 +24,20 @@ namespace SqlBuildManager.Console.Aad
                 _managedIdentityClientId = value;
                 if (!string.IsNullOrEmpty(_managedIdentityClientId))
                 {
-                    log.LogInformation($"ManagedIdentityClientId value set to {_managedIdentityClientId}");
+                    if (!_managedIdentityClientIdLogged)
+                    {
+                        log.LogInformation($"ManagedIdentityClientId value set to {_managedIdentityClientId}");
+                        _managedIdentityClientIdLogged = true;
+                    }
+                    else
+                    {
+                        log.LogDebug($"ManagedIdentityClientId value set to {_managedIdentityClientId}");
+                    }
                 }
             }
         }
         private static string _tenantId = String.Empty;
+        private static bool _tenantIdLogged = false;
         public static string TenantId
         {
             get => _tenantId; set
@@ -35,7 +45,15 @@ namespace SqlBuildManager.Console.Aad
                 _tenantId = value;
                 if (!string.IsNullOrEmpty(_tenantId))
                 {
-                    log.LogInformation($"TenantId value set to {_tenantId}");
+                    if (!_tenantIdLogged)
+                    {
+                        log.LogInformation($"TenantId value set to {_tenantId}");
+                        _tenantIdLogged = true;
+                    }
+                    else
+                    {
+                        log.LogDebug($"TenantId value set to {_tenantId}");
+                    }
                 }
             }
         }

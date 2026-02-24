@@ -4,6 +4,7 @@ using SqlSync.SqlBuild.Synchronizer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 #nullable enable
 
@@ -22,6 +23,12 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [ClassInitialize()]
         public static void Initilize(TestContext testContext)
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Assert.Inconclusive("Tests in this class require Windows platform");
+                return;
+            }
+
             _initColl = new List<Initialization>();
             // Create one to ensure databases exist
             _initColl.Add(new Initialization());

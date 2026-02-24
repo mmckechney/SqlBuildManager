@@ -277,7 +277,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         {
             if(queryResultsFiles.Count == 0)
             {
-                log.LogInformation($"No results files generated, not creating summary report.");
+                log.LogInformation($"No results files to combine (0 input files), not creating summary report.");
                 return true;
             }
             log.LogInformation($"Creating combined CSV from {queryResultsFiles.Count} results files");
