@@ -39,6 +39,11 @@ namespace SqlSync.SqlBuild.Utilities
         {
             try
             {
+                if(string.IsNullOrWhiteSpace(input) || string.IsNullOrWhiteSpace(password))
+                {
+                    return(true, input);
+                }
+
                 // Get the bytes of the string
                 byte[] bytesToBeDecrypted = Convert.FromBase64String(input);
                 byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
