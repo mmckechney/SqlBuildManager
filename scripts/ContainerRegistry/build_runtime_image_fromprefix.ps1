@@ -29,5 +29,5 @@ Write-Host "Upload and build Docker image in Container Registry from prefix: $pr
 Write-Host "Retrieving resource names from resources in $resourceGroupName with prefix $prefix" -ForegroundColor DarkGreen
 Write-Host "Using Azure Container Registry Name: $containerRegistryName  " -ForegroundColor DarkGreen
 
-$buildScript = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_image.ps1"
+$buildScript = Join-Path $repoRoot "scripts\ContainerRegistry\build_runtime_image.ps1"
 & $buildScript -azureContainerRegistry $containerRegistryName -resourceGroupName $resourceGroupName -wait $wait

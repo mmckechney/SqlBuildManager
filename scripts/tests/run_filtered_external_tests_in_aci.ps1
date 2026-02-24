@@ -139,14 +139,14 @@ if ($buildImage) {
     Write-Host "Building Test Container Image" -ForegroundColor Cyan
     Write-Host "========================================" -ForegroundColor Cyan
     
-    $testImageScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_testimage.ps1"
+    $testImageScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_external_test_image.ps1"
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $testImageScriptPath) {
         & $testImageScriptPath -prefix $prefix -resourceGroupName $resourceGroupName 
     } else {
         Write-Host "Test image build script not found at: $testImageScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\ContainerRegistry\build_container_registry_testimage.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -action BuildAndUpload" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_external_test_image.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -action BuildAndUpload" -ForegroundColor Yellow
     }
    
 }

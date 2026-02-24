@@ -111,7 +111,7 @@ Write-Host ""
 # Build and push test image if requested
 #############################################
 if ($buildImage) {
-    $buildScript = Join-Path $repoRoot "scripts\ContainerRegistry\build_container_registry_dependenttest_image.ps1"
+    $buildScript = Join-Path $repoRoot "scripts\ContainerRegistry\build_dependent_test_image.ps1"
     & $buildScript -prefix $prefix -resourceGroupName $resourceGroupName -imageTag $imageTag
 }
 
