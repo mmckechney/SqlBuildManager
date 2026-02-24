@@ -69,7 +69,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for CopyEnterpriseToLocal
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void CopyEnterpriseToLocalTest_EnterpriseFileDoesntExist()
         {
             string localFilePath = fileOne;
@@ -84,7 +84,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for CopyEnterpriseToLocal
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void CopyEnterpriseToLocalTest_LocalFileExists()
         {
             string localFilePath = fileOne;
@@ -99,7 +99,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for CopyEnterpriseToLocal
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void CopyEnterpriseToLocalTest_EnterpriseFileNotSet()
         {
             string localFilePath = fileOne;
@@ -114,7 +114,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for CopyEnterpriseToLocal
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void CopyEnterpriseToLocalTest_LocalFileNotSet()
         {
             string localFilePath = "";
@@ -132,7 +132,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for GetApplicableDefaultScriptReg
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void GetApplicableDefaultScriptRegTest_FoundOneMatch_FirstInList()
         {
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
@@ -162,7 +162,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for GetApplicableDefaultScriptReg
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void GetApplicableDefaultScriptRegTest_FoundOneMatch_SecondInList()
         {
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
@@ -193,7 +193,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for GetApplicableDefaultScriptReg
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void GetApplicableDefaultScriptRegTest_NoMatch()
         {
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
@@ -222,7 +222,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for GetApplicableDefaultScriptReg
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void GetApplicableDefaultScriptRegTest_NullRegistry()
         {
 
@@ -240,7 +240,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for GetApplicableDefaultScriptReg
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void GetApplicableDefaultScriptRegTest_NullGroups()
         {
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
@@ -269,7 +269,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for GetApplicableDefaultScriptReg
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void GetApplicableDefaultScriptRegTest_EmptyGroups()
         {
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
@@ -301,7 +301,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for GetEnterpriseRegistrySetting
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void GetEnterpriseRegistrySettingTest_GoodFileExists()
         {
             string filePath = Path.GetTempFileName();
@@ -320,7 +320,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for GetEnterpriseRegistrySetting
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void GetEnterpriseRegistrySettingTest_FileDoesNotExist()
         {
             string filePath = @"C:\" + Guid.NewGuid().ToString();
@@ -334,7 +334,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for GetEnterpriseRegistrySetting
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void GetEnterpriseRegistrySettingTest_InvalidFile()
         {
             string filePath = fileOne;
@@ -445,7 +445,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for ValidateLocalToEnterprise
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void ValidateLocalToEnterpriseTest_LocalFileDoesntExist()
         {
             string localFilePath = @"C:\thisfileshouldnotexist";
@@ -461,7 +461,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for ValidateLocalToEnterprise
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void ValidateLocalToEnterpriseTest_EnterpriseFileDoesntExist()
         {
             string localFilePath = fileOne;
@@ -477,7 +477,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for ValidateLocalToEnterprise
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void ValidateLocalToEnterpriseTest_FilesMatch()
         {
             string localFilePath = fileOne;
@@ -493,7 +493,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for ValidateLocalToEnterprise
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void ValidateLocalToEnterpriseTest_FilesDontMatch()
         {
             string localFilePath = fileOne;

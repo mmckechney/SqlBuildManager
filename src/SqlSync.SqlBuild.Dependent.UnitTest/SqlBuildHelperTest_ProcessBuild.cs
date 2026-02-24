@@ -73,7 +73,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for ProcessBuildAsync
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public async Task ProcessBuildTest_CommitWithZeroRetries()
         {
             Initialization init = GetInitializationObject();
@@ -96,7 +96,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         ///A test for ProcessBuildAsync
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public async Task ProcessBuildTest_CommitWithRetriesNotUsed()
         {
             Initialization init = GetInitializationObject();
@@ -116,7 +116,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
 
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public async Task ProcessBuildTest_RollbackWithThreeRetries()
         {
             Initialization init = GetInitializationObject();
@@ -157,7 +157,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
 
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public async Task ProcessBuildTest_RollbackWithZeroRetries()
         {
             Initialization init = GetInitializationObject();
@@ -198,7 +198,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         }
 
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public async Task ProcessBuildTest_CommitAfterRetries()
         {
             Initialization init = GetInitializationObject();

@@ -31,7 +31,6 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for GetDistinguishedName
         ///</summary>
         [TestMethod(), Ignore("Not relevant for most deployments")]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void GetDistinguishedNameTest_PassWithGoodDn()
         {
             string userName = "mmckechn";
@@ -45,7 +44,6 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for GetDistinguishedName
         ///</summary>
         [TestMethod(), Ignore("Not relevant for most deployments")]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
         public void GetDistinguishedNameTest_PassWithNoDnReturned()
         {
             string userName = "ThisISJUnk";

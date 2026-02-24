@@ -30,7 +30,7 @@ namespace SqlSync.Connection.UnitTest
         ///A test for DeserializeRegisteredServers
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.Connection.dll")]
+        
         public void DeserializeRegisteredServersTest_Good()
         {
             string serverFileContents = Properties.Resources.RegisteredServers_Good;
@@ -49,7 +49,7 @@ namespace SqlSync.Connection.UnitTest
         ///A test for DeserializeRegisteredServers
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.Connection.dll")]
+        
         public void DeserializeRegisteredServersTest_Bad()
         {
             string serverFileContents = "This is bad content";
@@ -63,7 +63,7 @@ namespace SqlSync.Connection.UnitTest
         ///A test for DeserializeRegisteredServers
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.Connection.dll")]
+        
         public void DeserializeRegisteredServersTest_NullContents()
         {
             string serverFileContents = null!;
@@ -152,7 +152,7 @@ namespace SqlSync.Connection.UnitTest
         ///A test for SerializeRegisteredServers
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.Connection.dll")]
+        
         public void SerializeRegisteredServersTest_GoodSerialization()
         {
             RegisteredServers regServers = new RegisteredServers();
@@ -178,7 +178,7 @@ namespace SqlSync.Connection.UnitTest
         ///A test for SerializeRegisteredServers
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.Connection.dll")]
+        
         public void SerializeRegisteredServersTest_ReadOnlyDestination()
         {
             RegisteredServers regServers = new RegisteredServers();
@@ -199,7 +199,7 @@ namespace SqlSync.Connection.UnitTest
         ///A test for SerializeRegisteredServers
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.Connection.dll")]
+        
         public void SerializeRegisteredServersTest_SerializationWithNullObject()
         {
             RegisteredServers regServers = null!;
@@ -215,7 +215,7 @@ namespace SqlSync.Connection.UnitTest
         ///A test for SerializeRegisteredServers
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.Connection.dll")]
+        
         public void SerializeRegisteredServersTest_SerializationWithEmptyFileName()
         {
             RegisteredServers regServers = new RegisteredServers();

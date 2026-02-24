@@ -47,7 +47,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for LoadEnterpriseConfiguration
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void LoadEnterpriseConfigurationTest_NoParameter()
         {
             EnterpriseConfigHelper.EnterpriseConfig = null!; //force a re-read.
@@ -62,7 +62,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for DeserializeConfiguration
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void DeserializeConfigurationTest()
         {
             string configuration = Properties.Resources.EnterpriseConfig;
@@ -78,7 +78,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for DeserializeConfiguration
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void DeserializeConfigurationTest_BadConfig()
         {
             string configuration = "This is a bad configuration";

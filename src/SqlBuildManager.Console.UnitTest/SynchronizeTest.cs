@@ -96,7 +96,6 @@ namespace SqlBuildManager.Console.UnitTest
         ///A test for ParseAndValidateFlags
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("sbm.exe")]
         public void ParseAndValidateFlagsTest()
         {
             string[] args = new string[]
