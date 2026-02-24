@@ -50,11 +50,15 @@ namespace SqlSync.SqlBuild.Services
                 try
                 {
                     log.LogDebug($"Closing connection for {key}");
-                    ((BuildConnectData)connectionsService.Connections[key]).Connection.Close();
+                    var connData = (BuildConnectData)connectionsService.Connections[key];
+                    if (connData.Connection != null)
+                    {
+                        connData.Connection.Close();
+                    }
                 }
                 catch (Exception e)
                 {
-                    log.LogWarning(e, $"Error in CommitBuild Connection.Close() for database '{e}'");
+                    log.LogWarning(e, $"Error in CommitBuild Connection.Close() for database '{key}'");
                     progressReporter.ReportProgress(100, new CommitFailureEventArgs(e.Message));
                     success = false;
                 }

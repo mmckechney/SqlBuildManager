@@ -37,6 +37,7 @@ namespace SqlBuildManager.Console.Events
 
 
 
+        private int skippedEvents = 0;
         private int databaseCommitMessages = 0;
         private int databaseErrorMessages = 0;
         private int eventsScanned = 0;
@@ -272,7 +273,7 @@ namespace SqlBuildManager.Console.Events
                 }
                 else
                 {
-                    log.LogDebug($"Skipped event as not relevant: {eventArgs.Data.SequenceNumber}");
+                    skippedEvents++;
                 } 
                     
 
@@ -361,6 +362,10 @@ namespace SqlBuildManager.Console.Events
 
         public void Dispose()
         {
+            if (skippedEvents > 0)
+            {
+                log.LogDebug($"Skipped {skippedEvents} irrelevant events during monitoring");
+            }
             if (_eventClient != null)
             {
                 _eventClient.StopProcessing();

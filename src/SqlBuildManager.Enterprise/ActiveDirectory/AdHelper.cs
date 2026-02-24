@@ -108,7 +108,7 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
             }
             catch (Exception exe)
             {
-                log.LogError(exe, "Failure to retrived Distinguished Name value. Returning empty string.");
+                log.LogError(exe, "Failure to retrieve Distinguished Name value. Returning empty string.");
                 return string.Empty;
             }
 
@@ -136,7 +136,7 @@ namespace SqlBuildManager.Enterprise.ActiveDirectory
             }
             catch (Exception exe)
             {
-                log.LogError(exe, "Failure to retrived Distinguished Name value. Returning empty string.");
+                log.LogError(exe, "Failure to retrieve Distinguished Name value. Returning empty string.");
                 return string.Empty;
             }
 

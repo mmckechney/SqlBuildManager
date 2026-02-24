@@ -65,12 +65,21 @@ namespace SqlBuildManager.Console.CommandLine
             return cmdLine;
         }
 
+        private static bool _entraIdLogShown = false;
         public static (bool, CommandLineArgs) DecryptSensitiveFields(CommandLineArgs cmdLine, bool suppressLog = false)
         {
             if(cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity ||
                 cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault)
             {
-                log.LogInformation("EntraID will be used for all authentication. No need to decrypt secrets.");
+                if (!_entraIdLogShown)
+                {
+                    log.LogInformation("EntraID will be used for all authentication. No need to decrypt secrets.");
+                    _entraIdLogShown = true;
+                }
+                else
+                {
+                    log.LogDebug("EntraID will be used for all authentication. No need to decrypt secrets.");
+                }
                 return (true, cmdLine);
             }
                 

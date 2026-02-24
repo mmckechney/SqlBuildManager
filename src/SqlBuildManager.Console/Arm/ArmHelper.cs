@@ -141,7 +141,7 @@ namespace SqlBuildManager.Console.Arm
                     }
                     else
                     {
-                        log.LogError($"Unable to retrieve the status of ACI deployment {aciName}. Status code: {returnVal.StatusCode}");
+                        log.LogInformation($"No pre-existing ACI deployment '{aciName}' found (Status: {returnVal.StatusCode}). Proceeding.");
                     }
                 }
                 return string.Empty;
