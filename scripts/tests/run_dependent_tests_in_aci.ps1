@@ -284,7 +284,7 @@ $testExitCode = $monitorResult.TestExitCode
 # }
 
 # Download test results from blob storage
-Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContainerName $blobContainerName -localDestination "./testresults" -blobPath $blobPath
+az storage blob download-batch --account-name $storageAccountName --source $blobContainerName --pattern "$($timestamp)*" --destination "./testresults"  --auth-mode login --overwrite
 
 #############################################
 # Cleanup
