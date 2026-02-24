@@ -11,7 +11,7 @@ namespace SqlBuildManager.Logging
         {
             get
             {
-                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager");
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "sqlbuildmanager");
             }
         }
 

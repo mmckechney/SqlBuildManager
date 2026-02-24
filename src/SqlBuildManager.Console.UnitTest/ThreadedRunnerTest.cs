@@ -4,6 +4,7 @@ using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using System.Collections.Generic;
+using System.IO;
 
 namespace SqlBuildManager.Console.UnitTest
 {
@@ -226,8 +227,8 @@ namespace SqlBuildManager.Console.UnitTest
             {
                 ProjectFileName = "custom.xml",
                 BuildZipFileName = "custom.sbm",
-                WorkingDirectory = @"C:\custom\working"
-            };
+                WorkingDirectory = Path.Combine(Path.GetTempPath(), "custom", "working")
+            }; 
 
             // Act
             var runner = new ThreadedRunner("TestServer", overrides, cmdArgs, "testuser", false, context);

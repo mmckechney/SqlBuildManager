@@ -114,15 +114,22 @@ namespace SqlBuildManager.Console.KeyVault
         }
         public static (bool, CommandLineArgs) GetSecrets(CommandLineArgs cmdLine)
         {
-            if (cmdLine.KeyVaultSecretsRetrieved)
+            if (string.IsNullOrEmpty(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                log.LogInformation("No Key Vault name supplied. Skipping retrieval of secrets from Key Vault");
+                cmdLine.KeyVaultSecretsRetrieved = true;
+                return (true, cmdLine);
+            } 
+
+            if(cmdLine.KeyVaultSecretsRetrieved)
             {
                 log.LogDebug("KeyVault Secrets already retrieved");
                 return (true, cmdLine);
             }
             
             // Check if using Managed Identity mode - secrets from Key Vault are not needed
-            bool usingManagedIdentity = ( cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity ||
-                cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault );
+            bool usingManagedIdentity =  cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity ||
+                cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault ;
             if (usingManagedIdentity)
             {
                 log.LogInformation("Using Managed Identity authentication - Key Vault secrets not required");

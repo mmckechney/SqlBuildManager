@@ -1,3 +1,4 @@
+using Microsoft.Build.Evaluation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild.CodeTable;
 using SqlSync.SqlBuild.Models;
@@ -69,7 +70,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void GetFileDataForCodeTableUpdates_SingleFile_ReturnsNullWhenFileNotExists()
         {
-            var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates("nonexistent.pop", @"C:\Temp\project.xml");
+            var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates("nonexistent.pop", Path.Combine(Path.GetTempPath(), "Temp", "project.xml"));
 
             Assert.IsNull(result);
         }
@@ -148,7 +149,7 @@ INSERT INTO TestTable VALUES (1, 'Test');";
         [TestMethod]
         public void GetFileDataForObjectUpdates_SingleFile_ReturnsNullWhenFileNotExists()
         {
-            var result = SqlBuildFileHelper.GetFileDataForObjectUpdates("nonexistent.prc", @"C:\Temp\project.xml");
+            var result = SqlBuildFileHelper.GetFileDataForObjectUpdates("nonexistent.prc", Path.Combine(Path.GetTempPath(),"Temp","project.xml"));
 
             Assert.IsNull(result);
         }
@@ -545,7 +546,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         [TestMethod]
         public async Task PackageSbxFilesIntoSbmFiles_WithNonExistentDirectory_ReturnsEmptyList()
         {
-            var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(@"C:\NonExistent\Directory");
+            var result = await SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(Path.Combine(Path.GetTempPath(), "NonExistent", "Directory"));
 
             Assert.IsNotNull(result);
             Assert.AreEqual(0, result.Count);
@@ -585,7 +586,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         [TestMethod]
         public async Task InferOverridesFromPackage_WithNonExistentFile_ReturnsEmptyString()
         {
-            var result = await SqlBuildFileHelper.InferOverridesFromPackageAsync(@"C:\NonExistent\File.sbm", "TestDb");
+            var result = await SqlBuildFileHelper.InferOverridesFromPackageAsync(Path.Combine(Path.GetTempPath(), "NonExistent/File.sbm"), "TestDb");
 
             Assert.AreEqual(string.Empty, result);
         }
@@ -599,7 +600,7 @@ CREATE PROCEDURE dbo.MyStoredProc AS SELECT 1";
         {
             SqlSyncBuildDataModel model = null!;
 
-            var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(@"C:\Temp", model);
+            var result = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(Path.GetTempPath(), model);
 
             Assert.AreEqual("Error calculating hash", result);
         }

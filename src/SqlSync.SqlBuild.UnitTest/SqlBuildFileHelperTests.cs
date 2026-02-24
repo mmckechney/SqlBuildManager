@@ -686,7 +686,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void MakeFileWriteable_ReturnsFalseForNonExistentFile()
         {
-            var result = SqlBuildFileHelper.MakeFileWriteable(@"C:\NonExistent\File.txt");
+            var result = SqlBuildFileHelper.MakeFileWriteable(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "File.txt"));
 
             Assert.IsFalse(result);
         }
@@ -753,7 +753,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void GetTotalLogFilesSize_ReturnsZeroForNonExistentDirectory()
         {
-            var result = SqlBuildFileHelper.GetTotalLogFilesSize(@"C:\NonExistent\Directory");
+            var result = SqlBuildFileHelper.GetTotalLogFilesSize(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "NonExistent"));
 
             Assert.AreEqual(0, result);
         }

@@ -15,41 +15,41 @@ namespace SqlSync.ObjectScript.UnitTest
         [TestMethod]
         public void GetDefaultPackageName_SimpleFileName_ShouldPrependBackout()
         {
-            string sourcePath = @"C:\Packages\MyPackage.sbm";
+            string sourcePath = Path.Combine(Path.GetTempPath(), "Packages", "MyPackage.sbm");
 
             string result = BackoutPackage.GetDefaultPackageName(sourcePath);
 
-            Assert.AreEqual(@"C:\Packages\Backout_MyPackage.sbm", result);
+            Assert.AreEqual(Path.Combine(Path.GetTempPath(), "Packages", "Backout_MyPackage.sbm"), result);
         }
 
         [TestMethod]
         public void GetDefaultPackageName_FileNameWithSpaces_ShouldPrependBackout()
         {
-            string sourcePath = @"C:\Packages\My Package.sbm";
+            string sourcePath = Path.Combine(Path.GetTempPath(), "Packages", "My Package.sbm");
 
             string result = BackoutPackage.GetDefaultPackageName(sourcePath);
 
-            Assert.AreEqual(@"C:\Packages\Backout_My Package.sbm", result);
+            Assert.AreEqual(Path.Combine(Path.GetTempPath(), "Packages", "Backout_My Package.sbm"), result);
         }
 
         [TestMethod]
         public void GetDefaultPackageName_DeepPath_ShouldPrependBackoutInSameDirectory()
         {
-            string sourcePath = @"C:\Projects\Release\2024\Q1\Package.sbm";
+            string sourcePath = Path.Combine(Path.GetTempPath(), "Projects", "Release", "2024", "Q1", "Package.sbm");
 
             string result = BackoutPackage.GetDefaultPackageName(sourcePath);
 
-            Assert.AreEqual(@"C:\Projects\Release\2024\Q1\Backout_Package.sbm", result);
+            Assert.AreEqual(Path.Combine(Path.GetTempPath(), "Projects", "Release", "2024", "Q1", "Backout_Package.sbm"), result);
         }
 
         [TestMethod]
         public void GetDefaultPackageName_RootPath_ShouldWork()
         {
-            string sourcePath = @"C:\Package.sbm";
+            string sourcePath = Path.Combine(Path.GetTempPath(), "Package.sbm");
 
             string result = BackoutPackage.GetDefaultPackageName(sourcePath);
 
-            Assert.AreEqual(@"C:\Backout_Package.sbm", result);
+            Assert.AreEqual(Path.Combine(Path.GetTempPath(), "Backout_Package.sbm"), result);
         }
 
         #endregion

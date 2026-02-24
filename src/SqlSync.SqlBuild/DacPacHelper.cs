@@ -263,7 +263,7 @@ namespace SqlSync.SqlBuild
 
             if (!matchFound)
             {
-                log.LogInformation("Unable to find script headers, nothing to update?");
+                log.LogInformation("Unable to find script headers, in this case we will assume the script is all 'real' and return it as is. If you are seeing this message in your logs, and you are using dacpac generation, please enable Debug logging to review the generated script to ensure it looks correct.");
                 log.LogDebug($"Script contents:{Environment.NewLine}{dacPacGeneratedScript}");
                 return DacpacDeltasStatus.InSync;
             }

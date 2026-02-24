@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.IO;
 
 namespace SqlSync.ObjectScript.UnitTest
 {
@@ -56,7 +57,7 @@ namespace SqlSync.ObjectScript.UnitTest
         public void FullPath_SetAndGet_ShouldReturnCorrectValue()
         {
             var target = new ObjectSyncData();
-            string expected = @"C:\Scripts\StoredProcedure1.sql";
+            string expected = Path.Combine(Path.GetTempPath(), "Scripts", "StoredProcedure1.sql");
 
             target.FullPath = expected;
 
@@ -108,11 +109,12 @@ namespace SqlSync.ObjectScript.UnitTest
         [TestMethod]
         public void AllProperties_ShouldWorkTogether()
         {
+            var fullPath = Path.Combine(Path.GetTempPath(), "Scripts", "usp_GetCustomers.sql");
             var target = new ObjectSyncData
             {
                 ObjectName = "usp_GetCustomers",
                 ObjectType = "P",
-                FullPath = @"C:\Scripts\usp_GetCustomers.sql",
+                FullPath = fullPath,
                 IsInDatabase = true,
                 IsInFileSystem = true,
                 FileName = "usp_GetCustomers.sql",
@@ -121,7 +123,7 @@ namespace SqlSync.ObjectScript.UnitTest
 
             Assert.AreEqual("usp_GetCustomers", target.ObjectName);
             Assert.AreEqual("P", target.ObjectType);
-            Assert.AreEqual(@"C:\Scripts\usp_GetCustomers.sql", target.FullPath);
+            Assert.AreEqual(fullPath, target.FullPath);
             Assert.IsTrue(target.IsInDatabase);
             Assert.IsTrue(target.IsInFileSystem);
             Assert.AreEqual("usp_GetCustomers.sql", target.FileName);

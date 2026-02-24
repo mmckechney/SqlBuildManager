@@ -1363,13 +1363,14 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void SqlBuildHelper_ScriptLogWriteEventTest_ExpectException()
         {
             Initialization init = GetInitializationObject();
-           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            var testFilePath = Path.Combine(Path.GetTempPath(), "doesnt", "exist", "test.sql");
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             //Reset the scriptLogFileName to NULL to get exception
             target.scriptLogFileName = null!;
             object sender = null!;
-            ScriptLogEventArgs e = new ScriptLogEventArgs(10, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], "C:\test.sql", "Test Executed");
+            ScriptLogEventArgs e = new ScriptLogEventArgs(10, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], testFilePath, "Test Executed");
             Assert.ThrowsExactly<NullReferenceException>(() => target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e));
         }
         /// <summary>
@@ -1380,7 +1381,9 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void SqlBuildHelper_ScriptLogWriteEventTest_CreateScriptLogFile()
         {
             Initialization init = GetInitializationObject();
-           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+
+            var testFilePath = Path.Combine(Path.GetTempPath(), "doesnt", "exist", "test.sql");
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
             //Delete the file made by the init the scriptLogFileName to NULL to get exception
@@ -1388,12 +1391,12 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 System.IO.File.Delete(target.scriptLogFileName);
 
             object sender = null!;
-            ScriptLogEventArgs e = new ScriptLogEventArgs(10, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], @"C:\test.sql", "Test Executed");
+            ScriptLogEventArgs e = new ScriptLogEventArgs(10, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], testFilePath, "Test Executed");
             target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e);
 
             string contents = File.ReadAllText(target.scriptLogFileName);
             Assert.IsTrue(contents.IndexOf("SELECT TestCol FROM [test].[TestTable]") > -1);
-            Assert.IsTrue(contents.IndexOf(@"C:\test.sql") > -1);
+            Assert.IsTrue(contents.IndexOf(testFilePath) > -1);
 
             //Create the "end" entry for an external log file...
             string fileName = init.GetTrulyUniqueFile();
@@ -1401,7 +1404,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             if (File.Exists(fileName))
                 File.Delete(fileName);
 
-            e = new ScriptLogEventArgs(-10000, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], @"C:\test.sql", "Test Executed");
+            e = new ScriptLogEventArgs(-10000, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], testFilePath, "Test Executed");
             target.SqlBuildHelper_ScriptLogWriteEvent(sender,false, e);
             contents = File.ReadAllText(target.externalScriptLogFileName);
             Assert.IsTrue(contents.IndexOf("-- END Time:") > -1);
@@ -1415,6 +1418,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void SqlBuildHelper_ScriptLogWriteEventTest_EnterExceptionHandling()
         {
             Initialization init = GetInitializationObject();
+            var testFilePath = Path.Combine(Path.GetTempPath(), "doesnt", "exist", "test.sql");
            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
 
@@ -1429,7 +1433,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             string blockingFile = init.GetTrulyUniqueFile();
             target.externalScriptLogFileName = Path.Combine(blockingFile, "unreachable.log");
 
-            ScriptLogEventArgs e = new ScriptLogEventArgs(-10000, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], @"C:\test.sql", "Test Executed");
+            ScriptLogEventArgs e = new ScriptLogEventArgs(-10000, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], testFilePath, "Test Executed");
             target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e);
 
             Assert.IsFalse(File.Exists(target.externalScriptLogFileName)); //file should not exist because copy should have failed.
@@ -1446,7 +1450,8 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         public void SqlBuildHelper_ScriptLogWriteEventTest_NonTransactional()
         {
             Initialization init = GetInitializationObject();
-           SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            var testFilePath = Path.Combine(Path.GetTempPath(), "doesnt", "exist", "test.sql");
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
             target.isTransactional = false;
 
@@ -1455,7 +1460,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
                 System.IO.File.Delete(target.scriptLogFileName);
 
             object sender = null!;
-            ScriptLogEventArgs e = new ScriptLogEventArgs(10, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], @"C:\test.sql", "Test Executed");
+            ScriptLogEventArgs e = new ScriptLogEventArgs(10, "SELECT TestCol FROM [test].[TestTable] WHERE TestCol IS NOT NULL", init.testDatabaseNames[0], testFilePath, "Test Executed");
             target.SqlBuildHelper_ScriptLogWriteEvent(sender, false, e);
 
             string contents = File.ReadAllText(target.scriptLogFileName);
