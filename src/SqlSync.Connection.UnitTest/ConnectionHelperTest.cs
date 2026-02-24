@@ -322,7 +322,7 @@ namespace SqlSync.Connection.UnitTest
         {
             string dbName = "SqlBuildTest";
             string serverName = "BadServerName";
-            int scriptTimeOut = 20;
+            int scriptTimeOut = 2;
             bool expected = false;
             bool actual;
             actual = ConnectionHelper.TestDatabaseConnection(dbName, serverName, "", "", AuthenticationType.Windows, scriptTimeOut,"");

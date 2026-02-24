@@ -188,7 +188,7 @@ namespace SqlSync.Connection
                 UserId = username,
                 Password = password,
                 AuthenticationType = authType,
-                ManagedIdentityClientId = managedIdentityClientId
+                ManagedIdentityClientId = managedIdentityClientId                
             });
         }
         public static bool TestDatabaseConnection(ConnectionData connData)
