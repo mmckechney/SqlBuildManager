@@ -526,6 +526,277 @@ namespace SqlSync.SqlBuild.UnitTest.Services
 
         #endregion
 
+        #region PrepareBuild: RunItemIndexes Filter (SqlBuildHelper.cs:406-414)
+
+        [TestMethod]
+        public async Task PrepareBuild_RunItemIndexes_FiltersToMatchingScriptsOnly()
+        {
+            var connData = new ConnectionData() { DatabaseName = "TestDb", SQLServerName = "(local)" };
+            var helper = new SqlBuildHelper(connData, createScriptRunLogFile: false);
+            helper.projectFileName = Path.Combine(_testDir, "test.xml");
+            helper.runItemIndexes = new double[] { 2.0 }; // Only run script at index 2.0
+
+            var model = new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: Array.Empty<SqlSyncBuildProject>(),
+                script: new List<Script>
+                {
+                    new Script("first.sql", 1.0, null, null, null, null, Guid.NewGuid().ToString(), null, null, null, null, null, null, null, null),
+                    new Script("second.sql", 2.0, null, null, null, null, Guid.NewGuid().ToString(), null, null, null, null, null, null, null, null),
+                    new Script("third.sql", 3.0, null, null, null, null, Guid.NewGuid().ToString(), null, null, null, null, null, null, null, null)
+                },
+                build: new List<Build>(),
+                scriptRun: Array.Empty<ScriptRun>(),
+                committedScript: Array.Empty<CommittedScript>());
+
+            var result = await helper.PrepareBuildForRunAsync(model, "TestServer", false,
+                new ScriptBatchCollection { new ScriptBatch("second.sql", new[] { "SELECT 1" }, Guid.NewGuid().ToString()) });
+
+            Assert.AreEqual(1, result.FilteredScripts.Count, "Should only include script matching runItemIndexes");
+            Assert.AreEqual("second.sql", result.FilteredScripts[0].FileName);
+        }
+
+        [TestMethod]
+        public async Task PrepareBuild_RunItemIndexes_NoMatchingScripts_ReturnsEmpty()
+        {
+            var connData = new ConnectionData() { DatabaseName = "TestDb", SQLServerName = "(local)" };
+            var helper = new SqlBuildHelper(connData, createScriptRunLogFile: false);
+            helper.projectFileName = Path.Combine(_testDir, "test.xml");
+            helper.runItemIndexes = new double[] { 99.0 }; // No script at this index
+
+            var model = new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: Array.Empty<SqlSyncBuildProject>(),
+                script: new List<Script>
+                {
+                    new Script("first.sql", 1.0, null, null, null, null, Guid.NewGuid().ToString(), null, null, null, null, null, null, null, null),
+                },
+                build: new List<Build>(),
+                scriptRun: Array.Empty<ScriptRun>(),
+                committedScript: Array.Empty<CommittedScript>());
+
+            var result = await helper.PrepareBuildForRunAsync(model, "TestServer", false,
+                new ScriptBatchCollection { new ScriptBatch("first.sql", new[] { "SELECT 1" }, Guid.NewGuid().ToString()) });
+
+            Assert.AreEqual(0, result.FilteredScripts.Count, "Should return empty when no scripts match runItemIndexes");
+            Assert.AreEqual(BuildItemStatus.RolledBack, result.Build.FinalStatus, "Should set RolledBack for single-db run with no scripts");
+        }
+
+        [TestMethod]
+        public async Task PrepareBuild_RunItemIndexes_NoMatch_MultiDb_SetsPendingRollBack()
+        {
+            var connData = new ConnectionData() { DatabaseName = "TestDb", SQLServerName = "(local)" };
+            var helper = new SqlBuildHelper(connData, createScriptRunLogFile: false);
+            helper.projectFileName = Path.Combine(_testDir, "test.xml");
+            helper.runItemIndexes = new double[] { 99.0 };
+
+            var model = new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: Array.Empty<SqlSyncBuildProject>(),
+                script: new List<Script>
+                {
+                    new Script("first.sql", 1.0, null, null, null, null, Guid.NewGuid().ToString(), null, null, null, null, null, null, null, null),
+                },
+                build: new List<Build>(),
+                scriptRun: Array.Empty<ScriptRun>(),
+                committedScript: Array.Empty<CommittedScript>());
+
+            var result = await helper.PrepareBuildForRunAsync(model, "TestServer", isMultiDbRun: true,
+                new ScriptBatchCollection { new ScriptBatch("first.sql", new[] { "SELECT 1" }, Guid.NewGuid().ToString()) });
+
+            Assert.AreEqual(0, result.FilteredScripts.Count);
+            Assert.AreEqual(BuildItemStatus.PendingRollBack, result.Build.FinalStatus, "Should set PendingRollBack for multi-db run with no scripts");
+        }
+
+        #endregion
+
+        #region Runner: RunScriptOnly Mode (SqlBuildRunner.cs:160-164)
+
+        [TestMethod]
+        public async Task Runner_RunScriptOnly_SkipsExecutionAndLogs()
+        {
+            // Arrange: set RunScriptOnly=true on context
+            var ctx = MockFactory.CreateMockRunnerContext();
+            ctx.Setup(x => x.IsTransactional).Returns(true);
+            ctx.Setup(x => x.RunScriptOnly).Returns(true);
+            ctx.Setup(x => x.ReadBatchFromScriptFileAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new[] { "INSERT INTO T VALUES(1)" });
+
+            var mockConnService = MockFactory.CreateMockConnectionsService();
+            var mockFinalizerCtx = new Mock<IBuildFinalizerContext>();
+            var mockBuildFinalizer = MockFactory.CreateMockBuildFinalizer();
+
+            // Executor should NEVER be called in script-only mode
+            int executorCallCount = 0;
+            var executor = new CallbackSqlCommandExecutor(() =>
+            {
+                executorCallCount++;
+                return new SqlExecutionResult(true, string.Empty);
+            });
+
+            var runner = new SqlBuildRunner(
+                mockConnService.Object, ctx.Object, mockFinalizerCtx.Object,
+                executor,
+                buildFinalizer: mockBuildFinalizer.Object);
+
+            var scripts = CreateScriptList("test.sql");
+            var myBuild = CreateBuild();
+
+            // Act
+            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null!, SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
+
+            // Assert: executor was never called
+            Assert.AreEqual(0, executorCallCount, "Executor should not be called in RunScriptOnly mode");
+            // PublishScriptLog should have been called with "Scripted" message
+            ctx.Verify(x => x.PublishScriptLog(false, It.IsAny<ScriptLogEventArgs>()), Times.AtLeastOnce,
+                "Should publish script log in script-only mode");
+        }
+
+        #endregion
+
+        #region Runner: Connection Establishment Failure (SqlBuildRunner.cs:121-135)
+
+        [TestMethod]
+        public async Task Runner_ConnectionFailure_SetsErrorAndBuildFailure()
+        {
+            // Arrange: mock IConnectionsService to throw on GetOrAddBuildConnectionDataClass
+            var ctx = MockFactory.CreateMockRunnerContext();
+            ctx.Setup(x => x.IsTransactional).Returns(true);
+            ctx.Setup(x => x.ReadBatchFromScriptFileAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new[] { "SELECT 1" });
+
+            var mockConnService = new Mock<IConnectionsService>();
+            mockConnService.Setup(x => x.GetOrAddBuildConnectionDataClass(
+                    It.IsAny<ConnectionData>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+                .Throws(new InvalidOperationException("Connection failed: unable to reach server"));
+            mockConnService.Setup(x => x.Connections).Returns(new Dictionary<string, BuildConnectData>());
+
+            var mockFinalizerCtx = new Mock<IBuildFinalizerContext>();
+            var mockBuildFinalizer = MockFactory.CreateMockBuildFinalizer();
+
+            var executor = new CallbackSqlCommandExecutor(() => new SqlExecutionResult(true, string.Empty));
+
+            var runner = new SqlBuildRunner(
+                mockConnService.Object, ctx.Object, mockFinalizerCtx.Object,
+                executor,
+                buildFinalizer: mockBuildFinalizer.Object);
+
+            var scripts = CreateScriptList("test.sql");
+            var myBuild = CreateBuild();
+
+            // Act
+            var result = await runner.RunAsync(scripts, myBuild, "srv", false, null!, SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
+
+            // Assert: ErrorOccured set and finalization called with buildFailure=true
+            ctx.VerifySet(x => x.ErrorOccured = true, Times.AtLeastOnce,
+                "ErrorOccured should be set on connection failure");
+            mockBuildFinalizer.Verify(
+                x => x.PerformRunScriptFinalizationAsync(
+                    It.IsAny<ISqlBuildRunnerProperties>(),
+                    It.IsAny<IConnectionsService>(),
+                    It.IsAny<IBuildFinalizerContext>(),
+                    true,
+                    It.IsAny<Build>()),
+                Times.Once,
+                "Finalization should be called with buildFailure=true on connection error");
+        }
+
+        #endregion
+
+        #region HandleSqlException: causesBuildFailure=false + rollBackOnError=false (SqlBuildRunner.cs:379-385)
+
+        [TestMethod]
+        public void HandleSqlException_NoCausesFailure_NoRollback_LogsErrorOnly()
+        {
+            // Arrange: rollBackOnError=false, causesBuildFailure=false
+            var ctx = MockFactory.CreateMockRunnerContext();
+            ctx.Setup(x => x.IsTransactional).Returns(true);
+            var mockConnService = MockFactory.CreateMockConnectionsService();
+            var mockFinalizerCtx = new Mock<IBuildFinalizerContext>();
+            var mockBuildFinalizer = new Mock<IBuildFinalizer>();
+
+            var runner = new SqlBuildRunner(
+                mockConnService.Object, ctx.Object, mockFinalizerCtx.Object,
+                buildFinalizer: mockBuildFinalizer.Object);
+
+            var sqlEx = GetRealSqlException();
+            var scriptRun = new ScriptRun(null, "", "test.sql", 1, DateTime.Now, null, false, "db", Guid.NewGuid().ToString(), "BUILD1");
+            var cData = new BuildConnectData { ServerName = "srv", DatabaseName = "db" };
+
+            // Act: rollBackOnError=false, causesBuildFailure=false
+            var (buildFailure, timeoutDetected) = runner.HandleSqlException(
+                sqlEx, "test.sql", "SELECT 1", "db", "savepoint1",
+                DateTime.Now, rollBackOnError: false, causesBuildFailure: false, cData, ref scriptRun);
+
+            // Assert: no build failure, no rollback, no timeout
+            Assert.IsFalse(buildFailure, "buildFailure should be false when causesBuildFailure=false and rollBackOnError=false");
+            Assert.IsFalse(timeoutDetected, "Should not detect timeout for connection error");
+            mockBuildFinalizer.Verify(
+                x => x.RollbackBuild(It.IsAny<IConnectionsService>(), It.IsAny<bool>()),
+                Times.Never,
+                "No rollback should occur when rollBackOnError=false and causesBuildFailure=false");
+        }
+
+        [TestMethod]
+        public void HandleSqlException_CausesFailureTrue_NoRollbackOnError_StillTriggersRollback()
+        {
+            // Arrange: rollBackOnError=false but causesBuildFailure=true
+            var ctx = MockFactory.CreateMockRunnerContext();
+            ctx.Setup(x => x.IsTransactional).Returns(true);
+            var mockConnService = MockFactory.CreateMockConnectionsService();
+            var mockFinalizerCtx = new Mock<IBuildFinalizerContext>();
+            var mockBuildFinalizer = new Mock<IBuildFinalizer>();
+
+            var runner = new SqlBuildRunner(
+                mockConnService.Object, ctx.Object, mockFinalizerCtx.Object,
+                buildFinalizer: mockBuildFinalizer.Object);
+
+            var sqlEx = GetRealSqlException();
+            var scriptRun = new ScriptRun(null, "", "test.sql", 1, DateTime.Now, null, false, "db", Guid.NewGuid().ToString(), "BUILD1");
+            var cData = new BuildConnectData { ServerName = "srv", DatabaseName = "db" };
+
+            // Act: rollBackOnError=false, causesBuildFailure=true
+            var (buildFailure, _) = runner.HandleSqlException(
+                sqlEx, "test.sql", "SELECT 1", "db", "savepoint1",
+                DateTime.Now, rollBackOnError: false, causesBuildFailure: true, cData, ref scriptRun);
+
+            // Assert: build failure AND rollback triggered via causesBuildFailure path (line 387-397)
+            Assert.IsTrue(buildFailure, "buildFailure should be true when causesBuildFailure=true");
+            mockBuildFinalizer.Verify(
+                x => x.RollbackBuild(It.IsAny<IConnectionsService>(), true),
+                Times.Once,
+                "Full RollbackBuild should be called via causesBuildFailure path even when rollBackOnError=false");
+        }
+
+        [TestMethod]
+        public void HandleSqlException_NonTransactional_NoRollback_LogsError()
+        {
+            // Arrange: non-transactional + rollBackOnError=false
+            var ctx = MockFactory.CreateMockRunnerContext();
+            ctx.Setup(x => x.IsTransactional).Returns(false);
+            var mockConnService = MockFactory.CreateMockConnectionsService();
+            var mockFinalizerCtx = new Mock<IBuildFinalizerContext>();
+            var mockBuildFinalizer = new Mock<IBuildFinalizer>();
+
+            var runner = new SqlBuildRunner(
+                mockConnService.Object, ctx.Object, mockFinalizerCtx.Object,
+                buildFinalizer: mockBuildFinalizer.Object);
+
+            var sqlEx = GetRealSqlException();
+            var scriptRun = new ScriptRun(null, "", "test.sql", 1, DateTime.Now, null, false, "db", Guid.NewGuid().ToString(), "BUILD1");
+            var cData = new BuildConnectData { ServerName = "srv", DatabaseName = "db" };
+
+            // Act
+            var (buildFailure, _) = runner.HandleSqlException(
+                sqlEx, "test.sql", "SELECT 1", "db", "savepoint1",
+                DateTime.Now, rollBackOnError: false, causesBuildFailure: false, cData, ref scriptRun);
+
+            // Assert: no failure, no rollback
+            Assert.IsFalse(buildFailure);
+            mockBuildFinalizer.Verify(
+                x => x.RollbackBuild(It.IsAny<IConnectionsService>(), It.IsAny<bool>()),
+                Times.Never);
+        }
+
+        #endregion
+
         #region Low Priority: MultiDbBuild Cancellation (SqlBuildHelper.cs:211)
 
         [TestMethod]
