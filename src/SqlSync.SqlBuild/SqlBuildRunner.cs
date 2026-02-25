@@ -294,7 +294,7 @@ namespace SqlSync.SqlBuild
             }
         }
 
-        private (bool buildFailure, bool timeoutDetected) HandleSqlException(SqlException e, string fileName, string batchScript, string targetDatabase, string savePointName, DateTime start, bool rollBackOnError, bool causesBuildFailure, BuildConnectData cData, ref BuildModels.ScriptRun currentRun)
+        internal (bool buildFailure, bool timeoutDetected) HandleSqlException(SqlException e, string fileName, string batchScript, string targetDatabase, string savePointName, DateTime start, bool rollBackOnError, bool causesBuildFailure, BuildConnectData cData, ref BuildModels.ScriptRun currentRun)
         {
             var log = _ctx.Log;
             var progress = _ctx.ProgressReporter ?? new DefaultProgressReporter();
