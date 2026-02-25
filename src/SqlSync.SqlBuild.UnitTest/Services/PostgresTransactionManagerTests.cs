@@ -1,5 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Moq.Protected;
 using System;
+using System.Data.Common;
 
 namespace SqlSync.SqlBuild.UnitTest.Services
 {
@@ -13,6 +16,8 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         {
             manager = new SqlBuild.Services.PostgresTransactionManager();
         }
+
+        #region IsTransactionZombied
 
         [TestMethod]
         public void IsTransactionZombied_WithAbortedMessage_ShouldReturnTrue()
@@ -46,8 +51,6 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         public void IsTransactionZombied_DiffersFromSqlServer()
         {
             var sqlServerManager = new SqlBuild.Services.SqlServerTransactionManager();
-            // SQL Server looks for InvalidOperationException with "no longer usable"
-            // PostgreSQL looks for "current transaction is aborted" in any exception
             var pgError = new Exception("current transaction is aborted");
             var sqlError = new InvalidOperationException("This SqlTransaction has completed; it is no longer usable.");
 
@@ -56,5 +59,79 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             Assert.IsTrue(sqlServerManager.IsTransactionZombied(sqlError));
             Assert.IsFalse(sqlServerManager.IsTransactionZombied(pgError));
         }
+
+        #endregion
+
+        #region Commit and Rollback (via DbTransaction mock)
+
+        [TestMethod]
+        public void Commit_ShouldCallTransactionCommit()
+        {
+            var mockTxn = new Mock<DbTransaction>();
+            manager.Commit(mockTxn.Object);
+            mockTxn.Verify(t => t.Commit(), Times.Once);
+        }
+
+        [TestMethod]
+        public void Rollback_ShouldCallTransactionRollback()
+        {
+            var mockTxn = new Mock<DbTransaction>();
+            manager.Rollback(mockTxn.Object);
+            mockTxn.Verify(t => t.Rollback(), Times.Once);
+        }
+
+        #endregion
+
+        #region CreateSavePoint (uses SQL command)
+
+        [TestMethod]
+        public void CreateSavePoint_ShouldExecuteSavepointCommand()
+        {
+            var mockCmd = new Mock<DbCommand>();
+            mockCmd.SetupAllProperties();
+            var mockConn = new Mock<DbConnection>();
+            mockConn.Protected().Setup<DbCommand>("CreateDbCommand").Returns(mockCmd.Object);
+            var mockTxn = new Mock<DbTransaction>();
+            mockTxn.Protected().Setup<DbConnection>("DbConnection").Returns(mockConn.Object);
+
+            manager.CreateSavePoint(mockTxn.Object, "SP1");
+
+            Assert.AreEqual("SAVEPOINT \"SP1\"", mockCmd.Object.CommandText);
+            mockCmd.Verify(c => c.ExecuteNonQuery(), Times.Once);
+        }
+
+        [TestMethod]
+        public void RollbackToSavePoint_ShouldExecuteRollbackCommand()
+        {
+            var mockCmd = new Mock<DbCommand>();
+            mockCmd.SetupAllProperties();
+            var mockConn = new Mock<DbConnection>();
+            mockConn.Protected().Setup<DbCommand>("CreateDbCommand").Returns(mockCmd.Object);
+            var mockTxn = new Mock<DbTransaction>();
+            mockTxn.Protected().Setup<DbConnection>("DbConnection").Returns(mockConn.Object);
+
+            manager.RollbackToSavePoint(mockTxn.Object, "SP1");
+
+            Assert.AreEqual("ROLLBACK TO SAVEPOINT \"SP1\"", mockCmd.Object.CommandText);
+            mockCmd.Verify(c => c.ExecuteNonQuery(), Times.Once);
+        }
+
+        #endregion
+
+        #region BeginTransaction
+
+        [TestMethod]
+        public void BeginTransaction_ShouldCallConnectionBeginTransaction()
+        {
+            var mockTxn = new Mock<DbTransaction>();
+            var mockConn = new Mock<DbConnection>();
+            mockConn.Protected().Setup<DbTransaction>("BeginDbTransaction", System.Data.IsolationLevel.Unspecified).Returns(mockTxn.Object);
+
+            var result = manager.BeginTransaction(mockConn.Object);
+
+            Assert.IsNotNull(result);
+        }
+
+        #endregion
     }
 }

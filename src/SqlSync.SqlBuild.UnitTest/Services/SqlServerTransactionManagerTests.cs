@@ -1,5 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using System;
+using System.Data.Common;
 
 namespace SqlSync.SqlBuild.UnitTest.Services
 {
@@ -13,6 +15,8 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         {
             manager = new SqlBuild.Services.SqlServerTransactionManager();
         }
+
+        #region IsTransactionZombied
 
         [TestMethod]
         public void IsTransactionZombied_WithNoLongerUsableMessage_ShouldReturnTrue()
@@ -57,5 +61,27 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var ex = new InvalidOperationException("");
             Assert.IsFalse(manager.IsTransactionZombied(ex));
         }
+
+        #endregion
+
+        #region Commit and Rollback (via DbTransaction mock)
+
+        [TestMethod]
+        public void Commit_ShouldCallTransactionCommit()
+        {
+            var mockTxn = new Mock<DbTransaction>();
+            manager.Commit(mockTxn.Object);
+            mockTxn.Verify(t => t.Commit(), Times.Once);
+        }
+
+        [TestMethod]
+        public void Rollback_ShouldCallTransactionRollback()
+        {
+            var mockTxn = new Mock<DbTransaction>();
+            manager.Rollback(mockTxn.Object);
+            mockTxn.Verify(t => t.Rollback(), Times.Once);
+        }
+
+        #endregion
     }
 }

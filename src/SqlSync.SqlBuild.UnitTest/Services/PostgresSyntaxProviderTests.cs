@@ -81,5 +81,11 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var sqlServerProvider = new SqlBuild.Services.SqlServerSyntaxProvider();
             Assert.AreNotEqual(sqlServerProvider.RequiresBatchSplitting, provider.RequiresBatchSplitting);
         }
+
+        [TestMethod]
+        public void BooleanTrueLiteral_ShouldBeTrue()
+        {
+            Assert.AreEqual("true", provider.BooleanTrueLiteral);
+        }
     }
 }
