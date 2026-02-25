@@ -446,7 +446,7 @@ namespace SqlSync.SqlBuild.UnitTest
             // The archive method uses basePath as current directory context
             // Test that method returns false for non-existent archive (expected behavior)
             string archiveName = Path.Combine(_testDirectory, "archive_test.zip");
-            string[] logFiles = new[] { logFile1 };
+            string[] logFiles = new[] { logPath1 };
 
             // Act - calling with files that should be relative to basePath
             bool result = SqlBuildFileHelper.ArchiveLogFiles(logFiles, _testDirectory, archiveName);
@@ -454,6 +454,7 @@ namespace SqlSync.SqlBuild.UnitTest
             // Assert - result depends on ZipHelper implementation
             // Just verify it doesn't throw
             Assert.IsNotNull(logFiles);
+            Assert.IsTrue(result, "Expected ArchiveLogFiles to return true when archiving existing log files");
         }
 
         #endregion
