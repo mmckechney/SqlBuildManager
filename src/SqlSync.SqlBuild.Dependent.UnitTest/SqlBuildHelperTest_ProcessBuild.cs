@@ -81,7 +81,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             init.AddScriptForProcessBuild(ref buildData, true, 20);
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
-            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, true, false);
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 0;
 
@@ -89,6 +89,10 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Build actual;
             actual = await target.ProcessBuildAsync(runData, allowableTimeoutRetries, string.Empty, scriptBatchColl);
             Assert.AreEqual(expected, actual.FinalStatus);
+
+            // Verify database state: pre-batched scripts use newid() so only check logging
+            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+            Assert.IsTrue(sqlLoggingCount > 0, $"Expected rows in SqlBuild_Logging but found {sqlLoggingCount}");
 
         }
 
@@ -104,7 +108,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             init.AddScriptForProcessBuild(ref buildData, true, 20);
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
-            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, true, false);
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 3;
 
@@ -112,6 +116,10 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             Build actual;
             actual = await target.ProcessBuildAsync(runData, allowableTimeoutRetries, string.Empty, scriptBatchColl);
             Assert.AreEqual(expected, actual.FinalStatus);
+
+            // Verify database state: pre-batched scripts use newid() so only check logging
+            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+            Assert.IsTrue(sqlLoggingCount > 0, $"Expected rows in SqlBuild_Logging but found {sqlLoggingCount}");
 
         }
 
@@ -124,7 +132,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             init.AddScriptForProcessBuild(ref buildData, true, 1);
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
-            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, true, false);
 
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 3;
@@ -145,6 +153,10 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 Build actual;
                 actual = await target.ProcessBuildAsync(runData, allowableTimeoutRetries, string.Empty, scriptBatchColl);
                 Assert.AreEqual(expected, actual.FinalStatus);
+
+                // Verify database state: rollback means nothing logged
+                int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+                Assert.AreEqual(0, sqlLoggingCount, $"Expected 0 rows in SqlBuild_Logging after rollback but found {sqlLoggingCount}");
             }
             finally
             {
@@ -165,7 +177,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             init.AddScriptForProcessBuild(ref buildData, true, 2);
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
-            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, true, false);
 
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 0;
@@ -186,6 +198,10 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 Build actual;
                 actual = await target.ProcessBuildAsync(runData, allowableTimeoutRetries, string.Empty, scriptBatchColl);
                 Assert.AreEqual(expected, actual.FinalStatus);
+
+                // Verify database state: rollback means nothing logged
+                int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+                Assert.AreEqual(0, sqlLoggingCount, $"Expected 0 rows in SqlBuild_Logging after rollback but found {sqlLoggingCount}");
             }
             finally
             {
@@ -206,7 +222,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             init.AddScriptForProcessBuild(ref buildData, true, 2);
 
             SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
-            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel_TransactionalNotTrial(buildData);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, true, false);
 
             ScriptBatchCollection scriptBatchColl = init.GetScriptBatchCollectionForProcessBuild();
             int allowableTimeoutRetries = 30;
@@ -228,6 +244,10 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 Build actual;
                 actual = await target.ProcessBuildAsync(runData, allowableTimeoutRetries, string.Empty, scriptBatchColl);
                 Assert.AreEqual(expected, actual.FinalStatus);
+
+                // Verify database state: committed after retries means logging rows should be present
+                int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+                Assert.IsTrue(sqlLoggingCount > 0, $"Expected rows in SqlBuild_Logging after commit but found {sqlLoggingCount}");
             }
             finally
             {
@@ -297,6 +317,120 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
                 catch { /* Ignore */ }
             }
         }
+
+        #region Phase 2: New ProcessBuildAsync Scenarios
+
+        [TestMethod()]
+        public async Task ProcessBuildTest_MultipleScripts_AllCommitAndLog()
+        {
+            Initialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            // Add 3 insert scripts with different build orders
+            init.AddInsertScript(ref buildData, true);
+            init.AddInsertScript(ref buildData, true);
+            init.AddInsertScript(ref buildData, true);
+            // Set distinct build orders
+            buildData.Script[0].BuildOrder = 1;
+            buildData.Script[1].BuildOrder = 2;
+            buildData.Script[2].BuildOrder = 3;
+
+            SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, isTransactional: true, isTrial: false);
+
+            Build actual = await target.ProcessBuildAsync(runData, 0, string.Empty, null!);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
+
+            // All 3 scripts should have inserted rows and been logged
+            int testTableCount = init.GetTestTableRowCount(0);
+            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+            Assert.IsTrue(testTableCount >= 3, $"Expected at least 3 rows in TransactionTest but found {testTableCount}");
+            Assert.IsTrue(sqlLoggingCount >= 3, $"Expected at least 3 rows in SqlBuild_Logging but found {sqlLoggingCount}");
+        }
+
+        [TestMethod()]
+        public async Task ProcessBuildTest_FailureCausesBuildFailure_RollsBack()
+        {
+            Initialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            // Add a good insert first, then a failure script
+            init.AddInsertScript(ref buildData, true);
+            init.AddFailureScript(ref buildData, rollBackOnError: true, causeBuildFailure: true);
+
+            SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, isTransactional: true, isTrial: false);
+
+            Build actual = await target.ProcessBuildAsync(runData, 0, string.Empty, null!);
+            Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus);
+
+            // Rollback means nothing should be committed
+            int testTableCount = init.GetTestTableRowCount(0);
+            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+            Assert.AreEqual(0, testTableCount, $"Expected 0 rows in TransactionTest after rollback but found {testTableCount}");
+            Assert.AreEqual(0, sqlLoggingCount, $"Expected 0 rows in SqlBuild_Logging after rollback but found {sqlLoggingCount}");
+        }
+
+        [TestMethod()]
+        public async Task ProcessBuildTest_NonTransactional_PartialCommitOnFailure()
+        {
+            Initialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            // Add a good insert first, then a failure script
+            init.AddInsertScript(ref buildData, true);
+            init.AddFailureScript(ref buildData, rollBackOnError: true, causeBuildFailure: true);
+
+            SqlBuildHelper target = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, isTransactional: false, isTrial: false);
+
+            Build actual = await target.ProcessBuildAsync(runData, 0, string.Empty, null!);
+            Assert.AreEqual(BuildItemStatus.FailedNoTransaction, actual.FinalStatus);
+
+            // Non-transactional: the first insert should persist even though build failed
+            int testTableCount = init.GetTestTableRowCount(0);
+            Assert.IsTrue(testTableCount >= 1, $"Expected at least 1 row in TransactionTest (partial commit) but found {testTableCount}");
+        }
+
+        [TestMethod()]
+        public async Task ProcessBuildTest_Trial_RollsBackWithNoDataChanges()
+        {
+            Initialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            init.AddInsertScript(ref buildData, true);
+
+            SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, isTransactional: true, isTrial: true);
+
+            Build actual = await target.ProcessBuildAsync(runData, 0, string.Empty, null!);
+            Assert.AreEqual(BuildItemStatus.TrialRolledBack, actual.FinalStatus);
+
+            // Trial build: everything should be rolled back
+            int testTableCount = init.GetTestTableRowCount(0);
+            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+            Assert.AreEqual(0, testTableCount, $"Expected 0 rows in TransactionTest after trial but found {testTableCount}");
+            Assert.AreEqual(0, sqlLoggingCount, $"Expected 0 rows in SqlBuild_Logging after trial but found {sqlLoggingCount}");
+        }
+
+        [TestMethod()]
+        public async Task ProcessBuildTest_BatchedScripts_AllBatchesExecute()
+        {
+            Initialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            // AddBatchInsertScripts creates a script with 2 INSERT batches separated by GO
+            init.AddBatchInsertScripts(ref buildData, true);
+
+            SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, isTransactional: true, isTrial: false);
+
+            Build actual = await target.ProcessBuildAsync(runData, 0, string.Empty, null!);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
+
+            // The batched script has 2 GO-separated INSERT statements
+            int testTableCount = init.GetTestTableRowCount(0);
+            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+            Assert.IsTrue(testTableCount >= 2, $"Expected at least 2 rows in TransactionTest from batched script but found {testTableCount}");
+            Assert.IsTrue(sqlLoggingCount >= 1, $"Expected at least 1 row in SqlBuild_Logging but found {sqlLoggingCount}");
+        }
+
+        #endregion
 
     }
 }
