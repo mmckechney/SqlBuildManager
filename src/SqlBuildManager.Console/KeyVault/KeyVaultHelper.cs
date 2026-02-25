@@ -24,6 +24,11 @@ namespace SqlBuildManager.Console.KeyVault
 
 
         private static SecretClient _secretClient = null!;
+        /// <summary>
+        /// Optional override for tests to reduce Azure SDK retry delays.
+        /// </summary>
+        internal static SecretClientOptions? SecretClientOptionsOverride { get; set; }
+
         internal static SecretClient SecretClient(string keyVaultName)
         {
 
@@ -31,7 +36,8 @@ namespace SqlBuildManager.Console.KeyVault
             {
                 var cred = AadHelper.TokenCredential;
                 string keyVaultUrl = $"https://{keyVaultName}.vault.azure.net/";
-                _secretClient = new SecretClient(vaultUri: new Uri(keyVaultUrl), credential: cred);
+                var options = SecretClientOptionsOverride ?? new SecretClientOptions();
+                _secretClient = new SecretClient(vaultUri: new Uri(keyVaultUrl), credential: cred, options: options);
             }
             return _secretClient;
 

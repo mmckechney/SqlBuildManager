@@ -8,12 +8,12 @@ These sub-folders contain `TestResults.html` test result HTML summaries and `con
 
 ## For Failed Tests:
 - Please review these files and for all failures, create an analysis of the failures and how they can be fixed. 
-
 - Save your analysis to a single `failures.md ` file.  
 
 ## Review of output for passed or skipped tests:
 - For the tests that didn't fail, please review the logs and identify any messages that either have misleading messages or suggest something may have gone wrong, even if the test passed.
 - Create a suggestion of what might be changed to remediate your findings. 
+- Be sure to include the list of effected tests with each set of recommendations
 - Please create a single `observations.md` markdown file with your observations analysis. 
   
 - Save both markdown files to the './testresults/{{timestamp}}' directory.
