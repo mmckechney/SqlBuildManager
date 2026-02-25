@@ -292,7 +292,9 @@ az storage blob download-batch --account-name $storageAccountName --source $blob
 $finalExitCode = Complete-AciTestRun -containerName $testContainerName -resourceGroupName $resourceGroupName -exitCode $testExitCode -keepContainer:$keepContainer -logContainerName "test-runner" -sqlContainerName "sql-server"
 
 Write-Host "Running results analysis with GitHub Copilot CLI..." -ForegroundColor Cyan
-$analysys = copilot --yolo -p "The folder './testresults/$($timestamp)'  contains sub-folders named for different Unit and integration tests. These sub-folders contain `TestResults.html` test result HTML summaries and `console-output.log` console output log files. Please review these files and for all failures, create an analysis of the failures and how they can be fixed. IMPORTANT: In the `console-output.log` file, the log entries are organized first with the `Passed` or `Failed` message on the same line as the test name, followed by the `Standard Output Messages:` and `TestContext Messages:` lines and content.  Save your analysis to a single `failures.md ` file.  For the tests that didn't fail, please review the logs and identify any messages that either have misleading messages or suggest something may have gone wrong, even if the test passed. Please create a single `observations.md` markdown file with your observations analysis. Save the markdown files to the './testresults/$($timestamp)'  directory." 2>&1
+$promptTemplate = Get-Content -Path "$PSScriptRoot\analyze-test-results-prompt.md" -Raw
+$prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
+$analysys = copilot --yolo -p $prompt 2>&1
 Write-Host "Analysis complete." -ForegroundColor Cyan
 
 exit $finalExitCode

@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild.Models;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace SqlSync.SqlBuild.UnitTest.Models
@@ -22,7 +23,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                 BuildDescription = "Test description",
                 StartIndex = 5,
                 ProjectFileName = "test.sbx",
-                ProjectFilePath = "C:\\temp",
+                ProjectFilePath = Path.GetTempPath(),
                 BuildFileName = "build.sbm",
                 LogToDatabaseName = "LogDb",
                 BuildRequestedBy = "testuser",
@@ -59,6 +60,8 @@ namespace SqlSync.SqlBuild.UnitTest.Models
         [TestMethod]
         public void PopulateFromRunData_SetsPropertiesFromRunData()
         {
+            var projectFileName = Path.Combine(Path.GetTempPath(), "test", "project.sbx");
+            var buildFileName = "build.sbm";
             // Arrange
             var state = new BuildExecutionState();
             var runData = new SqlBuildRunDataModel(
@@ -67,11 +70,11 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                 server: "TestServer",
                 buildDescription: "Test Build",
                 startIndex: 10,
-                projectFileName: "C:\\test\\project.sbx",
+                projectFileName: projectFileName,
                 isTrial: true,
                 runItemIndexes: new double[] { 1, 2, 3 },
                 runScriptOnly: true,
-                buildFileName: "C:\\test\\build.sbm",
+                buildFileName: buildFileName,
                 logToDatabaseName: "LogDatabase",
                 isTransactional: false,
                 platinumDacPacFileName: null,
@@ -88,12 +91,12 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual("MultiBuild", state.BuildType);
             Assert.AreEqual("Test Build", state.BuildDescription);
             Assert.AreEqual(10, state.StartIndex);
-            Assert.AreEqual("C:\\test\\project.sbx", state.ProjectFileName);
-            Assert.AreEqual("C:\\test", state.ProjectFilePath);
+            Assert.AreEqual(projectFileName, state.ProjectFileName);
+            Assert.AreEqual(Path.GetDirectoryName(projectFileName), state.ProjectFilePath);
             Assert.IsTrue(state.IsTrialBuild);
             Assert.AreEqual(3, state.RunItemIndexes.Length);
             Assert.IsTrue(state.RunScriptOnly);
-            Assert.AreEqual("build.sbm", state.BuildFileName);
+            Assert.AreEqual(buildFileName, state.BuildFileName);
             Assert.AreEqual("LogDatabase", state.LogToDatabaseName);
             Assert.IsFalse(state.IsTransactional);
         }

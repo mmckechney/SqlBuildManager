@@ -210,7 +210,7 @@ namespace SqlBuildManager.Console
         /// <returns>Zero (0) if no errors, otherwise an error code</returns>
         public static int ValidateAndLoadMultiDbData(string multiDbOverrideSettingFileName, CommandLineArgs cmdLine, out MultiDbData multiData, out string[] errorMessages)
         {
-            log.LogInformation("Validating target database settings");
+            log.LogDebug("Validating target database settings");
             string message = string.Empty;
             string error;
             errorMessages = new string[0];

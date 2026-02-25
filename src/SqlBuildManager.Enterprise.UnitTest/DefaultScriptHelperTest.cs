@@ -73,7 +73,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void CopyEnterpriseToLocalTest_EnterpriseFileDoesntExist()
         {
             string localFilePath = fileOne;
-            string enterpriseFilePath = @"C:\thisfileshouldnotexist";
+            string enterpriseFilePath = Path.Combine(Path.GetTempPath(), "thisfileshouldnotexist");
             bool expected = false;
             bool actual;
             actual = DefaultScriptHelper.CopyEnterpriseToLocal(localFilePath, enterpriseFilePath);
@@ -323,7 +323,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         
         public void GetEnterpriseRegistrySettingTest_FileDoesNotExist()
         {
-            string filePath = @"C:\" + Guid.NewGuid().ToString();
+            string filePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
             DefaultScriptRegistry actual;
             actual = DefaultScriptHelper.GetEnterpriseRegistrySetting(filePath);
@@ -448,7 +448,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         
         public void ValidateLocalToEnterpriseTest_LocalFileDoesntExist()
         {
-            string localFilePath = @"C:\thisfileshouldnotexist";
+            string localFilePath = Path.Combine(Path.GetTempPath(), "thisfileshouldnotexist");
             string enterpriseFilePath = fileTwo;
             bool expected = false;
             bool actual;
@@ -465,7 +465,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         public void ValidateLocalToEnterpriseTest_EnterpriseFileDoesntExist()
         {
             string localFilePath = fileOne;
-            string enterpriseFilePath = @"C:\thisfileshouldnotexist";
+            string enterpriseFilePath = Path.Combine(Path.GetTempPath(), "thisfileshouldnotexist");
             bool expected = true;
             bool actual;
             actual = DefaultScriptHelper.ValidateLocalToEnterprise(localFilePath, enterpriseFilePath);

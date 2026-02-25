@@ -160,6 +160,11 @@ namespace SqlBuildManager.Console.UnitTest
             var tmpJsonFile = Path.GetTempFileName();
             try
             {
+                // Disable Azure SDK retries to speed up this test (~41s → ~5s)
+                KeyVault.KeyVaultHelper.SecretClientOptionsOverride = new Azure.Security.KeyVault.Secrets.SecretClientOptions()
+                {
+                    Retry = { MaxRetries = 0, NetworkTimeout = TimeSpan.FromSeconds(2) }
+                };
 
                 File.WriteAllBytes(tmpJsonFile, Properties.Resources.batch_settings_encrypted);
                 var cmdLine = new CommandLineArgs();
@@ -174,6 +179,7 @@ namespace SqlBuildManager.Console.UnitTest
             }
             finally
             {
+                KeyVault.KeyVaultHelper.SecretClientOptionsOverride = null;
                 if (File.Exists(tmpJsonFile))
                     File.Delete(tmpJsonFile);
             }

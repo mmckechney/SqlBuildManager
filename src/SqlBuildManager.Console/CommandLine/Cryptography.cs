@@ -196,7 +196,7 @@ namespace SqlBuildManager.Console.CommandLine
                return (true, encryptionKey);
             }
         }
-        private static readonly string store = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager", "sbm-store.txt");
+        private static readonly string store = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "sqlbuildmanager", "sbm-store.txt");
 
     }
 }

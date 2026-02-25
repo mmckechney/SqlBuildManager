@@ -27,9 +27,9 @@
 		<ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Azure.Core" Version="1.51.0" />
+		<PackageReference Include="Azure.Core" Version="1.51.1" />
 		<PackageReference Include="Azure.Identity" Version="1.17.1" />
-		<PackageReference Include="System.Memory.Data" Version="10.0.2" />
+		<PackageReference Include="System.Memory.Data" Version="10.0.3" />
 		<PackageReference Include="Azure.Messaging.EventHubs" Version="5.12.2" />
 		<PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.12.2" />
 		<PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
@@ -42,14 +42,14 @@
 		<PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.8.0" />
 		<PackageReference Include="Azure.ResourceManager.Resources" Version="1.11.2" />
 		<!--<PackageReference Include="Microsoft.Azure.Management.Batch" Version="15.0.0" />-->
-		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.2" />
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.2" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.2" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.2" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.2" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.2" />
-		<PackageReference Include="Microsoft.SqlServer.DacFx" Version="170.2.70" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.3" />
+		<PackageReference Include="Microsoft.SqlServer.DacFx" Version="170.3.93" />
 		<PackageReference Include="morelinq" Version="4.4.0" />
 		<PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
 		<PackageReference Include="Serilog.Expressions" Version="5.0.0" />
@@ -61,8 +61,8 @@
 		<PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
 		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
 		<PackageReference Include="Spectre.Console" Version="0.54.0" />
-		<PackageReference Include="System.CommandLine" Version="2.0.0" />
-		<PackageReference Include="System.DirectoryServices" Version="10.0.2" />
+		<PackageReference Include="System.CommandLine" Version="2.0.3" />
+		<PackageReference Include="System.DirectoryServices" Version="10.0.3" />
 		<PackageReference Include="Microsoft.Azure.Batch" Version="16.3.1" />
 		<PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
 		<PackageReference Include="YamlDotNet" Version="16.3.0" />

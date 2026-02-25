@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.IO;
 
 namespace SqlSync.Connection.UnitTest
 {
@@ -91,7 +92,7 @@ namespace SqlSync.Connection.UnitTest
         public void StartingDirectory_SetAndGet_ShouldReturnCorrectValue()
         {
             var target = new ConnectionData();
-            string expected = @"C:\Test\Directory";
+            string expected = Path.Combine(Path.GetTempPath(), "Test", "Directory");
 
             target.StartingDirectory = expected;
 
@@ -145,7 +146,7 @@ namespace SqlSync.Connection.UnitTest
                 DatabaseName = "SourceDatabase",
                 Password = "SourcePassword",
                 UserId = "SourceUser",
-                StartingDirectory = @"C:\Source",
+                StartingDirectory = Path.Combine(Path.GetTempPath(), "Source"),
                 AuthenticationType = AuthenticationType.AzureADPassword,
                 ScriptTimeout = 60,
                 ManagedIdentityClientId = "source-client-id"
@@ -320,14 +321,14 @@ namespace SqlSync.Connection.UnitTest
         public void ConnectionData_ChainedPropertySets_WorkCorrectly()
         {
             var target = new ConnectionData();
-
+            var startingDir = Path.Combine(Path.GetTempPath(), "Dir1");
             target.SQLServerName = "server1";
             target.DatabaseName = "db1";
             target.UserId = "user1";
             target.Password = "pass1";
             target.AuthenticationType = AuthenticationType.Password;
             target.ScriptTimeout = 30;
-            target.StartingDirectory = @"C:\Dir1";
+            target.StartingDirectory = startingDir;
             target.ManagedIdentityClientId = "client1";
 
             Assert.AreEqual("server1", target.SQLServerName);
@@ -336,7 +337,7 @@ namespace SqlSync.Connection.UnitTest
             Assert.AreEqual("pass1", target.Password);
             Assert.AreEqual(AuthenticationType.Password, target.AuthenticationType);
             Assert.AreEqual(30, target.ScriptTimeout);
-            Assert.AreEqual(@"C:\Dir1", target.StartingDirectory);
+            Assert.AreEqual(startingDir, target.StartingDirectory);
             Assert.AreEqual("client1", target.ManagedIdentityClientId);
         }
 

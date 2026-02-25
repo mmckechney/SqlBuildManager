@@ -1,3 +1,4 @@
+using Microsoft.Build.Evaluation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using SqlSync.SqlBuild.Models;
@@ -41,8 +42,8 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             // Arrange
             var buildDataModel = CreateEmptyModel();
             var multiDbData = new MultiDbData();
-            string projectFilePath = @"C:\Test\Project";
-            string buildZipFileName = "build.sbm";
+            string projectFilePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "Project");
+            string buildZipFileName = Path.Combine(projectFilePath, "build.sbm");
 
             // Act
             var reporting = new StatusReporting(_mockDbUtil.Object, buildDataModel, multiDbData, projectFilePath, buildZipFileName);
@@ -56,7 +57,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
         {
             // Arrange
             var multiDbData = new MultiDbData();
-            string projectFilePath = @"C:\Test\Project";
+            string projectFilePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "Project");
             string buildZipFileName = "build.sbm";
 
             // Act
@@ -90,7 +91,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             // Arrange
             var buildDataModel = CreateEmptyModel();
             var multiDbData = new MultiDbData();
-            var reporting = new StatusReporting(_mockDbUtil.Object, buildDataModel, multiDbData, @"C:\Test", "build.sbm");
+            var reporting = new StatusReporting(_mockDbUtil.Object, buildDataModel, multiDbData, Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "Test"), "build.sbm");
 
             // Act & Assert - Just verify the object can be created and method exists
             // The actual method requires proper BackgroundWorker setup, so we just test construction
@@ -245,7 +246,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             // Arrange
             var serializer = new XmlSerializer(typeof(ServerStatusDataCollection));
             string xml = @"<ServerStatusDataCollection>
-                <BuildFileNameFull>C:\Test\Build.sbm</BuildFileNameFull>
+                <BuildFileNameFull>./Test/Build.sbm</BuildFileNameFull>
             </ServerStatusDataCollection>";
 
             // Act
@@ -265,7 +266,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             var collection = (ServerStatusDataCollection)serializer.Deserialize(reader)!;
 
             // Act
-            collection.BuildFileNameFull = @"C:\Some\Path\TestBuild.sbm";
+            collection.BuildFileNameFull = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "TestBuild.sbm");
 
             // Assert
             Assert.AreEqual("TestBuild.sbm", collection.BuildFileNameShort);

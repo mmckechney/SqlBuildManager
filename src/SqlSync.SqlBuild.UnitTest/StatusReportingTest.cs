@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.Build.Evaluation;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
@@ -34,7 +35,7 @@ namespace SqlSync.SqlBuild.UnitTest
                 new List<ScriptRun>(),
                 new List<CommittedScript>());
             var multiDbData = new MultiDbData();
-            string projectFilePath = @"C:\Test\Project";
+            string projectFilePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "Project");
             string buildZipFileName = "build.sbm";
 
             // Act
@@ -86,9 +87,9 @@ namespace SqlSync.SqlBuild.UnitTest
             {
                 collection = (ServerStatusDataCollection)serializer.Deserialize(reader)!;
             }
-            
+
             // Act
-            collection.BuildFileNameFull = @"C:\Builds\TestBuild.sbm";
+            collection.BuildFileNameFull = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "TestBuild.sbm");
             var databases = collection["Server1"];
             databases["DB1"] = new StatusDataCollection
             {

@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild.MultiDb;
+using System;
 using System.IO;
 
 #nullable enable
@@ -121,7 +122,7 @@ namespace SqlBuildManager.Console.UnitTest
             cmdLine.RootLoggingPath = Path.GetTempPath();
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
-            cmdLine.MultiDbRunConfigFileName = @"C:\temp\multicfg.multidb";
+            cmdLine.MultiDbRunConfigFileName = Path.Combine(Path.GetTempPath(), "temp","multicfg.multidb");
             string[] errorMessages = null!;
             int expected = (int)ExecutionReturn.MissingBuildFlag;
             int actual;
@@ -142,8 +143,8 @@ namespace SqlBuildManager.Console.UnitTest
             cmdLine.RootLoggingPath = Path.GetTempPath();
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
-            cmdLine.MultiDbRunConfigFileName = @"C:\temp\multicfg.cfg";
-            cmdLine.BuildFileName = @"C:\temp\not_here.sbm";
+            cmdLine.MultiDbRunConfigFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(),"multicfg.cfg");
+            cmdLine.BuildFileName = Path.Combine(Path.GetTempPath(), "temp/not_here.sbm");
             string[] errorMessages = null!;
             int expected = (int)ExecutionReturn.InvalidBuildFileNameValue;
             int actual;
@@ -160,13 +161,14 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod()]
         public void ValidateCommonCommandLineArgsTest_BadOverrideSetting()
         {
-            if (!File.Exists(@"C:\temp\multicfg.BadExt"))
-                File.WriteAllText(@"C:\temp\multicfg.BadExt", "hi");
+            var filePath = Path.Combine(Path.GetTempPath(), "multicfg.BadExt");
+            if (!File.Exists(filePath))
+                File.WriteAllText(filePath, "hi");
             CommandLineArgs cmdLine = new CommandLineArgs();
-            cmdLine.RootLoggingPath = @"C\temp";
+            cmdLine.RootLoggingPath = Path.GetTempPath();
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
-            cmdLine.MultiDbRunConfigFileName = @"C:\temp\multicfg.BadExt";
+            cmdLine.MultiDbRunConfigFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "multicfg.BadExt");
             cmdLine.ScriptSrcDir = Path.GetTempPath();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureADIntegrated;
             string[] errorMessages = null!;
@@ -175,14 +177,14 @@ namespace SqlBuildManager.Console.UnitTest
             actual = Validation.ValidateCommonCommandLineArgs(cmdLine, out errorMessages);
 
             Assert.AreEqual(2, errorMessages.Length);
-            Assert.IsTrue(errorMessages[0].LastIndexOf("The '--override' setting file value must be") > -1);
+            Assert.IsTrue(errorMessages[0].LastIndexOf("Specified --override file does not exist") > -1);
             Assert.AreEqual(expected, actual);
 
-            if (File.Exists(@"C:\temp\multicfg.BadExt"))
+            if (File.Exists(filePath))
             {
                 try
                 {
-                    File.Delete(@"C:\temp\multicfg.BadExt");
+                    File.Delete(filePath);
                 }
                 catch
                 { }
@@ -198,11 +200,11 @@ namespace SqlBuildManager.Console.UnitTest
         {
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureADIntegrated;
-            cmdLine.RootLoggingPath = @"C\temp";
+            cmdLine.RootLoggingPath = Path.GetTempPath();
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
-            cmdLine.MultiDbRunConfigFileName = @"C\temp\multicfg.multidb";
-            cmdLine.ScriptSrcDir = @"C:\I_DONT_EXIST";
+            cmdLine.MultiDbRunConfigFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "multicfg.multidb");
+            cmdLine.ScriptSrcDir = Path.Combine(Path.GetTempPath(), "I_DONT_EXIST");
             string[] errorMessages = null!;
             int expected = (int)ExecutionReturn.InvalidScriptSourceDirectory;
             int actual;
@@ -223,7 +225,7 @@ namespace SqlBuildManager.Console.UnitTest
             File.WriteAllBytes(multFile, Properties.Resources.NoTrans_MultiDb_multidb);
             CommandLineArgs cmdLine = new CommandLineArgs();
             cmdLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.AzureADIntegrated;
-            cmdLine.RootLoggingPath = @"C\temp";
+            cmdLine.RootLoggingPath = Path.GetTempPath();
             cmdLine.Transactional = true;
             cmdLine.Trial = true;
             cmdLine.MultiDbRunConfigFileName = multFile;
@@ -251,7 +253,7 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod()]
         public void ValidateAndLoadMultiDbDataTest_MissingMultiDbFile()
         {
-            string multiDbOverrideSettingFileName = @"C:\temp\test_not_here.multidb";
+            string multiDbOverrideSettingFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "test_not_here.multidb");
             MultiDbData multiData = null!;
             string[] errorMessages = null!;
             int expected = (int)ExecutionReturn.NullMultiDbConfig;
@@ -270,7 +272,7 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod()]
         public void ValidateAndLoadMultiDbDataTest_MissingMultiDbQFile()
         {
-            string multiDbOverrideSettingFileName = @"C:\temp\test_not_here.multidbq";
+            string multiDbOverrideSettingFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "test_not_here.multidbq");
             MultiDbData multiData = null!;
             string[] errorMessages = null!;
             int expected = (int)ExecutionReturn.NullMultiDbConfig;
@@ -289,7 +291,7 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod()]
         public void ValidateAndLoadMultiDbDataTest_MissingCfgFile()
         {
-            string multiDbOverrideSettingFileName = @"C:\temp\test_not_here.multidbq";
+            string multiDbOverrideSettingFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(),"test_not_here.multidbq");
             MultiDbData multiData = null!;
             string[] errorMessages = null!;
             int expected = (int)ExecutionReturn.NullMultiDbConfig;
@@ -309,7 +311,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateAndLoadMultiDbDataTest_WellFormedMultiDbData()
         {
             string cfgContents = @"Server1\Instance_1:Default,MyDatabaseOverride";
-            string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
+            string multiDbOverrideSettingFileName = Path.Combine(Path.GetTempPath(), $"{System.Guid.NewGuid().ToString()}.cfg");
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
             MultiDbData multiData = null!;
             string[] errorMessages = null!;

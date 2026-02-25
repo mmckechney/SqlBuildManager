@@ -59,7 +59,7 @@ namespace SqlBuildManager.Logging
         {
             if (string.IsNullOrWhiteSpace(rootLoggingPath))
             {
-                LogFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager", logFileName);
+                LogFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "sqlbuildmanager", logFileName);
             }
             else
             {
@@ -130,7 +130,7 @@ namespace SqlBuildManager.Logging
             {
                 if (!Path.IsPathFullyQualified(value))
                 {
-                    _logFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager", value);
+                    _logFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "sqlbuildmanager", value);
                 }
                 else
                 {

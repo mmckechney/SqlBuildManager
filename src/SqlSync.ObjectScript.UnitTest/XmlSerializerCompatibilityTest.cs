@@ -11,7 +11,7 @@ namespace SqlSync.ObjectScript.UnitTest
 <AutoScriptingConfig xmlns=""http://www.mckechney.com/AutoScriptingConfig.xsd"">
   <AutoScripting AllowManualSelection=""false"" IncludeFileHeaders=""true"" DeletePreExistingFiles=""true"" ZipScripts=""true"">
     <DatabaseScriptConfig ServerName=""srv"" DatabaseName=""db"" UserName=""u"" Password=""p"" AuthenticationType=""WindowsAuthentication"">
-      <ScriptToPath>C:\scripts</ScriptToPath>
+      <ScriptToPath>./scripts</ScriptToPath>
     </DatabaseScriptConfig>
     <PostScriptingAction Name=""echo"" Command=""cmd"" Arguments=""/c echo hi"" />
   </AutoScripting>
@@ -25,7 +25,7 @@ namespace SqlSync.ObjectScript.UnitTest
             Assert.AreEqual(1, model.AutoScripting.Count);
             Assert.AreEqual(false, model.AutoScripting[0].AllowManualSelection);
             Assert.AreEqual("srv", model.DatabaseScriptConfig[0].ServerName);
-            Assert.AreEqual("C:\\scripts", model.DatabaseScriptConfig[0].ScriptToPath.Replace('/', '\\'));
+            Assert.AreEqual("./scripts", model.DatabaseScriptConfig[0].ScriptToPath);
             Assert.AreEqual("echo", model.PostScriptingAction[0].Name);
 
             var outDoc = AutoScriptingConfigXmlSerializer.BuildDocument(model);

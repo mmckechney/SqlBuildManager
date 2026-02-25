@@ -24,6 +24,11 @@ namespace SqlBuildManager.Console.KeyVault
 
 
         private static SecretClient _secretClient = null!;
+        /// <summary>
+        /// Optional override for tests to reduce Azure SDK retry delays.
+        /// </summary>
+        internal static SecretClientOptions? SecretClientOptionsOverride { get; set; }
+
         internal static SecretClient SecretClient(string keyVaultName)
         {
 
@@ -31,7 +36,8 @@ namespace SqlBuildManager.Console.KeyVault
             {
                 var cred = AadHelper.TokenCredential;
                 string keyVaultUrl = $"https://{keyVaultName}.vault.azure.net/";
-                _secretClient = new SecretClient(vaultUri: new Uri(keyVaultUrl), credential: cred);
+                var options = SecretClientOptionsOverride ?? new SecretClientOptions();
+                _secretClient = new SecretClient(vaultUri: new Uri(keyVaultUrl), credential: cred, options: options);
             }
             return _secretClient;
 
@@ -114,15 +120,22 @@ namespace SqlBuildManager.Console.KeyVault
         }
         public static (bool, CommandLineArgs) GetSecrets(CommandLineArgs cmdLine)
         {
-            if (cmdLine.KeyVaultSecretsRetrieved)
+            if (string.IsNullOrEmpty(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                log.LogInformation("No Key Vault name supplied. Skipping retrieval of secrets from Key Vault");
+                cmdLine.KeyVaultSecretsRetrieved = true;
+                return (true, cmdLine);
+            } 
+
+            if(cmdLine.KeyVaultSecretsRetrieved)
             {
                 log.LogDebug("KeyVault Secrets already retrieved");
                 return (true, cmdLine);
             }
             
             // Check if using Managed Identity mode - secrets from Key Vault are not needed
-            bool usingManagedIdentity = ( cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity ||
-                cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault );
+            bool usingManagedIdentity =  cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity ||
+                cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault ;
             if (usingManagedIdentity)
             {
                 log.LogInformation("Using Managed Identity authentication - Key Vault secrets not required");

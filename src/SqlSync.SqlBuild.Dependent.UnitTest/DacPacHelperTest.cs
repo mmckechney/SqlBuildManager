@@ -23,11 +23,6 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public static void ClassInitialize(TestContext testContext)
         {
             _initColl = new List<Initialization>();
-            // Ensure C:\temp exists
-            if (!Directory.Exists(@"C:\temp"))
-            {
-                Directory.CreateDirectory(@"C:\temp");
-            }
         }
 
         [ClassCleanup]

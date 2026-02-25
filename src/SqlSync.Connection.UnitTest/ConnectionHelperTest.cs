@@ -339,7 +339,7 @@ namespace SqlSync.Connection.UnitTest
             ConnectionData connData = new ConnectionData()
             {
                 DatabaseName = "BadDatabaseNAme",
-                ScriptTimeout = 20,
+                ScriptTimeout = 2,
                 SQLServerName = "localhost\\SQLEXPRESS",
                 AuthenticationType = AuthenticationType.Windows
             };

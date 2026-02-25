@@ -25,7 +25,7 @@ namespace SqlSync.SqlBuild
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public const string FileMissing = "File Missing";
         public const string Sha1HashError = "SHA1 Hash Error";
-        public static string DefaultScriptXmlFile = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? string.Empty, "Default Scripts", "DefaultScriptRegistry.xml");
+        public static string DefaultScriptXmlFile = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? string.Empty, "defaultscripts", "DefaultScriptRegistry.xml");
         internal static readonly ISqlBuildFileHelper fileHelper = new DefaultSqlBuildFileHelper();
         internal static readonly IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
 
@@ -152,7 +152,7 @@ namespace SqlSync.SqlBuild
             }
             else
             {
-                log.LogInformation($"LoadSqlBuildProjectFileAsync: unable to find projectFile at {projFileName}. Creating shell.");
+                log.LogInformation($"LoadSqlBuildProjectFileAsync: Project file not found at {projFileName}, creating new project file shell.");
                 var model = CreateShellSqlSyncBuildDataModel();
                 await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model).ConfigureAwait(false);
                 return (false, model);
@@ -1213,7 +1213,7 @@ namespace SqlSync.SqlBuild
             if (replaced)
                 log.LogInformation($"Successfully updated the XmlNamespace in file {fileName}");
             else
-                log.LogInformation($"Unable to update the XmlNamespace in file {fileName}");
+                log.LogWarning($"Unable to update the XmlNamespace in file {fileName}");
             return replaced;
 
         }
