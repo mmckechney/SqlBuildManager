@@ -92,7 +92,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 // Validate blob storage logs agree with K8s test result
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
-                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName);
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
 
                 var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
                 var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);

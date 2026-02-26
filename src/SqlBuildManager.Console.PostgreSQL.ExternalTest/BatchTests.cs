@@ -126,7 +126,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             Assert.IsTrue(logFileContents.Contains("Batch complete"), "Should indicate a batch job");
 
             // Validate blob storage logs agree with local test result
-            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName);
+            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
             var blobValidator = new BlobLogValidator(
                 cmdLine.ConnectionArgs.StorageAccountName,
                 cmdLine.ConnectionArgs.StorageAccountKey,

@@ -82,7 +82,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 // Validate blob storage logs agree with ACI PG test result
                 var logFileContents = PgTestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
-                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName);
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
 
                 var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
                 var dbCount = File.ReadAllLines(overrideFile).Where(l => !string.IsNullOrWhiteSpace(l)).Count();

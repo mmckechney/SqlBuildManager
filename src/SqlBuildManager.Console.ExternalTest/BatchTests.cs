@@ -367,7 +367,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
 
                 // Validate blob storage logs agree with local test result
-                BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName);
+                BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
                 var blobValidator = new BlobLogValidator(
                     cmdLine.ConnectionArgs.StorageAccountName,
                     cmdLine.ConnectionArgs.StorageAccountKey,
