@@ -91,6 +91,9 @@ namespace SqlBuildManager.Console.ExternalTest
         /// </summary>
         public void AssertBuildSuccess(int expectedDbCount, TestContext? testContext = null)
         {
+            var successLines = SuccessDatabases.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var failureLines = FailureDatabases.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
             testContext?.WriteLine($"--- Blob Storage Log Validation (Success) ---");
             testContext?.WriteLine($"  Blobs found: {BlobNames.Count}");
             testContext?.WriteLine($"  Blob names: {string.Join(", ", BlobNames)}");
@@ -99,6 +102,9 @@ namespace SqlBuildManager.Console.ExternalTest
             testContext?.WriteLine($"  successdatabases.cfg length: {SuccessDatabases.Length}");
             testContext?.WriteLine($"  failuredatabases.cfg length: {FailureDatabases.Length}");
             testContext?.WriteLine($"  Task execution logs: {TaskExecutionLogs.Count}");
+            testContext?.WriteLine($"  Expected databases: {expectedDbCount}");
+            testContext?.WriteLine($"  Success database count: {successLines.Length}");
+            testContext?.WriteLine($"  Failure database count: {failureLines.Length}");
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(CommitsLog),
                 "Blob: commits.log should contain committed script entries");
@@ -108,14 +114,11 @@ namespace SqlBuildManager.Console.ExternalTest
 
             if (expectedDbCount > 0)
             {
-                var successLines = SuccessDatabases
-                    .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                Assert.AreEqual(expectedDbCount, successLines.Length,
+                  Assert.AreEqual(expectedDbCount, successLines.Length,
                     $"Blob: successdatabases.cfg should list {expectedDbCount} databases, found {successLines.Length}");
             }
 
-            var failureLines = FailureDatabases
-                .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
             Assert.AreEqual(0, failureLines.Length,
                 $"Blob: failuredatabases.cfg should be empty for a successful build, found:\n{Truncate(FailureDatabases, 500)}");
 
