@@ -1,4 +1,4 @@
-using Microsoft.Azure.Batch;
+﻿using Microsoft.Azure.Batch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
 using System;
@@ -44,7 +44,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
         [TestMethod]
-        public void Kubernetes_Run_Queue_SBMSource_Success(string settingsFile)
+        public async Task Kubernetes_Run_Queue_SBMSource_Success(string settingsFile)
         {
             try
             {
@@ -96,7 +96,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
                 var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
-                blobValidator.LoadLogsAsync().Wait();
+                await blobValidator.LoadLogsAsync();
                 blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
@@ -111,7 +111,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
         [TestMethod]
-        public void Kubernetes_Run_LongRunning_Queue_SBMSource_Success(string settingsFile)
+        public async Task Kubernetes_Run_LongRunning_Queue_SBMSource_Success(string settingsFile)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -159,6 +159,15 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 var dbCount = File.ReadAllText(tmpOverride).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs agree with K8s test result
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {
@@ -172,7 +181,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
         [TestMethod]
-        public void Kubernetes_Query_Queue_SBMSource_Success(string settingsFile)
+        public async Task Kubernetes_Query_Queue_SBMSource_Success(string settingsFile)
         {
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
             try
@@ -227,6 +236,15 @@ namespace SqlBuildManager.Console.ExternalTest
                 var overrideLength = File.ReadAllLines(overrideFile).Length;
 
                 Assert.IsTrue(outputLength > overrideLength, "There should be more lines in the output than were in the override");
+
+                // Validate blob storage logs agree with K8s test result
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertQuerySuccess(TestContext);
             }
             finally
             {
@@ -246,7 +264,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
         [TestMethod]
-        public void Kubernetes_Run_Queue_SBMSource_BadTarget_Fail(string settingsFile)
+        public async Task Kubernetes_Run_Queue_SBMSource_BadTarget_Fail(string settingsFile)
         {
             try
             {
@@ -293,6 +311,14 @@ namespace SqlBuildManager.Console.ExternalTest
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {(dbCount - 2).ToString().PadLeft(5, '0')}"));
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Errors:        {(2).ToString().PadLeft(5, '0')}"));
 
+                // Validate blob storage logs agree with K8s test result
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildFailure(TestContext);
             }
             finally
             {
@@ -307,7 +333,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")] // MI-only authentication
         // [DataRow("TestConfig/settingsfile-k8s-sec.json")] // Old: requires secrets
         [TestMethod]
-        public void Kubernetes_Run_Queue_DoubleDbConfig_SBMSource_Success(string settingsFile)
+        public async Task Kubernetes_Run_Queue_DoubleDbConfig_SBMSource_Success(string settingsFile)
         {
             try
             {
@@ -350,6 +376,15 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs agree with K8s test result
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {
@@ -367,7 +402,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json", ConcurrencyType.MaxPerTag, 3)]
         // [DataRow("TestConfig/settingsfile-k8s-sec.json", ConcurrencyType.MaxPerServer, 5)]
         [TestMethod]
-        public void Kubernetes_Run_Queue_Concurrency_SBMSource_Success(string settingsFile, ConcurrencyType concurType, int concurrencyCount)
+        public async Task Kubernetes_Run_Queue_Concurrency_SBMSource_Success(string settingsFile, ConcurrencyType concurType, int concurrencyCount)
         {
             try
             {
@@ -416,6 +451,15 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs agree with K8s test result
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {
@@ -426,7 +470,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
         [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
         [TestMethod]
-        public void Kubernetes_Run_Queue_DacpacSource_ForceApplyCustom_Success(string settingsFile)
+        public async Task Kubernetes_Run_Queue_DacpacSource_ForceApplyCustom_Success(string settingsFile)
         {
             try
             {
@@ -500,6 +544,15 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs agree with K8s test result
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {

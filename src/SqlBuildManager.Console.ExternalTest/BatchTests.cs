@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
@@ -146,7 +146,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.MaxPerTag, 2)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.MaxPerTag, 2)]
         [TestMethod]
-        public void Batch_Override_SBMSource_ByTag_ConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_Override_SBMSource_ByTag_ConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
@@ -183,6 +183,14 @@ namespace SqlBuildManager.Console.ExternalTest
             if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+
+                BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+                var blobValidator = new BlobLogValidator(
+                    cmdLine.ConnectionArgs.StorageAccountName,
+                    cmdLine.ConnectionArgs.StorageAccountKey,
+                    jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
             }
             if (batchMethod == "runthreaded")
             {
@@ -198,7 +206,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.MaxPerTag, 2)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.MaxPerTag, 2)]
         [TestMethod]
-        public void Batch_Override_SBMSource_ByTag_ConcurrencyType_MissingTag_Fail(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_Override_SBMSource_ByTag_ConcurrencyType_MissingTag_Fail(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
@@ -228,6 +236,13 @@ namespace SqlBuildManager.Console.ExternalTest
             val.Wait();
             var result = val.Result;
             Assert.IsTrue(val.Result != 0);
+
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            await blobValidator.LoadLogsAsync();
+            blobValidator.AssertBuildFailure(TestContext);
         }
 
         // [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.Tag, 2)]
@@ -241,7 +256,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("run", "TestConfig/settingsfile-batch-windows-queue-keyvault.json", ConcurrencyType.MaxPerTag, 5)]
         // [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json", ConcurrencyType.MaxPerTag, 5)]
         [TestMethod]
-        public void Batch_Queue_SBMSource_ByTag_ConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_Queue_SBMSource_ByTag_ConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             string sbmFileName = TestHelper.GetSimpleSelectSbm();
@@ -285,6 +300,14 @@ namespace SqlBuildManager.Console.ExternalTest
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+
+            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            await blobValidator.LoadLogsAsync();
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
         // [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.Tag, 2)]
@@ -313,7 +336,6 @@ namespace SqlBuildManager.Console.ExternalTest
             Task<int> val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             Assert.IsTrue(val.Result != 0);
-            
         }
 
         // [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
@@ -328,7 +350,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.MaxPerServer, 2)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.MaxPerServer, 2)]
         [TestMethod]
-        public void Batch_Override_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_Override_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
@@ -372,7 +394,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     cmdLine.ConnectionArgs.StorageAccountName,
                     cmdLine.ConnectionArgs.StorageAccountKey,
                     jobName);
-                blobValidator.LoadLogsAsync().Wait();
+                await blobValidator.LoadLogsAsync();
                 blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
             }
             if (batchMethod == "runthreaded")
@@ -385,7 +407,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.MaxPerServer, 2)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.MaxPerServer, 2)]
         [TestMethod]
-        public void Batch_OverrideWithBadTarget_SBMSource_ByConcurrencyType_Fail(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_OverrideWithBadTarget_SBMSource_ByConcurrencyType_Fail(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
@@ -421,7 +443,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 cmdLine.ConnectionArgs.StorageAccountName,
                 cmdLine.ConnectionArgs.StorageAccountKey,
                 jobName);
-            blobValidator.LoadLogsAsync().Wait();
+            await blobValidator.LoadLogsAsync();
             blobValidator.AssertBuildFailure(TestContext);
         }
 
@@ -429,7 +451,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("run", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.Count, 10)]
         [TestMethod]
-        public void Batch_SqlScriptOverride_SBMSource_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_SqlScriptOverride_SBMSource_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
@@ -483,6 +505,14 @@ namespace SqlBuildManager.Console.ExternalTest
             if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+
+                BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+                var blobValidator = new BlobLogValidator(
+                    cmdLine.ConnectionArgs.StorageAccountName,
+                    cmdLine.ConnectionArgs.StorageAccountKey,
+                    jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(tmpOverrideFileContents.Count, TestContext);
             }
             if (batchMethod == "runthreaded")
             {
@@ -499,7 +529,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("run", "TestConfig/settingsfile-batch-windows-mi-only.json", ConcurrencyType.Count, 10)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.Count, 10)]
         [TestMethod]
-        public void Batch_Override_SBMSource_ManagedIdentity_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_Override_SBMSource_ManagedIdentity_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
@@ -533,6 +563,14 @@ namespace SqlBuildManager.Console.ExternalTest
             if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+
+                BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+                var blobValidator = new BlobLogValidator(
+                    cmdLine.ConnectionArgs.StorageAccountName,
+                    cmdLine.ConnectionArgs.StorageAccountKey,
+                    jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
             }
             if (batchMethod == "runthreaded")
             {
@@ -574,7 +612,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
-        public void Batch_Override_PlatinumDbSource_Success(string batchMethod, string settingsFile)
+        public async Task Batch_Override_PlatinumDbSource_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -609,6 +647,15 @@ namespace SqlBuildManager.Console.ExternalTest
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+
+            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            await blobValidator.LoadLogsAsync();
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
+
             if (batchMethod == "runthreaded")
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count() - removeCount}"), $"Should have run against a {overrideFileContents.Count() - removeCount} databases");
@@ -619,7 +666,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
-        public void Batch_Override_PlatinumDbSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
+        public async Task Batch_Override_PlatinumDbSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -660,6 +707,14 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
 
+            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            await blobValidator.LoadLogsAsync();
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
+
             if (batchMethod == "runthreaded")
             {
                 Assert.IsTrue(logFileContents.Contains($"{database2}:Dacpac Databases In Sync"), "The second database should already be in sync with the first");
@@ -672,7 +727,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
-        public void Batch_Override_PlatinumDbSource_ADbAlreadyInSync(string batchMethod, string settingsFile)
+        public async Task Batch_Override_PlatinumDbSource_ADbAlreadyInSync(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -712,6 +767,15 @@ namespace SqlBuildManager.Console.ExternalTest
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
+
+            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            await blobValidator.LoadLogsAsync();
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
+
             if (batchMethod == "runthreaded")
             {
 
@@ -727,7 +791,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
-        public void Batch_Override_DacpacSource_Success(string batchMethod, string settingsFile)
+        public async Task Batch_Override_DacpacSource_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -766,6 +830,15 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains("Successfully created SBM from two dacpacs"), "Indication that the script creation was good");
+
+            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            await blobValidator.LoadLogsAsync();
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
+
             if (batchMethod == "runthreaded")
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count() - removeCount}"), $"Should have run against a {overrideFileContents.Count() - removeCount} databases");
@@ -775,7 +848,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
-        public void Batch_Override_DacpacSource_TargetDacpac_Set_Success(string batchMethod, string settingsFile)
+        public async Task Batch_Override_DacpacSource_TargetDacpac_Set_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -824,6 +897,15 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains("Successfully created SBM from two dacpacs"), "Indication that the script creation was good");
+
+            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            await blobValidator.LoadLogsAsync();
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
+
             if (batchMethod == "runthreaded")
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count() - removeCount}"), $"Should have run against a {overrideFileContents.Count() - removeCount} databases");
@@ -836,7 +918,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("run", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
-        public void Batch_Override_DacpacSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
+        public async Task Batch_Override_DacpacSource_FirstDbAlreadyInSync(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -879,6 +961,15 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
+
+            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            await blobValidator.LoadLogsAsync();
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
+
             if (batchMethod == "runthreaded")
             {
                 Assert.IsTrue(logFileContents.Contains($"{database2}:Dacpac Databases In Sync"), "The second database should already be in sync with the first");
@@ -891,7 +982,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("query", "TestConfig/settingsfile-batch-windows.json")]
         [DataRow("query", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
-        public void Batch_Query_Override_SelectSuccess(string batchMethod, string settingsFile)
+        public async Task Batch_Query_Override_SelectSuccess(string batchMethod, string settingsFile)
         {
 
             string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -948,7 +1039,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     cmdLine.ConnectionArgs.StorageAccountName,
                     cmdLine.ConnectionArgs.StorageAccountKey,
                     jobName);
-                blobValidator.LoadLogsAsync().Wait();
+                await blobValidator.LoadLogsAsync();
                 blobValidator.AssertQuerySuccess(TestContext);
             }
             finally
@@ -965,7 +1056,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [DataRow("query", "TestConfig/settingsfile-batch-windows-mi-only.json")]
         [DataRow("query", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
-        public void Batch_Query_Override_ManagedIdentity_SelectSuccess(string batchMethod, string settingsFile)
+        public async Task Batch_Query_Override_ManagedIdentity_SelectSuccess(string batchMethod, string settingsFile)
         {
             
             string overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -1016,6 +1107,13 @@ namespace SqlBuildManager.Console.ExternalTest
                 var overrideLength = File.ReadAllLines(overrideFile).Length;
 
                 Assert.IsTrue(outputLength > overrideLength, "There should be more lines in the output than were in the override");
+
+                var blobValidator = new BlobLogValidator(
+                    cmdLine.ConnectionArgs.StorageAccountName,
+                    cmdLine.ConnectionArgs.StorageAccountKey,
+                    jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertQuerySuccess(TestContext);
             }
             finally
             {
