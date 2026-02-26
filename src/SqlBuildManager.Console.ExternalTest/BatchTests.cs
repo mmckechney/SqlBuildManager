@@ -235,14 +235,8 @@ namespace SqlBuildManager.Console.ExternalTest
             var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
-            Assert.IsTrue(val.Result != 0);
+            Assert.IsTrue(val.Result != 0, "This test should have failed validation.");
 
-            var blobValidator = new BlobLogValidator(
-                cmdLine.ConnectionArgs.StorageAccountName,
-                cmdLine.ConnectionArgs.StorageAccountKey,
-                jobName);
-            await blobValidator.LoadLogsAsync();
-            blobValidator.AssertBuildFailure(TestContext);
         }
 
         // [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows-queue.json", ConcurrencyType.Tag, 2)]

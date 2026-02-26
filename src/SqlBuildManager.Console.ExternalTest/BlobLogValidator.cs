@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -135,8 +136,19 @@ namespace SqlBuildManager.Console.ExternalTest
             Assert.AreEqual(0, failureLines.Length,
                 $"Blob: failuredatabases.cfg should be empty for a successful build, found:\n{Truncate(FailureDatabases, 500)}");
 
+
+            
+            
+
             foreach (var (name, content) in TaskExecutionLogs)
             {
+                //Ignore errors if a custom DACPAC is required -- will have to rely on the success database count since ERR entries will be present in the logs due to the intentional failure to build the default DACPAC
+                bool neededCusstomDacpac = Regex.IsMatch(content, @"WRN TH: \d{1,3}\] SqlSync\.SqlBuild.Services\.DefaultDacPacFallbackHandler - Custom dacpac required");
+                if(neededCusstomDacpac)
+                {
+                    continue;
+                }
+
                 // Find ERR lines, excluding known transient errors that occur during container shutdown
                 // (e.g., Service Bus subscription deleted by orchestrator while replica still polls)
                 var errLines = content.Split('\n')
