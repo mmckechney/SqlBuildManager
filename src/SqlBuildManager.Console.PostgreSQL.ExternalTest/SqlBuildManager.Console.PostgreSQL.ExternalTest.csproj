@@ -11,12 +11,17 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="4.1.0" />
     <PackageReference Include="MSTest.TestFramework" Version="4.1.0" />
+    <PackageReference Include="Azure.Identity" Version="1.17.1" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
     <PackageReference Include="Npgsql" Version="10.0.1" />
     <PackageReference Include="coverlet.collector" Version="8.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.CommandLine" Version="2.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SqlBuildManager.Console.ExternalTest\BlobLogValidator.cs" Link="BlobLogValidator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlBuildManager.Console\sbm.csproj" />

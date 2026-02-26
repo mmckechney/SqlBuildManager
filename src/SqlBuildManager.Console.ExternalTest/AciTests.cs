@@ -90,6 +90,17 @@ namespace SqlBuildManager.Console.ExternalTest
                 val.Wait();
                 int result = val.Result;
                Assert.AreEqual(0, result);
+
+                // Validate blob storage logs agree with ACI test result
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var dbCount = File.ReadAllLines(overrideFile).Where(l => !string.IsNullOrWhiteSpace(l)).Count();
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                blobValidator.LoadLogsAsync().Wait();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {

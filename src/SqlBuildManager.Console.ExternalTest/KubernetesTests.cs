@@ -89,6 +89,15 @@ namespace SqlBuildManager.Console.ExternalTest
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs agree with K8s test result
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                blobValidator.LoadLogsAsync().Wait();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {

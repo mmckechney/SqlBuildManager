@@ -365,6 +365,15 @@ namespace SqlBuildManager.Console.ExternalTest
             if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
+
+                // Validate blob storage logs agree with local test result
+                BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName);
+                var blobValidator = new BlobLogValidator(
+                    cmdLine.ConnectionArgs.StorageAccountName,
+                    cmdLine.ConnectionArgs.StorageAccountKey,
+                    jobName);
+                blobValidator.LoadLogsAsync().Wait();
+                blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
             }
             if (batchMethod == "runthreaded")
             {
@@ -406,6 +415,14 @@ namespace SqlBuildManager.Console.ExternalTest
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(1, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed with Errors"), "This test should have failed!");
+
+            // Validate blob storage logs agree with the failure result
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            blobValidator.LoadLogsAsync().Wait();
+            blobValidator.AssertBuildFailure(TestContext);
         }
 
         // [DataRow("runthreaded", "TestConfig/settingsfile-batch-windows.json", ConcurrencyType.Count, 10)]
@@ -925,6 +942,14 @@ namespace SqlBuildManager.Console.ExternalTest
                 var overrideLength = File.ReadAllLines(overrideFile).Length;
 
                 Assert.IsTrue(outputLength > overrideLength, "There should be more lines in the output than were in the override");
+
+                // Validate blob storage logs agree with local query result
+                var blobValidator = new BlobLogValidator(
+                    cmdLine.ConnectionArgs.StorageAccountName,
+                    cmdLine.ConnectionArgs.StorageAccountKey,
+                    jobName);
+                blobValidator.LoadLogsAsync().Wait();
+                blobValidator.AssertQuerySuccess(TestContext);
             }
             finally
             {

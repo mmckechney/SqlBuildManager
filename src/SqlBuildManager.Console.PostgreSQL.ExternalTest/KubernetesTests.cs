@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.ExternalTest;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -84,6 +85,16 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs agree with K8s PG test result
+                var logFileContents = PgTestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                blobValidator.LoadLogsAsync().Wait();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {

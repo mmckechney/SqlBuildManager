@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.ExternalTest;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -123,6 +124,15 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "Batch PG run should have completed successfully");
             Assert.IsTrue(logFileContents.Contains("Batch complete"), "Should indicate a batch job");
+
+            // Validate blob storage logs agree with local test result
+            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName);
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            blobValidator.LoadLogsAsync().Wait();
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.Count, 10)]
