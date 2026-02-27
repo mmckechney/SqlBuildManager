@@ -98,7 +98,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public async Task PackageSbxFileIntoSbmFileTest_SuccessWithPreExistingXmlFile()
         {
-            string folder = Path.GetTempPath() + Guid.NewGuid().ToString();
+            string folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(folder);
 
             string sbxFile = Path.Combine(folder, "sbx_package_tester.sbx");
@@ -128,7 +128,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public async Task PackageSbxFileIntoSbmFileTest_SuccessWithPreExistingSbmFile()
         {
-            string folder = Path.GetTempPath() + Guid.NewGuid().ToString();
+            string folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(folder);
 
             string sbxFile = Path.Combine(folder, "sbx_package_tester.sbx");
@@ -159,7 +159,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public async Task PackageSbxFileIntoSbmFileTest_GoodSbxNoScripts()
         {
-            string folder = Path.GetTempPath() + Guid.NewGuid().ToString();
+            string folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(folder);
 
             string sbxFile = Path.Combine(folder, "sbx_package_tester.sbx");
@@ -231,7 +231,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public async Task PackageSbxFilesIntoSbmFilesTest_SingleSbx()
         {
-            string directoryName = Path.GetTempPath() + Guid.NewGuid().ToString();
+            string directoryName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(directoryName);
 
             string sbxBuildControlFileName = Path.Combine(directoryName, "sbx_package_tester.sbx");
@@ -254,7 +254,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public async Task PackageSbxFilesIntoSbmFilesTest_SbxInMainAndSubFolder()
         {
-            string directoryName = Path.GetTempPath() + Guid.NewGuid().ToString();
+            string directoryName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(directoryName);
 
             string sbxBuildControlFileName = Path.Combine(directoryName, "sbx_package_tester.sbx");
@@ -292,7 +292,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public async Task PackageSbxFilesIntoSbmFilesTest_FailNoSbx()
         {
-            string directoryName = Path.GetTempPath() + Guid.NewGuid().ToString();
+            string directoryName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(directoryName);
 
             List<string> actual;
@@ -305,7 +305,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod()]
         public async Task PackageSbxFilesIntoSbmFilesTest_FailBadSbx()
         {
-            string directoryName = Path.GetTempPath() + Guid.NewGuid().ToString();
+            string directoryName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(directoryName);
 
             string sbxBuildControlFileName = Path.Combine(directoryName, "sbx_package_tester.sbx");

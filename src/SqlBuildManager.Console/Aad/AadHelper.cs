@@ -71,7 +71,7 @@ namespace SqlBuildManager.Console.Aad
                     {
                         if (!string.IsNullOrEmpty(AadHelper.TenantId))
                         {
-                            log.LogInformation($"Creating DefaultAzureCredential for Tenant '{AadHelper.TenantId}', no ManagedIdentityClientId specified");
+                            log.LogInformation($"Creating DefaultAzureCredential for Tenant starting with'{AadHelper.TenantId.Substring(0, 8)}...', no ManagedIdentityClientId specified");
                             _tokenCred = new DefaultAzureCredential(new DefaultAzureCredentialOptions() { TenantId = AadHelper.TenantId });
                         }
                         else

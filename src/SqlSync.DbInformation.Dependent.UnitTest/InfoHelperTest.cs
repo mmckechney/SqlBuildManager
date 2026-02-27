@@ -398,7 +398,6 @@ namespace SqlSync.DbInformation.Dependent.UnitTest
         #region GetDatabaseSizeAnalysis Tests
 
         [TestMethod()]
-        [Ignore("Resource file SizeAnalysis.sql is not properly embedded - TODO: fix resource embedding")]
         public void GetDatabaseSizeAnalysis_ReturnsAnalysisData()
         {
             ConnectionData connData = GetConnData();
