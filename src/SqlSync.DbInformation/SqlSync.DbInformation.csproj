@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="SizeAnalysis.sql" />
+    <EmbeddedResource Include="SizeAnalysis.sql" />
   </ItemGroup>
 
   <ItemGroup>
