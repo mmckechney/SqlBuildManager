@@ -12,7 +12,7 @@ These sub-folders contain `TestResults.html` test result HTML summaries and `con
 
 ## Review of output for passed or skipped tests:
 - For the tests that didn't fail, please review the logs and identify any messages that either have misleading messages or suggest something may have gone wrong, even if the test passed.
-- If the test case is to test a failure path, don't bother warning me about ERR logs. I want these to be there
+- If the test case is to test a failure path or Asserts a `ThrowsExactlyAsync`, don't bother warning me about ERR or WRN logs - I want these ERR and WRN messags in the logs/
 - Create a suggestion of what might be changed to remediate your findings. 
 - Be sure to include the list of effected tests with each set of recommendations
 - Please create a single `observations.md` markdown file with your observations analysis. 

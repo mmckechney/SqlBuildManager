@@ -123,7 +123,7 @@ namespace SqlSync.SqlBuild
                         log.LogError(e, "Error establishing connection data");
                         _ctx.ErrorOccured = true;
                         buildFailure = true;
-                        progress.ReportProgress(0, new ScriptRunStatusEventArgs($"ERROR connecting to {serverName}.{targetDatabase}", TimeSpan.Zero));
+                        progress.ReportProgress(0, new ScriptRunStatusEventArgs($"Connection failed for {serverName}.{targetDatabase}", TimeSpan.Zero));
                         if (currentRun != null)
                         {
                             currentRun.Success = false;

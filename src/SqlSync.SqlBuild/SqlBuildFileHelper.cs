@@ -12,6 +12,7 @@ using SqlSync.SqlBuild.Utilities;
 using System.Threading.Tasks;
 using System.Threading;
 using SqlSync.SqlBuild.Services;
+using System.Net;
 
 #nullable enable
 
@@ -1194,27 +1195,35 @@ namespace SqlSync.SqlBuild
         public static bool UpdateObsoleteXmlNamespace(string fileName)
         {
             log.LogDebug($"Updating XmlNamespace from legacy file '{fileName}'");
-            bool replaced = false;
-            //valid namespace settings
-            string xmlns = "xmlns=\"http://schemas.mckechney.com/";
-            Regex xmlnsX = new Regex("xmlns=\"http://.+?/", RegexOptions.IgnoreCase);
 
             string contents = File.ReadAllText(fileName);
-            if (xmlnsX.Match(contents).Success)
+            //valid namespace settings
+            string xmlns = "xmlns=\"http://schemas.mckechney.com/";
+            var correctNamespaceX = new Regex("xmlns=\"http://schemas.mckechney.com/", RegexOptions.IgnoreCase);
+            if(correctNamespaceX.Match(contents).Success)
             {
-                if (!contents.Contains(xmlns))
-                {
-                    contents = xmlnsX.Replace(contents, xmlns);
-                    replaced = true;
-                    File.WriteAllText(fileName, contents);
-                }
+                log.LogDebug($"File '{fileName}' already contains the correct XmlNamespace — no update needed");
+                return false;
             }
 
-            if (replaced)
-                log.LogInformation($"Successfully updated the XmlNamespace in file {fileName}");
+            //If we get here, there is an obsolete namespace that needs to be updated.
+            Regex xmlnsX = new Regex("xmlns=\"http://.+?/", RegexOptions.IgnoreCase);
+            
+            if (xmlnsX.Match(contents).Success)
+            {
+                    contents = xmlnsX.Replace(contents, xmlns);
+                    File.WriteAllText(fileName, contents);
+                    log.LogInformation($"Updated XmlNamespace in file '{fileName}' to '{xmlns}'");
+                    return true;
+
+            }
             else
-                log.LogWarning($"Unable to update the XmlNamespace in file {fileName}");
-            return replaced;
+            {
+                log.LogInformation($"File '{fileName}' does not contain a XmlNamespace that can be updated. No changes were made.");
+                return false;
+            }
+
+          
 
         }
         #endregion
