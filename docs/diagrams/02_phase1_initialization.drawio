@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="Phase 1 - Initialization" id="d1">
+    <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="690" pageHeight="740" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p1h" value="ThreadedManager.ExecuteAsync()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="300" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p1a" value="Initialize ThreadedLogging
+with RunId" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="140" width="300" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p1a" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p1h" target="p1a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1b" value="Set root logging path" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="250" width="300" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p1b" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p1a" target="p1b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1b1" value="AZ_BATCH_TASK_WORKING_DIR
+(if in Batch)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="420" y="250" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p1b1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p1b" target="p1b1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1b2" value="cmdLine.RootLoggingPath
+(if specified)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="420" y="300" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p1b2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p1b" target="p1b2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1b3" value="Default: ./tmp-sqlbuildlogging" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="420" y="350" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p1b3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p1b" target="p1b3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1c" value="SetRootAndWorkingPaths()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="460" width="300" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p1c" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p1b" target="p1c">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1c1" value="Create root logging directory" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="420" y="460" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p1c1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p1c" target="p1c1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1c2" value="Create Working subdirectory" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="420" y="510" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p1c2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p1c" target="p1c2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1d" value="Validation.ValidateCommon
+CommandLineArgs()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="620" width="300" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p1d" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p1c" target="p1d">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1d1" value="Validate required parameters" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="420" y="620" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p1d1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p1d" target="p1d1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1d2" value="Return error codes if
+validation fails" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="420" y="670" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p1d2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p1d" target="p1d2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
