@@ -72,6 +72,7 @@ try {
         --resource-group $resourceGroupName `
         --image "${testImageName}:${imageTag}" `
         --file "$tempContext\$dockerfileName" `
+        --no-logs `
         $tempContext
     
     if ($LASTEXITCODE -ne 0) {
