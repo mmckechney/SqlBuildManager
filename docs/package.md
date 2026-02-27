@@ -2,10 +2,9 @@
 
 Contents:
 
-- [Package and meta-data](#package-and-meta-data)
-- [Creating a Package](#creating-a-package)
-  - [Forms UI](#forms-ui)
-  - [Command Line](#command-line)
+- [Package (aka Build Package)](#package-aka-build-package)
+  - [Package and meta-data](#package-and-meta-data)
+  - [Creating a Package](#creating-a-package)
 
 ---
 
@@ -48,11 +47,6 @@ Example `SqlSyncBuildProject.xml` file. You can build this by hand to create you
 
 ## Creating a Package
 
-### Forms UI
-
-While the focus of the app has changed to command line automation, the forms GUI is fully functional. If you are looking for a visual tool, check out _SqlBuildManager.exe_. There is documentation on the GUI that you can find [here](docs/SqlBuildManagerManual.md) that will walk through the creation of build packages ([PDF version](src/SqlBuildManager%20Manual/SqlBuildManagerManual.pdf)).
-
-### Command line
 
 There are several ways to create a build package from the command line.  Which you choose depends on your starting point:
 

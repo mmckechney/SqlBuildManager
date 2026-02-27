@@ -33,9 +33,10 @@ With this update, it significantly reduces the the need to save and manage secre
 
 ## Contents
 
+
 - [SQL Build Manager](#sql-build-manager)
       - [_Be sure to review the change log for the latest updates, enhancements and bug fixes_](#be-sure-to-review-the-change-log-for-the-latest-updates-enhancements-and-bug-fixes)
-    - [**PostgreSQL Support**](#postgresql-support)
+    - [**Highlighted feature update, v16+: PostgreSQL Support**](#highlighted-feature-update-v16-postgresql-support)
     - [**Key feature enhancement with Version 14.4+: Expanded use of Azure User Assigned Managed Identity**](#key-feature-enhancement-with-version-144-expanded-use-of-azure-user-assigned-managed-identity)
   - [Contents](#contents)
   - [Important Concepts](#important-concepts)
@@ -56,6 +57,7 @@ With this update, it significantly reduces the the need to save and manage secre
   - [Querying across databases (command line)](#querying-across-databases-command-line)
     - [Threaded](#threaded-1)
     - [Batch, Kubernetes and ACI](#batch-kubernetes-and-aci)
+  - [Detailed Process Flow](docs/threaded_build_process_flow.md)
 
 ---
 
