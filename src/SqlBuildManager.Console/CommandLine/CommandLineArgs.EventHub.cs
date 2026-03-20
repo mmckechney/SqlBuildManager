@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace SqlBuildManager.Console.CommandLine
@@ -38,14 +38,14 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 if(value == null)
                 {
-                    _EventHubLogging = null;
+                    _EventHubLogging = null!;
                     return;
                 }
                 if (_EventHubLogging != null && _EventHubLogging.Length > 0)
                 {
                     _EventHubLogging = _EventHubLogging.Concat(value).ToArray();
                 }
-                _EventHubLogging = _EventHubLogging.Distinct().ToArray();
+                _EventHubLogging = _EventHubLogging!.Distinct().ToArray();
                 EventHubArgs.Logging = _EventHubLogging;
             }
         }

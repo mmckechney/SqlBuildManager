@@ -1,14 +1,17 @@
-﻿using System;
+using System;
 using System.CommandLine;
-using System.CommandLine.NamingConventionBinder;
 using System.IO;
 
 namespace SqlBuildManager.Console.CommandLine
 {
     public partial class CommandLineBuilder
 	{
-		private static Option<FileInfo[]> packagesOption = new Option<FileInfo[]>(new string[] { "-p", "--packages" }, "One or more SBM packages to get contents for") { IsRequired = true }.ExistingOnly();
-		private static Option<bool> withHashOption = new Option<bool>(new string[] { "-w", "--withhash" }, () => true, "Also include the SHA1 hash of the script files in the package");
+		private static Option<FileInfo[]> packagesOption = new Option<FileInfo[]>("--packages", "-p") { Description = "One or more SBM packages to get contents for" , Required = true };
+		private static Option<bool> withHashOption = new Option<bool>("--withhash", "-w") { Description = "Also include the SHA1 hash of the script files in the package" };
+		private static Option<FileInfo> unpackPackageOption = new Option<FileInfo>("--package", "-p") { Description = "Name of the SBM package to unpack" , Required = true };
+		private static Option<DateTime?> startDateOption = new Option<DateTime?>("--startdate", "--date") { Description = "Date to start counting messages from (will result in faster retrieval if there are a lot of messages)" };
+		private static Option<int> timeoutOption = new Option<int>("--timeout") { Description = "Number of seconds to wait for next event before terminating. Zero (0) will wait indefinitely." };
+		private static Option<bool> markdownOption = new Option<bool>("--markdown", "--md") { Description = "Output command list as markdown" };
 		
 		/// <summary>
 		/// List contents and hash of a list of SBM packages
@@ -22,14 +25,19 @@ namespace SqlBuildManager.Console.CommandLine
 					packagesOption,
 					withHashOption
 				};
-				cmd.Handler = CommandHandler.Create<FileInfo[], bool>(Worker.ListPackageScripts);
+				cmd.SetAction(async (parseResult, ct) => {
+					var packages = parseResult.GetValue(packagesOption);
+					var withHash = parseResult.GetValue(withHashOption);
+					await Worker.ListPackageScripts(packages: packages!, withHash: withHash);
+					return 0;
+				});
 				return cmd;
 			}
 		}
 
 
-		private static Option<string> golddatabaseOption = new Option<string>(new string[] { "-gd", "--gd", "--golddatabase" }, "The \"gold copy\" database that will serve as the model for what the target database should look like") { IsRequired = true };
-		private static Option<string> goldserverOption = new Option<string>(new string[] { "-gs", "--goldserver" }, "The server that the \"gold copy\" database can be found") { IsRequired = true };
+		internal static Option<string> golddatabaseOption = new Option<string>("--golddatabase", "-gd") { Description = "The \"gold copy\" database that will serve as the model for what the target database should look like", Required = true };
+		internal static Option<string> goldserverOption = new Option<string>("--goldserver", "-gs") { Description = "The server that the \"gold copy\" database can be found", Required = true };
 
 		/// <summary>
 		/// Sync two databases 
@@ -42,12 +50,16 @@ namespace SqlBuildManager.Console.CommandLine
 				{
 					golddatabaseOption,
 					goldserverOption,
-					databaseOption.Copy(true),
-					serverOption.Copy(true),
+					databaseRequiredOption,
+					serverRequiredOption,
 					continueonfailureOption
 				};
 				DatabaseAuthArgs.ForEach(o => cmd.Add(o));
-				cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.SyncronizeDatabaseAsync);
+				cmd.SetAction(async (parseResult, ct) => {
+				    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+				    await Worker.SyncronizeDatabaseAsync(cmdLine);
+				    return 0;
+				});
 				return cmd;
 			}
 		}
@@ -64,15 +76,19 @@ namespace SqlBuildManager.Console.CommandLine
 				{
 					golddatabaseOption,
 					goldserverOption,
-					databaseOption.Copy(true),
-					serverOption.Copy(true)
+					databaseRequiredOption,
+					serverRequiredOption
 				};
-				cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.GetDifferences);
+				cmd.SetAction((parseResult) => {
+				    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+				    Worker.GetDifferences(cmdLine);
+				    return 0;
+				});
 				return cmd;
 			}
 		}
 
-		private static Option<string> directoryOption = new Option<string>(new string[] { "--dir", "--directory" }, "Directory containing 1 or more SBX files to package into SBM zip files") { IsRequired = true };
+		private static Option<string> directoryOption = new Option<string>("--directory", "--dir") { Description = "Directory containing 1 or more SBX files to package into SBM zip files" , Required = true };
 		/// <summary>
 		/// Create an SBM package from and SBX and script files
 		/// </summary>
@@ -85,8 +101,12 @@ namespace SqlBuildManager.Console.CommandLine
 				{
 					directoryOption
 				};
-				cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.PackageSbxFilesIntoSbmFilesAsync);
-				cmd.AddAlias("pack");
+				cmd.SetAction(async (parseResult, ct) => {
+				    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+				    await Worker.PackageSbxFilesIntoSbmFilesAsync(cmdLine);
+				    return 0;
+				});
+				cmd.Aliases.Add("pack");
 				return cmd;
 			}
 		}
@@ -101,10 +121,13 @@ namespace SqlBuildManager.Console.CommandLine
 				//Add
 				var cmd = new Command("add", "Adds one or more scripts to an SBM package or SBX project file from a list of scripts")
 				{
-					outputsbmOption.Copy(true),
+					outputsbmRequiredOption,
 					scriptListOption
 				};
-				cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.AddScriptsToPackage);
+				cmd.SetAction(async (parseResult, ct) => {
+				    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+				    return await Worker.AddScriptsToPackage(cmdLine);
+				});
 				return cmd;
 			}
 		}
@@ -119,9 +142,14 @@ namespace SqlBuildManager.Console.CommandLine
 				var cmd = new Command("unpack", "Unpacks an SBM file into its script files and SBX project file.")
 				{
 					unpackDirectoryOption,
-					new Option<FileInfo>(new string[] { "-p", "--package" }, "Name of the SBM package to unpack") { IsRequired = true }.ExistingOnly()
+					unpackPackageOption
 				};
-				cmd.Handler = CommandHandler.Create<DirectoryInfo, FileInfo>(Worker.UnpackSbmFile);
+				cmd.SetAction(async (parseResult, ct) => {
+					var directory = parseResult.GetValue(unpackDirectoryOption);
+					var package = parseResult.GetValue(unpackPackageOption);
+					await Worker.UnpackSbmFile(directory: directory!, package: package!);
+					return 0;
+				});
 				return cmd;
 			}
 		}
@@ -135,9 +163,13 @@ namespace SqlBuildManager.Console.CommandLine
 			{
 				var cmd = new Command("policycheck", "Performs a script policy check on the specified SBM package")
 				{
-					packagenameOption.Copy(true)
+					packagenameOption
 				};
-				cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.ExecutePolicyCheck);
+				cmd.SetAction(async (parseResult, ct) => {
+				    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+				    await Worker.ExecutePolicyCheck(cmdLine);
+				    return 0;
+				});
 				return cmd;
 			}
 		}
@@ -153,7 +185,11 @@ namespace SqlBuildManager.Console.CommandLine
 				{
 					packagenameOption
 				};
-				cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.GetPackageHash);
+				cmd.SetAction(async (parseResult, ct) => {
+				    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+				    await Worker.GetPackageHash(cmdLine);
+				    return 0;
+				});
 				return cmd;
 			}
 		}
@@ -168,16 +204,20 @@ namespace SqlBuildManager.Console.CommandLine
 				var cmd = new Command("createbackout", "Generates a backout package (reversing stored procedure and scripted object changes)")
 				{
 					packagenameOption,
-					serverOption.Copy(true),
-					databaseOption.Copy(true)
+					serverRequiredOption,
+					databaseRequiredOption
 				};
 				cmd.AddRange(DatabaseAuthArgs);
-				cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreateBackout);
+				cmd.SetAction(async (parseResult, ct) => {
+				    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+				    await Worker.CreateBackout(cmdLine);
+				    return 0;
+				});
 				return cmd;
 			}
 		}
 
-		private static Option utilJobName = new Option<string>(new string[] { "-j", "--jobname" }, "Name of job run to query") { IsRequired = true };
+		private static Option utilJobName = new Option<string>("--jobname", "-j") { Description = "Name of job run to query" , Required = true };
 		/// <summary>
 		/// Retrieve the number of messages currently in a Service Bus Topic Subscription
 		/// </summary>
@@ -190,7 +230,11 @@ namespace SqlBuildManager.Console.CommandLine
 					utilJobName
 				};
 				cmd.AddRange(SettingsFileExistingRequiredOptions);
-				cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.GetQueueMessageCount);
+				cmd.SetAction((parseResult) => {
+				    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+				    Worker.GetQueueMessageCount(cmdLine);
+				    return 0;
+				});
 				return cmd;
 			}
 		}
@@ -205,15 +249,21 @@ namespace SqlBuildManager.Console.CommandLine
 				var cmd = new Command("eventhub", "Retrieve the number of messages in the EventHub for a specific job run.")
 				{
 					utilJobName,
-					new Option<DateTime?>(new string[] { "--date", "--startdate" }, "Date to start counting messages from (will result in faster retrieval if there are a lot of messages)")
+					startDateOption,
+					timeoutOption
 				};
 				cmd.Add(eventhubconnectionOption);
                 cmd.Add(storageaccountnameOption);
 				cmd.Add(storageaccountkeyOption);
-				cmd.Add(new Option<int>(new string[] { "--timeout" }, () => 120, "Number of seconds to wait for next event before terminating. Zero (0) will wait indefinitely."));
                 cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(SettingsFileExistingOptions);
-				cmd.Handler = CommandHandler.Create<CommandLineArgs, bool, int, DateTime?>(Worker.GetEventHubEvents);
+				cmd.SetAction((parseResult) => {
+					var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+					var stream = parseResult.GetValue(streamEventsOption);
+					var timeout = parseResult.GetValue(timeoutOption);
+					var startDate = parseResult.GetValue(startDateOption);
+					return Worker.GetEventHubEvents(cmdLine: cmdLine, stream: stream, timeout: timeout, startDate: startDate);
+				});
 				return cmd;
 			}
 		}
@@ -229,16 +279,20 @@ namespace SqlBuildManager.Console.CommandLine
 				{
 					serverOption,
 					databaseOption,
-					new Option<FileInfo>(new string[] { "--scriptfile" }, "Name of the SQL script (with \".sql\" extension) to generate an override file from. Should be in format: \"SELECT <target server>, <target db> ...\"").ExistingOnly(),
-					new Option<string>(new string[] { "--scripttext" }, "SQL query to generate an override file from. Should be in format: \"SELECT <target server>, <target db> ...\""),
-					new Option<FileInfo>(new string[] { "-o", "--outputfile" }, "Name of the output file to write the override file to. Will always generate file with \".cfg\" extension") { IsRequired = true },
-					new Option<bool>(new string[] { "-f", "--force" }, "Force overwrite of existing output file"),
+					new Option<FileInfo>("--scriptfile") { Description = "Name of the SQL script (with \".sql\" extension) to generate an override file from. Should be in format: \"SELECT <target server>, <target db> ...\"" },
+					new Option<string>("--scripttext") { Description = "SQL query to generate an override file from. Should be in format: \"SELECT <target server>, <target db> ...\"" },
+					new Option<FileInfo>("--outputfile", "-o") { Description = "Name of the output file to write the override file to. Will always generate file with \".cfg\" extension", Required = true },
+					new Option<bool>("--force", "-f") { Description = "Force overwrite of existing output file" },
 
 				};
                 cmd.AddRange(SettingsFileExistingOptions);
                 cmd.AddRange(DatabaseAuthArgs);
 				cmd.AddRange(IdentityArgumentsForBatch);
-				cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.GenerateOverrideFileFromSqlScript);
+				cmd.SetAction((parseResult) => {
+				    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+				    var unittest = parseResult.GetValue(unitTestOption);
+				    return Worker.GenerateOverrideFileFromSqlScript(cmdLine: cmdLine, force: unittest);
+				});
 				return cmd;
 			}
 		}
@@ -252,8 +306,13 @@ namespace SqlBuildManager.Console.CommandLine
                     settingsfileExistingRequiredOption,
                     settingsfileKeyRequiredOption
                 };
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, string>(Worker.DecryptSettingsFile);
-				cmd.IsHidden = true;
+                cmd.SetAction((parseResult) => {
+					var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+					var settingsfilekey = parseResult.GetValue(settingsfileKeyRequiredOption);
+					Worker.DecryptSettingsFile(cmdLine: cmdLine, settingsfilekey: settingsfilekey!);
+					return 0;
+				});
+				cmd.Hidden = true;
                 return cmd;
 
             }
@@ -286,15 +345,18 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("dacpac", "Creates a DACPAC file from the target database")
                         {
-                            databaseOption.Copy(true),
-                            serverOption.Copy(true),
+                            databaseRequiredOption,
+                            serverRequiredOption,
                             dacpacOutputOption
                         };
 
                 cmd.AddRange(SettingsFileExistingOptions);
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(IdentityArgumentsForBatch);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.CreateDacpac);
+                cmd.SetAction((parseResult) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return Worker.CreateDacpac(cmdLine);
+                });
                 return cmd;
             }
         }
@@ -305,9 +367,12 @@ namespace SqlBuildManager.Console.CommandLine
 			{
 				var cmd = new Command("showcommands", "Creates export of all command and sub-command descriptions")
 				{
-					new Option<bool>(new string[] { "--md", "--markdown" },() => false, "Output command list as markdown"),
+					markdownOption,
 				};
-                cmd.Handler = CommandHandler.Create<bool>(Worker.ShowCommands);
+                cmd.SetAction((parseResult) => {
+                    var markdown = parseResult.GetValue(markdownOption);
+                    return Worker.ShowCommands(markdown);
+                });
                 return cmd;
 
             }

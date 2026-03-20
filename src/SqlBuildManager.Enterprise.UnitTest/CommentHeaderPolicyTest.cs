@@ -22,7 +22,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string actual;
             actual = target.PolicyId;
             string expected = "CommentHeaderPolicy";
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
 
         }
         /// <summary>
@@ -35,7 +35,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string actual;
             actual = target.LongDescription;
             string expected = "Checks that Stored Procedure and Function have a comments header and recent comments";
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
 
         }
 
@@ -49,7 +49,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             string actual;
             actual = target.ShortDescription;
             string expected = "Check for Comments";
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(expected, actual);
         }
 
         /// <summary>

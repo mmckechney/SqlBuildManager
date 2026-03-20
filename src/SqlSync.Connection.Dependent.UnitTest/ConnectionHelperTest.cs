@@ -1,4 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Test.Common;
+using System;
 
 namespace SqlSync.Connection.Dependent.UnitTest
 {
@@ -8,28 +10,17 @@ namespace SqlSync.Connection.Dependent.UnitTest
     [TestClass]
     public class ConnectionHelperTest
     {
+        private static string TestServerName => TestEnvironment.SqlServer;
+        private static string TestSqlUser => TestEnvironment.SqlUser;
+        private static string TestSqlPassword => TestEnvironment.SqlPassword;
+        private static AuthenticationType TestAuthType => TestEnvironment.UseSqlAuth ? AuthenticationType.Password : AuthenticationType.Windows;
+
         public ConnectionHelperTest()
         {
 
         }
 
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; }
 
         #region Additional test attributes
         //
@@ -60,12 +51,12 @@ namespace SqlSync.Connection.Dependent.UnitTest
         public void TestDatabaseConnectionTest_StringOverrideSuccess()
         {
             string dbName = "SqlBuildTest";
-            string serverName = "localhost\\SQLEXPRESS";
+            string serverName = TestServerName;
             int scriptTimeOut = 20;
             bool expected = true;
             bool actual;
-            actual = ConnectionHelper.TestDatabaseConnection(dbName, serverName, "", "", AuthenticationType.Windows, scriptTimeOut,"");
-            Assert.AreEqual(expected, actual, "NOTE: If this test fails, please make sure you have localhost\\SQLEXPRESS instance running.");
+            actual = ConnectionHelper.TestDatabaseConnection(dbName, serverName, TestSqlUser ?? "", TestSqlPassword ?? "", TestAuthType, scriptTimeOut,"");
+            Assert.AreEqual(expected, actual, $"NOTE: If this test fails, please make sure you have {serverName} instance running.");
         }
 
         /// <summary>
@@ -78,13 +69,15 @@ namespace SqlSync.Connection.Dependent.UnitTest
             {
                 DatabaseName = "SqlBuildTest",
                 ScriptTimeout = 20,
-                SQLServerName = "localhost\\SQLEXPRESS",
-                AuthenticationType = AuthenticationType.Windows
+                SQLServerName = TestServerName,
+                AuthenticationType = TestAuthType,
+                UserId = TestSqlUser ?? "",
+                Password = TestSqlPassword ?? ""
             };
             bool expected = true;
             bool actual;
             actual = ConnectionHelper.TestDatabaseConnection(connData);
-            Assert.AreEqual(expected, actual, "NOTE: If this test fails, please make sure you have localhost\\SQLEXPRESS instance running.");
+            Assert.AreEqual(expected, actual, $"NOTE: If this test fails, please make sure you have {TestServerName} instance running.");
         }
     }
 }

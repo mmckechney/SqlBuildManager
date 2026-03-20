@@ -69,7 +69,7 @@ namespace SqlBuildManager.Console.CommandLine
         #region Settings File Properties 
         private string settingsFile = string.Empty;
         [JsonIgnore]
-        public string SettingsFileKey { get; set; }
+        public string SettingsFileKey { get; set; } = string.Empty;
         [JsonIgnore]
 
         public string SettingsFile
@@ -82,7 +82,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 if (File.Exists(value))
                 {
-                    CommandLineArgs cmdLine = JsonSerializer.Deserialize<CommandLineArgs>(File.ReadAllText(value));
+                    CommandLineArgs cmdLine = JsonSerializer.Deserialize<CommandLineArgs>(File.ReadAllText(value))!;
                     this.SetValues(cmdLine);
                 }
                 settingsFile = value;
@@ -138,7 +138,7 @@ namespace SqlBuildManager.Console.CommandLine
         [JsonIgnore]
         public virtual string Description { get; set; } = string.Empty;
         [JsonIgnore]
-        public string BuildRevision { get; set; }
+        public string BuildRevision { get; set; } = string.Empty;
         [JsonIgnore]
         public virtual string LogToDatabaseName { get; set; } = string.Empty;
 
@@ -177,12 +177,12 @@ namespace SqlBuildManager.Console.CommandLine
         /// Script file name for generating override cfg file
         /// </summary>
         [JsonIgnore]
-        public virtual FileInfo ScriptFile { get; set; }
+        public virtual FileInfo ScriptFile { get; set; } = null!;
         /// <summary>
         /// Script text  generating override cfg file
         /// </summary>
         [JsonIgnore]
-        public virtual string ScriptText { get; set; }
+        public virtual string ScriptText { get; set; } = string.Empty;
 
         #endregion
 
@@ -197,9 +197,9 @@ namespace SqlBuildManager.Console.CommandLine
         [JsonIgnore]
         public bool ContinueOnFailure { get; set; }
         [JsonIgnore]
-        public string OutputSbm { get; set; }
+        public string OutputSbm { get; set; } = string.Empty;
         [JsonIgnore]
-        public FileInfo[] Scripts { get; set; }
+        public FileInfo[] Scripts { get; set; } = Array.Empty<FileInfo>();
         [JsonIgnore]
         public string DacpacName
         {
@@ -223,9 +223,9 @@ namespace SqlBuildManager.Console.CommandLine
         [JsonIgnore]
         public bool Silent { get; set; }
         [JsonIgnore]
-        public FileInfo QueryFile { get; set; }
+        public FileInfo QueryFile { get; set; } = null!;
         [JsonIgnore]
-        public FileInfo OutputFile { get; set; }
+        public FileInfo OutputFile { get; set; } = null!;
         
         public List<string> DirectPropertyChangeTracker = new();  
         public override string ToString()

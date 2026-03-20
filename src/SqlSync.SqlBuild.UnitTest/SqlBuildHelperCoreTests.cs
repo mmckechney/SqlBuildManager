@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 using BuildModels = SqlSync.SqlBuild.Models;
 
 namespace SqlSync.SqlBuild.UnitTest
@@ -70,7 +71,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void Constructor_WithExternalScriptLogFileName_SetsProperty()
         {
             var connData = new ConnectionData("srv", "db");
-            var externalLog = @"C:\logs\external.log";
+            var externalLog = Path.Combine(Path.GetTempPath(), "logs", "external.log");
 
             var helper = new SqlBuildHelper(connData, createScriptRunLogFile: false, externalScriptLogFileName: externalLog);
 
@@ -222,7 +223,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void ProjectFileName_SetterGetter_WorksCorrectly()
         {
             var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
-            var expectedFileName = @"C:\projects\test.sbx";
+            var expectedFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "test.sbx");
 
             helper.projectFileName = expectedFileName;
 
@@ -283,7 +284,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void ScriptLogFileName_SetterGetter_WorksCorrectly()
         {
             var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
-            var expectedLog = @"C:\logs\script.log";
+            var expectedLog = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "script.log");
 
             helper.scriptLogFileName = expectedLog;
 
@@ -294,7 +295,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void BuildHistoryXmlFile_SetterGetter_WorksCorrectly()
         {
             var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
-            var expectedFile = @"C:\history\build.xml";
+            var expectedFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "build.xml");
 
             helper.buildHistoryXmlFile = expectedFile;
 
@@ -322,7 +323,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void GetTargetDatabase_NoOverrides_ReturnsDefaultDatabase()
         {
             var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
-            helper.targetDatabaseOverrides = null;
+            helper.targetDatabaseOverrides = null!;
 
             var result = helper.GetTargetDatabase("MyDefaultDb");
 
@@ -537,11 +538,12 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void ISqlBuildRunnerProperties_BuildHistoryXmlFile_ReturnsInternalValue()
         {
+            var historyFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "history.xml");
             var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
-            helper.buildHistoryXmlFile = @"C:\history.xml";
+            helper.buildHistoryXmlFile = historyFile;
             ISqlBuildRunnerProperties props = helper;
 
-            Assert.AreEqual(@"C:\history.xml", props.BuildHistoryXmlFile);
+            Assert.AreEqual(historyFile, props.BuildHistoryXmlFile);
         }
 
         #endregion
@@ -889,7 +891,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var scripts = new List<BuildModels.Script>();
             var buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            var result = await helper.RunBuildScriptsAsync(scripts, expectedBuild, "srv", false, null, buildData);
+            var result = await helper.RunBuildScriptsAsync(scripts, expectedBuild, "srv", false, null!, buildData);
 
             Assert.AreEqual(expectedBuild.BuildId, result.BuildId);
             Assert.IsTrue(fakeFactory.CreateCalled);
@@ -902,7 +904,7 @@ namespace SqlSync.SqlBuild.UnitTest
 
             public TestRunnerFactory(BuildModels.Build result) => _result = result;
 
-            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null)
+            public SqlBuildRunner Create(IConnectionsService connectionsService, ISqlBuildRunnerContext context, IBuildFinalizerContext finalizerContext, ISqlCommandExecutor executor = null!, ITransactionManager transactionManager = null!, IBuildFinalizer buildFinalizer = null!, ISqlLoggingService sqlLoggingService = null!)
             {
                 CreateCalled = true;
                 return new TestRunner(_result);

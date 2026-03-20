@@ -6,7 +6,7 @@
 // associated with an assembly.
 //
 [assembly: AssemblyCompany("Michael McKechney - www.mckechney.com")]
-[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2065")]
+[assembly: AssemblyCopyright("Copyright © Michael McKechney 2004-2026")]
 [assembly: AssemblyTrademark("Copyright © Michael McKechney 2004-2026")]
 
 //

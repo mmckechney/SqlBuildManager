@@ -16,9 +16,9 @@ namespace SqlSync.SqlBuild.Services
     /// </summary>
     internal sealed class ScriptLogWriteContext
     {
-        public string ScriptLogFileName { get; set; }
-        public string ExternalScriptLogFileName { get; set; }
-        public string ServerName { get; set; }
+        public string ScriptLogFileName { get; set; } = string.Empty;
+        public string ExternalScriptLogFileName { get; set; } = string.Empty;
+        public string ServerName { get; set; } = string.Empty;
         public bool IsTransactional { get; set; }
     }
 }

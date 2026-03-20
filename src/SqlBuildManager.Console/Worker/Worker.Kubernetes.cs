@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.ContainerShared;
@@ -17,28 +17,27 @@ namespace SqlBuildManager.Console
     {
         internal static int SaveAndEncryptKubernetesSettings(CommandLineArgs cmdLine, bool clearText)
         {
-            cmdLine.BatchArgs = null;
-            cmdLine.NetworkArgs = null;
-            cmdLine.AciArgs = null;
-            cmdLine.ContainerAppArgs = null;
+            cmdLine.BatchArgs = null!;
+            cmdLine.NetworkArgs = null!;
+            cmdLine.AciArgs = null!;
+            cmdLine.ContainerAppArgs = null!;
             
-            cmdLine.ConnectionArgs.BatchAccountKey = null;
-            cmdLine.ConnectionArgs.BatchAccountName = null;
-            cmdLine.ConnectionArgs.BatchAccountUrl = null;
+            cmdLine.ConnectionArgs.BatchAccountKey = null!;
+            cmdLine.ConnectionArgs.BatchAccountName = null!;
+            cmdLine.ConnectionArgs.BatchAccountUrl = null!;
             
-            cmdLine.IdentityArgs.PrincipalId = null;
-            cmdLine.IdentityArgs.ResourceId = null;
-            cmdLine.IdentityArgs.IdentityName = null;
-            cmdLine.IdentityArgs.ClientId = null;
-            cmdLine.IdentityArgs.ResourceGroup = null;
-            cmdLine.IdentityArgs.SubscriptionId = null;
+            cmdLine.IdentityArgs.PrincipalId = null!;
+            cmdLine.IdentityArgs.ResourceId = null!;
+            cmdLine.IdentityArgs.ClientId = null!;
+            cmdLine.IdentityArgs.ResourceGroup = null!;
+            cmdLine.IdentityArgs.SubscriptionId = null!;
             
-            cmdLine.ContainerRegistryArgs.RegistryUserName = null;
-            cmdLine.ContainerRegistryArgs.RegistryPassword = null;
+            cmdLine.ContainerRegistryArgs.RegistryUserName = null!;
+            cmdLine.ContainerRegistryArgs.RegistryPassword = null!;
             
             if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
             {
-                cmdLine.KeyVaultName = null;
+                cmdLine.KeyVaultName = null!;
             }
 
             return SaveAndEncryptSettings(cmdLine, clearText);
@@ -63,7 +62,7 @@ namespace SqlBuildManager.Console
             cmdLine.MultiDbRunConfigFileName = @override.FullName;
             cmdLine.KubernetesArgs.RunningInKubernetes = true;
             //Upload 'prep'
-            (var retVal, cmdLine) = await KubernetesUploadBuildPackage(cmdLine, null, null, packagename, platinumdacpac, force);
+            (var retVal, cmdLine) = await KubernetesUploadBuildPackage(cmdLine, null!, null!, packagename!, platinumdacpac!, force);
             if (retVal != 0)
             {
                 log.LogError("There was a problem uploading the build package to Azure storage");
@@ -86,16 +85,16 @@ namespace SqlBuildManager.Console
             //Create YAML files
             var kubernetesFiles = await KubernetesManager.SaveKubernetesYamlFiles(cmdLine, cmdLine.JobName, new DirectoryInfo(Environment.CurrentDirectory));
             var runtimeFileInfo = new FileInfo(kubernetesFiles.RuntimeConfigMapFile);
-            FileInfo secretsFileInfo = null;
+            FileInfo secretsFileInfo = null!;
             bool secretsExist = false;
-            if (!string.IsNullOrWhiteSpace(kubernetesFiles.SecretsFile))
+            if (!string.IsNullOrWhiteSpace(kubernetesFiles.SecretsFile) && File.Exists(kubernetesFiles.SecretsFile))
             {
                 secretsFileInfo = new FileInfo(kubernetesFiles.SecretsFile);
                 secretsExist = true;
             }
 
             //Enqueue
-            int retVal = await KubernetesEnqueueOverrideTargets(cmdLine, secretsFileInfo, runtimeFileInfo, cmdLine.ConnectionArgs.KeyVaultName, cmdLine.JobName, cmdLine.ConcurrencyType, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, @override);
+            int retVal = await KubernetesEnqueueOverrideTargets(cmdLine, secretsFileInfo, runtimeFileInfo, cmdLine.ConnectionArgs.KeyVaultName, cmdLine.JobName, cmdLine.ConcurrencyType, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, @override!);
             if (retVal != 0)
             {
                 log.LogError("There was a problem enqueuing the database targest to Service Bus");
@@ -153,7 +152,7 @@ namespace SqlBuildManager.Console
             await KubernetesManager.SaveKubernetesYamlFiles(cmdLine, prefix, path);
             return 0;
         }
-        internal static async Task<int> KubernetesQuery(CommandLineArgs cmdLine, FileInfo @override, bool force, bool stream, bool unittest, bool cleanupOnFailure)
+        internal static async Task<int> KubernetesQuery(CommandLineArgs cmdLine, bool force, bool stream, bool unittest, bool cleanupOnFailure)
         {
             (int success, cmdLine) = PrepForRemoteQueryExecution(cmdLine);
             if (success != 0)
@@ -172,7 +171,8 @@ namespace SqlBuildManager.Console
                 return -1;
             }
             cmdLine.KubernetesArgs.RunningInKubernetes = true;
-            success = await KubernetesApplyJobs(cmdLine, @override, cleanupOnFailure, stream, unittest);
+            FileInfo overrideFile = !string.IsNullOrWhiteSpace(cmdLine.MultiDbRunConfigFileName) ? new FileInfo(cmdLine.MultiDbRunConfigFileName) : null!;
+            success = await KubernetesApplyJobs(cmdLine, overrideFile, cleanupOnFailure, stream, unittest);
 
             var storageSvcClient = StorageManager.CreateStorageClient(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
             var saved = StorageManager.CombineQueryOutputfiles(storageSvcClient, cmdLine.JobName, cmdLine.OutputFile.FullName);
@@ -278,13 +278,13 @@ namespace SqlBuildManager.Console
 
             if (string.IsNullOrWhiteSpace(cmdLine.JobName) || string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName))
             {
-                log.LogError("Values for --jobname, and --storageaccountname are required as prameters or included in the --secretsfile and --runtimefile");
+                log.LogError("Values for --jobname, and --storageaccountname are required as parameters or included in the --secretsfile and --runtimefile");
                 return (1, cmdLine);
 
             }
             //if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey) && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
             //{
-            //    log.LogError("A value for --storageaccountkey are required as prameters or included in the --secretsfile and --runtimefile");
+            //    log.LogError("A value for --storageaccountkey are required as parameters or included in the --secretsfile and --runtimefile");
             //    return 1;
 
             //}

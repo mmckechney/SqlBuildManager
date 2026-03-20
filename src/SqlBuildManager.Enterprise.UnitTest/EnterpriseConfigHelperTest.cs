@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 
 namespace SqlBuildManager.Enterprise.UnitTest
@@ -19,7 +19,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void EnterpriseConfigTest_NullConfig()
         {
-            EnterpriseConfigHelper.EnterpriseConfig = null; //force a re-read.
+            EnterpriseConfigHelper.EnterpriseConfig = null!; //force a re-read.
             EnterpriseConfiguration actual;
             actual = EnterpriseConfigHelper.EnterpriseConfig;
             Assert.IsNotNull(actual, "The Enterprise config object should have at least a default object value");
@@ -32,25 +32,25 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void LoadEnterpriseConfigurationTest_WithConfigPath()
         {
-            EnterpriseConfigHelper.EnterpriseConfig = null; //force a re-read.
-            string configPath = System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"];
-            configPath = Path.GetFullPath(configPath);
+            EnterpriseConfigHelper.EnterpriseConfig = null!; //force a re-read.
+            string configPath = System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"]!;
+            configPath = Path.GetFullPath(configPath!);
             EnterpriseConfiguration actual;
             actual = EnterpriseConfigHelper.LoadEnterpriseConfiguration(configPath);
-            Assert.Inconclusive();
-            //Assert.AreEqual(1, actual.TableWatch.Length);
-            //Assert.AreEqual(2, actual.TableWatch[0].Notify.Length);
-            //Assert.AreEqual(2, actual.TableWatch[0].Table.Length);
+            Assert.IsNotNull(actual, "The Enterprise config object should not be null when a valid path is provided.");
+            Assert.AreEqual(1, actual.TableWatch.Length);
+            Assert.AreEqual(2, actual.TableWatch[0].Notify.Length);
+            Assert.AreEqual(2, actual.TableWatch[0].Table.Length);
         }
 
         /// <summary>
         ///A test for LoadEnterpriseConfiguration
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void LoadEnterpriseConfigurationTest_NoParameter()
         {
-            EnterpriseConfigHelper.EnterpriseConfig = null; //force a re-read.
+            EnterpriseConfigHelper.EnterpriseConfig = null!; //force a re-read.
             EnterpriseConfiguration actual;
             actual = EnterpriseConfigHelper.LoadEnterpriseConfiguration();
             Assert.AreEqual(1, actual.TableWatch.Length);
@@ -62,7 +62,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for DeserializeConfiguration
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void DeserializeConfigurationTest()
         {
             string configuration = Properties.Resources.EnterpriseConfig;
@@ -78,7 +78,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         ///A test for DeserializeConfiguration
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        
         public void DeserializeConfigurationTest_BadConfig()
         {
             string configuration = "This is a bad configuration";

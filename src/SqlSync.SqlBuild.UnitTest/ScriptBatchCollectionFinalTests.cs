@@ -41,7 +41,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void ScriptBatch_WithNullScripts_StoresNull()
         {
             // Act
-            var batch = new ScriptBatch("test.sql", null, "SCRIPT-001");
+            var batch = new ScriptBatch("test.sql", null!, "SCRIPT-001");
 
             // Assert
             Assert.IsNull(batch.ScriptBatchContents);

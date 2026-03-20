@@ -1,14 +1,28 @@
 # SQL Build Manager
 
-SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases. It provides a comprehensive set of command line options for the management from one to many thousands of databases.
+SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases (both SQL Server and PostgreSQL). It provides a comprehensive set of command line options for the management from one to many thousands of databases.
 
 ![.NET Core Build](https://github.com/mmckechney/SqlBuildManager/workflows/.NET%20Core%20Build/badge.svg)
 
 
- **Kubernetes and ACI breaking changes in 15.0, be sure to review the change log**
+
 #### _Be sure to review the [change log](CHANGELOG.md) for the latest updates, enhancements and bug fixes_
 
 
+---
+### **Highlighted feature update, v16+: PostgreSQL Support**
+
+SQL Build Manager now supports **PostgreSQL** as an alternative database target alongside Microsoft SQL Server. Use `--platform PostgreSQL` in any build command to target PostgreSQL databases. See the [PostgreSQL documentation](docs/postgresql.md) for full details.
+
+Features **not yet available** for PostgreSQL:
+- DACPAC operations (extract, compare, `create fromdacpacs` / `create fromdacpacdiff`)
+- Object scripting (SMO-based)
+- Some SQL Server-specific script policies (`WithNoLockPolicy`, `QualifiedNamesPolicy`)
+
+---
+
+ **Kubernetes and ACI breaking changes in 15.0, be sure to review the change log**
+ 
 ---
 ### **Key feature enhancement with Version 14.4+: Expanded use of Azure User Assigned Managed Identity**
 
@@ -18,22 +32,32 @@ With this update, it significantly reduces the the need to save and manage secre
 
 ## Contents
 
-- [Important Concepts!](#important-concepts)
-- [Key Features - Why use SQL Build Manager?](#key-features)
-- [Running builds](#running-builds-command-line)
-  - [Querying across databases](#querying-across-databases-command-line)
-- [Runtime Process Flow](docs/threaded_build_process_flow.md)
-- [Command Line Reference/ Quickstart](docs/commandline.md)
-- [Running Locally](docs/local_build.md)
-- [Massively Parallel Database Builds](docs/massively_parallel.md)
-  - [Azure Container Apps](docs/containerapp.md)
-  - [Azure Batch](docs/azure_batch.md)
-  - [Kubernetes](docs/kubernetes.md)
-  - [Azure Container Instances (ACI)](docs/aci.md)
-- [Change log](CHANGELOG.md)
-- For contributors: [Notes on Building and Unit Testing](docs/setup_azure_environment.md)
-- For users of the Windows Form app: [SQL Build Manager Manual](docs/SqlBuildManagerManual.md)\
-  (Note: this isn't 100% up to date, so the screen shots may vary from the current app)
+
+- [SQL Build Manager](#sql-build-manager)
+      - [_Be sure to review the change log for the latest updates, enhancements and bug fixes_](#be-sure-to-review-the-change-log-for-the-latest-updates-enhancements-and-bug-fixes)
+    - [**Highlighted feature update, v16+: PostgreSQL Support**](#highlighted-feature-update-v16-postgresql-support)
+    - [**Key feature enhancement with Version 14.4+: Expanded use of Azure User Assigned Managed Identity**](#key-feature-enhancement-with-version-144-expanded-use-of-azure-user-assigned-managed-identity)
+  - [Contents](#contents)
+  - [Important Concepts](#important-concepts)
+    - [**"Build"**](#build)
+    - [**"Package"**](#package)
+    - [**"Override" file**](#override-file)
+    - [**Remote Build Execution**](#remote-build-execution)
+    - [**"Settings" file**](#settings-file)
+    - [**"jobname"**](#jobname)
+  - [Key Features](#key-features)
+  - [Running Builds (command line)](#running-builds-command-line)
+    - [**Local**](#local)
+    - [**Threaded**](#threaded)
+    - [**Batch**](#batch)
+    - [**Azure Container Apps**](#azure-container-apps)
+    - [**Kubernetes**](#kubernetes)
+    - [**Azure Container Instance (ACI)**](#azure-container-instance-aci)
+  - [Querying across databases (command line)](#querying-across-databases-command-line)
+    - [Threaded](#threaded-1)
+    - [Batch, Kubernetes and ACI](#batch-kubernetes-and-aci)
+  - [Command Line Reference](docs/commandline.md) - Full command reference with runtime options
+  - [Detailed Process Flow](docs/threaded_build_process_flow.md)
 
 ---
 
@@ -70,6 +94,7 @@ The name of a build. This is used as the name or name prefix for all of the Azur
 ## Key Features
 
 - Packaging of all of your update scripts and runtime meta-data into a single .sbm (zip file) or leverage data-tier application ([DACPAC](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/deploy-a-data-tier-application)) deployment across your entire database fleet.
+- **Supports both Microsoft SQL Server and PostgreSQL** — select the target platform at runtime with `--platform SqlServer` or `--platform PostgreSQL`
 - Massively parallel execution across thousands of databases utilizing local threading or an [Azure Batch, Kubernetes, Container Apps or Container Instance remote execution](docs/massively_parallel.md)
 - Single transaction handling. If any one script fails, the entire package is rolled back, leaving the database unchanged.
 - Handle multiple database updates in one package - seamlessly update all your databases with local threading or massively parallel remote processing.

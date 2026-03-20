@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.SqlBuild.Synchronizer;
 using System;
@@ -85,8 +85,8 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod()]
         public void GetDatabaseRunHistoryDifferenceTest1()
         {
-            CommandLineArgs cmdLine = null;
-            DatabaseRunHistory expected = null;
+            CommandLineArgs cmdLine = null!;
+            DatabaseRunHistory expected = null!;
             DatabaseRunHistory actual;
             actual = Synchronize.GetDatabaseRunHistoryDifference(cmdLine);
             Assert.AreEqual(expected, actual);
@@ -96,7 +96,6 @@ namespace SqlBuildManager.Console.UnitTest
         ///A test for ParseAndValidateFlags
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("sbm.exe")]
         public void ParseAndValidateFlagsTest()
         {
             string[] args = new string[]
@@ -105,13 +104,13 @@ namespace SqlBuildManager.Console.UnitTest
                     "--database" , "SqlbuildTest_SyncTest2"
 
                };
-            CommandLineArgs expected = null;
+            CommandLineArgs expected = null!;
             (CommandLineArgs actual, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
 
             Assert.AreEqual(expected, actual);
-            Assert.IsTrue(message.Contains("-gd"));
-            Assert.IsTrue(message.Contains("-gs"));
-            Assert.IsTrue(message.Contains("-s"));
+            Assert.IsTrue(message.Contains("--golddatabase"));
+            Assert.IsTrue(message.Contains("-goldserver"));
+            Assert.IsTrue(message.Contains("--server"));
         }
     }
 }

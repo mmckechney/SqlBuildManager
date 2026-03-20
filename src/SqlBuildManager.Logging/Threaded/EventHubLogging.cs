@@ -13,9 +13,9 @@ namespace SqlBuildManager.Logging.Threaded
 
 
 
-        private static ILoggerFactory _LoggerFactory = null;
+        private static ILoggerFactory _LoggerFactory = null!;
         private static string _EventHubConnectionString = string.Empty;
-        private static Serilog.Core.Logger serilogLogger = null;
+        private static Serilog.Core.Logger serilogLogger = null!;
 
         private static string _EventHubName = string.Empty;
         private static string _EventHubNamespace = string.Empty;
@@ -86,7 +86,7 @@ namespace SqlBuildManager.Logging.Threaded
             }
             catch
             {
-                return null;
+                return null!;
             }
         }
         public static Microsoft.Extensions.Logging.ILogger CreateLogger(Type type, string eventHubNamespace, string eventHubName, string managedIdentityClientId)
@@ -104,7 +104,7 @@ namespace SqlBuildManager.Logging.Threaded
             }
             catch
             {
-                return null;
+                return null!;
             }
         }
 
@@ -114,7 +114,7 @@ namespace SqlBuildManager.Logging.Threaded
             {
                 serilogLogger.Dispose();
             }
-            _LoggerFactory = null;
+            _LoggerFactory = null!;
         }
 
     }

@@ -14,13 +14,13 @@ namespace SqlBuildManager.Console.ExternalTest
     {
         public TestContext TestContext { get; set; }
 
-        private CommandLineArgs cmdLine;
-        private List<string> overrideFileContents;
+        private CommandLineArgs cmdLine = null!;
+        private List<string> overrideFileContents = null!;
 
-        private string overrideFilePath;
-        private string settingsFilePath;
-        private string linuxSettingsFilePath;
-        private string settingsFileKeyPath;
+        private string overrideFilePath = string.Empty;
+        private string settingsFilePath = string.Empty;
+        private string linuxSettingsFilePath = string.Empty;
+        private string settingsFileKeyPath = string.Empty;
 
         [TestInitialize]
         public void ConfigureProcessInfo()
@@ -64,7 +64,7 @@ namespace SqlBuildManager.Console.ExternalTest
             using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 0x1000, FileOptions.SequentialScan))
             using (var sr = new StreamReader(fs, Encoding.UTF8))
             {
-                string line;
+                string? line;
                 while ((line = sr.ReadLine()) != null)
                 {
                     yield return line;
@@ -89,7 +89,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             return startingLines;
         }
-        public string ReleventLogFileContents(int startingLine)
+        public string RelevantLogFileContents(int startingLine)
         {
 
             string logFile = Path.Combine(Path.GetTempPath(), LogFileName);
@@ -117,11 +117,11 @@ namespace SqlBuildManager.Console.ExternalTest
                 };
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
 
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
@@ -147,12 +147,12 @@ namespace SqlBuildManager.Console.ExternalTest
 
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
-            var val = rootCommand.InvokeAsync(args);
+            var val = rootCommand.Parse(args).InvokeAsync(); 
             val.Wait();
             var result = val.Result;
 
 
-            var logFileContents = ReleventLogFileContents(startingLine);
+            var logFileContents = RelevantLogFileContents(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Committing transaction for"), "This test was should have worked");
 

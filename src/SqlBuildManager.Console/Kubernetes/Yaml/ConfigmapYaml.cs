@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
@@ -36,36 +36,38 @@ namespace SqlBuildManager.Console.Kubernetes.Yaml
     public class RuntimeData
     {
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
-        public string DacpacName { get; set; } = null;
+        public string DacpacName { get; set; } = null!;
 
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
-        public string PackageName { get; set; } = null;
+        public string PackageName { get; set; } = null!;
 
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
-        public string JobName { get; set; } = null;
+        public string JobName { get; set; } = null!;
 
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
-        public string AllowObjectDelete { get; set; } = null;
+        public string AllowObjectDelete { get; set; } = null!;
 
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
-        public string Concurrency { get; set; } = null;
+        public string Concurrency { get; set; } = null!;
 
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
-        public string ConcurrencyType { get; set; } = null;
-        public string AuthType { get; set; } = null;
+        public string ConcurrencyType { get; set; } = null!;
+        public string AuthType { get; set; } = null!;
+        public string DatabasePlatform { get; set; } = null!;
+        public string IdentityName { get; set; } = null!;
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
-        public string ServiceBusTopicConnectionString { get; set; } = null;
+        public string ServiceBusTopicConnectionString { get; set; } = null!;
 
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
-        public string EventHubConnectionString { get; set; } = null;
-        public string StorageAccountName { get; set; } = null;
+        public string EventHubConnectionString { get; set; } = null!;
+        public string StorageAccountName { get; set; } = null!;
 
-        public string KeyVaultName { get; set; } = null;
-        public string QueryFile { get; set; } = null;
-        public string OutputFile { get; set; } = null;
+        public string KeyVaultName { get; set; } = null!;
+        public string QueryFile { get; set; } = null!;
+        public string OutputFile { get; set; } = null!;
 
         [YamlMember(ScalarStyle = ScalarStyle.SingleQuoted)]
-        public string EventHubLogging { get; set; } = null;
+        public string EventHubLogging { get; set; } = null!;
 
     }
 }

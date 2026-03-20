@@ -12,10 +12,10 @@ namespace SqlSync.SqlBuild.UnitTest.Services
     [TestClass]
     public class DefaultDatabaseUtilityTests
     {
-        private Mock<IConnectionsService> _mockConnectionsService;
-        private Mock<ISqlLoggingService> _mockLoggingService;
-        private Mock<IProgressReporter> _mockProgressReporter;
-        private Mock<ISqlBuildFileHelper> _mockFileHelper;
+        private Mock<IConnectionsService> _mockConnectionsService = null!;
+        private Mock<ISqlLoggingService> _mockLoggingService = null!;
+        private Mock<IProgressReporter> _mockProgressReporter = null!;
+        private Mock<ISqlBuildFileHelper> _mockFileHelper = null!;
 
         [TestInitialize]
         public void Setup()
@@ -48,7 +48,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 _mockConnectionsService.Object,
                 _mockLoggingService.Object,
                 _mockProgressReporter.Object,
-                null);
+                null!);
 
             // Assert
             Assert.IsNotNull(utility);

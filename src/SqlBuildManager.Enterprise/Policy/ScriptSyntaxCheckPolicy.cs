@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.ScriptHandling;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ namespace SqlBuildManager.Enterprise.Policy
 {
     class ScriptSyntaxCheckPolicy : shP.IScriptPolicyMultiple
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         #region IScriptPolicy Members
         public string PolicyId
         {
@@ -28,19 +28,19 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             get;
             set;
-        }
+        } = null!;
 
         public string LongDescription
         {
             get;
             set;
-        }
+        } = null!;
 
         public string ErrorMessage
         {
             get;
             set;
-        }
+        } = null!;
         private bool enforce = true;
         public bool Enforce
         {

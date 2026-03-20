@@ -1,25 +1,27 @@
-﻿using SqlSync.Connection;
+using SqlBuildManager.Test.Common;
+using SqlSync.Connection;
 using System;
 using System.Collections.Generic;
 namespace SqlSync.DbInformation.Dependent.UnitTest
 {
     class Initialization
     {
-
-        public List<string> testDatabaseNames = null;
-        public List<string> tempFiles = null;
+        public List<string> testDatabaseNames = null!;
+        public List<string> tempFiles = null!;
         public Guid testGuid;
         public DateTime testTimeStamp;
-        public ConnectionData connData = null;
-        public string projectFileName = null;
-        public string buildHistoryXmlFile = null;
+        public ConnectionData connData = null!;
+        public string projectFileName = null!;
+        public string buildHistoryXmlFile = null!;
 
-        public string connectionString = @"Data Source=(local)\SQLEXPRESS;Initial Catalog={0}; Trusted_Connection=Yes;CONNECTION TIMEOUT=20;";
-        public string serverName = @"(local)\SQLEXPRESS";
-
+        public string connectionString;
+        public string serverName;
 
         public Initialization()
         {
+            serverName = TestEnvironment.SqlServer;
+            connectionString = TestEnvironment.GetSqlConnectionStringTemplate();
+
             testDatabaseNames = new List<string>();
             testDatabaseNames.Add("SqlBuildTest");
             testDatabaseNames.Add("SqlBuildTest1");
@@ -27,7 +29,7 @@ namespace SqlSync.DbInformation.Dependent.UnitTest
             testGuid = Guid.NewGuid();
             testTimeStamp = DateTime.Now;
 
-            connData = new ConnectionData(serverName, testDatabaseNames[0]);
+            connData = TestEnvironment.GetConnectionData(testDatabaseNames[0]);
 
             tempFiles = new List<string>();
         }

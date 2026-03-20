@@ -73,7 +73,7 @@ namespace SqlSync.ObjectScript.UnitTest
         ///A test for CollateScriptWithSchemaCheck
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.ObjectScript.dll")]
+        
         public void CollateScriptWithSchemaCheckTest_NothingToDo()
         {
             ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());
@@ -93,14 +93,14 @@ GO
             StringBuilder sb = new StringBuilder();
 
             target.CollateScriptWithSchemaCheck(coll, schema, ref sb);
-            Assert.AreEqual(expected, sb.ToString());
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), sb.ToString().Replace("\r\n", "\n"));
         }
 
         /// <summary>
         ///A test for CollateScriptWithSchemaCheck
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.ObjectScript.dll")]
+        
         public void CollateScriptWithSchemaCheckTest_HasObjectIdButNothingToDo()
         {
             ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());
@@ -119,14 +119,14 @@ GO
             StringBuilder sb = new StringBuilder();
 
             target.CollateScriptWithSchemaCheck(coll, schema, ref sb);
-            Assert.AreEqual(expected, sb.ToString());
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), sb.ToString().Replace("\r\n", "\n"));
         }
 
         /// <summary>
         ///A test for CollateScriptWithSchemaCheck
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.ObjectScript.dll")]
+        
         public void CollateScriptWithSchemaCheckTest_NeedsSchema()
         {
             ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());
@@ -148,7 +148,7 @@ CREATE TABLE [dbo].[MyObject](
         ///A test for CollateScriptWithSchemaCheck
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.ObjectScript.dll")]
+        
         public void CollateScriptWithSchemaCheckTest_MultipleGoodWithSchema()
         {
             ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());
@@ -166,14 +166,14 @@ GO
             StringBuilder sb = new StringBuilder();
 
             target.CollateScriptWithSchemaCheck(coll, schema, ref sb);
-            Assert.AreEqual(expected, sb.ToString());
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), sb.ToString().Replace("\r\n", "\n"));
         }
 
         /// <summary>
         ///A test for CollateScriptWithSchemaCheck
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.ObjectScript.dll")]
+        
         public void CollateScriptWithSchemaCheckTest_MultipleNeedingSchema()
         {
             ObjectScriptHelper target = new ObjectScriptHelper(new ConnectionData());

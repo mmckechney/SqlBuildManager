@@ -90,7 +90,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var writer = new DefaultScriptLogWriter();
             var context = new ScriptLogWriteContext
             {
-                ScriptLogFileName = null,
+                ScriptLogFileName = null!,
                 ExternalScriptLogFileName = string.Empty,
                 ServerName = "TestServer",
                 IsTransactional = true

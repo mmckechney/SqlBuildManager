@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Status;
@@ -19,11 +19,11 @@ namespace SqlSync.SqlBuild.AdHocQuery
 {
     public class QueryCollector
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        MultiDbData multiDbData;
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+        MultiDbData multiDbData = null!;
         private List<QueryCollectionRunner> runners = new List<QueryCollectionRunner>();
-        private BackgroundWorker bgWorker;
-        private ConnectionData connData = null;
+        private BackgroundWorker bgWorker = null!;
+        private ConnectionData connData = null!;
 
         /// <summary>
         /// The directory where the ultimate results file will be created. Will be used as the root for the temp files
@@ -83,7 +83,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         /// <param name="scriptTimeout">SQL timeout per connection</param>
         public bool GetQueryResults(string fileName, ReportType reportType, string query, int scriptTimeout)
         {
-            resultsFilePath = Path.Combine(Path.GetDirectoryName(fileName), Guid.NewGuid().ToString());
+            resultsFilePath = Path.Combine(Path.GetDirectoryName(fileName)!, Guid.NewGuid().ToString());
 
             if(!EnsureOutputPath(resultsFilePath))
             {
@@ -99,7 +99,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
 
                 foreach (DatabaseOverride ovr in srv.Overrides)
                 {
-                    if (srv.ServerName.StartsWith("#")) srv.ServerName = ovr.Server;
+                    if (srv.ServerName.StartsWith("#")) srv.ServerName = ovr.Server ?? string.Empty;
                     db = srv.ServerName + "." + ovr.OverrideDbTarget;
 
                     QueryCollectionRunner runner = new QueryCollectionRunner(srv.ServerName, ovr.OverrideDbTarget, query, ovr.QueryRowData, reportType, resultsFilePath, scriptTimeout, connData);
@@ -222,7 +222,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 foreach (QueryCollectionRunner runner in runners)
                     runner.Dispose();
 
-                runners = null;
+                runners = null!;
             }
         }
         /// <summary>
@@ -235,7 +235,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
             string tmpCombined = resultsFilePath + String.Format("Combined-{0}.txt", Guid.NewGuid().ToString());
             try
             {
-                string tmpLine = null;
+                string tmpLine = null!;
                 using (StreamWriter sw = new StreamWriter(tmpCombined))
                 {
                     sw.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
@@ -247,7 +247,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                         {
                             while (sr.Peek() > 0)
                             {
-                                tmpLine = sr.ReadLine();
+                                tmpLine = sr.ReadLine()!;
                                 if (tmpLine.Trim().StartsWith("<?xml"))
                                     continue;
 
@@ -277,7 +277,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
         {
             if(queryResultsFiles.Count == 0)
             {
-                log.LogInformation($"No results files generated, not creating summary report.");
+                log.LogInformation($"No results files to combine (0 input files), not creating summary report.");
                 return true;
             }
             log.LogInformation($"Creating combined CSV from {queryResultsFiles.Count} results files");

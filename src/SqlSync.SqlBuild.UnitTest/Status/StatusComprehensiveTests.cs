@@ -1,9 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.SqlBuild.Status;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Services;
+using SqlSync.SqlBuild.Status;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,6 +11,7 @@ using System.Data;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
+using static System.Net.Mime.MediaTypeNames;
 
 #nullable enable
 
@@ -383,7 +384,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             }
 
             // Act
-            collection.BuildFileNameFull = @"C:\Builds\SubFolder\MyBuild.sbm";
+            collection.BuildFileNameFull = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "MyBuild.sbm");
 
             // Assert
             Assert.AreEqual("MyBuild.sbm", collection.BuildFileNameShort);
@@ -449,7 +450,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             var multiDbData = new MultiDbData();
 
             // Act
-            var reporting = new StatusReporting(dbUtilMock.Object, buildDataModel, multiDbData, @"C:\Test", "build.sbm");
+            var reporting = new StatusReporting(dbUtilMock.Object, buildDataModel, multiDbData, Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "Test"), "build.sbm");
 
             // Assert
             Assert.IsNotNull(reporting);

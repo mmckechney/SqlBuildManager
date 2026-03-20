@@ -24,10 +24,26 @@ dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configura
 
 ### Test Types
 - `*.UnitTest.csproj` - True unit tests with no external dependencies
-- `*.Dependent.UnitTest.csproj` - Require local SQL Express; run `SqlSync.SqlBuild.Dependent.UnitTest` first on new machines to create databases
-- `SqlBuildManager.Console.ExternalTest` - Integration tests requiring Azure resources (run `scripts/templates/create_azure_resources.ps1` first)
+- `*.Dependent.UnitTest.csproj` - Require local SQL Express (SQL Server) or local PostgreSQL; run `SqlSync.SqlBuild.Dependent.UnitTest` first on new machines to create databases
+- `*.Dependent.PostgreSQL.UnitTest.csproj` - PostgreSQL-specific dependent tests (require PostgreSQL instance)
+- `SqlBuildManager.Console.ExternalTest` - Integration tests for SQL Server requiring Azure resources (run `azd up` first to provision resources)
+- `SqlBuildManager.Console.PostgreSQL.ExternalTest` - Integration tests for PostgreSQL requiring Azure resources
+- External tests run in ACI containers via `scripts/tests/run_all_external_tests_in_aci.ps1` using `src/Dockerfile.tests`
 
 ## Architecture Overview
+
+### Database Platform Support
+The application supports two database platforms, selected via `--platform` CLI option:
+- **SqlServer** (default)
+- **PostgreSQL**
+
+Platform abstraction uses interfaces with per-platform implementations:
+- `IDbConnectionFactory` → `SqlServerConnectionFactory` / `PostgresConnectionFactory`
+- `ITransactionManager` → `SqlServerTransactionManager` / `PostgresTransactionManager`
+- `IScriptSyntaxProvider` → `SqlServerSyntaxProvider` / `PostgresSyntaxProvider`
+- `ISqlResourceProvider` → `SqlServerResourceProvider` / `PostgresResourceProvider`
+
+Platform is propagated via `ConnectionData.DatabasePlatform` (set from `cmdLine.AuthenticationArgs.DatabasePlatform`).
 
 ### Project Layers
 ```
@@ -39,14 +55,14 @@ SqlBuildManager.Logging                 ← Serilog-based logging
 SqlBuildManager.Interfaces              ← Shared interfaces
     ↓
 SqlSync.SqlBuild                        ← Core build/package logic
-SqlSync.Connection                      ← Database connections
+SqlSync.Connection                      ← Database connections (SqlServer + PostgreSQL)
 SqlSync.DbInformation                   ← Database metadata
 SqlSync.ObjectScript                    ← SQL object scripting
 SqlSync.Constants                       ← Shared constants
 ```
 
 ### Console Application Pattern
-The CLI uses **System.CommandLine** (beta 4) with .NET Generic Host:
+The CLI uses **System.CommandLine** (v2.0.3) with .NET Generic Host:
 
 - **Program.cs** - Configures `IHostBuilder` with DI, logging, and `Worker` as `IHostedService`
 - **Worker.cs** - Invokes the command parser and routes to handler methods
@@ -87,10 +103,25 @@ public BatchArgs BatchArgs { get; set; }
 ### Settings File Pattern
 Configuration can be saved to encrypted JSON settings files using `--settingsfile` and `--settingsfilekey`. Sensitive data is AES-256 encrypted or stored in Azure Key Vault.
 
+### Batch Command Line Serialization
+`CommandLineArgs` is serialized to a command string via `ToBatchString()` → `Extensions.ToStringExtension(StringType.Batch)`. `FileInfo` properties (`QueryFile`, `OutputFile`) require special handling in batch mode because `FileInfo.FullName` resolves relative paths against the orchestrator's CWD, producing invalid paths on batch nodes. Use `file.Name` (filename only) or `file.ToString()` (original path) instead of `file.FullName` for batch serialization.
+
+## Docker / Container Images
+
+- `src/Dockerfile` - Production runtime image (self-contained .NET 10.0)
+- `src/Dockerfile.tests` - Integration test runner image (Azure CLI, kubectl); used by `scripts/tests/run_tests_in_aci.ps1`
+- `src/Dockerfile.dependent-tests` - Dependent unit test image with SQL Server/PostgreSQL sidecars
+- `src/Dockerfile-Windows` - Windows variant of the production image
+
 ## Infrastructure Provisioning
 
-Azure resources can be provisioned two ways:
-1. **Azure Developer CLI**: `azd up` (uses `infra/` Bicep templates)
-2. **PowerShell scripts**: `scripts/templates/create_azure_resources.ps1`
+Azure resources can be provisioned via the Azure Developer CLI:
+1. **Azure Developer CLI**: `azd up` (uses `infra/` Bicep templates, including `infra/modules/postgresql.bicep`)
 
-Both create: Storage Account, Service Bus, Event Hub, Key Vault, Managed Identity, and optionally Batch/AKS/Container Apps/ACR/SQL databases.
+This creates: Storage Account, Service Bus, Event Hub, Key Vault, Managed Identity, and optionally Batch/AKS/Container Apps/ACR/SQL databases/PostgreSQL databases.
+
+### Database Setup Scripts
+- `scripts/Database/create_database_override_files.ps1` - SQL Server override configs
+- `scripts/Database/create_pg_database_override_files.ps1` - PostgreSQL override configs
+- `scripts/Database/grant_identity_permissions.ps1` - Grant managed identity access to SQL Server databases
+- `scripts/Database/grant_pg_identity_permissions.ps1` - Grant managed identity access to PostgreSQL databases

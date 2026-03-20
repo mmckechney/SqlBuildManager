@@ -5,7 +5,7 @@ namespace SqlBuildManager.Enterprise.Tag
 {
     public class EnterpriseTagHelper
     {
-        public static List<string> GetEnterpriseTagRegexValues(List<ScriptTagInference> inferenceList, List<string> adGroupMembership)
+        public static List<string>? GetEnterpriseTagRegexValues(List<ScriptTagInference> inferenceList, List<string> adGroupMembership)
         {
 
             if (inferenceList == null)

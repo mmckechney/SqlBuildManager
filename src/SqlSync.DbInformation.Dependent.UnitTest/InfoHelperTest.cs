@@ -20,7 +20,7 @@ namespace SqlSync.DbInformation.Dependent.UnitTest
             _init = new Initialization();
         }
 
-        private ConnectionData GetConnData() => _init?.connData ?? new ConnectionData(@"(local)\SQLEXPRESS", "SqlBuildTest");
+        private ConnectionData GetConnData() => _init?.connData ?? SqlBuildManager.Test.Common.TestEnvironment.GetConnectionData("SqlBuildTest");
 
         #region GetColumnNames Tests
 
@@ -398,7 +398,6 @@ namespace SqlSync.DbInformation.Dependent.UnitTest
         #region GetDatabaseSizeAnalysis Tests
 
         [TestMethod()]
-        [Ignore("Resource file SizeAnalysis.sql is not properly embedded - TODO: fix resource embedding")]
         public void GetDatabaseSizeAnalysis_ReturnsAnalysisData()
         {
             ConnectionData connData = GetConnData();

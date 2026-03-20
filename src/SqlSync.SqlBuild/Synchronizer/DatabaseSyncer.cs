@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using System;
@@ -13,7 +13,7 @@ namespace SqlSync.SqlBuild.Synchronizer
 {
     public class DatabaseSyncer
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private bool lastBuildSuccessful = true;
 
         public async Task<Boolean> SyncronizeDatabasesAsync(string goldServer, string goldDatabase, string toUpdateServer, string toUpdateDatabase, bool continueOnFailure, CancellationToken cancellationToken = default)
@@ -225,14 +225,14 @@ namespace SqlSync.SqlBuild.Synchronizer
 
         }
         public delegate void SyncronizationInfoEventHandler(string message);
-        public event SyncronizationInfoEventHandler SyncronizationInfoEvent;
+        public event SyncronizationInfoEventHandler? SyncronizationInfoEvent;
 
         private void helper_BuildCommittedEvent(object sender, RunnerReturn rr)
         {
             lastBuildSuccessful = true;
         }
 
-        private void helper_BuildErrorRollBackEvent(object sender, EventArgs e)
+        private void helper_BuildErrorRollBackEvent(object? sender, EventArgs e)
         {
             lastBuildSuccessful = false;
         }

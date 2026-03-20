@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Enterprise.ActiveDirectory;
 using System;
 using System.Collections.Generic;
@@ -14,9 +14,9 @@ namespace SqlBuildManager.Enterprise
 
     public class EnterpriseConfigHelper
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static EnterpriseConfiguration enterpriseConfig = null;
-        private static List<string> adGroupMemberships = null;
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+        private static EnterpriseConfiguration enterpriseConfig = null!;
+        private static List<string> adGroupMemberships = null!;
 
         public static List<string> AdGroupMemberships
         {
@@ -56,9 +56,9 @@ namespace SqlBuildManager.Enterprise
         internal static EnterpriseConfiguration LoadEnterpriseConfiguration()
         {
             if (System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"] != null &&
-                System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"].Length > 0)
+                System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"]!.Length > 0)
             {
-                var cfg = LoadEnterpriseConfiguration(System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"]);
+                var cfg = LoadEnterpriseConfiguration(System.Configuration.ConfigurationManager.AppSettings["Enterprise.ConfigFileLocation"]!);
                 if (cfg != null)
                 {
                     return cfg;
@@ -118,9 +118,7 @@ namespace SqlBuildManager.Enterprise
             }
 
             log.LogError("Unable to load EnterpriseConfig from configuation file!");
-            return null;
-
-
+            return null!;
         }
         internal static EnterpriseConfiguration DeserializeConfiguration(string configuration)
         {
@@ -129,7 +127,7 @@ namespace SqlBuildManager.Enterprise
                 using (StringReader sr = new StringReader(configuration))
                 {
                     XmlSerializer xmlS = new XmlSerializer(typeof(EnterpriseConfiguration));
-                    object tmp = xmlS.Deserialize(sr);
+                    object? tmp = xmlS.Deserialize(sr);
                     if (tmp != null)
                     {
                         log.LogDebug("Successfully deserialized Enterprise Configuration");
@@ -143,7 +141,7 @@ namespace SqlBuildManager.Enterprise
                 log.LogError(exe, $"Error deserializing enterprise configuration file from: {configuration}");
             }
 
-            return null;
+            return null!;
         }
 
         public static int GetMinumumScriptTimeout(string scriptName, int generalMinumum)
@@ -175,7 +173,7 @@ namespace SqlBuildManager.Enterprise
         private static List<TimeoutSetting[]> GetCurrentUsersTimeoutSettings()
         {
             if (EnterpriseConfigHelper.EnterpriseConfig.CustomScriptTimeouts == null)
-                return null;
+                return null!;
 
             //Find any timeout sets that apply to the group
             List<CustomScriptTimeouts> to = EnterpriseConfigHelper.EnterpriseConfig.CustomScriptTimeouts.ToList();
@@ -187,7 +185,7 @@ namespace SqlBuildManager.Enterprise
             if (ts.Count() > 0)
                 return ts.ToList();
             else
-                return null;
+                return null!;
 
         }
         private static TimeoutSetting GetApplicableTimeoutSetting(string scriptName)
@@ -199,7 +197,7 @@ namespace SqlBuildManager.Enterprise
 
                 List<TimeoutSetting[]> ts = GetCurrentUsersTimeoutSettings();
                 if (ts == null)
-                    return null;
+                    return null!;
 
                 //If we find some that apply, find a matching extension value
                 if (ts.Count() > 0)
@@ -217,7 +215,7 @@ namespace SqlBuildManager.Enterprise
             {
                 log.LogWarning(exe, $"Unable to get Enterprise TimeoutSetting object for file '{scriptName}'");
             }
-            return null;
+            return null!;
         }
 
     }

@@ -1,4 +1,4 @@
-﻿using Azure.Core;
+using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using System;
@@ -10,8 +10,9 @@ namespace SqlBuildManager.Console.Aad
     public class AadHelper
     {
         private static CancellationTokenSource src = new CancellationTokenSource();
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private static string _managedIdentityClientId = string.Empty;
+        private static bool _managedIdentityClientIdLogged = false;
         public static string ManagedIdentityClientId
         {
             get
@@ -23,11 +24,20 @@ namespace SqlBuildManager.Console.Aad
                 _managedIdentityClientId = value;
                 if (!string.IsNullOrEmpty(_managedIdentityClientId))
                 {
-                    log.LogInformation($"ManagedIdentityClientId value set to {_managedIdentityClientId}");
+                    if (!_managedIdentityClientIdLogged)
+                    {
+                        log.LogInformation($"ManagedIdentityClientId value set to {_managedIdentityClientId}");
+                        _managedIdentityClientIdLogged = true;
+                    }
+                    else
+                    {
+                        log.LogDebug($"ManagedIdentityClientId value set to {_managedIdentityClientId}");
+                    }
                 }
             }
         }
         private static string _tenantId = String.Empty;
+        private static bool _tenantIdLogged = false;
         public static string TenantId
         {
             get => _tenantId; set
@@ -35,12 +45,20 @@ namespace SqlBuildManager.Console.Aad
                 _tenantId = value;
                 if (!string.IsNullOrEmpty(_tenantId))
                 {
-                    log.LogInformation($"TenantId value set to {_tenantId}");
+                    if (!_tenantIdLogged)
+                    {
+                        log.LogInformation($"TenantId value set to {_tenantId}");
+                        _tenantIdLogged = true;
+                    }
+                    else
+                    {
+                        log.LogDebug($"TenantId value set to {_tenantId}");
+                    }
                 }
             }
         }
 
-        private static TokenCredential _tokenCred = null;
+        private static TokenCredential _tokenCred = null!;
         internal static TokenCredential TokenCredential
         {
             get
@@ -53,7 +71,7 @@ namespace SqlBuildManager.Console.Aad
                     {
                         if (!string.IsNullOrEmpty(AadHelper.TenantId))
                         {
-                            log.LogInformation($"Creating DefaultAzureCredential for Tenant '{AadHelper.TenantId}', no ManagedIdentityClientId specified");
+                            log.LogInformation($"Creating DefaultAzureCredential for Tenant starting with'{AadHelper.TenantId.Substring(0, 8)}...', no ManagedIdentityClientId specified");
                             _tokenCred = new DefaultAzureCredential(new DefaultAzureCredentialOptions() { TenantId = AadHelper.TenantId });
                         }
                         else

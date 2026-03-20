@@ -10,11 +10,11 @@ namespace SqlSync.DbInformation
         internal string GetFromResources(string resourceName)
         {
             System.Reflection.Assembly assem = GetType().Assembly;
-            using (System.IO.Stream stream = assem.GetManifestResourceStream(resourceName))
+            using (System.IO.Stream stream = assem.GetManifestResourceStream(resourceName)!)
             {
                 try
                 {
-                    using (System.IO.StreamReader reader = new StreamReader(stream))
+                    using (System.IO.StreamReader reader = new StreamReader(stream!))
                     {
                         return reader.ReadToEnd();
                     }

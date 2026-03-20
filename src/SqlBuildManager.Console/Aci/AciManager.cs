@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using Azure.Core;
 using Azure.ResourceManager.ContainerInstance;
 using Azure.ResourceManager.ContainerInstance.Models;
@@ -23,7 +23,7 @@ namespace SqlBuildManager.Console.Aci
 {
     class AciManager
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         internal static async Task<string> DeployNetworkProfile(CommandLineArgs cmdLine)
         {
@@ -218,8 +218,13 @@ namespace SqlBuildManager.Console.Aci
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.ConcurrencyType) { Value = cmdLine.ConcurrencyType.ToString() });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.AllowObjectDelete) { Value = cmdLine.AllowObjectDelete.ToString() });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.IdentityClientId) { Value = cmdLine.IdentityArgs.ClientId.ToString() });
+            if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
+            {
+                lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.IdentityName) { Value = cmdLine.IdentityArgs.IdentityName });
+            }
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.StorageAccountName) { Value = cmdLine.ConnectionArgs.StorageAccountName });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.EventHubLogging) { Value = string.Join("|",cmdLine.EventHubLogging) });
+            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.DatabasePlatform) { Value = cmdLine.AuthenticationArgs.DatabasePlatform.ToString() });
             if (cmdLine.QueryFile != null)
             {
                 lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.QueryFile) { Value = cmdLine.QueryFile.Name });
@@ -301,7 +306,7 @@ namespace SqlBuildManager.Console.Aci
             var resp = await ArmHelper.GetAciDeploymentDetails(subscriptionId, resourceGroupName, aciName);
             var aciResult = JsonSerializer.Deserialize<Aci.Arm.Deployment>(JsonSerializer.Serialize(resp));
 
-            return aciResult;
+            return aciResult!;
         }
 
         #region Container Worker Methods

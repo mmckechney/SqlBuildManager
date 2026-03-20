@@ -61,7 +61,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             if (serverCount != dbCount.Length)
             {
-                return ("", null);
+                return ("", null!);
             }
             var tmpCfg = Path.GetTempPath() + Guid.NewGuid().ToString() + ".cfg";
             StringBuilder sb = new StringBuilder();
@@ -157,7 +157,7 @@ namespace SqlBuildManager.Console.UnitTest
                         int maxBucket = flattened.Where(c => c.Count() <= idealBucket).Max(c => c.Count()); //exclude the buckets that were already above the ideal
                         int medianBucket = flattened.OrderBy(c => c.Count()).ToList()[(flattened.Count() / 2) + 1].Count();
 
-                        string message = $"Buckets: {targetBuckets}; Servers: {serverCount}; Matrix: {string.Join(",", matrix)}";
+                        string message = $"Target Buckets: {targetBuckets}; Actual Buckets: {buckets.Count()}; Max per bucket: {buckets.Max(c => c.Count())}; Ideal Bucket: {maxBucket + (idealBucket * 1.2)} Servers: {serverCount}; Matrix: {string.Join(",", matrix)}";
                         Assert.AreEqual(targetBuckets, buckets.Count(), message);
                         Assert.IsTrue(buckets.Max(c => c.Count()) < maxBucket + (idealBucket * 1.2), message);
 

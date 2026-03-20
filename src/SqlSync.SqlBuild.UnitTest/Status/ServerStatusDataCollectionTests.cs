@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlSync.SqlBuild.Status;
+using System;
 using System.IO;
 using System.Xml.Serialization;
 
@@ -13,7 +14,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
         {
             // Arrange
             var collection = CreateServerStatusDataCollection();
-            string fullPath = @"C:\Projects\Builds\MyBuildFile.sbm";
+            string fullPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "MyBuildFile.sbm");
 
             // Act
             collection.BuildFileNameFull = fullPath;
@@ -162,7 +163,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             var serializer = new XmlSerializer(typeof(ServerStatusDataCollection));
             using (var reader = new StringReader("<ServerStatusDataCollection></ServerStatusDataCollection>"))
             {
-                return (ServerStatusDataCollection)serializer.Deserialize(reader);
+                return (ServerStatusDataCollection)serializer.Deserialize(reader)!;
             }
         }
     }

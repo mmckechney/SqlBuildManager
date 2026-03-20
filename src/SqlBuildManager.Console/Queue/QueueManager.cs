@@ -1,4 +1,4 @@
-﻿using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.Extensions.Logging;
 using MoreLinq;
@@ -17,7 +17,7 @@ namespace SqlBuildManager.Console.Queue
 {
     public class QueueManager : IDisposable
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         private readonly string topicSubscriptionName = "sbmsubscription";
         private readonly string topicSessionSubscriptionName = "sbmsubscriptionsession";
@@ -27,11 +27,11 @@ namespace SqlBuildManager.Console.Queue
         private string jobName;
         private ConcurrencyType concurrencyType;
 
-        private ServiceBusClient _client = null;
-        private ServiceBusAdministrationClient _adminClient = null;
-        private ServiceBusSessionReceiver _sessionReceiver = null;
-        private ServiceBusReceiver _messageReceiver = null;
-        private CancellationTokenSource tokenSource = null;
+        private ServiceBusClient _client = null!;
+        private ServiceBusAdministrationClient _adminClient = null!;
+        private ServiceBusSessionReceiver _sessionReceiver = null!;
+        private ServiceBusReceiver _messageReceiver = null!;
+        private CancellationTokenSource tokenSource = null!;
 
         public QueueManager(string topicConnectionString, string jobName, ConcurrencyType concurrencyType, bool unitest = false)
         {
@@ -209,7 +209,7 @@ namespace SqlBuildManager.Console.Queue
                         TargetMessage data;
                         if (target.Item1.StartsWith("#"))
                         {
-                            data = new TargetMessage() { ServerName = target.Item2[0].Server, DbOverrideSequence = target.Item2, ConcurrencyTag = target.Item2[0].ConcurrencyTag };
+                            data = new TargetMessage() { ServerName = target.Item2[0].Server ?? string.Empty, DbOverrideSequence = target.Item2, ConcurrencyTag = target.Item2[0].ConcurrencyTag };
                         }else
                         {
                             data = new TargetMessage() { ServerName = target.Item1, DbOverrideSequence = target.Item2, ConcurrencyTag = target.Item2[0].ConcurrencyTag };
@@ -223,7 +223,7 @@ namespace SqlBuildManager.Console.Queue
                                 {
                                     var message = $"A Concurrency Tag is required in the override settings when Concurrency Type '{cType.ToString()}' is set. Unable to queue messages.";
                                     log.LogError(message);
-                                    return null; 
+                                    return null!; 
                                 }
                                 break;
                             default:
@@ -251,7 +251,7 @@ namespace SqlBuildManager.Console.Queue
             catch (Exception exe)
             {
                 log.LogError(exe, "Unable to contruct Service Bus Messages from override targets");
-                return null;
+                return null!;
             }
 
         }
@@ -647,7 +647,7 @@ namespace SqlBuildManager.Console.Queue
                     case ConcurrencyType.Count:
                         if (!await AdminClient.SubscriptionExistsAsync(topicName, topicSubscriptionName))
                         {
-                            log.LogInformation($"Creating topic subscripton for `{jobName}'");
+                            log.LogInformation($"Creating topic subscription for `{jobName}'");
                             var stdOptions = new CreateSubscriptionOptions(topicName, topicSubscriptionName);
                             var result = await AdminClient.CreateSubscriptionAsync(stdOptions);
                         }
@@ -659,7 +659,7 @@ namespace SqlBuildManager.Console.Queue
                     case ConcurrencyType.MaxPerTag:
                         if (!await AdminClient.SubscriptionExistsAsync(topicName, topicSessionSubscriptionName))
                         {
-                            log.LogInformation($"Creating session enabled topic subscripton for `{jobName}'");
+                            log.LogInformation($"Creating session enabled topic subscription for `{jobName}'");
                             var sessionOptions = new CreateSubscriptionOptions(topicName, topicSessionSubscriptionName);
                             sessionOptions.RequiresSession = true;
                             var result = await AdminClient.CreateSubscriptionAsync(sessionOptions);
@@ -690,7 +690,7 @@ namespace SqlBuildManager.Console.Queue
             }
             try
             {
-                log.LogDebug($"Creating Topic filter for Batch job name: {jobName}");
+                log.LogDebug($"Creating Topic filter for job name: {jobName}");
                 string filter = jobName;
                 var pollyRetryPolicyForCreate = Policy.Handle<Exception>(ex => !ex.Message.Contains("already exists")).WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
                 await pollyRetryPolicyForCreate.ExecuteAsync(async () =>
@@ -713,7 +713,7 @@ namespace SqlBuildManager.Console.Queue
                 if (ex.Message.Contains("already exists"))
                 {
                     log.LogInformation($"The subscription filter '{jobName}' already exists");
-                    _adminClient = null;
+                    _adminClient = null!;
                 }
                 else
                 {

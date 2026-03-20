@@ -14,7 +14,7 @@ namespace SqlSync.SqlBuild.Services
 {
     public sealed class DefaultBuildFinalizer : IBuildFinalizer
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private readonly IProgressReporter progressReporter;
         private readonly ISqlLoggingService sqlLoggingService;
 
@@ -38,6 +38,7 @@ namespace SqlSync.SqlBuild.Services
                 {
                     log.LogInformation($"Committing transaction for {key}");
                     ((BuildConnectData)connectionsService.Connections[key]).Transaction.Commit();
+                    ((BuildConnectData)connectionsService.Connections[key]).Transaction = null!;
                     log.LogInformation($"Commit Successful for {key}");
                 }
                 catch (Exception e)
@@ -49,11 +50,15 @@ namespace SqlSync.SqlBuild.Services
                 try
                 {
                     log.LogDebug($"Closing connection for {key}");
-                    ((BuildConnectData)connectionsService.Connections[key]).Connection.Close();
+                    var connData = (BuildConnectData)connectionsService.Connections[key];
+                    if (connData.Connection != null)
+                    {
+                        connData.Connection.Close();
+                    }
                 }
                 catch (Exception e)
                 {
-                    log.LogWarning(e, $"Error in CommitBuild Connection.Close() for database '{e}'");
+                    log.LogWarning(e, $"Error in CommitBuild Connection.Close() for database '{key}'");
                     progressReporter.ReportProgress(100, new CommitFailureEventArgs(e.Message));
                     success = false;
                 }
@@ -116,7 +121,7 @@ namespace SqlSync.SqlBuild.Services
                         cs.FileHash,
                         projectId));
                 }
-                buildDataModel.CommittedScript = list;
+                buildDataModel!.CommittedScript = list;
                 return buildDataModel;
             }
 
@@ -152,7 +157,6 @@ namespace SqlSync.SqlBuild.Services
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
-            var finalizationErrorOccurred = false;
             var updatedDataModel = context.BuildDataModel;
             BuildResultStatus finalBuildResult;
             DateTime end = DateTime.Now;
@@ -162,7 +166,6 @@ namespace SqlSync.SqlBuild.Services
 
             if (buildFailure)
             {
-                finalizationErrorOccurred = true;
                 if (context.IsTransactional)
                     myBuild.FinalStatus = BuildItemStatus.RolledBack;
                 else

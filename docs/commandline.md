@@ -2,6 +2,11 @@
 # Command Line Overview
 
 - [Getting started](#getting-started)
+- [Global Options](#global-options)
+- [Commands](#commands)
+- [Common Runtime Options](#common-runtime-options)
+- [Event Hub Logging Options](#event-hub-logging-options)
+- [Container Environment Variables](#container-environment-variables)
 - [Logging](#logging)
 
 ----
@@ -11,6 +16,24 @@
 The `sbm` executable uses a command pattern for execution `sbm [command]`
 
 **For detailed information on the available and required options for each command, leverage the self-generated documentation via `sbm [command] --help`**
+
+----
+
+## Global Options
+
+These options are available across all commands:
+
+| Option | Description |
+|--------|-------------|
+| `--loglevel` | Logging level for console and log file. Values: `Trace`, `Debug`, `Information` (default), `Warning`, `Error`, `Critical` |
+| `--platform` / `--databaseplatform` | Target database platform: `SqlServer` (default) or `PostgreSQL`. See [PostgreSQL docs](postgresql.md) |
+
+----
+
+## Commands
+
+_**Note:** Some commands have aliases shown in parentheses._
+
 ## `build`
 
 Performs a standard, local SBM execution via command line
@@ -24,6 +47,8 @@ For updating multiple or querying databases simultaneously from the current mach
   - `run` - For updating multiple databases simultaneously from the current machine
 
 ## `containerapp`
+
+_Alias: `ca`_
 
 Commands for setting and executing a build running in pods on Azure Container App
 
@@ -39,6 +64,8 @@ Commands for setting and executing a build running in pods on Azure Container Ap
 
 ## `k8s`
 
+_Alias: `aks`_
+
 Commands for setting and executing a build running in pods on Kubernetes
 
   - `savesettings` - Saves settings file for Kubernetes deployments
@@ -47,7 +74,6 @@ Commands for setting and executing a build running in pods on Kubernetes
   - `enqueue` - Sends database override targets to Service Bus Topic
   - `monitor` - Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)
   - `dequeue` - Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them
-  - `createyaml` - Helper command to create yaml files from a settings json file and runtime parameters
   - `query` - Run a SELECT query across multiple databases using Kubernetes. [NOTE: 'kubectl' must be installed and in your path]
   - `worker` - [Used by Kubernetes] Starts the pod as a worker - polling and retrieving items from target service bus queue topic
   - `worker query` - [Used by Kubernetes] Starts the pod as a worker for database querying - polling and retrieving items from target service bus queue topic
@@ -103,6 +129,8 @@ Adds one or more scripts to an SBM package or SBX project file from a list of sc
 
 ## `package`
 
+_Alias: `pack`_
+
 Creates an SBM package from an SBX configuration file and scripts
 
 
@@ -154,12 +182,118 @@ Creates export of all command and sub-command descriptions
 
 ----
 
+## Common Runtime Options
+
+These options apply to `build`, `threaded run`, and the remote execution commands (`batch run`, `k8s run`, `containerapp run`, `aci run`). Use `sbm [command] --help` for the complete list for each command.
+
+### Build Behavior
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `--transactional` | bool | `true` | Whether to wrap the build in a transaction. When `true`, a failing script triggers a rollback of the entire build on that database |
+| `--trial` | bool | `false` | Runs the build in trial mode — executes all scripts against the database, then rolls back, leaving the database unchanged. Useful for validating a build package without modifying data. _Note:_ `--transactional` must be `true` when using `--trial` |
+| `--allowobjectdelete` | bool | `false` | When creating a package from a DACPAC comparison (`create fromdacpacs` / `create fromdacpacdiff`), controls whether scripts for deleting database objects are included |
+| `--defaultscripttimeout` | int | (per-script) | Override the per-script timeout (in seconds) set during package creation. Applies to all scripts in the build |
+| `--timeoutretrycount` | int | `0` | Number of retries to attempt when a script execution times out. Only valid when `--transactional=true` |
+| `--buildrevision` | string | | If provided, the build writes an update to a `Versions` table, using this value for the `VersionNumber` column |
+| `--description` | string | | Description of the build, recorded in the build log |
+
+### Authentication
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `--authtype` | enum | `Password` | Authentication method: `Password`, `Windows`, `ManagedIdentity`, `AzureADPassword`, `AzureADIntegrated`, `AzureADDefault`, `AzureADInteractive` |
+| `--username` / `-u` | string | | Database username (required for `Password` and `AzureADPassword` auth types) |
+| `--password` / `-p` | string | | Database password (required for `Password` and `AzureADPassword` auth types) |
+| `--identityclientid` / `--clientid` | string | | Client ID of the Azure User Assigned Managed Identity |
+| `--tenantid` | string | | Azure AD Tenant ID (optional, for explicit tenant targeting) |
+
+### Logging & Monitoring
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `--rootloggingpath` | string | current dir | Directory to save execution log files |
+| `--stream` | bool | `false` | Stream real-time database commit and error events from Azure Event Hub during remote builds |
+| `--eventhublogging` | flags | `EssentialOnly` | Controls the granularity of Event Hub logging. See [Event Hub Logging Options](#event-hub-logging-options) |
+
+### Settings & Secrets
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `--settingsfile` | string | Path to a saved settings JSON file to load parameters from |
+| `--settingsfilekey` | string | Encryption key for the settings file (min 16 characters). Can be the key string or a path to a key file. Also read from `sbm-settingsfilekey` environment variable |
+| `--keyvaultname` / `--kv` | string | Name of Azure Key Vault to store/retrieve secrets |
+| `--storageaccountname` | string | Azure storage account for logs and package staging |
+| `--storageaccountkey` | string | Storage account access key (not required when using Managed Identity) |
+| `--servicebustopicconnection` / `--sb` | string | Service Bus connection string (or namespace when using Managed Identity) |
+| `--eventhubconnection` / `--eh` | string | Event Hub connection string (or `<namespace>\|<hubname>` when using Managed Identity) |
+
+### Targeting
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `--override` | string | Path to the database target override file (`.cfg`, `.multiDb`, `.multiDbQ`, or `.sql`). See [Override Options](override_options.md) |
+| `--packagename` / `-P` | string | Path to the `.sbm` or `.sbx` build package |
+| `--jobname` | string | User-friendly name for the build job. Also used as the blob storage container name. Must be 3-41 characters, lowercase alphanumeric and dashes only |
+| `--concurrency` | int | `8` | Maximum concurrent tasks. See [Concurrency Options](concurrency_options.md) |
+| `--concurrencytype` | enum | `Count` | Concurrency strategy: `Count`, `Server`, `MaxPerServer`, `Tag`, `MaxPerTag` |
+
+----
+
+## Event Hub Logging Options
+
+The `--eventhublogging` flag controls what data is sent to Azure Event Hub during remote builds. Multiple values can be combined by specifying the flag multiple times.
+
+| Value | Description |
+|-------|-------------|
+| `EssentialOnly` | (Default) Minimal logging — only build-level commit and error events |
+| `VerboseMessages` | Include verbose diagnostic messages for detailed debugging |
+| `IndividualScriptResults` | Log the result of each individual script execution |
+| `ConsolidatedScriptResults` | Log aggregated/consolidated script results per database |
+| `ScriptErrors` | Explicitly log script execution errors to Event Hub |
+
+**Example:** To log both individual script results and errors:
+
+```bash
+sbm batch run --eventhublogging IndividualScriptResults --eventhublogging ScriptErrors ...
+```
+
+----
+
+## Container Environment Variables
+
+When running as a container worker (Kubernetes, ACI, or Container Apps), runtime configuration is passed via environment variables prefixed with `Sbm_`. These are set automatically by the orchestrator and generally do not need to be configured manually.
+
+| Environment Variable | Description |
+|---------------------|-------------|
+| `Sbm_JobName` | Job/build name |
+| `Sbm_PackageName` | Name of the `.sbm` package to execute |
+| `Sbm_DacpacName` | Name of the DACPAC (if applicable) |
+| `Sbm_Concurrency` | Concurrency level |
+| `Sbm_ConcurrencyType` | Concurrency strategy (`Count`, `Server`, etc.) |
+| `Sbm_KeyVaultName` | Azure Key Vault name for secret retrieval |
+| `Sbm_IdentityClientId` | Managed Identity client ID |
+| `Sbm_IdentityName` | Managed Identity name |
+| `Sbm_StorageAccountName` | Azure storage account name |
+| `Sbm_StorageAccountKey` | Storage account key (when not using Key Vault) |
+| `Sbm_ServiceBusTopicConnectionString` | Service Bus connection string |
+| `Sbm_EventHubConnectionString` | Event Hub connection string |
+| `Sbm_AuthType` | Authentication type |
+| `Sbm_DatabasePlatform` | Target platform (`SqlServer` or `PostgreSQL`) |
+| `Sbm_EventHubLogging` | Pipe-delimited logging flags (e.g. `EssentialOnly\|ScriptErrors`) |
+| `Sbm_AllowObjectDelete` | Allow object deletion in DACPAC comparisons |
+| `Sbm_UserName` | Database username (when not using Key Vault) |
+| `Sbm_Password` | Database password (when not using Key Vault) |
+| `Sbm_QueryFile` | Path to query file (for query operations) |
+| `Sbm_OutputFile` | Path to output results file |
+
+----
+
 ## Logging
 
-For general logging, the
-SqlBuildManager.Console.exe has its own local messages. This log file is
-named SqlBuildManager.Console{date stamp}.log and can be found in the same folder as
-the executable. This file will be the first place to check for general
+For general logging, `sbm` has its own local messages. This log file is
+named SqlBuildManager.Console{date stamp}.log and can be found in the
+current working directory or the configured `--rootloggingpath`. This file will be the first place to check for general
 execution errors or problems.
 
 To accommodate the logging of a threaded or batch build, all of the output is

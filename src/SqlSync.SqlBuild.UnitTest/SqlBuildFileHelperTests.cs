@@ -583,7 +583,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void ScriptRequiresBuildDescription_ReturnsFalseForNull()
         {
-            var result = SqlBuildFileHelper.ScriptRequiresBuildDescription(null);
+            var result = SqlBuildFileHelper.ScriptRequiresBuildDescription(null!);
 
             Assert.IsFalse(result);
         }
@@ -686,7 +686,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void MakeFileWriteable_ReturnsFalseForNonExistentFile()
         {
-            var result = SqlBuildFileHelper.MakeFileWriteable(@"C:\NonExistent\File.txt");
+            var result = SqlBuildFileHelper.MakeFileWriteable(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "File.txt"));
 
             Assert.IsFalse(result);
         }
@@ -753,7 +753,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void GetTotalLogFilesSize_ReturnsZeroForNonExistentDirectory()
         {
-            var result = SqlBuildFileHelper.GetTotalLogFilesSize(@"C:\NonExistent\Directory");
+            var result = SqlBuildFileHelper.GetTotalLogFilesSize(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "NonExistent"));
 
             Assert.AreEqual(0, result);
         }
@@ -949,7 +949,7 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
-            var result = await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, Path.GetTempPath(), null, false);
+            var result = await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, Path.GetTempPath(), null!, false);
 
             Assert.IsTrue(result);
         }
@@ -967,7 +967,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public async Task PackageProjectFileIntoZip_ReturnsFalseForNullModel()
         {
-            SqlSyncBuildDataModel model = null;
+            SqlSyncBuildDataModel model = null!;
 
             var result = await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, Path.GetTempPath(), "test.sbm", false);
 
@@ -1510,7 +1510,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public async Task PackageSbxFileIntoSbmFile_NullFileName_ReturnsEmpty()
         {
-            var result = await SqlBuildFileHelper.PackageSbxFileIntoSbmFileAsync(null);
+            var result = await SqlBuildFileHelper.PackageSbxFileIntoSbmFileAsync(null!);
 
             Assert.AreEqual(string.Empty, result);
         }

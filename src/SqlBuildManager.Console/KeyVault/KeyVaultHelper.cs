@@ -1,4 +1,4 @@
-﻿using Azure.Identity;
+using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -20,10 +20,15 @@ namespace SqlBuildManager.Console.KeyVault
         public const string UserName = "UserName";
         public const string Password = "Password";
         public const string ContainerRegistryPassword = "ContainerRegistryPassword";
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
 
-        private static SecretClient _secretClient = null;
+        private static SecretClient _secretClient = null!;
+        /// <summary>
+        /// Optional override for tests to reduce Azure SDK retry delays.
+        /// </summary>
+        internal static SecretClientOptions? SecretClientOptionsOverride { get; set; }
+
         internal static SecretClient SecretClient(string keyVaultName)
         {
 
@@ -31,7 +36,8 @@ namespace SqlBuildManager.Console.KeyVault
             {
                 var cred = AadHelper.TokenCredential;
                 string keyVaultUrl = $"https://{keyVaultName}.vault.azure.net/";
-                _secretClient = new SecretClient(vaultUri: new Uri(keyVaultUrl), credential: cred);
+                var options = SecretClientOptionsOverride ?? new SecretClientOptions();
+                _secretClient = new SecretClient(vaultUri: new Uri(keyVaultUrl), credential: cred, options: options);
             }
             return _secretClient;
 
@@ -48,17 +54,17 @@ namespace SqlBuildManager.Console.KeyVault
             catch (Azure.RequestFailedException rfe)
             {
                 log.LogWarning($"Unable to get secret '{secretName}' from vault {keyVaultName}: [RequestFailedException] {rfe.ErrorCode}");
-                return null;
+                return null!;
             }
             catch (AuthenticationFailedException afe)
             {
                 log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}: [AuthenticationFailedException] {afe.Message}");
-                return null;
+                return null!;
             }
             catch (Exception exe)
             {
                 log.LogError($"Unable to get secret '{secretName}' from vault {keyVaultName}:[{exe.GetType()}] {exe.Message}");
-                return null;
+                return null!;
             }
         }
         public static string SaveSecret(string keyVaultName, string secretName, string secretValue)
@@ -66,7 +72,7 @@ namespace SqlBuildManager.Console.KeyVault
             if (string.IsNullOrEmpty(secretValue))
             {
                 //log.LogWarning($"Secret value for {secretName} was blank. Will not save to Key Vault {keyVaultName} ");
-                return null;
+                return null!;
             }
             try
             {
@@ -77,7 +83,7 @@ namespace SqlBuildManager.Console.KeyVault
             catch (Exception exe)
             {
                 log.LogError($"Unable to save secret '{secretName}' to vault {keyVaultName}: {exe.ToString()}");
-                return null;
+                return null!;
             }
         }
         public static List<string> SaveSecrets(CommandLineArgs cmdLine)
@@ -114,15 +120,22 @@ namespace SqlBuildManager.Console.KeyVault
         }
         public static (bool, CommandLineArgs) GetSecrets(CommandLineArgs cmdLine)
         {
-            if (cmdLine.KeyVaultSecretsRetrieved)
+            if (string.IsNullOrEmpty(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                log.LogInformation("No Key Vault name supplied. Skipping retrieval of secrets from Key Vault");
+                cmdLine.KeyVaultSecretsRetrieved = true;
+                return (true, cmdLine);
+            } 
+
+            if(cmdLine.KeyVaultSecretsRetrieved)
             {
                 log.LogDebug("KeyVault Secrets already retrieved");
                 return (true, cmdLine);
             }
             
             // Check if using Managed Identity mode - secrets from Key Vault are not needed
-            bool usingManagedIdentity = ( cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity ||
-                cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault );
+            bool usingManagedIdentity =  cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity ||
+                cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault ;
             if (usingManagedIdentity)
             {
                 log.LogInformation("Using Managed Identity authentication - Key Vault secrets not required");
@@ -137,7 +150,7 @@ namespace SqlBuildManager.Console.KeyVault
                 return (true, cmdLine);
             }
             var retrieved = new List<string>();
-            log.LogInformation($"Retrieving secrets from KeyVault: {cmdLine.ConnectionArgs.KeyVaultName}");
+            log.LogDebug($"Retrieving secrets from KeyVault: {cmdLine.ConnectionArgs.KeyVaultName}");
             var keys = new List<string>();
             var kvName = cmdLine.ConnectionArgs.KeyVaultName;
             string tmp;

@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using SqlSync.Connection;
 using System;
@@ -15,16 +15,16 @@ namespace SqlSync.SqlBuild.MultiDb
 {
     public class MultiDbHelper
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static MultiDbData DeserializeMultiDbConfiguration(string fileName)
         {
-            MultiDbData data = null;
+            MultiDbData data = null!;
             try
             {
                 using (TextReader reader = new StreamReader(fileName))
                 {
                     XmlSerializer xmlS = new XmlSerializer(typeof(MultiDbData));
-                    object tmp = xmlS.Deserialize(reader);
+                    object? tmp = xmlS.Deserialize(reader);
                     if (tmp != null)
                         data = (MultiDbData)tmp;
                 }
@@ -38,13 +38,13 @@ namespace SqlSync.SqlBuild.MultiDb
                 }
                 catch { }
             }
-            return data;
+            return data!;
 
         }
 
         internal static MultiDbData DeserializeMultiDbConfigurationString(string contents)
         {
-            return JsonSerializer.Deserialize<MultiDbData>(contents, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            return JsonSerializer.Deserialize<MultiDbData>(contents, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true })!;
         }
 
         public static MultiDbData ImportMultiDbTextConfig(string fileName)
@@ -59,7 +59,7 @@ namespace SqlSync.SqlBuild.MultiDb
                 log.LogError($"The specified database override configuration file '{fileName}' does not exist");
             }
 
-            return null;
+            return null!;
         }
 
         public static string ConvertMultiDbDataToTextConfig(MultiDbData cfg)
@@ -163,7 +163,7 @@ namespace SqlSync.SqlBuild.MultiDb
             catch (Exception exe)
             {
                 message = exe.Message;
-                return null;
+                return null!;
             }
         }
         public static MultiDbData CreateMultiDbConfigFromQuery(ConnectionData connData, string query, out string message)
@@ -187,28 +187,28 @@ namespace SqlSync.SqlBuild.MultiDb
                 {
                     message = "Your SQL query didn't return enough columns. It should return at least 2 columns: target server and target database.";
                     log.LogError(message);
-                    return null;
+                    return null!;
                 }
                 foreach (DataRow row in tbl.Rows)
                 {
                     var ser = new ServerData();
-                    ser.ServerName = row[0].ToString().Trim();
+                    ser!.ServerName = row[0].ToString()!.Trim();
 
                     DatabaseOverride ovr;
                     if (tbl.Columns.Count == 2)
                     {
-                        ovr = new DatabaseOverride(ser.ServerName, "client", row[1].ToString().Trim());
+                        ovr = new DatabaseOverride(ser!.ServerName, "client", row[1].ToString()!.Trim());
                     }
                     else if(tbl.Columns.Count == 3)
                     {
-                        ovr = new DatabaseOverride(ser.ServerName , row[1].ToString().Trim(), row[2].ToString().Trim());
-                        ovr.AppendedQueryRowData(row.ItemArray, 3, tbl.Columns);
+                        ovr = new DatabaseOverride(ser!.ServerName , row[1].ToString()!.Trim(), row[2].ToString()!.Trim());
+                        ovr.AppendedQueryRowData(row.ItemArray!, 3, tbl.Columns);
                     }
                     else
                     {
                         //add Tag if retrieved
-                        ovr = new DatabaseOverride(ser.ServerName, row[1].ToString().Trim(), row[2].ToString().Trim(), row[3].ToString().Trim());
-                        ovr.AppendedQueryRowData(row.ItemArray, 3, tbl.Columns);
+                        ovr = new DatabaseOverride(ser!.ServerName, row[1].ToString()!.Trim(), row[2].ToString()!.Trim(), row[3].ToString()!.Trim());
+                        ovr.AppendedQueryRowData(row.ItemArray!, 3, tbl.Columns);
                     }
 
                     ser.Overrides.Add(ovr);
@@ -225,7 +225,7 @@ namespace SqlSync.SqlBuild.MultiDb
             catch (Exception exe)
             {
                 message = exe.Message;
-                return null;
+                return null!;
             }
         }
 
@@ -290,13 +290,13 @@ namespace SqlSync.SqlBuild.MultiDb
 
         public static MultiDbQueryConfig LoadMultiDbQueryConfiguration(string fileName)
         {
-            MultiDbQueryConfig data = null;
+            MultiDbQueryConfig data = null!;
             try
             {
                 using (TextReader reader = new StreamReader(fileName))
                 {
                     XmlSerializer xmlS = new XmlSerializer(typeof(MultiDbQueryConfig));
-                    object tmp = xmlS.Deserialize(reader);
+                    object? tmp = xmlS.Deserialize(reader);
                     if (tmp != null)
                         data = (MultiDbQueryConfig)tmp;
                 }
@@ -304,7 +304,7 @@ namespace SqlSync.SqlBuild.MultiDb
             catch
             {
             }
-            return data;
+            return data!;
 
         }
 

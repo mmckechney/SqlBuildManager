@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.ContainerApp;
@@ -14,24 +14,24 @@ namespace SqlBuildManager.Console
     {
         internal static int SaveAndEncryptContainerAppSettings(CommandLineArgs cmdLine, bool clearText)
         {
-            cmdLine.BatchArgs = null;
-            cmdLine.NetworkArgs = null;
-            cmdLine.AciArgs = null;
-            cmdLine.KubernetesArgs = null;
-            cmdLine.ConnectionArgs.BatchAccountKey = null;
-            cmdLine.ConnectionArgs.BatchAccountName = null;
-            cmdLine.ConnectionArgs.BatchAccountUrl = null;
-            cmdLine.IdentityArgs.PrincipalId = null;
-            cmdLine.IdentityArgs.ResourceId = null;
+            cmdLine.BatchArgs = null!;
+            cmdLine.NetworkArgs = null!;
+            cmdLine.AciArgs = null!;
+            cmdLine.KubernetesArgs = null!;
+            cmdLine.ConnectionArgs.BatchAccountKey = null!;
+            cmdLine.ConnectionArgs.BatchAccountName = null!;
+            cmdLine.ConnectionArgs.BatchAccountUrl = null!;
+            cmdLine.IdentityArgs.PrincipalId = null!;
+            cmdLine.IdentityArgs.ResourceId = null!;
             
             return SaveAndEncryptSettings(cmdLine, clearText);
         }
         internal static async Task<int> ContainerAppsRun(CommandLineArgs cmdLine, bool unittest, bool stream, bool monitor, bool deleteWhenDone, bool force)
         {
             (var x, cmdLine) = Init(cmdLine);
-            FileInfo packageFileInfo = string.IsNullOrWhiteSpace(cmdLine.BuildFileName) ? null : new FileInfo(cmdLine.BuildFileName);
-            FileInfo dacpacFileInfo = string.IsNullOrWhiteSpace(cmdLine.DacpacName) ? null : new FileInfo(cmdLine.DacpacName);
-            var res = await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine, packageFileInfo, dacpacFileInfo, force);
+            FileInfo? packageFileInfo = string.IsNullOrWhiteSpace(cmdLine.BuildFileName) ? null : new FileInfo(cmdLine.BuildFileName);
+            FileInfo? dacpacFileInfo = string.IsNullOrWhiteSpace(cmdLine.DacpacName) ? null : new FileInfo(cmdLine.DacpacName);
+            var res = await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine, packageFileInfo!, dacpacFileInfo!, force);
             if (res != 0)
             {
                 log.LogError("Failed to upload build package to Blob storage");
@@ -46,7 +46,7 @@ namespace SqlBuildManager.Console
             }
 
             res = await ContainerAppDeploy(cmdLine, unittest, stream, true, deleteWhenDone);
-            if (res != -7)
+            if (res != 0)
             {
                 log.LogError("Failed to deploy container app");
                 log.LogInformation("Cleaning up any remaining queue messages...");

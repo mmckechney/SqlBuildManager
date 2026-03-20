@@ -1,4 +1,5 @@
 using System;
+using System.Data.Common;
 
 namespace SqlSync.SqlBuild.Models {
 
@@ -12,9 +13,9 @@ namespace SqlSync.SqlBuild.Models {
     {
         public BuildConnectData() { }
 
-        public Microsoft.Data.SqlClient.SqlConnection Connection { get; set; } = null;
+        public DbConnection Connection { get; set; } = null!;
 
-        public Microsoft.Data.SqlClient.SqlTransaction Transaction { get; set; } = null;
+        public DbTransaction Transaction { get; set; } = null!;
 
         public string DatabaseName { get; set; } = string.Empty;
 

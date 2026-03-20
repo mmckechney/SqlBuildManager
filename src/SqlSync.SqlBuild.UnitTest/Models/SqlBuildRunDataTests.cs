@@ -3,6 +3,7 @@ using SqlSync.SqlBuild.Models;
 using SqlSync.Connection;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace SqlSync.SqlBuild.UnitTest.Models
 {
@@ -110,12 +111,13 @@ namespace SqlSync.SqlBuild.UnitTest.Models
         {
             // Arrange
             var runData = new SqlBuildRunData();
+            var projectFileName = Path.Combine(Path.GetTempPath(), "Projects", "build.sbx");
 
             // Act
-            runData.ProjectFileName = "C:\\Projects\\build.sbx";
+            runData.ProjectFileName = projectFileName;
 
             // Assert
-            Assert.AreEqual("C:\\Projects\\build.sbx", runData.ProjectFileName);
+            Assert.AreEqual(projectFileName, runData.ProjectFileName);
         }
 
         [TestMethod]
@@ -285,6 +287,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
         public void AllProperties_CanBeSetTogether()
         {
             // Arrange & Act
+            var projectFileName = Path.Combine(Path.GetTempPath(), "Deploy", "project.sbx");
             var runData = new SqlBuildRunData
             {
                 BuildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel(),
@@ -292,7 +295,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                 Server = "PROD-SQL",
                 BuildDescription = "Production release v2.0",
                 StartIndex = 1.0,
-                ProjectFileName = "C:\\Deploy\\project.sbx",
+                ProjectFileName = projectFileName,
                 IsTrial = false,
                 RunItemIndexes = new double[] { 1.0, 2.0 },
                 RunScriptOnly = false,
@@ -312,7 +315,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual("PROD-SQL", runData.Server);
             Assert.AreEqual("Production release v2.0", runData.BuildDescription);
             Assert.AreEqual(1.0, runData.StartIndex);
-            Assert.AreEqual("C:\\Deploy\\project.sbx", runData.ProjectFileName);
+            Assert.AreEqual(projectFileName, runData.ProjectFileName);
             Assert.IsFalse(runData.IsTrial);
             Assert.AreEqual(2, runData.RunItemIndexes.Length);
             Assert.IsFalse(runData.RunScriptOnly);

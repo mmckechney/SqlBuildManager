@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using sqlB = SqlSync.SqlBuild.Utilities;
@@ -10,7 +10,7 @@ namespace SqlBuildManager.Console.CommandLine
     /// </summary>
     public static class Cryptography
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private static readonly string keyEnvronmentVariableName = "sbm-settingsfilekey";
 
         public static CommandLineArgs EncryptSensitiveFields(CommandLineArgs cmdLine)
@@ -65,12 +65,21 @@ namespace SqlBuildManager.Console.CommandLine
             return cmdLine;
         }
 
+        private static bool _entraIdLogShown = false;
         public static (bool, CommandLineArgs) DecryptSensitiveFields(CommandLineArgs cmdLine, bool suppressLog = false)
         {
             if(cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity ||
                 cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault)
             {
-                log.LogInformation("EntraID will be used for all authentication. No need to decrypt secrets.");
+                if (!_entraIdLogShown)
+                {
+                    log.LogInformation("EntraID will be used for all authentication. No need to decrypt secrets.");
+                    _entraIdLogShown = true;
+                }
+                else
+                {
+                    log.LogDebug("EntraID will be used for all authentication. No need to decrypt secrets.");
+                }
                 return (true, cmdLine);
             }
                 
@@ -187,7 +196,7 @@ namespace SqlBuildManager.Console.CommandLine
                return (true, encryptionKey);
             }
         }
-        private static readonly string store = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Sql Build Manager", "sbm-store.txt");
+        private static readonly string store = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "sqlbuildmanager", "sbm-store.txt");
 
     }
 }

@@ -1,0 +1,6 @@
+<Project>
+  <!-- Suppress warnings in test projects. Uses .targets so it appends AFTER csproj NoWarn values. -->
+  <PropertyGroup Condition="$(MSBuildProjectName.Contains('Test'))">
+    <NoWarn>$(NoWarn);MSTEST0005;MSTEST0032</NoWarn>
+  </PropertyGroup>
+</Project>

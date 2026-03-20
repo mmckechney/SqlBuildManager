@@ -17,7 +17,7 @@ namespace SqlSync.SqlBuild.UnitTest
     [TestClass]
     public class SqlBuildFileHelperFinalTests
     {
-        private string _testDir;
+        private string _testDir = string.Empty;
 
         [TestInitialize]
         public void Setup()
@@ -387,7 +387,7 @@ namespace SqlSync.SqlBuild.UnitTest
             // Act - This is an internal method, but we can test via reflection or trust the public API
             // For now, we'll test indirectly through the public CalculateBuildPackageSHA1SignatureFromPathAsync
             // which eventually calls this method
-            var hash = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(_testDir, (SqlSyncBuildDataModel)null);
+            var hash = await SqlBuildFileHelper.CalculateBuildPackageSHA1SignatureFromPathAsync(_testDir, (SqlSyncBuildDataModel)null!);
 
             // Assert
             Assert.AreEqual("Error calculating hash", hash);
@@ -736,7 +736,7 @@ namespace SqlSync.SqlBuild.UnitTest
             await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, _testDir, sbmFile, false);
 
             // Act
-            string result = await SqlBuildFileHelper.InferOverridesFromPackageAsync(sbmFile, null);
+            string result = await SqlBuildFileHelper.InferOverridesFromPackageAsync(sbmFile, null!);
 
             // Assert
             Assert.IsFalse(string.IsNullOrEmpty(result));

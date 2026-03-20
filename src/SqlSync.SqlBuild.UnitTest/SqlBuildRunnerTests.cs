@@ -60,7 +60,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var ctx = new FakeRunnerContext { ReadBatchReturn = new[] { "SELECT 2;" } };
             var runner = new SqlBuildRunner(MockFactory.CreateMockConnectionsService().Object, ctx, new Mock<IBuildFinalizerContext>().Object);
 
-            var result = await runner.LoadBatchScriptsAsync(ScriptId, "file.sql", stripTransaction: false, scriptBatchColl: null, default);
+            var result = await runner.LoadBatchScriptsAsync(ScriptId, "file.sql", stripTransaction: false, scriptBatchColl: null!, default);
 
             CollectionAssert.AreEqual(new[] { "SELECT 2;" }, result);
         }

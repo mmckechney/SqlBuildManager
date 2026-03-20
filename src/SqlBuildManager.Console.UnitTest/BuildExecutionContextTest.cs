@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.Threaded;
+using System.IO;
 
 namespace SqlBuildManager.Console.UnitTest
 {
@@ -48,14 +49,16 @@ namespace SqlBuildManager.Console.UnitTest
         public void Reset_ClearsAllValues()
         {
             var context = new BuildExecutionContext();
-            
+            var loggingPath = Path.Combine(Path.GetTempPath(), "logs");
+            var workingDir = Path.Combine(Path.GetTempPath(), "work");
+
             // Set all values
             var originalRunId = context.RunId; // Access to generate
             context.ProjectFileName = "project.xml";
             context.BuildZipFileName = "build.sbm";
             context.PlatinumDacPacFileName = "platinum.dacpac";
-            context.RootLoggingPath = @"C:\logs";
-            context.WorkingDirectory = @"C:\working";
+            context.RootLoggingPath = loggingPath;
+            context.WorkingDirectory = workingDir;
             context.BatchCollection = new SqlSync.SqlBuild.ScriptBatchCollection();
             context.BuildDataModel = SqlSync.SqlBuild.SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             
@@ -79,20 +82,22 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod]
         public void PropertySettersWork()
         {
+            var loggingPath = Path.Combine(Path.GetTempPath(), "logs");
+            var workingDir = Path.Combine(Path.GetTempPath(), "work");
             var context = new BuildExecutionContext
             {
                 ProjectFileName = "test.xml",
                 BuildZipFileName = "test.sbm",
                 PlatinumDacPacFileName = "test.dacpac",
-                RootLoggingPath = @"C:\test\logs",
-                WorkingDirectory = @"C:\test\work"
+                RootLoggingPath = loggingPath,
+                WorkingDirectory = workingDir
             };
             
             Assert.AreEqual("test.xml", context.ProjectFileName);
             Assert.AreEqual("test.sbm", context.BuildZipFileName);
             Assert.AreEqual("test.dacpac", context.PlatinumDacPacFileName);
-            Assert.AreEqual(@"C:\test\logs", context.RootLoggingPath);
-            Assert.AreEqual(@"C:\test\work", context.WorkingDirectory);
+            Assert.AreEqual(loggingPath, context.RootLoggingPath);
+            Assert.AreEqual(workingDir, context.WorkingDirectory);
         }
     }
 }

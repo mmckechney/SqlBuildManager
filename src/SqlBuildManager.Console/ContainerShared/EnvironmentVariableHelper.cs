@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
@@ -11,11 +11,12 @@ namespace SqlBuildManager.Console.ContainerShared
 
     internal class EnvironmentVariableHelper
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         internal static CommandLineArgs ReadRuntimeEnvironmentVariables(CommandLineArgs cmdLine)
         {
             log.LogInformation("Reading environment variables for Container worker");
-            string tmp;
+            string? tmp;
+            bool useManagedIdentity = false;
 
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.KeyVaultName);
             if (!string.IsNullOrWhiteSpace(tmp))
@@ -24,7 +25,12 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             else
             {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.KeyVaultName}");
+                log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.KeyVaultName}");
+            }
+
+            if(cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.AzureADDefault || cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity)
+            {
+                useManagedIdentity = true;
             }
 
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.IdentityClientId);
@@ -35,7 +41,26 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             else
             {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.IdentityClientId}");
+                log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.IdentityClientId}");
+                if(useManagedIdentity)
+                {
+                    log.LogWarning($"No {ContainerEnvVariables.IdentityClientId} environment variable was found. If your container is configured to use a Managed Identity, it will not be able to authenticate.");
+                }
+                
+            }
+
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.IdentityName);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.IdentityArgs.IdentityName = tmp;
+            }else
+            {
+                log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.IdentityName}");
+                if(useManagedIdentity)
+                {
+                    log.LogWarning($"No {ContainerEnvVariables.IdentityName} environment variable was found. If your container is configured to use a Managed Identity, it will not be able to authenticate.");
+                }
+                
             }
 
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.JobName);
@@ -65,7 +90,7 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             else
             {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.DacpacName}");
+                log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.DacpacName}");
             }
 
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.StorageAccountName);
@@ -75,7 +100,7 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             else
             {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.StorageAccountName}");
+                log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.StorageAccountName}");
             }
 
             if (int.TryParse(Environment.GetEnvironmentVariable(ContainerEnvVariables.Concurrency), out int c))
@@ -105,6 +130,15 @@ namespace SqlBuildManager.Console.ContainerShared
                 log.LogWarning($"Unable to read or parse environment variable {ContainerEnvVariables.AuthType}");
             }
 
+            if (Enum.TryParse<SqlSync.Connection.DatabasePlatform>(Environment.GetEnvironmentVariable(ContainerEnvVariables.DatabasePlatform), out SqlSync.Connection.DatabasePlatform dbPlatform))
+            {
+                cmdLine.DatabasePlatform = dbPlatform;
+            }
+            else
+            {
+                log.LogInformation($"Unable to read or parse environment variable {ContainerEnvVariables.DatabasePlatform}. Defaulting to SqlServer.");
+            }
+
             var ehString = Environment.GetEnvironmentVariable(ContainerEnvVariables.EventHubLogging);
             if (!string.IsNullOrWhiteSpace(ehString))
             {
@@ -122,7 +156,7 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             else
             {
-                log.LogWarning($"Unable to read or parse environment variable {ContainerEnvVariables.AuthType}");
+                log.LogDebug($"Unable to read or parse environment variable {ContainerEnvVariables.EventHubLogging}");
             }
 
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.AllowObjectDelete);
@@ -140,7 +174,7 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             else
             {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.AllowObjectDelete}");
+                log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.AllowObjectDelete}");
             }
 
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.EventHubConnectionString);
@@ -150,8 +184,9 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             else
             {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.EventHubConnectionString}");
+                log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.EventHubConnectionString}");
             }
+
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.ServiceBusTopicConnectionString);
             if (!string.IsNullOrWhiteSpace(tmp))
             {
@@ -159,7 +194,7 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             else
             {
-                log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.ServiceBusTopicConnectionString}");
+                log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.ServiceBusTopicConnectionString}");
             }
 
             //If KeyVault is provided, these will get read from KeyVault Secrets
@@ -172,7 +207,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 }
                 else
                 {
-                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.StorageAccountKey}");
+                    log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.StorageAccountKey}");
                 }
               
 
@@ -183,7 +218,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 }
                 else
                 {
-                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.UserName}");
+                    log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.UserName}");
                 }
 
                 tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.Password);
@@ -193,7 +228,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 }
                 else
                 {
-                    log.LogWarning($"Unable to read environment variable {ContainerEnvVariables.Password}");
+                    log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.Password}");
                 }
             }
             
@@ -204,7 +239,7 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             else
             {
-                log.LogInformation($"Unable to read environment variable {ContainerEnvVariables.QueryFile}");
+                log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.QueryFile}");
             }
             
             tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.OutputFile);
@@ -214,7 +249,7 @@ namespace SqlBuildManager.Console.ContainerShared
             }
             else
             {
-                log.LogInformation($"Unable to read environment variable {ContainerEnvVariables.OutputFile}");
+                log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.OutputFile}");
             }
 
 

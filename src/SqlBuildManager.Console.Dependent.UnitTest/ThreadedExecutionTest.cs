@@ -28,7 +28,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
     {
 
 
-        private TestContext testContextInstance;
+        public TestContext TestContext { get; set; }
         private static List<Initialization> initObjs = new List<Initialization>();
         private Initialization GetInitializationObject()
         {
@@ -38,35 +38,9 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
         }
         private static string GetLocalhostFolderName(string loggingRoot)
         {
-            if (Directory.Exists(Path.Combine(loggingRoot, "working", "(local)", "SQLEXPRESS")))
-            {
-                return Path.Combine(loggingRoot, "working", "(local)", "SQLEXPRESS");
-            }
-            else if (Directory.Exists(Path.Combine(loggingRoot, "working", "localhost", "SQLEXPRESS")))
-            {
-                return Path.Combine(loggingRoot, "working", "localhost", "SQLEXPRESS");
-            }
-            else
-            {
-                throw new Exception($"Unable to find localhost temp directory at root: {loggingRoot}");
-            }
+            return SqlBuildManager.Test.Common.TestPathHelper.FindServerLogDirectory(loggingRoot, Initialization.TestServer);
         }
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
+        
 
         // 
         //You can use the following additional attributes as you write your tests:
@@ -90,7 +64,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 0x1000, FileOptions.SequentialScan))
             using (var sr = new StreamReader(fs, Encoding.UTF8))
             {
-                string line;
+                string? line;
                 while ((line = sr.ReadLine()) != null)
                 {
                     yield return line;
@@ -111,10 +85,9 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "--loglevel","debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -124,7 +97,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                  "--concurrency", "1",
                 "--concurrencytype",  "Count"
 
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
@@ -184,9 +157,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -195,7 +167,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--timeoutretrycount", "0",
                  "--concurrency", "2",
                 "--concurrencytype",  "Count"
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
@@ -245,9 +217,8 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -256,7 +227,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--timeoutretrycount", "0",
                  "--concurrency", "4",
                 "--concurrencytype",  "Count"
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
@@ -313,10 +284,9 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "--loglevel", "debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -325,7 +295,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--timeoutretrycount", "0",
                  "--concurrency", "1",
                 "--concurrencytype",  "Server"
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int actual;
@@ -386,10 +356,9 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "--loglevel", "debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
@@ -398,7 +367,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 "--timeoutretrycount", "0",
                  "--concurrency", "2",
                 "--concurrencytype",  "MaxPerServer"
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
@@ -411,7 +380,7 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
                 if (actual == -600)
                     Assert.Fail("Unable to completed test.");
 
-                Assert.AreEqual(expected, actual);
+                Assert.AreEqual(expected, actual, $"Execution results are {actual}, not the expected {expected}");
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
                 string[] executionLogFile = ReadLines(Path.Combine(loggingPath, "SqlBuildManager.ThreadedExecution.log")).ToArray();
                 //Should not all sequential!
@@ -448,26 +417,24 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-            localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
 
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "--loglevel", "debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", "0",
-                "--authtype",
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
@@ -535,25 +502,24 @@ namespace SqlBuildManager.Console.Dependent.UnitTest
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
             int retryCount = 20;
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "--loglevel", "debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", retryCount.ToString()
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
@@ -563,7 +529,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             using var lockCts = new CancellationTokenSource();
             // Use a signal to know when the lock is actually acquired
             using var lockAcquired = new ManualResetEventSlim(false);
-            Task lockTask = null;
+            Task lockTask = null!;
 
             try
             {
@@ -646,24 +612,23 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
             int retryCount = 3;
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", retryCount.ToString()
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.FinishingWithErrors;
@@ -672,7 +637,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             // Use a cancellation token to properly clean up the locking task
             using var lockCts = new CancellationTokenSource();
             using var lockAcquired = new ManualResetEventSlim(false);
-            Task lockTask = null;
+            Task lockTask = null!;
 
             try
             {
@@ -745,24 +710,23 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
             int retryCount = 5;
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", retryCount.ToString()
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.FinishingWithErrors;
@@ -771,7 +735,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             // Use a cancellation token to properly clean up the locking task
             using var lockCts = new CancellationTokenSource();
             using var lockAcquired = new ManualResetEventSlim(false);
-            Task lockTask = null;
+            Task lockTask = null!;
 
             try
             {
@@ -843,23 +807,22 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest1,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount","-1"
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
 
@@ -900,24 +863,23 @@ localhost\SQLEXPRESS:SqlBuildTest1,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "--loglevel", "debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "false",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount","0"
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
@@ -983,16 +945,15 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             File.WriteAllText(multiDbOverrideSettingFileName, "");
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "false",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount","20"
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
@@ -1028,23 +989,22 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "false",
                 "--trial", "false",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount","0"
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.FinishingWithErrors;
@@ -1053,7 +1013,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             // Use a cancellation token to properly clean up the locking task
             using var lockCts = new CancellationTokenSource();
             using var lockAcquired = new ManualResetEventSlim(false);
-            Task lockTask = null;
+            Task lockTask = null!;
 
             try
             {
@@ -1129,25 +1089,24 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
             int retryCount = 20;
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "--loglevel", "debug",
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "true",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", retryCount.ToString()
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.Successful;
@@ -1156,7 +1115,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             // Use a cancellation token to properly clean up the locking task
             using var lockCts = new CancellationTokenSource();
             using var lockAcquired = new ManualResetEventSlim(false);
-            Task lockTask = null;
+            Task lockTask = null!;
 
             try
             {
@@ -1228,24 +1187,23 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             string sbmFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.InsertForThreadedTest);
 
-            string cfgContents = @"localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest
-localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
+            string cfgContents = $@"{Initialization.TestServer}:SqlBuildTest,SqlBuildTest
+{Initialization.TestServer}:SqlBuildTest,SqlBuildTest1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + System.Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
             string loggingPath = Path.GetTempPath() + System.Guid.NewGuid().ToString();
             int retryCount = 3;
 
-            string[] args = new string[] {
+            string[] args = (new string[] {
                 "threaded", "run",
-                "--authtype", AuthenticationType.Windows.ToString(),
                 "--rootloggingpath", loggingPath,
                 "--transactional" , "true",
                 "--trial", "true",
                 "--override", multiDbOverrideSettingFileName,
                 "--packagename",  sbmFileName,
                 "--timeoutretrycount", retryCount.ToString()
-            };
+            }).Concat(Initialization.GetAuthArgs()).ToArray();
             var cmdLine = CommandLineBuilder.ParseArguments(args);
             ThreadedManager target = new ThreadedManager(cmdLine);
             int expected = (int)ExecutionReturn.FinishingWithErrors;
@@ -1254,7 +1212,7 @@ localhost\SQLEXPRESS:SqlBuildTest,SqlBuildTest1";
             // Use a cancellation token to properly clean up the locking task
             using var lockCts = new CancellationTokenSource();
             using var lockAcquired = new ManualResetEventSlim(false);
-            Task lockTask = null;
+            Task lockTask = null!;
 
             try
             {

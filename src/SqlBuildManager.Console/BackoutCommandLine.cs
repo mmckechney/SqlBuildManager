@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
 using System.Threading.Tasks;
@@ -6,7 +6,7 @@ namespace SqlBuildManager.Console
 {
     class BackoutCommandLine
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         internal static async Task<string> CreateBackoutPackage(CommandLineArgs cmdLine)
         {
 

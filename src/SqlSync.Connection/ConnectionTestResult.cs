@@ -10,13 +10,13 @@ namespace SqlSync.Connection
         {
             get;
             set;
-        }
+        } = string.Empty;
         private string databaseName = string.Empty;
         public string DatabaseName
         {
             get;
             set;
-        }
+        } = string.Empty;
 
 
         private AuthenticationType authenticationType = SqlSync.Connection.AuthenticationType.Password;

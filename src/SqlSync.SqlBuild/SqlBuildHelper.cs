@@ -35,7 +35,7 @@ namespace SqlSync.SqlBuild
 
         [Obsolete("Use injected IRunnerFactory instead. Will be removed in future version.")]
         internal static Func<IConnectionsService, ISqlBuildRunnerContext, IBuildFinalizerContext, ISqlCommandExecutor, SqlBuildRunner> SqlBuildRunnerFactory = (connService, ctx, finalizerContext, exec) => new SqlBuildRunner(connService, ctx, finalizerContext, exec);
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         #endregion
 
@@ -92,15 +92,18 @@ namespace SqlSync.SqlBuild
         internal Services.IScriptLogWriter ScriptLogWriter { get; }
         internal Services.IBuildHistoryTracker BuildHistoryTracker { get; }
         internal Services.IDacPacFallbackHandler DacPacFallbackHandler { get; }
+        internal Services.ITransactionManager TransactionManager { get; }
+        internal Services.IScriptSyntaxProvider SyntaxProvider { get; }
+        internal Services.ISqlResourceProvider ResourceProvider { get; }
 
         #endregion
 
         #region Events
 
-        public event ScriptLogWriteEventHandler ScriptLogWriteEvent;
-        public event BuildCommittedEventHandler BuildCommittedEvent;
-        public event EventHandler BuildSuccessTrialRolledBackEvent;
-        public event EventHandler BuildErrorRollBackEvent;
+        public event ScriptLogWriteEventHandler? ScriptLogWriteEvent;
+        public event BuildCommittedEventHandler? BuildCommittedEvent;
+        public event EventHandler? BuildSuccessTrialRolledBackEvent;
+        public event EventHandler? BuildErrorRollBackEvent;
 
         #endregion
 
@@ -111,15 +114,15 @@ namespace SqlSync.SqlBuild
             bool createScriptRunLogFile = true,
             string externalScriptLogFileName = "",
             bool isTransactional = true,
-            IClock clock = null,
-            IGuidProvider guidProvider = null,
-            IFileSystem fileSystem = null,
-            IProgressReporter progressReporter = null,
-            ISqlBuildFileHelper fileHelper = null,
-            IBuildRetryPolicy retryPolicy = null,
-            IDatabaseUtility databaseUtility = null,
-            IConnectionsService connectionsService = null,
-            IBuildFinalizer buildFinalizer = null)
+            IClock? clock = null,
+            IGuidProvider? guidProvider = null,
+            IFileSystem? fileSystem = null,
+            IProgressReporter? progressReporter = null,
+            ISqlBuildFileHelper? fileHelper = null,
+            IBuildRetryPolicy? retryPolicy = null,
+            IDatabaseUtility? databaseUtility = null,
+            IConnectionsService? connectionsService = null,
+            IBuildFinalizer? buildFinalizer = null)
             : this(data, createScriptRunLogFile, externalScriptLogFileName, isTransactional,
                    clock, guidProvider, fileSystem, progressReporter, fileHelper, retryPolicy,
                    databaseUtility, connectionsService, buildFinalizer, null)
@@ -131,16 +134,16 @@ namespace SqlSync.SqlBuild
             bool createScriptRunLogFile,
             string externalScriptLogFileName,
             bool isTransactional,
-            IClock clock,
-            IGuidProvider guidProvider,
-            IFileSystem fileSystem,
-            IProgressReporter progressReporter,
-            ISqlBuildFileHelper fileHelper,
-            IBuildRetryPolicy retryPolicy,
-            IDatabaseUtility databaseUtility,
-            IConnectionsService connectionsService,
-            IBuildFinalizer buildFinalizer,
-            IRunnerFactory runnerFactory)
+            IClock? clock,
+            IGuidProvider? guidProvider,
+            IFileSystem? fileSystem,
+            IProgressReporter? progressReporter,
+            ISqlBuildFileHelper? fileHelper,
+            IBuildRetryPolicy? retryPolicy,
+            IDatabaseUtility? databaseUtility,
+            IConnectionsService? connectionsService,
+            IBuildFinalizer? buildFinalizer,
+            IRunnerFactory? runnerFactory)
         {
             connData = data;
             this.isTransactional = isTransactional;
@@ -157,9 +160,24 @@ namespace SqlSync.SqlBuild
             BuildPreparationService = new Services.DefaultBuildPreparationService(this);
             ScriptBatcher = new Services.DefaultScriptBatcher();
             TokenReplacementService = new Services.DefaultTokenReplacementService();
-            ConnectionsService = connectionsService ?? new Services.DefaultConnectionsService();
-            SqlLoggingService = new Services.DefaultSqlLoggingService(ConnectionsService, ProgressReporter);
-            DatabaseUtility = databaseUtility ?? new Services.DefaultDatabaseUtility(ConnectionsService, SqlLoggingService, ProgressReporter, FileHelper);
+            // Select platform-specific services based on connection data
+            var platform = data?.DatabasePlatform ?? Connection.DatabasePlatform.SqlServer;
+            if (platform == Connection.DatabasePlatform.PostgreSQL)
+            {
+                TransactionManager = new Services.PostgresTransactionManager();
+                SyntaxProvider = new Services.PostgresSyntaxProvider();
+                ResourceProvider = new Services.PostgresResourceProvider();
+            }
+            else
+            {
+                TransactionManager = new Services.SqlServerTransactionManager();
+                SyntaxProvider = new Services.SqlServerSyntaxProvider();
+                ResourceProvider = new Services.SqlServerResourceProvider();
+            }
+            ConnectionsService = connectionsService ?? new Services.DefaultConnectionsService(
+                Connection.ConnectionHelper.GetFactory(platform), TransactionManager);
+            SqlLoggingService = new Services.DefaultSqlLoggingService(ConnectionsService, ProgressReporter, ResourceProvider, SyntaxProvider);
+            DatabaseUtility = databaseUtility ?? new Services.DefaultDatabaseUtility(ConnectionsService, SqlLoggingService, ProgressReporter, FileHelper, ResourceProvider);
             BuildFinalizer = buildFinalizer ?? new Services.DefaultBuildFinalizer(SqlLoggingService, ProgressReporter);
 
             if (createScriptRunLogFile)
@@ -232,7 +250,7 @@ namespace SqlSync.SqlBuild
             return calculatedStatus;
         }
 
-        public async Task<BuildModels.Build> ProcessBuildAsync(BuildModels.SqlBuildRunDataModel runData, int allowableTimeoutRetries = 3, string buildRequestedBy = "", ScriptBatchCollection scriptBatchColl = null, CancellationToken cancellationToken = default)
+        public async Task<BuildModels.Build> ProcessBuildAsync(BuildModels.SqlBuildRunDataModel runData, int allowableTimeoutRetries = 3, string buildRequestedBy = "", ScriptBatchCollection? scriptBatchColl = null, CancellationToken cancellationToken = default)
         {
             ConnectionsService.Connections.Clear();
             committedScripts.Clear();
@@ -244,12 +262,12 @@ namespace SqlSync.SqlBuild
             buildDescription = runData.BuildDescription ?? string.Empty;
             startIndex = runData.StartIndex ?? 0;
             projectFileName = runData.ProjectFileName ?? string.Empty;
-            projectFilePath = Path.GetDirectoryName(projectFileName);
+            projectFilePath = Path.GetDirectoryName(projectFileName) ?? string.Empty;
             isTrialBuild = runData.IsTrial ?? false;
             runItemIndexes = runData.RunItemIndexes?.ToArray() ?? Array.Empty<double>();
             runScriptOnly = runData.RunScriptOnly ?? false;
             buildFileName = Path.GetFileName(runData.BuildFileName ?? string.Empty);
-            targetDatabaseOverrides = runData.TargetDatabaseOverrides?.ToList();
+            targetDatabaseOverrides = runData.TargetDatabaseOverrides?.ToList() ?? new List<DatabaseOverride>();
             logToDatabaseName = runData.LogToDatabaseName ?? string.Empty;
 
             var serverName = connData.SQLServerName;
@@ -261,8 +279,8 @@ namespace SqlSync.SqlBuild
                 return prep.Build;
             }
 
-            var orchestrator = new Services.SqlBuildOrchestrator(this, this, this.RetryPolicy, this, ConnectionsService, SqlLoggingService, RunnerFactory);
-            var buildResultsModel = await orchestrator.ExecuteAsync(runData, prep, serverName, isMultiDbRun, scriptBatchColl, allowableTimeoutRetries, cancellationToken).ConfigureAwait(false);
+            var orchestrator = new Services.SqlBuildOrchestrator(this, this, this.RetryPolicy, this, ConnectionsService, SqlLoggingService, RunnerFactory, TransactionManager, BuildFinalizer);
+            var buildResultsModel = await orchestrator.ExecuteAsync(runData, prep, serverName, isMultiDbRun, scriptBatchColl!, allowableTimeoutRetries, cancellationToken).ConfigureAwait(false);
 
             // Handle DacPac fallback for failed builds
             bool candidateForCustomDacPac = DacPacFallbackHandler.IsCandidateForDacPacFallback(buildResultsModel.FinalStatus ?? BuildItemStatus.Unknown);
@@ -281,7 +299,7 @@ namespace SqlSync.SqlBuild
                     Prep = prep,
                     ServerName = serverName,
                     IsMultiDbRun = isMultiDbRun,
-                    ScriptBatchColl = scriptBatchColl,
+                    ScriptBatchColl = scriptBatchColl!,
                     AllowableTimeoutRetries = allowableTimeoutRetries,
                     ConnectionData = connData,
                     ProjectFilePath = projectFilePath,
@@ -320,7 +338,7 @@ namespace SqlSync.SqlBuild
             return buildResultsModel;
         }
 
-        internal async Task<BuildPreparationResult> PrepareBuildForRunAsync(BuildModels.SqlSyncBuildDataModel buildDataModelParam, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, CancellationToken cancellationToken = default)
+        internal async Task<BuildPreparationResult> PrepareBuildForRunAsync(BuildModels.SqlSyncBuildDataModel buildDataModelParam, string serverName, bool isMultiDbRun, ScriptBatchCollection? scriptBatchColl, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -338,7 +356,7 @@ namespace SqlSync.SqlBuild
                 {
                     if (!string.IsNullOrWhiteSpace(projectFileName))
                     {
-                        projectFilePath = Path.GetDirectoryName(projectFileName);
+                        projectFilePath = Path.GetDirectoryName(projectFileName) ?? string.Empty;
                     }
                     if (string.IsNullOrWhiteSpace(projectFilePath))
                     {
@@ -353,6 +371,7 @@ namespace SqlSync.SqlBuild
                 log.LogInformation($"Creating Script Log File: {scriptLogFileName}");
 
                 
+                //TODO: this always seems to be output as an empty guid?
                 var nextBuildId = new Guid().ToString();
                 log.LogInformation($"Generating Build Record ID: {nextBuildId}");
 
@@ -421,18 +440,18 @@ namespace SqlSync.SqlBuild
 
         internal async Task<BuildModels.Build> RunBuildScriptsAsync(IList<BuildModels.Script> scripts, BuildModels.Build myBuild, string serverName, bool isMultiDbRun, ScriptBatchCollection scriptBatchColl, BuildModels.SqlSyncBuildDataModel buildDataModel, CancellationToken cancellationToken = default)
         {
-            var runner = RunnerFactory.Create(ConnectionsService, this, this, null);
+            var runner = RunnerFactory.Create(ConnectionsService, this, this, null!, TransactionManager, BuildFinalizer, SqlLoggingService);
             return await runner.RunAsync(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, cancellationToken).ConfigureAwait(false);
         }
 
         public string GetFromResources(string resourceName)
         {
             System.Reflection.Assembly assem = GetType().Assembly;
-            using (System.IO.Stream stream = assem.GetManifestResourceStream(resourceName))
+            using (System.IO.Stream? stream = assem.GetManifestResourceStream(resourceName))
             {
                 try
                 {
-                    using (System.IO.StreamReader reader = new StreamReader(stream))
+                    using (System.IO.StreamReader reader = new StreamReader(stream!))
                     {
                         return reader.ReadToEnd();
                     }
@@ -551,7 +570,7 @@ namespace SqlSync.SqlBuild
         string ISqlBuildRunnerContext.PerformScriptTokenReplacement(string script) => PerformScriptTokenReplacement(script);
         Task<string> ISqlBuildRunnerContext.PerformScriptTokenReplacementAsync(string script, CancellationToken cancellationToken) => TokenReplacementService.ReplaceTokensAsync(script, this, cancellationToken);
         void ISqlBuildRunnerContext.AddScriptRunToHistory(BuildModels.ScriptRun run, BuildModels.Build myBuild) => AddScriptRunToHistory(run, myBuild);
-        void ISqlBuildRunnerContext.PublishScriptLog(bool isError, ScriptLogEventArgs args) => ScriptLogWriteEvent?.Invoke(null, isError, args);
+        void ISqlBuildRunnerContext.PublishScriptLog(bool isError, ScriptLogEventArgs args) => ScriptLogWriteEvent?.Invoke(null!, isError, args);
 
         #endregion
 

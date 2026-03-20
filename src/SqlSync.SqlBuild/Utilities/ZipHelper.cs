@@ -14,7 +14,7 @@ namespace SqlSync.SqlBuild.Utilities
     /// </summary>
     public class ZipHelper
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         public ZipHelper()
         {
@@ -35,7 +35,7 @@ namespace SqlSync.SqlBuild.Utilities
 
             try
             {
-                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName), @"~" + Guid.NewGuid().ToString("N") + "~" + Path.GetFileName(zipFileName));
+                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName)!, @"~" + Guid.NewGuid().ToString("N") + "~" + Path.GetFileName(zipFileName));
                 using (ZipArchive newFile = ZipFile.Open(tempName, ZipArchiveMode.Create))
                 {
                     foreach (string file in fullPathFilesToZip)
@@ -216,8 +216,8 @@ namespace SqlSync.SqlBuild.Utilities
         {
             try
             {
-                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName), @"~" + Guid.NewGuid().ToString("N") + "~" + Path.GetFileName(zipFileName));
-                await using (var zipFs = new FileStream(tempName, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan))
+                string tempName = Path.Combine(Path.GetDirectoryName(zipFileName)!, @"~" + Guid.NewGuid().ToString("N") + "~" + Path.GetFileName(zipFileName));
+                await using (var zipFs= new FileStream(tempName, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan))
                 using (var archive = new ZipArchive(zipFs, ZipArchiveMode.Create, leaveOpen: false))
                 {
                     foreach (string file in fullPathFilesToZip)
@@ -299,7 +299,7 @@ namespace SqlSync.SqlBuild.Utilities
                 default:
                     throw new ArgumentOutOfRangeException(nameof(mode));
             }
-            FileStream fileStream = (FileStream)null;
+            FileStream fileStream = null!;
             try
             {
                 fileStream = File.Open(archiveFileName, mode1, access, share);

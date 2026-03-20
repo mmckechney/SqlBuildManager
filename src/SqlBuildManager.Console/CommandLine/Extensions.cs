@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -29,7 +30,7 @@ namespace SqlBuildManager.Console.CommandLine
          List<string> args = new List<string>();
          foreach (System.Reflection.PropertyInfo property in obj.GetType().GetProperties())
          {
-            if (!property.CanRead || (property.GetValue(obj) == null || string.IsNullOrWhiteSpace(property.GetValue(obj).ToString())))
+            if (!property.CanRead || (property.GetValue(obj) == null || string.IsNullOrWhiteSpace(property.GetValue(obj)!.ToString())))
             {
                continue;
             }
@@ -43,14 +44,14 @@ namespace SqlBuildManager.Console.CommandLine
             {
                if (property.GetValue(obj) != null && toStringType == StringType.Basic)
                {
-                  args.AddRange(property.GetValue(obj).ToArgs(toStringType));
+                  args.AddRange(property.GetValue(obj)!.ToArgs(toStringType));
                }
             }
             else if (property.PropertyType == typeof(CommandLineArgs.EventHub))
             {
                if (property.GetValue(obj) != null)
                {
-                  args.AddRange(property.GetValue(obj).ToArgs(toStringType));
+                  args.AddRange(property.GetValue(obj)!.ToArgs(toStringType));
                }
             }
             else if (property.PropertyType == typeof(CommandLineArgs.Batch))
@@ -58,7 +59,7 @@ namespace SqlBuildManager.Console.CommandLine
 
                if (property.GetValue(obj) != null)
                {
-                  args.AddRange(property.GetValue(obj).ToArgs(toStringType));
+                  args.AddRange(property.GetValue(obj)!.ToArgs(toStringType));
                }
             }
             else if (property.PropertyType == typeof(CommandLineArgs.DacPac) ||
@@ -66,7 +67,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                if (property.GetValue(obj) != null)
                {
-                  args.AddRange(property.GetValue(obj).ToArgs(toStringType));
+                  args.AddRange(property.GetValue(obj)!.ToArgs(toStringType));
                }
             }
             else if (property.PropertyType == typeof(CommandLineArgs.Authentication)) //Special case if Key Vault is specified
@@ -78,7 +79,7 @@ namespace SqlBuildManager.Console.CommandLine
                   {
                      if (property.GetValue(obj) != null)
                      {
-                        args.AddRange(property.GetValue(obj).ToArgs(toStringType));
+                        args.AddRange(property.GetValue(obj)!.ToArgs(toStringType));
                      }
                   }
                   else
@@ -89,13 +90,17 @@ namespace SqlBuildManager.Console.CommandLine
                      }
                   }
 
-               }
+                  //if (cmd.AuthenticationArgs.DatabasePlatform != SqlSync.Connection.DatabasePlatform.SqlServer)
+                  //{
+                  //    args.AddRange(new string[] { "--databaseplatform", cmd.AuthenticationArgs.DatabasePlatform.ToString().Quoted() });
+                  //}
+                }
             }
             else if (property.PropertyType == typeof(CommandLineArgs.Connections)) //Special case if Key Vault is specified
             {
                if (property.GetValue(obj) != null)
                {
-                  var conArgs = (CommandLineArgs.Connections)property.GetValue(obj);
+                  var conArgs = (CommandLineArgs.Connections)property.GetValue(obj)!;
                   if (!string.IsNullOrWhiteSpace(conArgs.KeyVaultName))
                   {
                      if (!args.Contains("--keyvaultname"))
@@ -105,7 +110,7 @@ namespace SqlBuildManager.Console.CommandLine
                   }
                   else
                   {
-                     args.AddRange(property.GetValue(obj).ToArgs(toStringType));
+                     args.AddRange(property.GetValue(obj)!.ToArgs(toStringType));
                   }
                }
             }
@@ -114,14 +119,14 @@ namespace SqlBuildManager.Console.CommandLine
                switch (property.Name)
                {
                   case "AuthenticationType":
-                     args.AddRange(new string[] { "--authtype", property.GetValue(obj).ToString().Quoted() });
+                     args!.AddRange(new string[] { "--authtype", property.GetValue(obj)!.ToString()!.Quoted() });
                      break;
 
                   case "SettingsFile":
                      if (toStringType == StringType.Basic)
                      {
                         //TODO: do we need this?
-                        //args.AddRange(new string[] { "--settingsfile", property.GetValue(obj).ToString().Quoted() });
+                        //args.AddRange(new string[] { "--settingsfile", property.GetValue(obj)!.ToString().Quoted() });
                      }
                      break;
 
@@ -134,42 +139,42 @@ namespace SqlBuildManager.Console.CommandLine
                      }
                      else
                      {
-                        args.AddRange(new string[] { "--override ", property.GetValue(obj).ToString().Quoted() });
+                        args!.AddRange(new string[] { "--override ", property.GetValue(obj)!.ToString()!.Quoted() });
                      }
                      break;
 
                   case "BuildFileName":
-                     args.AddRange(new string[] { "--packagename", property.GetValue(obj).ToString().Quoted() });
+                     args!.AddRange(new string[] { "--packagename", property.GetValue(obj)!.ToString()!.Quoted() });
                      break;
 
                   case "EventHubConnectionString":
-                     args.AddRange(new string[] { "--eventhubconnection", property.GetValue(obj).ToString().Quoted() });
+                     args!.AddRange(new string[] { "--eventhubconnection", property.GetValue(obj)!.ToString()!.Quoted() });
                      break;
 
                   case "ServiceBusTopicConnectionString":
-                     args.AddRange(new string[] { "--servicebustopicconnection", property.GetValue(obj).ToString().Quoted() });
+                     args!.AddRange(new string[] { "--servicebustopicconnection", property.GetValue(obj)!.ToString()!.Quoted() });
                      break;
                   case "ResourceGroup":
                      if (obj.GetType() == typeof(CommandLineArgs.Identity))
                      {
-                        args.AddRange(new string[] { "--identityresourcegroup", property.GetValue(obj).ToString().Quoted() });
+                        args!.AddRange(new string[] { "--identityresourcegroup", property.GetValue(obj)!.ToString()!.Quoted() });
 
                      }
                      else if (toStringType != StringType.Batch)
                      {
-                        args.AddRange(new string[] { "--resourcegroup", property.GetValue(obj).ToString().Quoted() });
+                        args!.AddRange(new string[] { "--resourcegroup", property.GetValue(obj)!.ToString()!.Quoted() });
                      }
                      break;
                   case "TenantId":
                      if (toStringType != StringType.Batch)
                      {
-                        args.AddRange(new string[] { "--tenantid", property.GetValue(obj).ToString().Quoted() });
+                        args!.AddRange(new string[] { "--tenantid", property.GetValue(obj)!.ToString()!.Quoted() });
                      }
                      break;
                   case "ServiceAccountName":
                      if (toStringType != StringType.Batch)
                      {
-                        args.AddRange(new string[] { "--serviceaccountname", property.GetValue(obj).ToString().Quoted() });
+                        args!.AddRange(new string[] { "--serviceaccountname", property.GetValue(obj)!.ToString()!.Quoted() });
                      }
                      break;
                   case "SubscriptionId":
@@ -179,9 +184,41 @@ namespace SqlBuildManager.Console.CommandLine
                      }
                      else
                      {
-                        args.AddRange(new string[] { $"--{property.Name.ToLower()}", property.GetValue(obj).ToString() });
+                        args.AddRange(new string[] { $"--{property.Name!.ToLower()}", property.GetValue(obj)!.ToString()! });
                      }
                      break;
+                  case "QueryFile":
+                     if (toStringType == StringType.Batch)
+                     {
+                        // For batch mode, use just the filename since the file is downloaded
+                        // as a resource file to the batch node's working directory.
+                        // FileInfo.FullName resolves against the orchestrator's CWD which
+                        // produces an invalid path on the batch node.
+                        var qFile = (FileInfo)property.GetValue(obj)!;
+                        args.AddRange(new string[] { "--queryfile", qFile.Name.Quoted() });
+                     }
+                     else
+                     {
+                        var qFile = (FileInfo)property.GetValue(obj)!;
+                        args.AddRange(new string[] { "--queryfile", qFile.FullName.Quoted() });
+                     }
+                     break;
+
+                  case "OutputFile":
+                     if (toStringType == StringType.Batch)
+                     {
+                        // For batch mode, use ToString() to preserve the original path
+                        // (e.g. "$AZ_BATCH_TASK_DIR/file.csv") without CWD resolution.
+                        var oFile = (FileInfo)property.GetValue(obj)!;
+                        args.AddRange(new string[] { "--outputfile", oFile.ToString().Quoted() });
+                     }
+                     else
+                     {
+                        var oFile = (FileInfo)property.GetValue(obj)!;
+                        args.AddRange(new string[] { "--outputfile", oFile.FullName.Quoted() });
+                     }
+                     break;
+
                   case "BatchJobName": //Ignore this because it will be counted as a duplicate for JobName
                   case "OverrideDesignated":
                   case "CliVersion":
@@ -207,33 +244,46 @@ namespace SqlBuildManager.Console.CommandLine
                         {
                            continue;
                         }
-                        if (bool.Parse(property.GetValue(obj).ToString()) == true) //ignore anything not set
+                        if (bool.Parse(property.GetValue(obj)!.ToString()!) == true) //ignore anything not set
                         {
                            args.AddRange(new string[] { $"--{property.Name.ToLower()}", "true" });
                         }
                      }
                      else if (property.PropertyType == typeof(string))
                      {
-                        args.AddRange(new string[] { $"--{property.Name.ToLower()}", property.GetValue(obj).ToString().Quoted() });
+                        args.AddRange(new string[] { $"--{property.Name!.ToLower()}", property.GetValue(obj)!.ToString()!.Quoted() });
                      }
                      else if (property.PropertyType == typeof(EventHubLogging[]))
                      {
-                        var values = (EventHubLogging[])property.GetValue(obj);
+                        var values = (EventHubLogging[])property.GetValue(obj)!;
                         foreach (var value in values)
                         {
                            args.AddRange(new string[] { $"--eventhublogging", value.ToString().Quoted() });
                         }
                      }
+                     else if (property.PropertyType == typeof(FileInfo[]))
+                     {
+                        var files = (FileInfo[])property.GetValue(obj)!;
+                        foreach (var file in files)
+                        {
+                           args.AddRange(new string[] { $"--{property.Name!.ToLower()}", file.FullName.Quoted() });
+                        }
+                     }
+                     else if (property.PropertyType == typeof(FileInfo))
+                     {
+                        var file = (FileInfo)property.GetValue(obj)!;
+                        args.AddRange(new string[] { $"--{property.Name!.ToLower()}", file.FullName.Quoted() });
+                     }
                      else
                      {
                         double num;
-                        if (double.TryParse(property.GetValue(obj).ToString(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out num))
+                        if (double.TryParse(property.GetValue(obj)!.ToString(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out num))
                         {
-                           args.AddRange(new string[] { $"--{property.Name.ToLower()}", property.GetValue(obj).ToString() });
+                           args.AddRange(new string[] { $"--{property.Name!.ToLower()}", property.GetValue(obj)!.ToString()! });
                         }
                         else
                         {
-                           args.AddRange(new string[] { $"--{property.Name.ToLower()}", property.GetValue(obj).ToString().Quoted() });
+                           args.AddRange(new string[] { $"--{property.Name!.ToLower()}", property.GetValue(obj)!.ToString()!.Quoted() });
                         }
                      }
                      break;
@@ -255,17 +305,6 @@ namespace SqlBuildManager.Console.CommandLine
       public static string Quoted(this string str)
       {
          return "\"" + str + "\"";
-      }
-      public static Option<T> Copy<T>(this Option<T> opt, bool required)
-      {
-
-         var aliases = opt.Aliases.ToArray();
-         Option<T> newOpt = new Option<T>(aliases, opt.Description);
-         //newOpt.Name = opt.Name;
-         //newOpt.ArgumentHelpName = "";
-         newOpt.IsRequired = required;
-
-         return newOpt;
       }
       public static string DecodeBase64(this string value)
       {
@@ -308,7 +347,7 @@ namespace SqlBuildManager.Console.CommandLine
             if (incomingProp.PropertyType.BaseType == typeof(ArgsBase))
             {
                var currentProp = current.GetType().GetProperty(incomingProp.Name);
-               currentProp.GetValue(current).SetValues(incomingProp.GetValue(incoming), current.DirectPropertyChangeTracker);
+               currentProp!.GetValue(current)!.SetValues(incomingProp.GetValue(incoming), current.DirectPropertyChangeTracker);
             }
          }
 
@@ -328,7 +367,7 @@ namespace SqlBuildManager.Console.CommandLine
       /// <param name="incoming">Incoming twin object that will contain values read from a config file. These should not overwrite any existing values that have already been updated.</param>
       private static void SetValues<T>(this T current, T incoming, List<string> changeTracked)
       {
-         var incomingProps = incoming.GetType().GetProperties();
+         var incomingProps = incoming!.GetType().GetProperties();
          foreach (System.Reflection.PropertyInfo incomingProp in incomingProps)
          {
             var typeName = incoming.GetType().Name;
@@ -360,8 +399,8 @@ namespace SqlBuildManager.Console.CommandLine
                      continue;
                   }
                   //If we get here.. we have a meaningful value, we need to see if we can overwrite any existing value that has already been set..
-                  var currentProp = current.GetType().GetProperty(incomingProp.Name);
-                  currentProp.SetValue(current, incomingValue);
+                  var currentProp = current!.GetType().GetProperty(incomingProp.Name);
+                  currentProp!.SetValue(current, incomingValue);
                }
             }
          }
@@ -371,7 +410,7 @@ namespace SqlBuildManager.Console.CommandLine
       {
          foreach (System.Reflection.PropertyInfo property in obj.GetType().GetProperties())
          {
-            if (property.PropertyType == typeof(string) && property.CanWrite && property.CanRead && property.GetValue(obj) != null && string.IsNullOrWhiteSpace(property.GetValue(obj).ToString()))
+            if (property.PropertyType == typeof(string) && property.CanWrite && property.CanRead && property.GetValue(obj) != null && string.IsNullOrWhiteSpace(property.GetValue(obj)!.ToString()))
             {
                property.SetValue(obj, null);
             }
@@ -385,7 +424,7 @@ namespace SqlBuildManager.Console.CommandLine
                 property.PropertyType == typeof(CommandLineArgs.Kubernetes) ||
                 property.PropertyType == typeof(CommandLineArgs.Network))
             {
-               property.SetValue(obj, NullEmptyStrings(property.GetValue(obj)));
+               property.SetValue(obj, NullEmptyStrings(property.GetValue(obj)!));
             }
          }
 
@@ -395,11 +434,11 @@ namespace SqlBuildManager.Console.CommandLine
       {
          if (obj == null)
          {
-            return obj;
+            return obj!;
          }
          foreach (System.Reflection.PropertyInfo property in obj.GetType().GetProperties())
          {
-            if (property.PropertyType == typeof(string) && property.CanWrite && property.CanRead && property.GetValue(obj) != null && string.IsNullOrWhiteSpace(property.GetValue(obj).ToString()))
+            if (property.PropertyType == typeof(string) && property.CanWrite && property.CanRead && property.GetValue(obj) != null && string.IsNullOrWhiteSpace(property.GetValue(obj)!.ToString()))
             {
                property.SetValue(obj, null);
             }

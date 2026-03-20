@@ -15,7 +15,7 @@ namespace SqlSync.SqlBuild.UnitTest
     [TestClass]
     public class SqlBuildFileHelperCoverageTests
     {
-        private string _testDirectory;
+        private string _testDirectory = string.Empty;
 
         [TestInitialize]
         public void Setup()
@@ -120,7 +120,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public async Task PackageProjectFileIntoZip_NullModel_ReturnsFalse()
         {
             // Arrange
-            SqlSyncBuildDataModel model = null;
+            SqlSyncBuildDataModel model = null!;
 
             // Act
             bool result = await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, _testDirectory, "test.sbm", false);
@@ -161,7 +161,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public async Task PackageProjectFileIntoZipAsync_NullModel_ReturnsFalse()
         {
             // Arrange
-            SqlSyncBuildDataModel model = null;
+            SqlSyncBuildDataModel model = null!;
 
             // Act
             bool result = await SqlBuildFileHelper.PackageProjectFileIntoZipAsync(model, _testDirectory, "test.sbm", false);
@@ -484,7 +484,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void ScriptRequiresBuildDescription_NullString_ReturnsFalse()
         {
             // Act
-            bool result = SqlBuildFileHelper.ScriptRequiresBuildDescription(null);
+            bool result = SqlBuildFileHelper.ScriptRequiresBuildDescription(null!);
 
             // Assert
             Assert.IsFalse(result);
@@ -748,7 +748,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void GetFileDataForCodeTableUpdates_NullBuildData_ReturnsNull()
         {
             // Arrange
-            SqlSyncBuildDataModel model = null;
+            SqlSyncBuildDataModel model = null!;
 
             // Act
             var result = SqlBuildFileHelper.GetFileDataForCodeTableUpdates(model, _testDirectory);
@@ -803,7 +803,7 @@ INSERT INTO TestTable VALUES (1, 'test');");
         public void GetFileDataForObjectUpdates_NullBuildData_ReturnsNull()
         {
             // Arrange
-            SqlSyncBuildDataModel model = null;
+            SqlSyncBuildDataModel model = null!;
 
             // Act
             var result = SqlBuildFileHelper.GetFileDataForObjectUpdates(model, _testDirectory);
@@ -816,7 +816,7 @@ INSERT INTO TestTable VALUES (1, 'test');");
         public void GetFileDataForObjectUpdates_NullModel_ReturnsNull()
         {
             // Arrange
-            SqlSyncBuildDataModel model = null;
+            SqlSyncBuildDataModel model = null!;
 
             // Act
             var result = SqlBuildFileHelper.GetFileDataForObjectUpdates(model, _testDirectory);

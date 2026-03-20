@@ -245,11 +245,11 @@ namespace SqlSync.SqlBuild.UnitTest
             DefaultScript deserialized;
             using (var reader = new StringReader(xml))
             {
-                deserialized = (DefaultScript)serializer.Deserialize(reader);
+                deserialized = (DefaultScript)serializer.Deserialize(reader)!;
             }
 
             // Assert
-            Assert.AreEqual(script.BuildOrder, deserialized.BuildOrder);
+            Assert.AreEqual(script!.BuildOrder, deserialized.BuildOrder);
             Assert.AreEqual(script.ScriptName, deserialized.ScriptName);
             Assert.AreEqual(script.Description, deserialized.Description);
             Assert.AreEqual(script.RollBackScript, deserialized.RollBackScript);
@@ -392,7 +392,7 @@ namespace SqlSync.SqlBuild.UnitTest
             DefaultScriptRegistry deserialized;
             using (var reader = new StringReader(xml))
             {
-                deserialized = (DefaultScriptRegistry)serializer.Deserialize(reader);
+                deserialized = (DefaultScriptRegistry)serializer.Deserialize(reader)!;
             }
 
             // Assert
@@ -421,7 +421,7 @@ namespace SqlSync.SqlBuild.UnitTest
             DefaultScriptRegistry deserialized;
             using (var reader = new StringReader(xml))
             {
-                deserialized = (DefaultScriptRegistry)serializer.Deserialize(reader);
+                deserialized = (DefaultScriptRegistry)serializer.Deserialize(reader)!;
             }
 
             // Assert

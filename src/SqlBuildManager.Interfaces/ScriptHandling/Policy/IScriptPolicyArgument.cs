@@ -1,14 +1,14 @@
-﻿namespace SqlBuildManager.Interfaces.ScriptHandling.Policy
+namespace SqlBuildManager.Interfaces.ScriptHandling.Policy
 {
     public class IScriptPolicyArgument
     {
         [System.Xml.Serialization.XmlAttributeAttribute()]
         [System.ComponentModel.DefaultValueAttribute("")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [System.Xml.Serialization.XmlAttributeAttribute()]
         [System.ComponentModel.DefaultValueAttribute("")]
-        public string Value { get; set; }
+        public string Value { get; set; } = string.Empty;
 
         [System.Xml.Serialization.XmlAttributeAttribute()]
         [System.ComponentModel.DefaultValueAttribute(false)]
@@ -20,6 +20,6 @@
 
         [System.Xml.Serialization.XmlAttributeAttribute()]
         [System.ComponentModel.DefaultValueAttribute("")]
-        public string FailureMessage { get; set; }
+        public string FailureMessage { get; set; } = string.Empty;
     }
 }

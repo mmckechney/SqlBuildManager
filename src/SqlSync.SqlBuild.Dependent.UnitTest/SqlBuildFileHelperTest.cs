@@ -169,18 +169,18 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public async Task CalculateBuildPackageSHA1SignatureFromPathTest_GetHashSuccessfully()
         {
             //Set up directory and files...
-            string projectFileExtractionPath = Path.GetTempPath() + Guid.NewGuid().ToString() + "\\";
+            string projectFileExtractionPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             if (!Directory.Exists(projectFileExtractionPath))
                 Directory.CreateDirectory(projectFileExtractionPath);
 
             string file1 = "File1.sql";
-            File.WriteAllText(projectFileExtractionPath + file1, Properties.Resources.CreateDatabaseScript);
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file1), Properties.Resources.CreateDatabaseScript);
 
             string file2 = "File2.sql";
-            File.WriteAllText(projectFileExtractionPath + file2, Properties.Resources.CreateTestTablesScript);
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file2), Properties.Resources.CreateTestTablesScript);
 
             string file3 = "File3.sql";
-            File.WriteAllText(projectFileExtractionPath + file3, Properties.Resources.LoggingTable);
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file3), Properties.Resources.LoggingTable);
 
 
             SqlSyncBuildDataModel buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -210,18 +210,18 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public async Task CalculateBuildPackageSHA1SignatureFromPathTest_BuildOrderSwitch()
         {
             //Set up directory and files...
-            string projectFileExtractionPath = Path.GetTempPath() + Guid.NewGuid().ToString() + "\\";
+            string projectFileExtractionPath =  Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             if (!Directory.Exists(projectFileExtractionPath))
                 Directory.CreateDirectory(projectFileExtractionPath);
 
             string file1 = "File1.sql";
-            File.WriteAllText(projectFileExtractionPath + file1, Properties.Resources.CreateDatabaseScript);
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file1), Properties.Resources.CreateDatabaseScript);
 
             string file2 = "File2.sql";
-            File.WriteAllText(projectFileExtractionPath + file2, Properties.Resources.CreateTestTablesScript);
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file2), Properties.Resources.CreateTestTablesScript);
 
             string file3 = "File3.sql";
-            File.WriteAllText(projectFileExtractionPath + file3, Properties.Resources.LoggingTable);
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file3), Properties.Resources.LoggingTable);
 
 
             SqlSyncBuildDataModel buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -358,18 +358,18 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public async Task CalculateBuildPackageSHA1_CompareMethodologyTest()
         {
             //Set up directory and files...
-            string projectFileExtractionPath = Path.GetTempPath() + Guid.NewGuid().ToString() + "\\";
+            string projectFileExtractionPath =  Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             if (!Directory.Exists(projectFileExtractionPath))
                 Directory.CreateDirectory(projectFileExtractionPath);
 
             string file1 = "File1.sql";
-            File.WriteAllText(projectFileExtractionPath + file1, Properties.Resources.CreateDatabaseScript);
+            File.WriteAllText(Path.Combine(projectFileExtractionPath,file1), Properties.Resources.CreateDatabaseScript);
 
             string file2 = "File2.sql";
-            File.WriteAllText(projectFileExtractionPath + file2, Properties.Resources.CreateTestTablesScript);
+            File.WriteAllText(Path.Combine(projectFileExtractionPath,file2), Properties.Resources.CreateTestTablesScript);
 
             string file3 = "File3.sql";
-            File.WriteAllText(projectFileExtractionPath + file3, Properties.Resources.LoggingTable);
+            File.WriteAllText(Path.Combine(projectFileExtractionPath,file3), Properties.Resources.LoggingTable);
 
 
             SqlSyncBuildDataModel buildData = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
@@ -398,21 +398,21 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         public async Task CalculateBuildPackageSHA1_CompareMethodologyTest_WithTransactionsToRemove()
         {
             //Set up directory and files...
-            string projectFileExtractionPath = Path.GetTempPath() + Guid.NewGuid().ToString() + "\\";
+            string projectFileExtractionPath =  Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             if (!Directory.Exists(projectFileExtractionPath))
                 Directory.CreateDirectory(projectFileExtractionPath);
 
             string file1 = "File1.sql";
-            File.WriteAllText(projectFileExtractionPath + file1, @"This is My script
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file1), @"This is My script
 with my 
 COMMIT TRANS
 test");
 
             string file2 = "File2.sql";
-            File.WriteAllText(projectFileExtractionPath + file2, Properties.Resources.CreateTestTablesScript);
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file2), Properties.Resources.CreateTestTablesScript);
 
             string file3 = "File3.sql";
-            File.WriteAllText(projectFileExtractionPath + file3, @"This is another test that has
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file3), @"This is another test that has
 --ROLLBACK TRANSACTION
 where the 
 BEGIN TRAN
@@ -445,21 +445,21 @@ needs to be removed");
         public async Task CalculateBuildPackageSHA1_CompareMethodologyTest_WithTransactionsButKeep()
         {
             //Set up directory and files...
-            string projectFileExtractionPath = Path.GetTempPath() + Guid.NewGuid().ToString() + "\\";
+            string projectFileExtractionPath =  Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             if (!Directory.Exists(projectFileExtractionPath))
                 Directory.CreateDirectory(projectFileExtractionPath);
 
             string file1 = "File1.sql";
-            File.WriteAllText(projectFileExtractionPath + file1, @"This is My script
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file1), @"This is My script
 with my 
 COMMIT TRANS
 test");
 
             string file2 = "File2.sql";
-            File.WriteAllText(projectFileExtractionPath + file2, Properties.Resources.CreateTestTablesScript);
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file2), Properties.Resources.CreateTestTablesScript);
 
             string file3 = "File3.sql";
-            File.WriteAllText(projectFileExtractionPath + file3, @"This is another test that has
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file3), @"This is another test that has
 --ROLLBACK TRANSACTION
 where the 
 BEGIN TRAN
@@ -492,21 +492,21 @@ needs to be removed");
         public async Task CalculateBuildPackageSHA1_CompareMethodologyTest_OrderCheckingWithTransactionsToRemove()
         {
             //Set up directory and files...
-            string projectFileExtractionPath = Path.GetTempPath() + Guid.NewGuid().ToString() + "\\";
+            string projectFileExtractionPath =  Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             if (!Directory.Exists(projectFileExtractionPath))
                 Directory.CreateDirectory(projectFileExtractionPath);
 
             string file1 = "File1.sql";
-            File.WriteAllText(projectFileExtractionPath + file1, @"This is My script
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file1), @"This is My script
 with my 
 COMMIT TRANS
 test");
 
             string file2 = "File2.sql";
-            File.WriteAllText(projectFileExtractionPath + file2, Properties.Resources.CreateTestTablesScript);
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file2), Properties.Resources.CreateTestTablesScript);
 
             string file3 = "File3.sql";
-            File.WriteAllText(projectFileExtractionPath + file3, @"This is another test that has
+            File.WriteAllText(Path.Combine(projectFileExtractionPath, file3), @"This is another test that has
 --ROLLBACK TRANSACTION
 where the 
 BEGIN TRAN
@@ -587,7 +587,7 @@ END
             string[] arrScripts = batcher.ReadBatchFromScriptText(script, true, false).ToArray();
             string hashFromArray;
             hashFromArray = fileHelper.GetSHA1Hash(arrScripts);
-            string hashFromString = fileHelper.GetSHA1Hash(script.ClearTrailingCarriageReturn());
+            string hashFromString = fileHelper.GetSHA1Hash(script.Replace("\r\n", "\n").Replace("\n", "\r\n").ClearTrailingCarriageReturn());
             Assert.AreEqual(hashFromString, hashFromArray);
         }
         #endregion

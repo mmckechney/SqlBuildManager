@@ -19,7 +19,7 @@ namespace SqlSync.DbInformation
     public class InfoHelper
     {
 
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         public InfoHelper()
         {
@@ -214,7 +214,7 @@ namespace SqlSync.DbInformation
                             reader.Read();
                             sizes[i] = new TableSize();
                             sizes[i].TableName = schemaOwner + "." + reader.GetString(0);
-                            sizes[i].RowCount = Int32.Parse(reader[1].ToString());
+                            sizes[i].RowCount = Int32.Parse(reader[1].ToString()!);
                         }
                     }
                     catch
@@ -258,7 +258,7 @@ namespace SqlSync.DbInformation
                 {
                     CodeTableAudit tbl = new CodeTableAudit();
                     tbl.TableName = reader[2].ToString() + "." + reader[0].ToString();
-                    tbl.UpdateIdColumn = reader[1].ToString();
+                    tbl.UpdateIdColumn = reader[1].ToString()!;
                     tableDefs.Add(tbl.TableName, tbl);
                 }
                 reader.Close();
@@ -276,14 +276,14 @@ namespace SqlSync.DbInformation
                     {
                         CodeTableAudit tbl = new CodeTableAudit();
                         tbl.TableName = tableName;
-                        tbl.UpdateDateColumn = reader[1].ToString();
+                        tbl.UpdateDateColumn = reader[1].ToString()!;
                         tableDefs.Add(tbl.TableName, tbl);
                     }
                     else
                     {
-                        CodeTableAudit tbl;
+                        CodeTableAudit? tbl;
                         if (tableDefs.TryGetValue(tableName, out tbl))
-                            tbl.UpdateDateColumn = reader[1].ToString();
+                            tbl.UpdateDateColumn = reader[1].ToString()!;
                     }
                 }
                 reader.Close();
@@ -302,14 +302,14 @@ namespace SqlSync.DbInformation
                     {
                         CodeTableAudit tbl = new CodeTableAudit();
                         tbl.TableName = tableName;
-                        tbl.CreateIdColumn = reader[1].ToString();
+                        tbl.CreateIdColumn = reader[1].ToString()!;
                         tableDefs.Add(tbl.TableName, tbl);
                     }
                     else
                     {
-                        CodeTableAudit tbl;
+                        CodeTableAudit? tbl;
                         if (tableDefs.TryGetValue(tableName, out tbl))
-                            tbl.CreateIdColumn = reader[1].ToString();
+                            tbl.CreateIdColumn = reader[1].ToString()!;
                     }
                 }
                 reader.Close();
@@ -326,14 +326,14 @@ namespace SqlSync.DbInformation
                     {
                         CodeTableAudit tbl = new CodeTableAudit();
                         tbl.TableName = tableName;
-                        tbl.CreateDateColumn = reader[1].ToString();
+                        tbl.CreateDateColumn = reader[1].ToString()!;
                         tableDefs.Add(tbl.TableName, tbl);
                     }
                     else
                     {
-                        CodeTableAudit tbl;
+                        CodeTableAudit? tbl;
                         if (tableDefs.TryGetValue(tableName, out tbl))
-                            tbl.CreateDateColumn = reader[1].ToString();
+                            tbl.CreateDateColumn = reader[1].ToString()!;
                     }
                 }
                 reader.Close();
@@ -413,7 +413,7 @@ namespace SqlSync.DbInformation
             StringCollection manualDBs = SqlSync.DbInformation.Properties.Settings.Default.ManuallyEnteredDatabases;
             for (int i = 0; i < manualDBs.Count; i++)
             {
-                dbList.Add(manualDBs[i], true);
+                dbList.Add(manualDBs[i]!, true);
             }
 
             SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection("master", connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, 5, connData.ManagedIdentityClientId);
@@ -426,9 +426,9 @@ namespace SqlSync.DbInformation
                 {
                     while (reader.Read())
                     {
-                        dbName = reader[0].ToString();
+                        dbName = reader[0].ToString()!;
                         if (!manualDBs.Contains(dbName))
-                            dbList.Add(dbName, false);
+                            dbList.Add(dbName!, false);
                         else
                         {
                             for (int i = 0; i < dbList.Count; i++)
@@ -529,7 +529,7 @@ namespace SqlSync.DbInformation
                         using (SqlDataReader reader = cmdSize.ExecuteReader())
                         {
                             reader.Read();
-                            dbSize = Int64.Parse(nums.Match(reader[1].ToString()).ToString());
+                            dbSize = Int64.Parse(nums.Match(reader[1].ToString()!).ToString());
                         }
                         data.Add(new SqlSync.DbInformation.Models.ServerSizeInfo(dbName, location ?? string.Empty, dbSize, DateTime.MinValue));
                     }
@@ -731,7 +731,7 @@ namespace SqlSync.DbInformation
                 using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
                 {
                     while (reader.Read())
-                        list.Add(reader[0].ToString());
+                        list.Add(reader[0].ToString()!);
                     reader.Close();
                 }
                 return list.ToArray();
@@ -807,7 +807,7 @@ namespace SqlSync.DbInformation
                         {
                             while (reader.Read())
                             {
-                                routines[reader[2].ToString().ToLower() + '.' + reader[0].ToString().ToLower()] = reader.GetDateTime(1);
+                                routines[reader[2].ToString()!.ToLower() + '.' + reader[0].ToString()!.ToLower()] = reader.GetDateTime(1);
                             }
                             reader.Close();
                         }
@@ -838,7 +838,7 @@ namespace SqlSync.DbInformation
                         {
                             while (reader.Read())
                             {
-                                routines[reader[2].ToString().ToLower() + '.' + reader[0].ToString().ToLower()] = reader.GetDateTime(1);
+                                routines[reader[2].ToString()!.ToLower() + '.' + reader[0].ToString()!.ToLower()] = reader.GetDateTime(1);
                             }
                             reader.Close();
                         }
@@ -869,7 +869,7 @@ namespace SqlSync.DbInformation
                         {
                             while (reader.Read())
                             {
-                                routines[reader[2].ToString().ToLower() + '.' + reader[0].ToString().ToLower()] = reader.GetDateTime(1);
+                                routines[reader[2].ToString()!.ToLower() + '.' + reader[0].ToString()!.ToLower()] = reader.GetDateTime(1);
                             }
                             reader.Close();
                         }
@@ -900,7 +900,7 @@ namespace SqlSync.DbInformation
                         {
                             while (reader.Read())
                             {
-                                routines[reader[0].ToString().ToLower()] = reader.GetDateTime(1);
+                                routines[reader[0].ToString()!.ToLower()] = reader.GetDateTime(1);
                             }
                             reader.Close();
                         }
@@ -983,9 +983,9 @@ namespace SqlSync.DbInformation
         }
 
 
-        public static SqlParameterCollection GetStoredProcParameters(string storedProcedureName, ConnectionData connData)
+        public static SqlParameterCollection? GetStoredProcParameters(string storedProcedureName, ConnectionData connData)
         {
-            SqlConnection conn = null;
+            SqlConnection conn = null!;
             try
             {
                 conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);

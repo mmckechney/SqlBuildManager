@@ -12,6 +12,7 @@ using SqlSync.SqlBuild.Utilities;
 using System.Threading.Tasks;
 using System.Threading;
 using SqlSync.SqlBuild.Services;
+using System.Net;
 
 #nullable enable
 
@@ -22,10 +23,10 @@ namespace SqlSync.SqlBuild
     /// </summary>
     public class SqlBuildFileHelper
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public const string FileMissing = "File Missing";
         public const string Sha1HashError = "SHA1 Hash Error";
-        public static string DefaultScriptXmlFile = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "Default Scripts", "DefaultScriptRegistry.xml");
+        public static string DefaultScriptXmlFile = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? string.Empty, "defaultscripts", "DefaultScriptRegistry.xml");
         internal static readonly ISqlBuildFileHelper fileHelper = new DefaultSqlBuildFileHelper();
         internal static readonly IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
 
@@ -152,7 +153,7 @@ namespace SqlSync.SqlBuild
             }
             else
             {
-                log.LogInformation($"LoadSqlBuildProjectFileAsync: unable to find projectFile at {projFileName}. Creating shell.");
+                log.LogInformation($"LoadSqlBuildProjectFileAsync: Project file not found at {projFileName}, creating new project file shell.");
                 var model = CreateShellSqlSyncBuildDataModel();
                 await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model).ConfigureAwait(false);
                 return (false, model);
@@ -322,7 +323,7 @@ namespace SqlSync.SqlBuild
         public static async Task SaveSqlBuildProjectFileAsync(SqlSyncBuildDataModel model, string projFileName, string buildZipFileName, bool includeHistoryAndLogs = true, CancellationToken cancellationToken = default)
         {
             await SqlSyncBuildDataXmlSerializer.SaveAsync(projFileName, model).ConfigureAwait(false);
-            await PackageProjectFileIntoZipAsync(model, Path.GetDirectoryName(projFileName), buildZipFileName, includeHistoryAndLogs, cancellationToken).ConfigureAwait(false);
+            await PackageProjectFileIntoZipAsync(model, Path.GetDirectoryName(projFileName) ?? string.Empty, buildZipFileName, includeHistoryAndLogs, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -342,7 +343,7 @@ namespace SqlSync.SqlBuild
             {
                 return false;
             }
-            string directory = Path.GetDirectoryName(buildFileName);
+            string? directory = Path.GetDirectoryName(buildFileName);
             if (string.IsNullOrWhiteSpace(directory))
             {
                 directory = System.IO.Directory.GetCurrentDirectory();
@@ -466,7 +467,7 @@ namespace SqlSync.SqlBuild
                 }
 
                 bool copied = false;
-                string path = Path.GetDirectoryName(sbxBuildControlFileName);
+                string path = Path.GetDirectoryName(sbxBuildControlFileName) ?? string.Empty;
                 string mainProjectFileFullPath = Path.Combine(path, XmlFileNames.MainProjectFile);
                 string tmpMainProjectFileFullPath = Path.Combine(path, "~~" + XmlFileNames.MainProjectFile);
 
@@ -575,10 +576,10 @@ namespace SqlSync.SqlBuild
         #endregion
 
         #region .: Default Script Handling :.
-        public static DefaultScripts.DefaultScriptRegistry GetDefaultScriptRegistry()
+        public static DefaultScripts.DefaultScriptRegistry? GetDefaultScriptRegistry()
         {
-            string executablePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string defaultScriptPath = Path.GetDirectoryName(SqlBuildFileHelper.DefaultScriptXmlFile);
+            string? executablePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string? defaultScriptPath = Path.GetDirectoryName(SqlBuildFileHelper.DefaultScriptXmlFile);
             string defaultScriptXmlFile = SqlBuildFileHelper.DefaultScriptXmlFile;
 
             if (File.Exists(defaultScriptXmlFile) == false)
@@ -587,12 +588,12 @@ namespace SqlSync.SqlBuild
                 return null;
             }
 
-            DefaultScripts.DefaultScriptRegistry registry = null;
+            DefaultScripts.DefaultScriptRegistry? registry = null;
             using (StreamReader sr = new StreamReader(defaultScriptXmlFile))
             {
                 System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(DefaultScripts.DefaultScriptRegistry));
-                object obj = serializer.Deserialize(sr);
-                registry = (DefaultScripts.DefaultScriptRegistry)obj;
+                object? obj = serializer.Deserialize(sr);
+                registry = (DefaultScripts.DefaultScriptRegistry?)obj;
                 sr.Close();
             }
             return registry;
@@ -612,7 +613,7 @@ namespace SqlSync.SqlBuild
                 {
                     if (deleteFiles)
                     {
-                        var fileName = Path.Combine(Path.GetDirectoryName(projFileName) ?? "", script.FileName);
+                        var fileName = Path.Combine(Path.GetDirectoryName(projFileName) ?? "", script.FileName ?? "");
                         if (File.Exists(fileName))
                             File.Delete(fileName);
                     }
@@ -698,12 +699,12 @@ namespace SqlSync.SqlBuild
 
         #region .: Object/ Populate Script Update settings :.
 
-        public static SqlBuild.CodeTable.ScriptUpdates GetFileDataForCodeTableUpdates(string baseFileName, string projFileName)
+        public static SqlBuild.CodeTable.ScriptUpdates? GetFileDataForCodeTableUpdates(string baseFileName, string projFileName)
         {
             string line = string.Empty;
 
             //Open the populate script file
-            string localFile = Path.Combine(Path.GetDirectoryName(projFileName), Path.GetFileName(baseFileName));
+            string localFile = Path.Combine(Path.GetDirectoryName(projFileName) ?? string.Empty, Path.GetFileName(baseFileName));
             if (File.Exists(localFile) == false)
                 return null;
 
@@ -713,7 +714,7 @@ namespace SqlSync.SqlBuild
             using (StreamReader sr = File.OpenText(localFile))
             {
                 bool keepReading = true;
-                while ((line = sr.ReadLine()) != null && keepReading == true)
+                while ((line = sr.ReadLine()!) != null && keepReading == true)
                 {
                     if (line.Trim().StartsWith("Source Server:"))
                         codeTableUpdate.SourceServer = line.Replace("Source Server:", "").Trim();
@@ -730,11 +731,11 @@ namespace SqlSync.SqlBuild
                     //This is a multi-line element
                     if (line.Trim().StartsWith("Query Used:"))
                     {
-                        string queryLine = string.Empty;
+                        string? queryLine;
                         string fullquery = string.Empty;
-                        while ((queryLine = sr.ReadLine().Trim()) != "*/")
+                        while ((queryLine = sr.ReadLine()) != null && queryLine.Trim() != "*/")
                         {
-                            fullquery += queryLine + System.Environment.NewLine;
+                            fullquery += queryLine.Trim() + System.Environment.NewLine;
                         }
                         codeTableUpdate.Query = fullquery;
                         keepReading = false;
@@ -757,10 +758,10 @@ namespace SqlSync.SqlBuild
             foreach (var script in model.Script)
             {
                 // Find the ".pop" populate scripts
-                if (!Path.GetExtension(script.FileName).Equals(SqlSync.Constants.DbObjectType.PopulateScript, StringComparison.OrdinalIgnoreCase))
+                if (!Path.GetExtension(script.FileName ?? "").Equals(SqlSync.Constants.DbObjectType.PopulateScript, StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                var obj = GetFileDataForCodeTableUpdates(script.FileName, projFileName);
+                var obj = GetFileDataForCodeTableUpdates(script.FileName ?? "", projFileName);
                 if (obj != null)
                     scriptFiles.Add(obj);
             }
@@ -806,7 +807,7 @@ namespace SqlSync.SqlBuild
                 }
                 else
                 {
-                    SqlBuild.Objects.ObjectUpdates obj = GetFileDataForObjectUpdates(row.FileName, projFileName);
+                    SqlBuild.Objects.ObjectUpdates? obj = GetFileDataForObjectUpdates(row.FileName, projFileName);
                     if (obj != null)
                     {
                         canUpdate.Add(obj);
@@ -815,11 +816,11 @@ namespace SqlSync.SqlBuild
             }
         }
 
-        public static SqlBuild.Objects.ObjectUpdates GetFileDataForObjectUpdates(string baseFilename, string projFileName)
+        public static SqlBuild.Objects.ObjectUpdates? GetFileDataForObjectUpdates(string baseFilename, string projFileName)
         {
             string line = string.Empty;
             //Open the populate script file
-            string localFile = Path.Combine(Path.GetDirectoryName(projFileName), Path.GetFileName(baseFilename));
+            string localFile = Path.Combine(Path.GetDirectoryName(projFileName) ?? string.Empty, Path.GetFileName(baseFilename));
             if (File.Exists(localFile) == false)
                 return null;
 
@@ -830,7 +831,7 @@ namespace SqlSync.SqlBuild
             {
 
                 bool keepReading = true;
-                while ((line = sr.ReadLine()) != null && keepReading == true)
+                while ((line = sr.ReadLine()!) != null && keepReading == true)
                 {
                     if (line.Trim().StartsWith("Source Server:"))
                         objectUpdate.SourceServer = line.Replace("Source Server:", "").Trim();
@@ -965,8 +966,8 @@ namespace SqlSync.SqlBuild
                 StringBuilder sb = new StringBuilder();
                 foreach (var script in scripts)
                 {
-                    var (_, textHash) = await GetSHA1HashAsync(Path.Combine(projectFileExtractionPath, script.FileName), script.StripTransactionText ?? false, cancellationToken).ConfigureAwait(false);
-                    sb.AppendLine(textHash);
+                    var (_, textHash) = await GetSHA1HashAsync(Path.Combine(projectFileExtractionPath, script.FileName ?? ""), script.StripTransactionText ?? false, cancellationToken).ConfigureAwait(false);
+                    sb.Append(textHash).Append("\r\n");
                 }
 
                 string strHashData = GetSHA1Hash(sb.ToString());
@@ -991,7 +992,7 @@ namespace SqlSync.SqlBuild
             foreach (ScriptBatch batch in scriptBatchColl)
             {
                 textHash=  fileHelper.GetSHA1Hash(batch.ScriptBatchContents);
-                sb.AppendLine(textHash);
+                sb.Append(textHash).Append("\r\n");
             }
 
             string strHashData = GetSHA1Hash(sb.ToString());
@@ -1151,7 +1152,7 @@ namespace SqlSync.SqlBuild
             {
                 string extension = "." + ResortBuildType.SortOrder[i];
                 var matchingScripts = model.Script
-                    .Where(s => s.FileName.EndsWith(extension, StringComparison.OrdinalIgnoreCase) && s.BuildOrder < 20000)
+                    .Where(s => (s.FileName ?? "").EndsWith(extension, StringComparison.OrdinalIgnoreCase) && s.BuildOrder < 20000)
                     .OrderBy(s => s.BuildOrder)
                     .ToList();
 
@@ -1163,7 +1164,7 @@ namespace SqlSync.SqlBuild
             int leftOverStart = 19000;
             var knownExtensions = ResortBuildType.SortOrder.Select(e => "." + e).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var leftOverScripts = model.Script
-                .Where(s => !knownExtensions.Any(ext => s.FileName.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) && s.BuildOrder < 20000)
+                .Where(s => !knownExtensions.Any(ext => (s.FileName ?? "").EndsWith(ext, StringComparison.OrdinalIgnoreCase)) && s.BuildOrder < 20000)
                 .OrderBy(s => s.BuildOrder)
                 .ToList();
             
@@ -1194,27 +1195,35 @@ namespace SqlSync.SqlBuild
         public static bool UpdateObsoleteXmlNamespace(string fileName)
         {
             log.LogDebug($"Updating XmlNamespace from legacy file '{fileName}'");
-            bool replaced = false;
-            //valid namespace settings
-            string xmlns = "xmlns=\"http://schemas.mckechney.com/";
-            Regex xmlnsX = new Regex("xmlns=\"http://.+?/", RegexOptions.IgnoreCase);
 
             string contents = File.ReadAllText(fileName);
-            if (xmlnsX.Match(contents).Success)
+            //valid namespace settings
+            string xmlns = "xmlns=\"http://schemas.mckechney.com/";
+            var correctNamespaceX = new Regex("xmlns=\"http://schemas.mckechney.com/", RegexOptions.IgnoreCase);
+            if(correctNamespaceX.Match(contents).Success)
             {
-                if (!contents.Contains(xmlns))
-                {
-                    contents = xmlnsX.Replace(contents, xmlns);
-                    replaced = true;
-                    File.WriteAllText(fileName, contents);
-                }
+                log.LogDebug($"File '{fileName}' already contains the correct XmlNamespace — no update needed");
+                return false;
             }
 
-            if (replaced)
-                log.LogInformation($"Successfully updated the XmlNamespace in file {fileName}");
+            //If we get here, there is an obsolete namespace that needs to be updated.
+            Regex xmlnsX = new Regex("xmlns=\"http://.+?/", RegexOptions.IgnoreCase);
+            
+            if (xmlnsX.Match(contents).Success)
+            {
+                    contents = xmlnsX.Replace(contents, xmlns);
+                    File.WriteAllText(fileName, contents);
+                    log.LogInformation($"Updated XmlNamespace in file '{fileName}' to '{xmlns}'");
+                    return true;
+
+            }
             else
-                log.LogInformation($"Unable to update the XmlNamespace in file {fileName}");
-            return replaced;
+            {
+                log.LogInformation($"File '{fileName}' does not contain a XmlNamespace that can be updated. No changes were made.");
+                return false;
+            }
+
+          
 
         }
         #endregion
@@ -1241,20 +1250,20 @@ namespace SqlSync.SqlBuild
                 for (int i = 0; i < sortedScripts.Count; i++)
                 {
                     var script = sortedScripts[i];
-                    if (!File.Exists(Path.Combine(projectFilePath, script.FileName)))
+                    if (!File.Exists(Path.Combine(projectFilePath, script.FileName ?? "")))
                         continue;
 
                     if (includeUSE)
                         sb.Append("USE " + script.Database + "\r\nGO\r\n");
 
-                    batch = scriptBatcher.ReadBatchFromScriptFile(Path.Combine(projectFilePath, script.FileName), script.StripTransactionText ?? false, true);
+                    batch = scriptBatcher.ReadBatchFromScriptFile(Path.Combine(projectFilePath, script.FileName ?? ""), script.StripTransactionText ?? false, true);
                     for (int j = 0; j < batch.Length; j++)
                         sb.Append(batch[j] + "\r\n");
 
                     if (includeSequence)
                         fileName = Path.Combine(destinationFolder, (i + 1).ToString().PadLeft(3, '0') + " " + script.FileName);
                     else
-                        fileName = Path.Combine(destinationFolder, script.FileName);
+                        fileName = Path.Combine(destinationFolder, script.FileName ?? "");
 
                     using (StreamWriter sw = File.CreateText(fileName))
                     {
@@ -1290,13 +1299,13 @@ namespace SqlSync.SqlBuild
                 for (int i = 0; i < sortedScripts.Count; i++)
                 {
                     var script = sortedScripts[i];
-                    if (!File.Exists(Path.Combine(projectFilePath, script.FileName)))
+                    if (!File.Exists(Path.Combine(projectFilePath, script.FileName ?? "")))
                         continue;
 
                     sb.Append("\r\n-- Source File: " + script.FileName + "\r\n");
                     if (includeUSE)
                         sb.Append("USE " + script.Database + "\r\nGO\r\n");
-                    batch = scriptBatcher.ReadBatchFromScriptFile(Path.Combine(projectFilePath, script.FileName), script.StripTransactionText ?? false, true);
+                    batch = scriptBatcher.ReadBatchFromScriptFile(Path.Combine(projectFilePath, script.FileName ?? ""), script.StripTransactionText ?? false, true);
                     for (int j = 0; j < batch.Length; j++)
                         sb.Append(batch[j] + "\r\n");
                 }
@@ -1334,20 +1343,20 @@ namespace SqlSync.SqlBuild
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     var script = sortedScripts[i];
-                    if (!File.Exists(Path.Combine(projectFilePath, script.FileName)))
+                    if (!File.Exists(Path.Combine(projectFilePath, script.FileName ?? "")))
                         continue;
 
                     if (includeUSE)
                         sb.Append("USE " + script.Database + "\r\nGO\r\n");
 
-                    batch = await scriptBatcher.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, script.FileName), script.StripTransactionText ?? false, true, cancellationToken).ConfigureAwait(false);
+                    batch = await scriptBatcher.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, script.FileName ?? ""), script.StripTransactionText ?? false, true, cancellationToken).ConfigureAwait(false);
                     for (int j = 0; j < batch.Length; j++)
                         sb.Append(batch[j] + "\r\n");
 
                     if (includeSequence)
                         fileName = Path.Combine(destinationFolder, (i + 1).ToString().PadLeft(3, '0') + " " + script.FileName);
                     else
-                        fileName = Path.Combine(destinationFolder, script.FileName);
+                        fileName = Path.Combine(destinationFolder, script.FileName ?? "");
 
                     await File.WriteAllTextAsync(fileName, sb.ToString(), cancellationToken).ConfigureAwait(false);
                     sb.Length = 0;
@@ -1380,13 +1389,13 @@ namespace SqlSync.SqlBuild
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     var script = sortedScripts[i];
-                    if (!File.Exists(Path.Combine(projectFilePath, script.FileName)))
+                    if (!File.Exists(Path.Combine(projectFilePath, script.FileName ?? "")))
                         continue;
 
                     sb.Append("\r\n-- Source File: " + script.FileName + "\r\n");
                     if (includeUSE)
                         sb.Append("USE " + script.Database + "\r\nGO\r\n");
-                    batch = await scriptBatcher.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, script.FileName), script.StripTransactionText ?? false, true, cancellationToken).ConfigureAwait(false);
+                    batch = await scriptBatcher.ReadBatchFromScriptFileAsync(Path.Combine(projectFilePath, script.FileName ?? ""), script.StripTransactionText ?? false, true, cancellationToken).ConfigureAwait(false);
                     for (int j = 0; j < batch.Length; j++)
                         sb.Append(batch[j] + "\r\n");
                 }
@@ -1450,18 +1459,18 @@ namespace SqlSync.SqlBuild
                     addedFileNames.Add(importScript.FileName ?? "");
                     model.Script.Add(newScript);
                     
-                    var destPath = Path.Combine(projectFilePath, importScript.FileName);
+                    var destPath = Path.Combine(projectFilePath, importScript.FileName ?? "");
                     if (File.Exists(destPath))
                         File.Delete(destPath);
                     
                     try
                     {
-                        File.Copy(Path.Combine(importWorkingDirectory, importScript.FileName), destPath);
+                        File.Copy(Path.Combine(importWorkingDirectory, importScript.FileName ?? ""), destPath);
                     }
                     catch (Exception)
                     {
                         await Task.Delay(200, cancellationToken).ConfigureAwait(false);
-                        File.Copy(Path.Combine(importWorkingDirectory, importScript.FileName), destPath);
+                        File.Copy(Path.Combine(importWorkingDirectory, importScript.FileName ?? ""), destPath);
                     }
                     increment++;
                 }

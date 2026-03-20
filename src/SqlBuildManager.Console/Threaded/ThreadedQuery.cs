@@ -1,4 +1,4 @@
-﻿using SqlBuildManager.Console.CloudStorage;
+using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.AdHocQuery;
@@ -20,10 +20,10 @@ namespace SqlBuildManager.Console.Threaded
 {
     internal class ThreadedQuery
     {
-        private ILogger log;
-        private QueueManager qManager = null;
-        private ThreadedLogging threadLogger;
-        private string runId;
+        private ILogger log = null!;
+        private QueueManager qManager = null!;
+        private ThreadedLogging threadLogger = null!;
+        private string runId = string.Empty;
         
         internal async Task<int> QueryDatabasesAsync(CommandLineArgs cmdLine, string runId, CancellationToken cancellationToken = default)
         {
@@ -35,11 +35,18 @@ namespace SqlBuildManager.Console.Threaded
             }
             else
             {
-                log = Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+                log = Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
             }
 
             var query = File.ReadAllText(cmdLine.QueryFile.FullName);
-            var connData = new ConnectionData() { UserId = cmdLine.AuthenticationArgs.UserName, Password = cmdLine.AuthenticationArgs.Password, AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType, ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId };
+            var connData = new ConnectionData() { UserId = cmdLine.AuthenticationArgs.UserName, Password = cmdLine.AuthenticationArgs.Password, AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType, ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId, DatabasePlatform = cmdLine.AuthenticationArgs.DatabasePlatform };
+            // For PG MI auth, use identity name as UserId (PG role name)
+            if (connData.DatabasePlatform == DatabasePlatform.PostgreSQL
+                && string.IsNullOrEmpty(connData.UserId)
+                && !string.IsNullOrEmpty(cmdLine.IdentityArgs.IdentityName))
+            {
+                connData.UserId = cmdLine.IdentityArgs.IdentityName;
+            }
 
             try
             {
@@ -81,9 +88,9 @@ namespace SqlBuildManager.Console.Threaded
             log.LogInformation("Executing database queries from queued targets.");
             var resultCode = 0;
             var listResultsTempFiles = new List<string>();
-            var tmpOutput = Path.Combine(Path.GetDirectoryName(cmdLine.OutputFile.FullName), Guid.NewGuid().ToString());
+            var tmpOutput = Path.Combine(Path.GetDirectoryName(cmdLine.OutputFile.FullName)!, Guid.NewGuid().ToString());
             qManager = new Queue.QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
-            var collector = new QueryCollector(null, connData);
+            var collector = new QueryCollector(null!, connData);
             if(!collector.EnsureOutputPath(tmpOutput))
             {
                 return -3545;
@@ -136,7 +143,7 @@ namespace SqlBuildManager.Console.Threaded
                     
                         if(target.ServerName.StartsWith("#"))
                         {
-                            target.ServerName = target.DbOverrideSequence[0].Server;
+                            target.ServerName = target.DbOverrideSequence[0].Server ?? string.Empty;
                         }
                         var runner = new QueryCollectionRunner(target.ServerName, targetDb, query, new List<QueryRowItem>(), ReportType.CSV, tmpOutput, cmdLine.DefaultScriptTimeout, connData);
                         var msg = new LogMsg() { DatabaseName = targetDb, ServerName = target.ServerName, RunId = this.runId, Message = "Queuing up thread", LogType = LogType.Message, ConcurrencyTag = target.ConcurrencyTag };
@@ -199,7 +206,7 @@ namespace SqlBuildManager.Console.Threaded
             return success;
         }
         
-        internal void ThreadedQuery_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        internal void ThreadedQuery_ProgressChanged(object? sender, ProgressChangedEventArgs e)
         {
             if (e.UserState is string)
             {

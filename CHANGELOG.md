@@ -1,5 +1,16 @@
 # SQL Build Manager Change Log
 
+### [Version 16.0.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v16.0.0)
+- *NEW:* Major updated to support PostgreSQL database in addition to SQL Server
+- *NEW:* Added new scripts [/scripts/tests](scripts/tests) to run all unit tests, local integration tests and external (Azure targeted) tests in Azure Container Instance Linux containers. There area additional new scripts in [scripts/ContainerRegistry](scripts/ContainerRegistry) to build two new containers (one for Unit and Local tests and one for External tests). The underlying tests were updated to run on both Linux and Windows.
+-  *NEW:* Test/Demo environment fully deployable with [Azure Developer CLI](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) via `azd up`. In first run you will be prompted with what type of compute and database platforms you want to deploy (or all!). You can add more later by modifying the `DEPLOY_*` environment variable in the `.azure\<env name>\.env` file
+-  *NEW:* Full end-to-end Managed Identity support. Solution no longer requires and keys or connection strings. Test environment bicep and scripts demonstrates both the infrastructure deployment and the database permissions and RBAC role settings
+- **DEPRECATED:** The `SQL Build Manager.exe` windows app has been deprecated and is no longer part of this project. If you need to use it, please use the last release version `15.6.2`. The projects created via the Windows app are compatible with the newly enhanced console app
+- *UPDATED:* Significant code modernization away from ADO.NET objects as well as refactoring and decomposition of the build process and interface implementations.
+- *UPDATED:* Performance improvements and broader use of async pattern for better resource management during runs
+
+
+- 
 ### [Version 15.6.2](https://github.com/mmckechney/SqlBuildManager/releases/tag/v15.6.2)
 - *UPDATED:* Specifying Batch Node Communication model as `Simplified` (vs. prior default of `Classic`) as [classic is getting retired in 2026](https://azure.microsoft.com/en-us/updates/azure-batch-classic-compute-node-communication-model-will-be-retired-on-31-march-2026/)
 - *FIXED:* [GitHub Issue #501](https://github.com/mmckechney/SqlBuildManager/issues/501) - DeleteBatchPool settingsfile setting not honored for batch run commands / logging issue with --deletebatchpool override

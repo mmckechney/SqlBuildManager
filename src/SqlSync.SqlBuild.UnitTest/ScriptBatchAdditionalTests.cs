@@ -36,7 +36,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void ScriptBatch_Constructor_WithNullContents_AllowsIt()
         {
-            var batch = new ScriptBatch("test.sql", null, "id");
+            var batch = new ScriptBatch("test.sql", null!, "id");
 
             Assert.IsNull(batch.ScriptBatchContents);
         }
@@ -134,7 +134,7 @@ namespace SqlSync.SqlBuild.UnitTest
             var batch = new ScriptBatch("test.sql", new[] { "SELECT 1" }, "id-1");
             var collection = new ScriptBatchCollection { batch };
 
-            var result = collection.GetScriptBatch(null);
+            var result = collection.GetScriptBatch(null!);
 
             Assert.IsNull(result);
         }

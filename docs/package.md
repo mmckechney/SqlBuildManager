@@ -2,10 +2,9 @@
 
 Contents:
 
-- [Package and meta-data](#package-and-meta-data)
-- [Creating a Package](#creating-a-package)
-  - [Forms UI](#forms-ui)
-  - [Command Line](#command-line)
+- [Package (aka Build Package)](#package-aka-build-package)
+  - [Package and meta-data](#package-and-meta-data)
+  - [Creating a Package](#creating-a-package)
 
 ---
 
@@ -48,15 +47,10 @@ Example `SqlSyncBuildProject.xml` file. You can build this by hand to create you
 
 ## Creating a Package
 
-### Forms UI
-
-While the focus of the app has changed to command line automation, the forms GUI is fully functional. If you are looking for a visual tool, check out _SqlBuildManager.exe_. There is documentation on the GUI that you can find [here](docs/SqlBuildManagerManual.md) that will walk through the creation of build packages ([PDF version](src/SqlBuildManager%20Manual/SqlBuildManagerManual.pdf)).
-
-### Command line
 
 There are several ways to create a build package from the command line.  Which you choose depends on your starting point:
 
-[Command line reference](docs/commandline.md)
+[Command line reference](commandline.md)
 
 1. From various sources using `sbm create`. There are four sub-commands to help create an SBM package:
 
@@ -70,6 +64,3 @@ There are several ways to create a build package from the command line.  Which y
 2. From an SBX file. What is this? An SBX file is an XML file in the format of the `SqlSyncBuildProject.xml` file (see above) that has an `.sbx` extension. When you use the `sbm package` command, it will read the `.sbx` file and create the `.sbm` file with the referenced scripts.
 3. An SBM package file can be created indirectly as well, using the `sbm threaded run` and `sbm batch run` commands along with the `--platinumdbsource="<database name>"` and `--platinumserversource="<server name>"` the app will generate a DACPAC from the source database which will then be used to generate an SBM at run time to build directly on your target(s).
 4. You can also add new scripts to an existing SBM package or SBX project file using `sbm add`
-5. From a DACPAC file using the `sbm scriptextract` command. This method leverages a DACPAC that was created against your "Platinum Database" (why platinum? because it's even more precious than gold!). The Platinum database should have the schema that you want all of your other databases to look like. (don't have a DACPAC created, don't worry, you can create one with the `sbm dacpac` command) 
-
-**_NOTE:_** The `sbm scriptextract` method has been deprecated in favor of `sbm create fromdacpacdiff`.

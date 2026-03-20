@@ -18,18 +18,49 @@ namespace SqlSync.Connection
             }
         }
 
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static string appName = "Sql Build Manager v{0} [{1}];";
         static ConnectionHelper()
         {
             string version;
             if (System.Reflection.Assembly.GetEntryAssembly() != null)
-                version = System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString();
+                version = System.Reflection.Assembly.GetEntryAssembly()!.GetName().Version!.ToString();
             else
-                version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version!.ToString();
 
             appName = string.Format($"Sql Build Manager v{version} [{System.Environment.UserName}];");
         }
+
+        /// <summary>
+        /// Returns the appropriate IDbConnectionFactory for the given platform.
+        /// </summary>
+        public static IDbConnectionFactory GetFactory(DatabasePlatform platform)
+        {
+            return platform switch
+            {
+                DatabasePlatform.PostgreSQL => new PostgresConnectionFactory(),
+                _ => new SqlServerConnectionFactory(),
+            };
+        }
+
+        /// <summary>
+        /// Returns the appropriate IDbConnectionFactory for the given ConnectionData.
+        /// </summary>
+        public static IDbConnectionFactory GetFactory(ConnectionData connData)
+        {
+            return GetFactory(connData?.DatabasePlatform ?? DatabasePlatform.SqlServer);
+        }
+
+        /// <summary>
+        /// Creates a platform-aware DbConnection from ConnectionData.
+        /// </summary>
+        public static DbConnection GetDbConnection(ConnectionData connData)
+        {
+            if (connData == null)
+                return null!;
+            return GetFactory(connData).CreateConnection(connData);
+        }
+
         public static SqlConnection GetConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId)
         {
             String conn = GetConnectionString(dbName, serverName, uid, pw, authType, scriptTimeOut, managedIdentityClientId);
@@ -40,7 +71,7 @@ namespace SqlSync.Connection
         public static SqlConnection GetConnection(ConnectionData connData)
         {
             if (connData == null)
-                return null;
+                return null!;
 
             return GetConnection(connData.DatabaseName,
                 connData.SQLServerName,
@@ -108,6 +139,7 @@ namespace SqlSync.Connection
                     builder.Authentication = SqlAuthenticationMethod.SqlPassword;
                     builder.UserID = uid;
                     builder.Password = pw;
+                    builder.TrustServerCertificate = true;
                     break;
             }
             log.LogDebug($"Database Connection string: {builder.ConnectionString}");
@@ -156,16 +188,17 @@ namespace SqlSync.Connection
                 UserId = username,
                 Password = password,
                 AuthenticationType = authType,
-                ManagedIdentityClientId = managedIdentityClientId
+                ManagedIdentityClientId = managedIdentityClientId                
             });
         }
         public static bool TestDatabaseConnection(ConnectionData connData)
         {
-            DbConnection conn = null;
+            DbConnection conn = null!;
             try
             {
-                connData.ScriptTimeout = 60;
-                conn = GetConnection(connData);
+                if (connData.ScriptTimeout <= 0)
+                    connData.ScriptTimeout = 60;
+                conn = GetDbConnection(connData);
                 conn.Open();
                 conn.Close();
                 return true;

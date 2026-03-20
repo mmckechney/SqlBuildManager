@@ -15,9 +15,9 @@ namespace SqlSync.SqlBuild.UnitTest.Services
     [TestClass]
     public class DefaultBuildFinalizerTests
     {
-        private Mock<ISqlLoggingService> _mockSqlLoggingService;
-        private Mock<IProgressReporter> _mockProgressReporter;
-        private DefaultBuildFinalizer _finalizer;
+        private Mock<ISqlLoggingService> _mockSqlLoggingService = null!;
+        private Mock<IProgressReporter> _mockProgressReporter = null!;
+        private DefaultBuildFinalizer _finalizer = null!;
 
         [TestInitialize]
         public void TestInitialize()
@@ -106,7 +106,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var buildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
 
             // Act
-            var result = _finalizer.RecordCommittedScripts(null, buildDataModel);
+            var result = _finalizer.RecordCommittedScripts(null!, buildDataModel);
 
             // Assert
             Assert.IsNotNull(result);
@@ -329,7 +329,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
 
             // Act & Assert - There's a bug in the implementation where it uses buildDataModel instead of model
             Assert.ThrowsExactly<NullReferenceException>(() => 
-                _finalizer.RecordCommittedScripts(committedScripts, null));
+                _finalizer.RecordCommittedScripts(committedScripts, null!));
         }
 
         [TestMethod]
@@ -458,7 +458,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         public void CalculateFinalStatus_NullList_ThrowsOrHandlesGracefully()
         {
             // Arrange
-            List<BuildResultStatus> results = null;
+            List<BuildResultStatus> results = null!;
 
             // Act & Assert - should throw NullReferenceException since .All() is called
             Assert.ThrowsExactly<NullReferenceException>(() => _finalizer.CalculateFinalStatus(results));
@@ -530,7 +530,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         public void Constructor_WithNullSqlLoggingService_CreatesInstance()
         {
             // Arrange & Act - testing that constructor doesn't throw
-            var finalizer = new DefaultBuildFinalizer(null, _mockProgressReporter.Object);
+            var finalizer = new DefaultBuildFinalizer(null!, _mockProgressReporter.Object);
 
             // Assert
             Assert.IsNotNull(finalizer);
@@ -540,7 +540,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         public void Constructor_WithNullProgressReporter_CreatesInstance()
         {
             // Arrange & Act
-            var finalizer = new DefaultBuildFinalizer(_mockSqlLoggingService.Object, null);
+            var finalizer = new DefaultBuildFinalizer(_mockSqlLoggingService.Object, null!);
 
             // Assert
             Assert.IsNotNull(finalizer);

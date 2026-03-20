@@ -20,18 +20,17 @@ Each of the remote execution options allows for varying use of Azure Managed Ide
  
 ## Managed Identity to Compute Assignment
 
-Examples of each of these can be generated for you by running [create_azure_resources.ps1](../scripts/templates/create_azure_resources.ps1) which will create samples Azure resources (including a user assigned Managed Identity) as well as sample settings files with various options that are used in the test caes. You can also review the test methods in [SqlBuildManager.Console.ExternalTest](../src/SqlBuildManager.Console.ExternalTest/) to see working examples of various compute options and settings.
+Examples of each of these can be generated for you by running `azd up` (see [Setting up an Azure Environment](setup_azure_environment.md)) which will create sample Azure resources (including a user assigned Managed Identity) as well as sample settings files with various options that are used in the test cases. You can also review the test methods in [SqlBuildManager.Console.ExternalTest](../src/SqlBuildManager.Console.ExternalTest/) to see working examples of various compute options and settings.
 
 ### Azure Batch
 
-The identity is assigned at the creation of the Azure Batch account. For an example, see [azuredeploy_batch.bicep](../scripts/templates/Batch/azuredeploy_batch.bicep)
+The identity is assigned at the creation of the Azure Batch account. For an example, see the Batch Bicep module in [`infra/modules/batch.bicep`](../infra/modules/batch.bicep)
 
 ### Kubernetes
 
-The identity first must be associated with the AKS VM Scale set. You can find an example of this assignment near the bottom of [this srcipt](../scripts/templates//kubernetes//create_aks_cluster.ps1)
+The identity is associated with the AKS cluster using workload identity federation. See the AKS Bicep module in [`infra/modules/aks.bicep`](../infra/modules/aks.bicep) and the federated credential module in [`infra/modules/federatedcredential.bicep`](../infra/modules/federatedcredential.bicep).
 
-
-The identity is assigned to the app at runtime in two steps. First `AzureIdentity` and `AzureIdentityBinding` resources are created in the cluster (see [podIdentityAndBinding_template.yaml](../scripts//templates/kubernetes/podIdentityAndBinding_template.yaml)). Then when the SQL Build Manger job is deployed, an `aadpodidbinding` label is added to the job spec (see [sample_job.yaml](../scripts/templates/kubernetes/sample_job.yaml)). This will tell Kubernetes to assign the identity to the job. 
+The identity is assigned to the app at runtime via Kubernetes workload identity. When the SQL Build Manager job is deployed, the pod spec includes `serviceAccountName` set to a service account configured for Workload Identity federation, along with the label `azure.workload.identity/use: true`.
 
 ### Container Apps
 
@@ -83,4 +82,4 @@ The Managed Identity assigned to the runtime compute will need the following Azu
 - `Azure Event Hubs Data Sender` - to send events to Event Hub
 - `AcrPull` - to pull images from Azure Container Registry
 
-You can see an example of the assignments in [`set_managedidentity_rbac.ps1`](../scripts/templates/ManagedIdentity/set_managedidentity_rbac.ps1)
+You can see an example of the RBAC assignments in the [`scripts/Database/grant_identity_permissions.ps1`](../scripts/Database/grant_identity_permissions.ps1) script.

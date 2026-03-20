@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Enterprise.ActiveDirectory;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace SqlBuildManager.Enterprise.UnitTest
 {
@@ -14,7 +15,15 @@ namespace SqlBuildManager.Enterprise.UnitTest
     public class AdHelperTest
     {
 
-
+        [ClassInitialize()]
+        public static void Initilize(TestContext testContext)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Assert.Inconclusive("Tests in this class require Windows platform");
+                return;
+            }
+        }
 
         /// <summary>
         ///A test for AdHelper Constructor
@@ -30,8 +39,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         /// <summary>
         ///A test for GetDistinguishedName
         ///</summary>
-        [TestMethod(), Ignore("Not relevent for most deployments")]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        [TestMethod(), Ignore("Not relevant for most deployments")]
         public void GetDistinguishedNameTest_PassWithGoodDn()
         {
             string userName = "mmckechn";
@@ -44,8 +52,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         /// <summary>
         ///A test for GetDistinguishedName
         ///</summary>
-        [TestMethod(), Ignore("Not relevent for most deployments")]
-        [DeploymentItem("SqlBuildManager.Enterprise.dll")]
+        [TestMethod(), Ignore("Not relevant for most deployments")]
         public void GetDistinguishedNameTest_PassWithNoDnReturned()
         {
             string userName = "ThisISJUnk";

@@ -36,7 +36,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual(commitDate, entry.CommitDate);
             Assert.AreEqual(1, entry.Sequence);
             Assert.AreEqual("testuser", entry.UserId);
-            Assert.IsTrue(entry.AllowScriptBlock.Value);
+            Assert.IsTrue(entry.AllowScriptBlock!.Value);
             Assert.AreEqual("admin", entry.AllowBlockUpdateId);
             Assert.AreEqual("SELECT 1", entry.ScriptText);
             Assert.AreEqual("v1.0", entry.Tag);
@@ -224,7 +224,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                 Tag: null);
 
             // Assert
-            Assert.IsFalse(entry.AllowScriptBlock.Value);
+            Assert.IsFalse(entry.AllowScriptBlock!.Value);
         }
 
         [TestMethod]
@@ -332,7 +332,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
                 Tag: null);
 
             // Assert
-            Assert.AreEqual(10000, entry.ScriptText.Length);
+            Assert.AreEqual(10000, entry.ScriptText!.Length);
         }
 
         [TestMethod]

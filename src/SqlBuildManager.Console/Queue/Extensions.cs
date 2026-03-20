@@ -1,4 +1,4 @@
-﻿using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
@@ -10,12 +10,12 @@ namespace SqlBuildManager.Console.Queue
 
         public static T As<T>(this ServiceBusReceivedMessage message) where T : class
         {
-            return JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(message.Body.ToArray()));
+            return JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(message.Body.ToArray()))!;
         }
 
         public static T As<T>(this ServiceBusMessage message) where T : class
         {
-            return JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(message.Body.ToArray()));
+            return JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(message.Body.ToArray()))!;
         }
 
         public static ServiceBusMessage AsMessage(this object obj)

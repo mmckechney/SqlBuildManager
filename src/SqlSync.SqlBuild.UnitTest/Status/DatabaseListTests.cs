@@ -163,7 +163,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             var list = new DatabaseList();
 
             // Act
-            list.AddManualList(null);
+            list.AddManualList(null!);
 
             // Assert
             Assert.AreEqual(0, list.Count);
@@ -227,7 +227,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             var list = new DatabaseList();
 
             // Act
-            list.AddExistingList(null);
+            list.AddExistingList(null!);
 
             // Assert
             Assert.AreEqual(0, list.Count);
@@ -296,7 +296,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
             var list = new DatabaseList();
 
             // Act
-            list.AddRangeUnique(null);
+            list.AddRangeUnique(null!);
 
             // Assert
             Assert.AreEqual(0, list.Count);
@@ -320,7 +320,7 @@ namespace SqlSync.SqlBuild.UnitTest.Status
 
             // Assert
             Assert.AreEqual(2, list.Count);
-            Assert.IsTrue(list.Find("Db1").IsManuallyEntered);
+            Assert.IsTrue(list.Find("Db1")!.IsManuallyEntered);
             Assert.IsNotNull(list.Find("Db2"));
         }
 

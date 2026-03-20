@@ -31,11 +31,21 @@ param deployContainerAppEnv bool = true
 @description('Whether to deploy AKS')
 param deployAks bool = true
 
+@description('Whether to deploy SQL Server databases')
+param deploySqlServer bool = true
+
 @description('Number of test databases to create per server (0 to skip database deployment)')
 param testDbCountPerServer int = 10
 
 @description('Whether to use private endpoints for SQL Server connectivity instead of public network access')
 param usePrivateEndpoint bool = false
+
+@description('Whether to deploy Azure Database for PostgreSQL Flexible Server')
+param deployPostgreSQL bool = true
+
+@secure()
+@description('Administrator password for PostgreSQL Flexible Server')
+param pgAdminPassword string = ''
 
 @allowed([
   'Basic'
@@ -149,7 +159,7 @@ module containerAppEnv './modules/containerappenv.bicep' = if(deployContainerApp
 }
 
 // Databases
-module databases './modules/database.bicep' = if(testDbCountPerServer > 0 && userIdGuid != '' && userLoginName != ''){
+module databases './modules/database.bicep' = if(deploySqlServer && testDbCountPerServer > 0 && userIdGuid != '' && userLoginName != ''){
   name: 'databases'
   scope: rg
   params: { 
@@ -160,6 +170,25 @@ module databases './modules/database.bicep' = if(testDbCountPerServer > 0 && use
     testDbCountPerServer: testDbCountPerServer
     sqlAdminObjectId: userIdGuid
     sqlAdminLogin: userLoginName
+    usePrivateEndpoint: usePrivateEndpoint
+    vnetId: networkResource.outputs.vnetId
+    privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
+  }
+}
+
+// PostgreSQL Flexible Server
+module postgresql './modules/postgresql.bicep' = if(deployPostgreSQL && userIdGuid != '' && userLoginName != '' && pgAdminPassword != ''){
+  name: 'postgresql'
+  scope: rg
+  params: {
+    namePrefix: namePrefix
+    testDbCountPerServer: testDbCountPerServer
+    location: location
+    currentIpAddress: currentIpAddress
+    subnetNames: join(networkResource.outputs.subnetNames, ',')
+    pgAdminObjectId: userIdGuid
+    pgAdminLogin: userLoginName
+    pgAdminPassword: pgAdminPassword
     usePrivateEndpoint: usePrivateEndpoint
     vnetId: networkResource.outputs.vnetId
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
@@ -273,11 +302,13 @@ output DEPLOY_BATCH_ACCOUNT bool = deployBatchAccount
 output DEPLOY_CONTAINER_REGISTRY bool = deployContainerRegistry
 output DEPLOY_CONTAINERAPP_ENV bool = deployContainerAppEnv
 output DEPLOY_AKS bool = deployAks
+output DEPLOY_SQLSERVER bool = deploySqlServer
 output TEST_DB_COUNT_PER_SERVER int = testDbCountPerServer
 output EVENTHUB_SKU string = eventhubSku
 output SERVICEBUS_SKU string = serviceBusSku
 output SKU_CAPACITY int = skuCapacity
 output USE_PRIVATE_ENDPOINT bool = usePrivateEndpoint
+output DEPLOY_POSTGRESQL bool = deployPostgreSQL
 
 // Resource outputs
 output RESOURCE_GROUP_NAME string = resourceGroupName
@@ -325,3 +356,10 @@ output AKS_CLUSTER_NAME string = deployAks ? aks!.outputs.clusterName : ''
 output AKS_CLUSTER_ID string = deployAks ? aks!.outputs.clusterId : ''
 output AKS_FEDERATED_IDENTITY_NAME string = deployAks ? aks!.outputs.federatedIdName : ''
 output AKS_SERVICE_ACCOUNT_NAME string = deployAks ? aks!.outputs.serviceAccountName : ''
+
+output PG_SERVER_NAME_A string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerNameA : ''
+output PG_SERVER_FQDN_A string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerFqdnA : ''
+output PG_SERVER_NAME_B string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerNameB : ''
+output PG_SERVER_FQDN_B string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerFqdnB : ''
+output PG_ADMIN_USER string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgAdminUser : ''
+output PG_DATABASE_COUNT_PER_SERVER int = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgDatabaseCountPerServer : 0

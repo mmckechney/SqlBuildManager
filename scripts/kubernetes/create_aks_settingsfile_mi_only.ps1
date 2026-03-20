@@ -58,9 +58,9 @@ if ([string]::IsNullOrWhiteSpace($resourceGroupName)) {
     $resourceGroupName = "$prefix-rg"
 }
 
-Write-Host "============================================" -ForegroundColor Cyan
+Write-Host "=================================================" -ForegroundColor Cyan
 Write-Host "Creating AKS Managed Identity-Only Settings File" -ForegroundColor Cyan
-Write-Host "============================================" -ForegroundColor Cyan
+Write-Host "=================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "This settings file uses Managed Identity for ALL Azure services." -ForegroundColor Yellow
 Write-Host "No keys, connection strings, or passwords are stored." -ForegroundColor Yellow
@@ -73,6 +73,7 @@ Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 # Get resource information
 $subscriptionId = az account show --query id --output tsv
 $tenantId = az account show -o tsv --query tenantId
+$identity = az identity show --resource-group $resourceGroupName --name $identityName | ConvertFrom-Json
 
 Write-Host "Using Storage Account: $storageAccountName" -ForegroundColor DarkGreen
 Write-Host "Using Event Hub Namespace: $eventHubNamespaceName" -ForegroundColor DarkGreen
@@ -97,13 +98,15 @@ if ($false -eq (Test-Path $keyFile)) {
 
 # Build parameters (NO KEYS!)
 $params = @("k8s", "savesettings")
-$params += @("--settingsfilekey", """$keyFile""")
 $params += @("--concurrency", "5")
 $params += @("--concurrencytype", "Count")
 $params += @("--registry", $containerRegistryName)
 $params += @("--tag", "latest-vNext")
 $params += @("--tenantid", $tenantId)
 $params += @("--serviceaccountname", $serviceAccountName)
+$params += @("--identityname", $identityName)
+$params += @("--clientid", $identity.clientId)
+$params += @("--idrg", $resourceGroupName)
 $params += @("--force")
 $params += @("--podcount", $podCount)
 $params += @("--eventhublogging", "ScriptErrors")

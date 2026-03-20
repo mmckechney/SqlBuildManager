@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using SqlBuildManager.Console.Aad;
@@ -11,6 +11,7 @@ using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO;
@@ -29,8 +30,8 @@ namespace SqlBuildManager.Console
         private IHostApplicationLifetime applicationLifetime;
         private static int? exitCode;
         internal static string[] AppendLogFiles = new string[] { "commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg" };
-        private static StartArgs startArgs;
-        private static CommandLineArgs cmdLine;
+        private static StartArgs startArgs = null!;
+        private static CommandLineArgs cmdLine = null!;
         internal static ILogger log;
         static Worker()
         {
@@ -46,7 +47,7 @@ namespace SqlBuildManager.Console
         public Task StartAsync(CancellationToken cancellationToken)
         {
 
-            var fn = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            var fn = System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName;
             var currentPath = Path.GetDirectoryName(fn);
 
             log.LogDebug("Received Command: " + String.Join(" | ", Worker.startArgs.Args));
@@ -55,11 +56,13 @@ namespace SqlBuildManager.Console
             {
                 Task.Run(async () =>
                 {
-                    var parser = clB.GetCommandParser();
+                    var rootCommand = clB.GetRootCommand();
 
                     try
                     {
-                        int result = await parser.InvokeAsync(Worker.startArgs.Args); //  rootCommand.InvokeAsync(Worker.startArgs.Args);
+                        // In System.CommandLine 2.0, use Parse then Invoke on the ParseResult
+                        var parseResult = rootCommand.Parse(Worker.startArgs.Args);
+                        int result = parseResult.Invoke();
                         exitCode = result;
 
                     }
@@ -312,7 +315,7 @@ namespace SqlBuildManager.Console
             (string jobName, string discard) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
             var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString, cmdLine.EventHubArgs.SubscriptionId, cmdLine.EventHubArgs.ResourceGroup, cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName);
 
-            Task eventHubMonitorTask = null;
+            Task eventHubMonitorTask = null!;
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
             {
                 eventHubMonitorTask = ehandler.MonitorEventHub(stream, utcStartDate, ehCancellationSource.Token);

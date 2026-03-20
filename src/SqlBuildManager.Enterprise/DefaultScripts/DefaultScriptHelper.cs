@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Dac.Model;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Services;
@@ -12,7 +12,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
     public class DefaultScriptHelper
     {
         private static readonly ISqlBuildFileHelper fileHelper = new DefaultSqlBuildFileHelper();
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static bool SetEnterpriseDefaultScripts(List<DefaultScriptRegistryFile> defaultScriptRegs, List<string> groupMemberships)
         {
             DefaultScriptRegistryFile defaultReg = GetApplicableDefaultScriptReg(defaultScriptRegs, groupMemberships);
@@ -37,7 +37,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
                 return false;
             }
 
-            string localScriptPath = Path.GetDirectoryName(SqlBuildFileHelper.DefaultScriptXmlFile);
+            string localScriptPath = Path.GetDirectoryName(SqlBuildFileHelper.DefaultScriptXmlFile)!;
             foreach (sqlB.DefaultScript item in reg.Items)
             {
                 if (!ValidateLocalToEnterprise(Path.Combine(localScriptPath, item.ScriptName), Path.Combine(defaultReg.Path, item.ScriptName)))
@@ -52,7 +52,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
 
         internal static sqlB.DefaultScriptRegistry GetEnterpriseRegistrySetting(string filePath)
         {
-            sqlB.DefaultScriptRegistry registry = null;
+            sqlB.DefaultScriptRegistry registry = null!;
             log.LogDebug($"Deserializing DefaultScriptRegistry file from '{filePath}'");
             try
             {
@@ -60,7 +60,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
                 using (StreamReader sr = new StreamReader(filePath))
                 {
                     System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(sqlB.DefaultScriptRegistry));
-                    object obj = serializer.Deserialize(sr);
+                    object obj = serializer.Deserialize(sr)!;
                     registry = (sqlB.DefaultScriptRegistry)obj;
                     sr.Close();
                 }
@@ -69,7 +69,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             {
                 log.LogError(exe, $"Unable to deserialize the DefaultScriptRegistry object XML file at {filePath}");
             }
-            return registry;
+            return registry!;
         }
 
         internal static bool ValidateLocalToEnterprise(string localFilePath, string enterpriseFilePath)
@@ -158,7 +158,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             try
             {
                 if (defaultScriptRegs == null || groupMemberships == null)
-                    return null;
+                    return null!;
 
                 var myDefaults = from defReg in defaultScriptRegs
                                  join grp in groupMemberships on defReg.ApplyToGroup.ToLower() equals grp.ToLower()
@@ -167,7 +167,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
                 if (myDefaults.Count() == 0)
                 {
                     log.LogInformation($"No DefaultScriptRegistryFile matches found for groups: {String.Join("; ", groupMemberships.ToArray())}");
-                    return null;
+                    return null!;
                 }
                 else
                 {
@@ -180,7 +180,7 @@ namespace SqlBuildManager.Enterprise.DefaultScripts
             catch (Exception exe)
             {
                 log.LogError(exe, "Error matching DefaultScriptRegistryFile to group memberships");
-                return null;
+                return null!;
             }
 
         }

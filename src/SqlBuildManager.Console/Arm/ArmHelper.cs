@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using Azure.Core;
 using Azure.ResourceManager;
 using Azure.ResourceManager.Resources;
@@ -18,7 +18,7 @@ namespace SqlBuildManager.Console.Arm
         #region Private
 
         internal static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ArmHelper>();
-        private static ArmClient _sbmarmClient = null;
+        private static ArmClient _sbmarmClient = null!;
         public static ArmClient SbmArmClient
         {
             get
@@ -49,7 +49,7 @@ namespace SqlBuildManager.Console.Arm
             var rg = GetResourceGroup(subscriptionId, resourceGroupName);
             var res = rg.GetGenericResources();
             var resource = res.Where(r => r.Id.Name.ToLower() == resourceName.ToLower()).FirstOrDefault();
-            return resource;
+            return resource!;
         }
 
         internal static ResourceGroupResource GetResourceGroup(string subscriptionId, string resourceGroupName)
@@ -141,7 +141,7 @@ namespace SqlBuildManager.Console.Arm
                     }
                     else
                     {
-                        log.LogError($"Unable to retrieve the status of ACI deployment {aciName}. Status code: {returnVal.StatusCode}");
+                        log.LogDebug($"No pre-existing ACI deployment '{aciName}' found (Status: {returnVal.StatusCode}). Proceeding.");
                     }
                 }
                 return string.Empty;
@@ -159,11 +159,11 @@ namespace SqlBuildManager.Console.Arm
             try
             {
                 var ri = new ResourceIdentifier(identityResourceId);
-                return (ri.SubscriptionId, ri.ResourceGroupName, ri.Name);
+                return (ri.SubscriptionId!, ri.ResourceGroupName!, ri.Name);
             }
             catch
             {
-                return (null, null, null);
+                return (null!, null!, null!);
             }
         }
     }

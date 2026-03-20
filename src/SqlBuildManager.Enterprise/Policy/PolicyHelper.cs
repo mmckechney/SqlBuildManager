@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlSync.SqlBuild;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.Objects;
@@ -20,10 +20,10 @@ namespace SqlBuildManager.Enterprise.Policy
 {
     public class PolicyHelper
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public const string LineNumberToken = "{lineNumber}";
         internal static Dictionary<string, shP.IScriptPolicy> allPolicies;
-        internal static List<shP.IScriptPolicy> activePolicies = null;
+        internal static List<shP.IScriptPolicy> activePolicies = null!;
         static PolicyHelper()
         {
             allPolicies = new Dictionary<string, shP.IScriptPolicy>();
@@ -90,7 +90,7 @@ namespace SqlBuildManager.Enterprise.Policy
                     {
                         if ((allPolicies[policy.PolicyId] is shP.IScriptPolicyMultiple)) //Create new instances for "Multiple" items...
                         {
-                            shP.IScriptPolicyMultiple tmpNew = (shP.IScriptPolicyMultiple)Activator.CreateInstance(allPolicies[policy.PolicyId].GetType());
+                            shP.IScriptPolicyMultiple tmpNew = (shP.IScriptPolicyMultiple)Activator.CreateInstance(allPolicies[policy.PolicyId].GetType())!;
                             shP.ViolationSeverity severity;
                             shP.ViolationSeverity.TryParse(policy.Severity.ToString(), true, out severity);
                             tmpNew.Severity = severity;
@@ -205,7 +205,7 @@ namespace SqlBuildManager.Enterprise.Policy
             if (violations.Count > 0)
                 return violations;
             else
-                return null;
+                return null!;
 
         }
         public static Violation ValidateScriptAgainstPolicy(string script, string targetDatabase, shP.IScriptPolicy policy)
@@ -215,14 +215,14 @@ namespace SqlBuildManager.Enterprise.Policy
             if (policy is shP.IScriptPolicyWithArguments && policy.Enforce)
             {
                 if (!((shP.IScriptPolicyWithArguments)policy).CheckPolicy(script, targetDatabase, commentBlockMatches, out message))
-                    return new Violation(policy.ShortDescription, message, Enum.GetName(typeof(shP.ViolationSeverity), policy.Severity));
+                    return new Violation(policy.ShortDescription, message, Enum.GetName(typeof(shP.ViolationSeverity), policy.Severity)!);
             }
             else if (policy.Enforce)
             {
                 if (!policy.CheckPolicy(script, commentBlockMatches, out message))
-                    return new Violation(policy.ShortDescription, message, Enum.GetName(typeof(shP.ViolationSeverity), policy.Severity));
+                    return new Violation(policy.ShortDescription, message, Enum.GetName(typeof(shP.ViolationSeverity), policy.Severity)!);
             }
-            return null;
+            return null!;
         }
         public Package ValidateScriptsAgainstPolicies(List<UpdatedObject> namesAndScripts)
         {
@@ -249,7 +249,7 @@ namespace SqlBuildManager.Enterprise.Policy
             if (lstViolations.Count > 0)
                 return lstViolations;
             else
-                return null;
+                return null!;
 
         }
         public Script ValidateFileAgainstPolicies(string fileName)
@@ -266,7 +266,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 }
             }
 
-            return null;
+            return null!;
         }
         public Package ValidateFilesAgainstPolicies(List<string> fileNames)
         {
@@ -282,7 +282,7 @@ namespace SqlBuildManager.Enterprise.Policy
             if (lstViolations.Count > 0)
                 return lstViolations;
             else
-                return null;
+                return null!;
         }
 
 
@@ -402,7 +402,7 @@ namespace SqlBuildManager.Enterprise.Policy
             string highSeverity = ViolationSeverity.High.ToString();
             bool passed = true;
             List<string[]> policyReturns = new List<string[]>();
-            SqlSyncBuildDataModel buildModel = null;
+            SqlSyncBuildDataModel buildModel = null!;
 
             if (String.IsNullOrEmpty(buildPackageName))
                 return (policyReturns, passed);
@@ -419,7 +419,7 @@ namespace SqlBuildManager.Enterprise.Policy
                     (_, buildModel) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projFileName, false, cancellationToken).ConfigureAwait(false);
                     break;
                 case ".sbx":
-                    projectFilePath = Path.GetDirectoryName(buildPackageName);
+                    projectFilePath = Path.GetDirectoryName(buildPackageName)!;
                     buildModel = await SqlSyncBuildDataXmlSerializer.LoadAsync(buildPackageName, cancellationToken).ConfigureAwait(false);
                     break;
                 default:
@@ -428,7 +428,7 @@ namespace SqlBuildManager.Enterprise.Policy
 
             if (buildModel != null)
             {
-                Package pkg = CreateScriptPolicyPackage(buildModel, projectFilePath);
+                Package pkg = CreateScriptPolicyPackage(buildModel, projectFilePath!);
                 passed = !pkg.Select(p => p.Violations.Select(v => v.Severity == highSeverity)).Any();
 
                 var violationMessages = from s in pkg

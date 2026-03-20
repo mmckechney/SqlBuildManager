@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Enterprise.Notification;
 using System.Collections.Generic;
 namespace SqlBuildManager.Enterprise.UnitTest
@@ -53,7 +53,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         dbo.SqlBuild_Logging ALTER COLUMN test BIT
 
 ";
-            List<TableWatch> matches = null;
+            List<TableWatch> matches = null!;
             bool expected = false;
             bool actual;
             actual = SqlBuildManager.Enterprise.Notification.TableWatchNotification.CheckForTableWatch(script, out matches);
@@ -73,7 +73,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         NotHERE ALTER COLUMN test BIT
 
 ";
-            List<TableWatch> matches = null;
+            List<TableWatch> matches = null!;
             bool expected = true;
             bool actual;
             actual = SqlBuildManager.Enterprise.Notification.TableWatchNotification.CheckForTableWatch(script, out matches);

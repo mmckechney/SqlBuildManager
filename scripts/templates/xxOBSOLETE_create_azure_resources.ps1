@@ -163,7 +163,7 @@ else {
 if($deployContainerRegistry)
 {
      $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/ContainerRegistry/build_container_registry_image_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -wait $false -path $outputPath
+    .$scriptDir/ContainerRegistry/build_runtime_image_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -wait $false -path $outputPath
 }
 else 
 {

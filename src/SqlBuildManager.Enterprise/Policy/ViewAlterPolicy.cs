@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using shP = SqlBuildManager.Interfaces.ScriptHandling.Policy;
@@ -6,7 +6,7 @@ namespace SqlBuildManager.Enterprise.Policy
 {
     class ViewAlterPolicy : shP.IScriptPolicy
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         #region IScriptPolicy Members
 
         public string PolicyId

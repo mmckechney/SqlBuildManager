@@ -254,7 +254,7 @@ namespace SqlSync.SqlBuild.UnitTest
 
             // Assert
             Assert.IsNotNull(logFileName);
-            Assert.IsTrue(logFileName.Contains("Sql Build Manager"));
+            Assert.IsTrue(logFileName.Contains("sqlbuildmanager"));
         }
 
         #endregion

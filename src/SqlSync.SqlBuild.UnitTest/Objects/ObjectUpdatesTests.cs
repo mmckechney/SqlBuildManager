@@ -251,11 +251,11 @@ namespace SqlSync.SqlBuild.UnitTest.Objects
             ObjectUpdates deserialized;
             using (var reader = new StringReader(xml))
             {
-                deserialized = (ObjectUpdates)serializer.Deserialize(reader);
+                deserialized = (ObjectUpdates)serializer.Deserialize(reader)!;
             }
 
             // Assert
-            Assert.AreEqual(obj.ShortFileName, deserialized.ShortFileName);
+            Assert.AreEqual(obj!.ShortFileName, deserialized.ShortFileName);
             Assert.AreEqual(obj.SourceObject, deserialized.SourceObject);
             Assert.AreEqual(obj.SourceDatabase, deserialized.SourceDatabase);
             Assert.AreEqual(obj.SourceServer, deserialized.SourceServer);
@@ -283,7 +283,7 @@ namespace SqlSync.SqlBuild.UnitTest.Objects
             ObjectUpdates deserialized;
             using (var reader = new StringReader(xml))
             {
-                deserialized = (ObjectUpdates)serializer.Deserialize(reader);
+                deserialized = (ObjectUpdates)serializer.Deserialize(reader)!;
             }
 
             // Assert
@@ -333,7 +333,7 @@ namespace SqlSync.SqlBuild.UnitTest.Objects
             ObjectUpdates deserialized;
             using (var reader = new StringReader(xml))
             {
-                deserialized = (ObjectUpdates)serializer.Deserialize(reader);
+                deserialized = (ObjectUpdates)serializer.Deserialize(reader)!;
             }
 
             // Assert

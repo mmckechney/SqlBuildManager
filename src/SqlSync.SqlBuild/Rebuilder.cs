@@ -12,7 +12,7 @@ namespace SqlSync.SqlBuild
 {
     public class Rebuilder
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private ConnectionData connData;
         //private string committedBuildFileName;
         //private DateTime commitDate;
@@ -279,7 +279,7 @@ namespace SqlSync.SqlBuild
                             {
                                 builds[i].ScriptCount += builds[j].ScriptCount;
                                 builds[i].Database += ";" + builds[j].Database;
-                                builds[j] = null;
+                                builds[j] = null!;
                             }
                         }
                     }

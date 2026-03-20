@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.CommandLine.NamingConventionBinder;
 using System.CommandLine;
 using System.Linq;
 using System.Text;
@@ -19,7 +18,7 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("build", "Performs a standard, local SBM execution via command line")
                 {
-                    packagenameOption.Copy(true),
+                    packagenameOption,
                     serverOption,
                     databaseOption,
                     rootloggingpathOption,
@@ -33,7 +32,10 @@ namespace SqlBuildManager.Console.CommandLine
                     timeoutretrycountOption
                 };
                 cmd.AddRange(DatabaseAuthArgs);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.RunLocalBuildAsync);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.RunLocalBuildAsync(cmdLine);
+                });
                 return cmd;
             }
         }
@@ -67,7 +69,11 @@ namespace SqlBuildManager.Console.CommandLine
                 };
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConcurrencyOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs, bool>(Worker.RunThreadedExecutionAsync);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    var unittest = parseResult.GetValue(unitTestOption);
+                    return await Worker.RunThreadedExecutionAsync(cmdLine: cmdLine, unittest: unittest);
+                });
                 return cmd;
             }
         }
@@ -81,15 +87,18 @@ namespace SqlBuildManager.Console.CommandLine
             {
                 var cmd = new Command("query", "Run a SELECT query across multiple databases")
                 {
-                    queryFileOption.Copy(true),
-                    overrideOption.Copy(true),
-                    outputFileOption.Copy(true),
+                    queryFileRequiredOption,
+                    overrideRequiredOption,
+                    outputFileRequiredOption,
                     defaultscripttimeoutOption,
                     silentOption
                 };
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConcurrencyOptions);
-                cmd.Handler = CommandHandler.Create<CommandLineArgs>(Worker.QueryDatabasesAsync);
+                cmd.SetAction(async (parseResult, ct) => {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.QueryDatabasesAsync(cmdLine);
+                });
                 return cmd;
             }
         }

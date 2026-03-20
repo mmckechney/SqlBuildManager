@@ -30,7 +30,7 @@ namespace SqlSync.SqlBuild.UnitTest
     <AuthenticationType>WindowsAuthentication</AuthenticationType>
   </ServerConfiguration>
   <LastProgramUpdateCheck CheckTime=""2024-01-02T00:00:00Z"" />
-  <LastDirectory ComponentName=""comp"" Directory=""C:\temp"" />
+  <LastDirectory ComponentName=""comp"" Directory=""/temp"" />
 </ServerConnectConfig>";
 
         [TestMethod]

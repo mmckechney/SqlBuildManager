@@ -119,7 +119,7 @@
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="LastTagFromMixedContents" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\lasttagfrommixedcontents.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\LastTagFromMixedContents.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="NoLockBugFix1_Expected" xml:space="preserve">
     <value>SET ANSI_NULLS ON
@@ -265,6 +265,6 @@ GO</value>
     <comment>Script found as bug - didn't update the FROM MyTablePrefs p with a nolock statement</comment>
   </data>
   <data name="TagFromContents" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\tagfromcontents.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>..\TagFromContents.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
 </root>

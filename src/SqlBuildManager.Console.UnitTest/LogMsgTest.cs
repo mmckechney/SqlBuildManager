@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
+using System.IO;
 using System.Text.Json;
 
 namespace SqlBuildManager.Console.UnitTest
@@ -72,7 +73,7 @@ namespace SqlBuildManager.Console.UnitTest
             var msg = new LogMsg();
 
             // Act
-            msg.SourceDacPac = @"C:\path\to\my.dacpac";
+            msg.SourceDacPac = Path.Combine(Path.GetTempPath(), "to", "my.dacpac");
 
             // Assert
             Assert.AreEqual("my.dacpac", msg.SourceDacPac);

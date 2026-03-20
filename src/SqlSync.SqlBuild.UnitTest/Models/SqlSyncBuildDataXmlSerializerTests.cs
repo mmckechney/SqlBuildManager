@@ -45,7 +45,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             // Assert
             Assert.AreEqual(1, model.SqlSyncBuildProject.Count);
             Assert.AreEqual("TestProject", model.SqlSyncBuildProject[0].ProjectName);
-            Assert.IsTrue(model.SqlSyncBuildProject[0].ScriptTagRequired.Value);
+            Assert.IsTrue(model.SqlSyncBuildProject[0].ScriptTagRequired!.Value);
         }
 
         [TestMethod]
@@ -64,11 +64,11 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             Assert.AreEqual("CreateTable.sql", script1.FileName);
             Assert.AreEqual(1.0, script1.BuildOrder);
             Assert.AreEqual("Creates test table", script1.Description);
-            Assert.IsTrue(script1.RollBackOnError.Value);
-            Assert.IsTrue(script1.CausesBuildFailure.Value);
+            Assert.IsTrue(script1.RollBackOnError!.Value);
+            Assert.IsTrue(script1.CausesBuildFailure!.Value);
             Assert.AreEqual("TestDB", script1.Database);
-            Assert.IsTrue(script1.StripTransactionText.Value);
-            Assert.IsFalse(script1.AllowMultipleRuns.Value);
+            Assert.IsTrue(script1.StripTransactionText!.Value);
+            Assert.IsFalse(script1.AllowMultipleRuns!.Value);
             Assert.AreEqual("testuser", script1.AddedBy);
             Assert.AreEqual(60, script1.ScriptTimeOut);
             Assert.AreEqual("admin", script1.ModifiedBy);
@@ -113,7 +113,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             var scriptRun = model.ScriptRun[0];
             Assert.AreEqual("CreateTable.sql", scriptRun.FileName);
             Assert.AreEqual(1.0, scriptRun.RunOrder);
-            Assert.IsTrue(scriptRun.Success.Value);
+            Assert.IsTrue(scriptRun.Success!.Value);
             Assert.AreEqual("TestDB", scriptRun.Database);
             Assert.AreEqual("SR-001", scriptRun.ScriptRunId);
             Assert.AreEqual("HASH123", scriptRun.FileHash);
@@ -134,7 +134,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             var cs = model.CommittedScript[0];
             Assert.AreEqual("11111111-1111-1111-1111-111111111111", cs.ScriptId);
             Assert.AreEqual("PROD-SQL", cs.ServerName);
-            Assert.IsTrue(cs.AllowScriptBlock.Value);
+            Assert.IsTrue(cs.AllowScriptBlock!.Value);
             Assert.AreEqual("HASH123", cs.ScriptHash);
         }
 
@@ -250,9 +250,9 @@ namespace SqlSync.SqlBuild.UnitTest.Models
 
             // Assert
             var ns = (XNamespace)"http://schemas.mckechney.com/SqlSyncBuildProject.xsd";
-            var projects = doc.Root.Elements(ns + "SqlSyncBuildProject").ToList();
+            var projects = doc!.Root!.Elements(ns + "SqlSyncBuildProject").ToList();
             Assert.AreEqual(1, projects.Count);
-            Assert.AreEqual("TestProject", (string)projects[0].Attribute("ProjectName"));
+            Assert.AreEqual("TestProject", (string?)projects[0].Attribute("ProjectName"));
         }
 
         [TestMethod]
@@ -266,13 +266,13 @@ namespace SqlSync.SqlBuild.UnitTest.Models
 
             // Assert
             var ns = (XNamespace)"http://schemas.mckechney.com/SqlSyncBuildProject.xsd";
-            var scripts = doc.Root
-                .Element(ns + "SqlSyncBuildProject")
-                .Element(ns + "Scripts")
+            var scripts = doc!.Root!
+                .Element(ns + "SqlSyncBuildProject")!
+                .Element(ns + "Scripts")!
                 .Elements(ns + "Script")
                 .ToList();
             Assert.AreEqual(1, scripts.Count);
-            Assert.AreEqual("test.sql", (string)scripts[0].Attribute("FileName"));
+            Assert.AreEqual("test.sql", (string?)scripts[0].Attribute("FileName"));
         }
 
         [TestMethod]
@@ -286,9 +286,9 @@ namespace SqlSync.SqlBuild.UnitTest.Models
 
             // Assert
             var ns = (XNamespace)"http://schemas.mckechney.com/SqlSyncBuildProject.xsd";
-            var builds = doc.Root
-                .Element(ns + "SqlSyncBuildProject")
-                .Element(ns + "Builds")
+            var builds = doc!.Root!
+                .Element(ns + "SqlSyncBuildProject")!
+                .Element(ns + "Builds")!
                 .Elements(ns + "Build")
                 .ToList();
             Assert.AreEqual(1, builds.Count);

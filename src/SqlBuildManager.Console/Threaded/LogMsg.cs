@@ -1,4 +1,5 @@
-﻿using SqlBuildManager.Interfaces.Console;
+using SqlBuildManager.Interfaces.Console;
+using System;
 using System.IO;
 using System.Text.Json.Serialization;
 
@@ -17,17 +18,18 @@ namespace SqlBuildManager.Console.Threaded
         /// <summary>
         /// Creates a LogMsg with the specified runId and sourceDacPac.
         /// </summary>
-        public LogMsg(string runId, string sourceDacPac = null)
+        public LogMsg(string runId, string sourceDacPac = null!)
         {
             this.runId = runId ?? string.Empty;
             if (!string.IsNullOrEmpty(sourceDacPac))
             {
-                this.sourceDacPac = Path.GetFileName(sourceDacPac);
+                int lastSep = Math.Max(sourceDacPac.LastIndexOf('/'), sourceDacPac.LastIndexOf('\\'));
+                this.sourceDacPac = lastSep >= 0 ? sourceDacPac.Substring(lastSep + 1) : sourceDacPac;
             }
         }
         
         [JsonPropertyName("_typeTag")]
-        public string TypeTag { get; set; } = null;
+        public string TypeTag { get; set; } = null!;
         
         [JsonPropertyName("JobName")]
         public string JobName { get; set; } = string.Empty;
@@ -60,7 +62,18 @@ namespace SqlBuildManager.Console.Threaded
         public string SourceDacPac
         {
             get => sourceDacPac;
-            set => sourceDacPac = string.IsNullOrEmpty(value) ? string.Empty : Path.GetFileName(value);
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    sourceDacPac = string.Empty;
+                }
+                else
+                {
+                    int lastSep = Math.Max(value.LastIndexOf('/'), value.LastIndexOf('\\'));
+                    sourceDacPac = lastSep >= 0 ? value.Substring(lastSep + 1) : value;
+                }
+            }
         }
 
         [JsonPropertyName("ComputeHostName")]
@@ -70,7 +83,7 @@ namespace SqlBuildManager.Console.Threaded
         public string ConcurrencyTag { get; set; } = string.Empty;
 
         [JsonPropertyName("ScriptLog")]
-        public ScriptLogData ScriptLog { get; set; } = null;
+        public ScriptLogData ScriptLog { get; set; } = null!;
             
     }
 

@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 using SqlSync.Connection;
@@ -23,20 +23,20 @@ namespace SqlSync.ObjectScript
     /// </summary>
     public class ObjectScriptHelper
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private BackgroundWorker bgWorker;
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+        private BackgroundWorker bgWorker = null!;
         /// <summary>
         /// SMO server interface variable
         /// </summary>
-        Microsoft.SqlServer.Management.Smo.Server smoServer = null;
+        Microsoft.SqlServer.Management.Smo.Server smoServer = null!;
         /// <summary>
         /// SMO database object
         /// </summary>
-        private Microsoft.SqlServer.Management.Smo.Database smoDatabase = null;
+        private Microsoft.SqlServer.Management.Smo.Database smoDatabase = null!;
         /// <summary>
         /// Used for comparison of database objects to scripted files. 
         /// </summary>
-        Hashtable dbObjects;
+        Hashtable dbObjects = null!;
         /// <summary>
         /// Flag on whether or not to delete any pre-existing script files in the 
         /// selected path for a initial script
@@ -82,7 +82,7 @@ namespace SqlSync.ObjectScript
         /// <summary>
         /// Data Transfer object of required data
         /// </summary>
-        private ConnectionData data = null;
+        private ConnectionData data = null!;
         /// <summary>
         /// Whether or not to include the informational file header
         /// </summary>
@@ -356,9 +356,9 @@ namespace SqlSync.ObjectScript
             ThreadPool.QueueUserWorkItem(new WaitCallback(SaveScriptToFileThreaded), data);
         }
 
-        private void SaveScriptToFileThreaded(object fileData)
+        private void SaveScriptToFileThreaded(object? fileData)
         {
-            FileData data = (FileData)fileData;
+            FileData data = (FileData)fileData!;
             try
             {
                 try
@@ -846,7 +846,7 @@ namespace SqlSync.ObjectScript
             System.Reflection.FieldInfo[] pathInfo = typeof(DbObjectFilePath).GetFields();
             for (int x = 0; x < pathInfo.Length; x++)
             {
-                path = Path.Combine(rootPath, pathInfo[x].GetValue(null).ToString());
+                path = Path.Combine(rootPath, pathInfo[x].GetValue(null)!.ToString()!);
                 bgWorker.ReportProgress(0, new StatusEventArgs("Removing pre-existing files in " + path));
                 for (int j = 0; j < extensionInfo.Length; j++)
                 {
@@ -885,7 +885,7 @@ namespace SqlSync.ObjectScript
             //Connect to server or quit
             if (ConnectToServer() == false)
             {
-                return null;
+                return null!;
             }
 
             string tmpScript = string.Empty;
@@ -1140,7 +1140,7 @@ namespace SqlSync.ObjectScript
                 if (smoServer != null && smoServer.ConnectionContext.IsOpen)
                     smoServer.ConnectionContext.Disconnect();
 
-                smoServer = null;
+                smoServer = null!;
                 return true;
             }
             catch (Exception exe)
@@ -1157,7 +1157,7 @@ namespace SqlSync.ObjectScript
         {
             if (ConnectToServer() == false)
             {
-                return null;
+                return null!;
             }
             bgWorker.ReportProgress(0, new StatusEventArgs("Checking Table Scripts"));
             CompareTableTypes(startingPath, DbObjectType.Table);
@@ -1207,7 +1207,7 @@ namespace SqlSync.ObjectScript
         {
             if (ConnectToServer() == false)
             {
-                return null;
+                return null!;
             }
             dbObjects = new Hashtable();
             for (int i = 1; i < smoDatabase.StoredProcedures.Count + 1; i++)
@@ -1232,7 +1232,7 @@ namespace SqlSync.ObjectScript
         {
             if (ConnectToServer() == false)
             {
-                return null;
+                return null!;
             }
             dbObjects = new Hashtable();
             for (int i = 1; i < smoDatabase.Views.Count + 1; i++)
@@ -1257,7 +1257,7 @@ namespace SqlSync.ObjectScript
         {
             if (ConnectToServer() == false)
             {
-                return null;
+                return null!;
             }
             dbObjects = new Hashtable();
             for (int i = 1; i < smoDatabase.Users.Count + 1; i++)
@@ -1283,7 +1283,7 @@ namespace SqlSync.ObjectScript
         {
             if (ConnectToServer() == false)
             {
-                return null;
+                return null!;
             }
             dbObjects = new Hashtable();
             for (int i = 1; i < smoDatabase.UserDefinedFunctions.Count + 1; i++)
@@ -1308,7 +1308,7 @@ namespace SqlSync.ObjectScript
         {
             if (ConnectToServer() == false)
             {
-                return null;
+                return null!;
             }
             dbObjects = new Hashtable();
             for (int i = 1; i < smoServer.Logins.Count + 1; i++)
@@ -1348,9 +1348,9 @@ namespace SqlSync.ObjectScript
                 {
                     if (dbObjects.ContainsKey(fileName))
                     {
-                        ((ObjectSyncData)dbObjects[fileName]).IsInFileSystem = true;
-                        ((ObjectSyncData)dbObjects[fileName]).FileName = files[i].Name;
-                        ((ObjectSyncData)dbObjects[fileName]).FullPath = files[i].FullName;
+                        ((ObjectSyncData)dbObjects[fileName]!).IsInFileSystem = true;
+                        ((ObjectSyncData)dbObjects[fileName]!).FileName = files[i].Name;
+                        ((ObjectSyncData)dbObjects[fileName]!).FullPath = files[i].FullName;
                     }
                     else
                     {
@@ -1505,10 +1505,10 @@ namespace SqlSync.ObjectScript
                 for (int i = 0; i < coll.Count; i++)
                 {
 
-                    if (coll[i].IndexOf(trigger, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
+                    if (coll[i]!.IndexOf(trigger, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
                         triggerIndex = i;
 
-                    if (coll[i].IndexOf("IF NOT EXISTS") > -1 && triggerIndex == -1 && i + 1 <= coll.Count)
+                    if (coll[i]!.IndexOf("IF NOT EXISTS") > -1 && triggerIndex == -1 && i + 1 <= coll.Count)
                         commandStartIndex = i + 1;
 
                     if (triggerIndex != -1)
@@ -1525,7 +1525,7 @@ namespace SqlSync.ObjectScript
 
                 //Now we have our script, we need to piece it together with the ALTER/CREATE
                 StringBuilder sb = new StringBuilder();
-                string trigScript = trigColl[trigColl.Count - 1];
+                string trigScript = trigColl[trigColl.Count - 1]!;
                 trigScript = new System.Text.RegularExpressions.Regex(@"CREATE\s+TRIGGER", RegexOptions.IgnoreCase).Replace(trigScript, "ALTER TRIGGER", 1);
                 trigScript = new System.Text.RegularExpressions.Regex("IF NOT EXISTS", RegexOptions.IgnoreCase).Replace(trigScript, "IF EXISTS", 1);
 
@@ -1557,7 +1557,7 @@ namespace SqlSync.ObjectScript
                 sb.Append("ELSE\r\nBEGIN\r\n");
                 //sb.AppendLine("GO");
                 //Next the create
-                trigLines = trigColl[trigColl.Count - 1].Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                trigLines = trigColl[trigColl.Count - 1]!.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 foundOne = false;
                 foreach (string line in trigLines)
                 {
@@ -1641,8 +1641,8 @@ namespace SqlSync.ObjectScript
                     coll = smoSp.Script(options);
                     for (int i = 0; i < coll.Count; i++)
                     {
-                        if (regExists.Match(coll[i]).Success) //This should be the actual script
-                            TabJustifyScript(coll[i].TrimEnd(), ref sb);
+                        if (regExists.Match(coll[i]!).Success) //This should be the actual script
+                            TabJustifyScript(coll[i]!.TrimEnd(), ref sb);
                         else
                             sb.AppendLine(coll[i]); //This shoud be the "SET ..." precursors
                     }
@@ -1656,11 +1656,11 @@ namespace SqlSync.ObjectScript
                     //coll = smoSp.Script(options);
                     for (int i = 0; i < coll.Count; i++)
                     {
-                        if (coll[i].IndexOf("CREATE", 0, StringComparison.CurrentCultureIgnoreCase) > -1)
+                        if (coll[i]!.IndexOf("CREATE", 0, StringComparison.CurrentCultureIgnoreCase) > -1)
                         {
-                            coll[i] = new System.Text.RegularExpressions.Regex(@"CREATE\s+PROCEDURE", RegexOptions.IgnoreCase).Replace(coll[i], "ALTER PROCEDURE", 1);
-                            coll[i] = new System.Text.RegularExpressions.Regex("IF NOT EXISTS", RegexOptions.IgnoreCase).Replace(coll[i], "IF EXISTS", 1);
-                            TabJustifyScript(coll[i].TrimEnd(), ref sb);
+                            coll[i] = new System.Text.RegularExpressions.Regex(@"CREATE\s+PROCEDURE", RegexOptions.IgnoreCase).Replace(coll[i]!, "ALTER PROCEDURE", 1);
+                            coll[i] = new System.Text.RegularExpressions.Regex("IF NOT EXISTS", RegexOptions.IgnoreCase).Replace(coll[i]!, "IF EXISTS", 1);
+                            TabJustifyScript(coll[i]!.TrimEnd(), ref sb);
                         }
                     }
                     sb.Length = sb.Length - 5;  //remove "END\r\n"
@@ -1683,7 +1683,7 @@ namespace SqlSync.ObjectScript
                     coll = smoSp.Script(options);
                     for (int i = 0; i < coll.Count; i++)
                     {
-                        if (coll[i].StartsWith("GRANT", StringComparison.CurrentCultureIgnoreCase))
+                        if (coll[i]!.StartsWith("GRANT", StringComparison.CurrentCultureIgnoreCase))
                             sb.AppendLine(coll[i] + "\r\nGO\r\n");
                     }
 
@@ -1748,10 +1748,10 @@ namespace SqlSync.ObjectScript
                     for (int i = 0; i < coll.Count; i++)
                     {
 
-                        if (regExists.Match(coll[i]).Success)
+                        if (regExists.Match(coll[i]!).Success)
                         {
-                            coll[i] = regExec.Replace(coll[i], "BEGIN\r\nEXEC", 1);
-                            TabJustifyScript(coll[i].TrimEnd(), ref sb);
+                            coll[i] = regExec.Replace(coll[i]!, "BEGIN\r\nEXEC", 1);
+                            TabJustifyScript(coll[i]!.TrimEnd(), ref sb);
                         }
                         else
                             sb.AppendLine(coll[i]); //This is the "SET ..." precursors
@@ -1767,12 +1767,12 @@ namespace SqlSync.ObjectScript
                     coll = smoView.Script(options);
                     for (int i = 0; i < coll.Count; i++)
                     {
-                        if (coll[i].IndexOf("CREATE", StringComparison.CurrentCultureIgnoreCase) > -1)
+                        if (coll[i]!.IndexOf("CREATE", StringComparison.CurrentCultureIgnoreCase) > -1)
                         {
-                            coll[i] = new Regex(@"CREATE\s+VIEW", RegexOptions.IgnoreCase).Replace(coll[i], "ALTER VIEW", 1);
-                            coll[i] = new Regex("IF NOT EXISTS", RegexOptions.IgnoreCase).Replace(coll[i], "IF EXISTS", 1);
-                            coll[i] = regExec.Replace(coll[i], "BEGIN\r\nEXEC", 1);
-                            TabJustifyScript(coll[i].TrimEnd(), ref sb);
+                            coll[i] = new Regex(@"CREATE\s+VIEW", RegexOptions.IgnoreCase).Replace(coll[i]!, "ALTER VIEW", 1);
+                            coll[i] = new Regex("IF NOT EXISTS", RegexOptions.IgnoreCase).Replace(coll[i]!, "IF EXISTS", 1);
+                            coll[i] = regExec.Replace(coll[i]!, "BEGIN\r\nEXEC", 1);
+                            TabJustifyScript(coll[i]!.TrimEnd(), ref sb);
                         }
                     }
                     //sb.Length = sb.Length - 5;  //remove "END\r\n"
@@ -1795,7 +1795,7 @@ namespace SqlSync.ObjectScript
                     coll = smoView.Script(options);
                     for (int i = 0; i < coll.Count; i++)
                     {
-                        if (coll[i].StartsWith("GRANT", StringComparison.CurrentCultureIgnoreCase))
+                        if (coll[i]!.StartsWith("GRANT", StringComparison.CurrentCultureIgnoreCase))
                             sb.AppendLine(coll[i] + "\r\nGO\r\n");
                     }
 
@@ -1859,8 +1859,8 @@ namespace SqlSync.ObjectScript
                     coll = smoFunc.Script(options);
                     for (int i = 0; i < coll.Count; i++)
                     {
-                        if (regExists.Match(coll[i]).Success)
-                            TabJustifyScript(coll[i].TrimEnd(), ref sb); // This should be the actual script
+                        if (regExists.Match(coll[i]!).Success)
+                            TabJustifyScript(coll[i]!.TrimEnd(), ref sb); // This should be the actual script
                         else
                             sb.AppendLine(coll[i]); //This should be the "SET ..." precursors
                     }
@@ -1873,11 +1873,11 @@ namespace SqlSync.ObjectScript
                     coll = smoFunc.Script(options);
                     for (int i = 0; i < coll.Count; i++)
                     {
-                        if (coll[i].IndexOf("CREATE", StringComparison.CurrentCultureIgnoreCase) > -1)
+                        if (coll[i]!.IndexOf("CREATE", StringComparison.CurrentCultureIgnoreCase) > -1)
                         {
-                            coll[i] = new System.Text.RegularExpressions.Regex(@"CREATE\s+FUNCTION", RegexOptions.IgnoreCase).Replace(coll[i], "ALTER FUNCTION", 1);
-                            coll[i] = new System.Text.RegularExpressions.Regex("IF NOT EXISTS", RegexOptions.IgnoreCase).Replace(coll[i], "IF EXISTS", 1);
-                            TabJustifyScript(coll[i].TrimEnd(), ref sb);
+                            coll[i] = new System.Text.RegularExpressions.Regex(@"CREATE\s+FUNCTION", RegexOptions.IgnoreCase).Replace(coll[i]!, "ALTER FUNCTION", 1);
+                            coll[i] = new System.Text.RegularExpressions.Regex("IF NOT EXISTS", RegexOptions.IgnoreCase).Replace(coll[i]!, "IF EXISTS", 1);
+                            TabJustifyScript(coll[i]!.TrimEnd(), ref sb);
                         }
                     }
                     sb.Length = sb.Length - 5; //remove "END\r\n"
@@ -1899,7 +1899,7 @@ namespace SqlSync.ObjectScript
                     coll = smoFunc.Script(options);
                     for (int i = 0; i < coll.Count; i++)
                     {
-                        if (coll[i].StartsWith("GRANT", StringComparison.CurrentCultureIgnoreCase))
+                        if (coll[i]!.StartsWith("GRANT", StringComparison.CurrentCultureIgnoreCase))
                             sb.AppendLine(coll[i] + "\r\nGO\r\n");
                     }
 
@@ -1997,7 +1997,7 @@ namespace SqlSync.ObjectScript
                 CollateScript(coll, ref sb);
 
                 StringCollection members = smoLogin.ListMembers();
-                foreach (string member in members)
+                foreach (string? member in members)
                     sb.Append("exec sp_addsrvrolemember N'" + name + "'," + member + "\r\nGO\r\n\r\n");
 
                 script = sb.ToString();
@@ -2099,11 +2099,12 @@ namespace SqlSync.ObjectScript
         }
         private void CollateScript(StringCollection coll, ref StringBuilder sb)
         {
-            foreach (string s in coll)
+            foreach (string? s in coll)
             {
                 sb.AppendLine(s);
                 sb.AppendLine("GO");
-                sb.AppendLine("\r\n");
+                sb.AppendLine();
+                sb.AppendLine();
             }
         }
         internal void CollateScriptWithSchemaCheck(StringCollection coll, string schema, ref StringBuilder sb)
@@ -2112,8 +2113,8 @@ namespace SqlSync.ObjectScript
             Regex regFindMissingIndex = new Regex(@"OBJECT_ID\(N'", RegexOptions.IgnoreCase);
             for (int i = 0; i < coll.Count; i++)
             {
-                string s = coll[i];
-                if (s.StartsWith("IF NOT EXISTS", StringComparison.CurrentCultureIgnoreCase))
+                string? s = coll[i];
+                if (s!.StartsWith("IF NOT EXISTS", StringComparison.CurrentCultureIgnoreCase))
                 {
                     if (regFindGood.Matches(s).Count != regFindMissingIndex.Matches(s).Count)
                     {
@@ -2189,7 +2190,7 @@ namespace SqlSync.ObjectScript
 
         #region ## Events ##
 
-        public event HashScriptingEventHandler HashScriptingEvent;
+        public event HashScriptingEventHandler? HashScriptingEvent;
         public delegate void HashScriptingEventHandler(object sender, HashScriptingEventArgs e);
 
         #endregion

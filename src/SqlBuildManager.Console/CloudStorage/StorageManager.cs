@@ -1,4 +1,4 @@
-﻿using Azure.Storage;
+using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
@@ -19,10 +19,13 @@ namespace SqlBuildManager.Console.CloudStorage
 {
     public class StorageManager
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+        // Unique per-process instance ID to prevent blob path collisions when multiple
+        // containers in the same ACI group share the same HOSTNAME.
+        private static readonly string _instanceSuffix = Guid.NewGuid().ToString("N").Substring(0, 8);
         internal static BlobServiceClient CreateStorageClient(string storageAccountName, string storageAccountKey)
         {
-            BlobServiceClient serviceClient = null;
+            BlobServiceClient serviceClient = null!;
             if (string.IsNullOrWhiteSpace(storageAccountKey))
             {
                 serviceClient = new BlobServiceClient(new Uri($"https://{storageAccountName}.blob.core.windows.net"), Aad.AadHelper.TokenCredential);
@@ -503,7 +506,7 @@ namespace SqlBuildManager.Console.CloudStorage
                             using (StreamReader reader = new StreamReader(tmp))
                             {
                                 var s = reader.ReadLine(); //dump the first line
-                                reader.BaseStream.Position = Encoding.UTF8.GetBytes(s).Length;
+                                reader.BaseStream.Position = Encoding.UTF8.GetBytes(s!).Length;
                                 destinationBlob.AppendBlock(reader.BaseStream);
 
                             }
@@ -547,14 +550,37 @@ namespace SqlBuildManager.Console.CloudStorage
                 var taskId = Environment.GetEnvironmentVariable("AZ_BATCH_TASK_ID");
                 if (string.IsNullOrEmpty(taskId))
                 {
-                    taskId = Environment.GetEnvironmentVariable("HOSTNAME");
+                    taskId = Environment.GetEnvironmentVariable("CONTAINER_APP_REPLICA_NAME");
+                }
+                if (string.IsNullOrEmpty(taskId))
+                {
+                    // ACI containers in the same group share HOSTNAME — append instance suffix for uniqueness
+                    var hostname = Environment.GetEnvironmentVariable("HOSTNAME");
+                    if (!string.IsNullOrEmpty(hostname))
+                        taskId = $"{hostname}-{_instanceSuffix}";
+                }
+                if (string.IsNullOrEmpty(taskId))
+                {
+                    taskId = $"{Environment.MachineName}-{_instanceSuffix}";
+                }
+                if (string.IsNullOrEmpty(taskId))
+                {
+                    taskId = Guid.NewGuid().ToString("N").Substring(0, 12);
                 }
                 string machine = Environment.MachineName;
+                log.LogInformation($"Using task identifier '{taskId}' for blob path prefixes");
 
                 foreach (var f in fileList)
                 {
                     try
                     {
+                        var fileInfo = new FileInfo(f);
+                        if (fileInfo.Length == 0)
+                        {
+                            log.LogDebug($"No errors logged — '{f}' is empty");
+                            continue;
+                        }
+
                         var tmp = Path.GetRelativePath(rootLoggingPath, f);
 
                         if (Program.AppendLogFiles.Any(a => tmp.ToLower().IndexOf(a) > -1))
@@ -567,16 +593,10 @@ namespace SqlBuildManager.Console.CloudStorage
                         }
 
                         var bClient = containerClient.GetBlockBlobClient(tmp);
-                        //if (bClient.Exists()) //Check for duplicates (in case of a previous crash, and create a new as needed
-                        //{
-                        //    tmp = tmp + DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss");
-                        //    bClient = containerClient.GetBlockBlobClient(tmp);
-                        //}
                         log.LogInformation($"Saving File '{f}' as '{tmp}'");
                         using (var fs = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                         {
                             await bClient.UploadAsync(fs);
-
                         }
                     }
                     catch (Exception e)
@@ -594,7 +614,7 @@ namespace SqlBuildManager.Console.CloudStorage
         }
         internal static BlobContainerClient GetBlobContainerClient(string storageAccountName, string storageAccountKey, string containerName)
         {
-            BlobContainerClient containerClient = null;
+            BlobContainerClient containerClient = null!;
             if (string.IsNullOrWhiteSpace(storageAccountKey))
             {
                 var url = $"https://{storageAccountName}.blob.core.windows.net/{containerName}";
@@ -614,7 +634,7 @@ namespace SqlBuildManager.Console.CloudStorage
         }
         private static BlockBlobClient GetBlockBlobClient(string storageAccountName, string storageAccountKey, string containerName, string blobName)
         {
-            BlockBlobClient containerClient = null;
+            BlockBlobClient containerClient = null!;
             if (string.IsNullOrWhiteSpace(storageAccountKey))
             {
                 var url = $"https://{storageAccountName}.blob.core.windows.net/{containerName}/{blobName}";

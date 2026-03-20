@@ -57,15 +57,15 @@ namespace SqlSync.SqlBuild.UnitTest
             string[] fileContents = new string[] { "SERVER:default,target;default2,target2", "SERVER2:default,target;default2,target2" };
             MultiDbData actual;
             actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
-            Assert.AreEqual(actual[0].ServerName, "SERVER");
-            Assert.AreEqual(actual[1].ServerName, "SERVER2");
+            Assert.AreEqual("SERVER", actual[0].ServerName);
+            Assert.AreEqual("SERVER2", actual[1].ServerName);
 
             DbOverrides seq = actual[0].Overrides;
-            Assert.AreEqual(seq[0].DefaultDbTarget, "default");
-            Assert.AreEqual(seq[1].OverrideDbTarget, "target2");
+            Assert.AreEqual("default", seq[0].DefaultDbTarget);
+            Assert.AreEqual("target2", seq[1].OverrideDbTarget);
             seq = actual[1].Overrides;
-            Assert.AreEqual(seq[1].DefaultDbTarget, "default2");
-            Assert.AreEqual(seq[0].OverrideDbTarget, "target");
+            Assert.AreEqual("default2", seq[1].DefaultDbTarget);
+            Assert.AreEqual("target", seq[0].OverrideDbTarget);
         }
 
         /// <summary>
@@ -93,15 +93,15 @@ namespace SqlSync.SqlBuild.UnitTest
             string[] fileContents = new string[] { "SERVER:default,target;default2,target2", "", "SERVER2:default,target;default2,target2" };
             MultiDbData actual;
             actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
-            Assert.AreEqual(actual[0].ServerName, "SERVER");
-            Assert.AreEqual(actual[1].ServerName, "SERVER2");
+            Assert.AreEqual("SERVER", actual[0].ServerName);
+            Assert.AreEqual("SERVER2", actual[1].ServerName);
 
             DbOverrides seq = actual[0].Overrides;
-            Assert.AreEqual(seq[0].DefaultDbTarget, "default");
-            Assert.AreEqual(seq[1].OverrideDbTarget, "target2");
+            Assert.AreEqual("default", seq[0].DefaultDbTarget);
+            Assert.AreEqual("target2", seq[1].OverrideDbTarget);
             seq = actual[1].Overrides;
-            Assert.AreEqual(seq[1].DefaultDbTarget, "default2");
-            Assert.AreEqual(seq[0].OverrideDbTarget, "target");
+            Assert.AreEqual("default2", seq[1].DefaultDbTarget);
+            Assert.AreEqual("target", seq[0].OverrideDbTarget);
         }
         /// <summary>
         ///A test for ImportMultiDbTextConfig
@@ -123,7 +123,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void ImportMultiDbTextConfigTest_EmptyFileName()
         {
             string fileName = string.Empty;
-            MultiDbData expected = null;
+            MultiDbData expected = null!;
             MultiDbData actual;
             actual = MultiDbHelper.ImportMultiDbTextConfig(fileName);
             Assert.AreEqual(expected, actual);
@@ -142,15 +142,15 @@ namespace SqlSync.SqlBuild.UnitTest
                 MultiDbData actual;
                 actual = MultiDbHelper.ImportMultiDbTextConfig(fileName);
 
-                Assert.AreEqual(actual[0].ServerName, "SERVER");
-                Assert.AreEqual(actual[1].ServerName, "SERVER2");
+                Assert.AreEqual("SERVER", actual[0].ServerName);
+                Assert.AreEqual("SERVER2", actual[1].ServerName);
 
                 DbOverrides seq = actual[0].Overrides;
-                Assert.AreEqual(seq[0].DefaultDbTarget, "default");
-                Assert.AreEqual(seq[1].OverrideDbTarget, "target2");
+                Assert.AreEqual("default", seq[0].DefaultDbTarget);
+                Assert.AreEqual("target2", seq[1].OverrideDbTarget);
                 seq = actual[1].Overrides;
-                Assert.AreEqual(seq[1].DefaultDbTarget, "default2");
-                Assert.AreEqual(seq[0].OverrideDbTarget, "target");
+                Assert.AreEqual("default2", seq[1].DefaultDbTarget);
+                Assert.AreEqual("target", seq[0].OverrideDbTarget);
             }
             finally
             {
@@ -168,7 +168,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public void DeserializeMultiDbConfigurationTest_EmptyFileName()
         {
             string fileName = string.Empty;
-            MultiDbData expected = null;
+            MultiDbData expected = null!;
             MultiDbData actual;
             actual = MultiDbHelper.DeserializeMultiDbConfiguration(fileName);
             Assert.AreEqual(expected, actual);
@@ -240,10 +240,10 @@ namespace SqlSync.SqlBuild.UnitTest
                 actual = MultiDbHelper.DeserializeMultiDbConfiguration(fileName);
                 actual.IsTransactional = false;
 
-                Assert.AreEqual(actual[0].ServerName, "(local)");
+                Assert.AreEqual("(local)", actual[0].ServerName);
                 DbOverrides seq = actual[0].Overrides;
-                Assert.AreEqual(seq[0].DefaultDbTarget, "SqlBuildTest");
-                Assert.AreEqual(seq[0].OverrideDbTarget, "master");
+                Assert.AreEqual("SqlBuildTest", seq[0].DefaultDbTarget);
+                Assert.AreEqual("master", seq[0].OverrideDbTarget);
                 Assert.IsFalse(actual.IsTransactional);
 
             }
@@ -293,7 +293,7 @@ namespace SqlSync.SqlBuild.UnitTest
             MultiDbData dbData = new MultiDbData()
             {
                 new ServerData(){ ServerName = "server1", Overrides = new DbOverrides(new DatabaseOverride("server1", "default", "target"),new DatabaseOverride("server1", "default2", "target2")) },
-                new ServerData(){ ServerName = "server2", Overrides = null }
+                new ServerData(){ ServerName = "server2", Overrides = null! }
             };
 
 
@@ -340,7 +340,7 @@ namespace SqlSync.SqlBuild.UnitTest
         ///A test for ConvertMultiDbDataToTextConfig
         ///</summary>
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public void ConvertMultiDbDataToTextConfigTest()
         {
             MultiDbData cfg = new MultiDbData
@@ -365,11 +365,11 @@ ServerB:default5,override5
 ";
             string actual;
             actual = MultiDbHelper.ConvertMultiDbDataToTextConfig(cfg);
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), actual.Replace("\r\n", "\n"));
         }
 
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public void SerializeMultiDbAsXMl_Test()
         {
             MultiDbData cfg = new MultiDbData
@@ -388,12 +388,12 @@ ServerB:default5,override5
             actual = MultiDbHelper.SerializeMultiDbConfigurationToXml(cfg);
 
             var expected = Properties.Resources.serialized_multidb_xml;
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), actual.Replace("\r\n", "\n"));
 
         }
 
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public void SerializeMultiDbAsJson_Test()
         {
             MultiDbData cfg = new MultiDbData
@@ -411,12 +411,12 @@ ServerB:default5,override5
             string actual;
             actual = MultiDbHelper.SerializeMultiDbConfigurationToJson(cfg);
             var expected = Properties.Resources.serialized_multidb_json;
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), actual.Replace("\r\n", "\n"));
 
         }
 
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public void SerializeMultiDbWithTagAsJson_Test()
         {
             MultiDbData cfg = new MultiDbData
@@ -434,12 +434,12 @@ ServerB:default5,override5
             string actual;
             actual = MultiDbHelper.SerializeMultiDbConfigurationToJson(cfg);
             var expected = Properties.Resources.serialized_multidb_json_withtag_json;
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), actual.Replace("\r\n", "\n"));
 
         }
 
         [TestMethod()]
-        [DeploymentItem("SqlSync.SqlBuild.dll")]
+        
         public void SerializeAndDeserializeMultiDbAsJson_Test()
         {
             MultiDbData cfg = new MultiDbData
@@ -457,7 +457,7 @@ ServerB:default5,override5
             string actual;
             actual = MultiDbHelper.SerializeMultiDbConfigurationToJson(cfg);
             var expected = Properties.Resources.serialized_multidb_json;
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected.Replace("\r\n", "\n"), actual.Replace("\r\n", "\n"));
 
             var deserialized = MultiDbHelper.DeserializeMultiDbConfigurationString(actual);
 

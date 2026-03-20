@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 namespace SqlSync.Connection
 {
     public class ThreadedConnectionTester
     {
         private static SyncObject SyncObj = new SyncObject();
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private class SyncObject
         {
             private int workingRunners = 0;
@@ -46,9 +46,9 @@ namespace SqlSync.Connection
 
             return results;
         }
-        private void TestSingleConnection(object data)
+        private void TestSingleConnection(object? data)
         {
-            ConnectionTestResult result = (ConnectionTestResult)data;
+            ConnectionTestResult result = (ConnectionTestResult)data!;
             result.Successful = ConnectionHelper.TestDatabaseConnection(result.DatabaseName, result.ServerName, result.DbUserName, result.DbPassword, result.AuthenticationType, 2, result.ManagedIdentityClientId);
             lock (ThreadedConnectionTester.SyncObj)
             {

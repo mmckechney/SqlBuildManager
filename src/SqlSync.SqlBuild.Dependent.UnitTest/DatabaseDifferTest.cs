@@ -4,6 +4,7 @@ using SqlSync.SqlBuild.Synchronizer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 #nullable enable
 
@@ -22,6 +23,12 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         [ClassInitialize()]
         public static void Initilize(TestContext testContext)
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Assert.Inconclusive("Tests in this class require Windows platform");
+                return;
+            }
+
             _initColl = new List<Initialization>();
             // Create one to ensure databases exist
             _initColl.Add(new Initialization());
@@ -63,12 +70,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             var init = GetInitialization();
             DatabaseDiffer target = new DatabaseDiffer();
-            ConnectionData connData = new ConnectionData()
-            {
-                DatabaseName = init.testDatabaseNames[0],
-                SQLServerName = init.serverName,
-                AuthenticationType = AuthenticationType.Windows
-            };
+            ConnectionData connData = init.CreateConnectionData(init.testDatabaseNames[0]);
 
             DatabaseRunHistory actual = target.GetDatabaseRunHistory(connData);
 
@@ -83,19 +85,10 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             var init = GetInitialization();
             DatabaseDiffer target = new DatabaseDiffer();
             
-            ConnectionData connData1 = new ConnectionData()
-            {
-                DatabaseName = init.testDatabaseNames[0],
-                SQLServerName = init.serverName,
-                AuthenticationType = AuthenticationType.Windows
-            };
+            ConnectionData connData1 = init.CreateConnectionData(init.testDatabaseNames[0]);
             
-            ConnectionData connData2 = new ConnectionData()
-            {
-                DatabaseName = init.testDatabaseNames.Count > 1 ? init.testDatabaseNames[1] : init.testDatabaseNames[0],
-                SQLServerName = init.serverName,
-                AuthenticationType = AuthenticationType.Windows
-            };
+            ConnectionData connData2 = init.CreateConnectionData(
+                init.testDatabaseNames.Count > 1 ? init.testDatabaseNames[1] : init.testDatabaseNames[0]);
 
             DatabaseRunHistory history1 = target.GetDatabaseRunHistory(connData1);
             DatabaseRunHistory history2 = target.GetDatabaseRunHistory(connData2);
@@ -110,12 +103,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             var init = GetInitialization();
             // Clean test databases should have empty logging tables
             DatabaseDiffer target = new DatabaseDiffer();
-            ConnectionData connData = new ConnectionData()
-            {
-                DatabaseName = init.testDatabaseNames[0],
-                SQLServerName = init.serverName,
-                AuthenticationType = AuthenticationType.Windows
-            };
+            ConnectionData connData = init.CreateConnectionData(init.testDatabaseNames[0]);
 
             DatabaseRunHistory actual = target.GetDatabaseRunHistory(connData);
 
@@ -132,18 +120,8 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             var init = GetInitialization();
             DatabaseDiffer target = new DatabaseDiffer();
-            ConnectionData goldenCopy = new ConnectionData()
-            {
-                DatabaseName = init.testDatabaseNames[0],
-                SQLServerName = init.serverName,
-                AuthenticationType = AuthenticationType.Windows
-            };
-            ConnectionData toBeUpdated = new ConnectionData()
-            {
-                DatabaseName = init.testDatabaseNames[0],
-                SQLServerName = init.serverName,
-                AuthenticationType = AuthenticationType.Windows
-            };
+            ConnectionData goldenCopy = init.CreateConnectionData(init.testDatabaseNames[0]);
+            ConnectionData toBeUpdated = init.CreateConnectionData(init.testDatabaseNames[0]);
 
             DatabaseRunHistory actual = target.GetDatabaseHistoryDifference(goldenCopy, toBeUpdated);
 
@@ -168,21 +146,11 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             var init = GetInitialization();
             DatabaseDiffer target = new DatabaseDiffer();
-            ConnectionData goldenCopy = new ConnectionData()
-            {
-                DatabaseName = init.testDatabaseNames[0],
-                SQLServerName = init.serverName,
-                AuthenticationType = AuthenticationType.Windows
-            };
+            ConnectionData goldenCopy = init.CreateConnectionData(init.testDatabaseNames[0]);
             
             // Use a different database if available
             string otherDb = init.testDatabaseNames.Count > 1 ? init.testDatabaseNames[1] : init.testDatabaseNames[0];
-            ConnectionData toBeUpdated = new ConnectionData()
-            {
-                DatabaseName = otherDb,
-                SQLServerName = init.serverName,
-                AuthenticationType = AuthenticationType.Windows
-            };
+            ConnectionData toBeUpdated = init.CreateConnectionData(otherDb);
 
             DatabaseRunHistory actual = target.GetDatabaseHistoryDifference(goldenCopy, toBeUpdated);
 

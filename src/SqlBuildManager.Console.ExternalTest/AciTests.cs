@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace SqlBuildManager.Console.ExternalTest
     {
         public TestContext TestContext { get; set; }
 
-        private string settingsFileKeyPath;
+        private string settingsFileKeyPath = string.Empty;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
 
         [TestInitialize]
@@ -53,7 +53,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // // [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public void ACI_Queue_Run_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ACI_Queue_Run_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
@@ -65,7 +65,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 //get the size of the log file before we start
                 int startingLine = TestHelper.LogFileCurrentLineCount();
 
-                var parser = CommandLineBuilder.GetCommandParser();
+                var rootCommand = CommandLineBuilder.SetUp();
                 string jobName = TestHelper.GetUniqueJobName("aci");
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
@@ -75,6 +75,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "aci",  "run",
                     "--settingsfile", settingsFile,
                     "--jobname", jobName,
+                    "--aciname", "postgresAci", 
                     "--packagename", sbmFileName,
                      "--override", overrideFile,
                     "--concurrencytype", concurrencyType.ToString(),
@@ -86,10 +87,21 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()
                 };
 
-                var val = parser.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                Assert.AreEqual(0, result);
+
+                // Validate blob storage logs agree with ACI test result
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var dbCount = File.ReadAllLines(overrideFile).Where(l => !string.IsNullOrWhiteSpace(l)).Count();
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {
@@ -107,7 +119,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-aci-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public void ACI_Queue_SBMSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ACI_Queue_SBMSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
@@ -131,7 +143,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--packagename", sbmFileName
                 };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -144,7 +156,7 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", overrideFile
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -156,6 +168,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfile", settingsFile,
                 "--packagename", sbmFileName,
                 "--jobname", jobName,
+                "--aciname", "postgresAci",
                 "--containercount", containerCount.ToString(),
                 "--concurrencytype", concurrencyType.ToString(),
                 "--concurrency", concurrency.ToString(),
@@ -165,10 +178,20 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--stream",
                 "--eventhublogging", EventHubLogging.ConsolidatedScriptResults.ToString()
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
+
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var dbCount = File.ReadAllLines(overrideFile).Where(l => !string.IsNullOrWhiteSpace(l)).Count();
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {
@@ -183,7 +206,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public void ACI_Queue_SBMSource_DoubleDbConfig_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ACI_Queue_SBMSource_DoubleDbConfig_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
@@ -208,7 +231,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -221,7 +244,7 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", overrideFile
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -233,6 +256,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfile", settingsFile,
                 "--packagename", sbmFileName,
                 "--jobname", jobName,
+                "--aciname", "postgresAci",
                 "--containercount", containerCount.ToString(),
                 "--concurrencytype", concurrencyType.ToString(),
                 "--concurrency", concurrency.ToString(),
@@ -241,15 +265,23 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--monitor", "true",
                 "--stream"
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
 
-                var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {
@@ -262,7 +294,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public void ACI_Queue_SBMSource_ManagedIdentity_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ACI_Queue_SBMSource_ManagedIdentity_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
@@ -287,7 +319,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", overrideFile
             };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -300,7 +332,7 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", overrideFile
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -312,6 +344,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--settingsfile", settingsFile,
                 "--packagename", sbmFileName,
                 "--jobname", jobName,
+                "--aciname", "postgresAci",
                 "--containercount", containerCount.ToString(),
                 "--concurrencytype", concurrencyType.ToString(),
                 "--concurrency", concurrency.ToString(),
@@ -321,10 +354,20 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--stream",
                 "--eventhublogging", EventHubLogging.ConsolidatedScriptResults.ToString()
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
+
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var dbCount = File.ReadAllLines(overrideFile).Where(l => !string.IsNullOrWhiteSpace(l)).Count();
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {
@@ -336,7 +379,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public void ACI_Queue_DacpacSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ACI_Queue_DacpacSource_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
@@ -380,7 +423,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--override", minusFirst,
             };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -393,12 +436,12 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", minusFirst
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
 
-                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName), Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
+                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName)!, Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
 
                 //monitor for completion
                 args = new string[]{
@@ -408,6 +451,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--packagename", sbmFileName,
                 "--platinumdacpac", dacpacName,
                 "--jobname", jobName,
+                "--aciname", "postgresAci",
                 "--containercount", containerCount.ToString(),
                 "--concurrencytype", concurrencyType.ToString(),
                 "--concurrency", concurrency.ToString(),
@@ -416,10 +460,20 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--monitor", "true",
                 "--stream"
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
+
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var dbCount = File.ReadAllLines(minusFirst).Where(l => !string.IsNullOrWhiteSpace(l)).Count();
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {
@@ -429,7 +483,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public void ACI_Queue_DacpacSource_ForceApplyCustom_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ACI_Queue_DacpacSource_ForceApplyCustom_KeyVault_Secrets_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
@@ -478,7 +532,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -493,7 +547,7 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--concurrencytype", concurrencyType.ToString(),
                  "--override", minusFirst
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
@@ -502,7 +556,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
                 DatabaseHelper.CreateRandomTable(cmdLine, thirdOverride);
 
-                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName), Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
+                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName)!, Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
 
                 //monitor for completion
                 args = new string[]{
@@ -512,6 +566,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--packagename", sbmFileName,
                 "--platinumdacpac", dacpacName,
                 "--jobname", jobName,
+                "--aciname", "postgresAci",
                 "--containercount", containerCount.ToString(),
                 "--concurrencytype", concurrencyType.ToString(),
                 "--concurrency", concurrency.ToString(),
@@ -520,13 +575,23 @@ namespace SqlBuildManager.Console.ExternalTest
                 "--monitor", "true",
                 "--stream"
             };
-                val = rootCommand.InvokeAsync(args);
+                val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
                 Assert.AreEqual(0, result);
 
                 var tmp = ConsoleOutput.ToString();
                 Assert.IsTrue(tmp.Contains("Dacpac Databases In Sync") || tmp.Contains("Committed - With Custom Dacpac"), "A custom DACPAC should have been required for a database");
+
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var dbCount = File.ReadAllLines(minusFirst).Where(l => !string.IsNullOrWhiteSpace(l)).Count();
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {
@@ -546,7 +611,7 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-aci-no-registry-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public void ACI_Queue_Query_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ACI_Queue_Query_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
             try
@@ -572,6 +637,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 "aci",  "query",
                 "--settingsfile", settingsFile,
                 "--jobname", jobName,
+                "--aciname", "postgresAci",
                  "--override", overrideFile,
                  "--outputfile", outputFile,
                  "--queryfile", queryFile,
@@ -583,7 +649,7 @@ namespace SqlBuildManager.Console.ExternalTest
                  "--stream"
                 };
 
-                var val = rootCommand.InvokeAsync(args);
+                var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
@@ -593,6 +659,15 @@ namespace SqlBuildManager.Console.ExternalTest
                 var overrideLength = File.ReadAllLines(overrideFile).Length;
 
                 Assert.IsTrue(outputLength > overrideLength, "There should be more lines in the output than were in the override");
+
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertQuerySuccess(TestContext);
             }
             finally
             {
@@ -611,11 +686,11 @@ namespace SqlBuildManager.Console.ExternalTest
         // [DataRow("TestConfig/settingsfile-aci.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public void Aci_Queue_LongRunning_SBMSource_ByConcurrencyType_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task Aci_Queue_LongRunning_SBMSource_ByConcurrencyType_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
-            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFile), Guid.NewGuid().ToString() + ".cfg");
+            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFile)!, Guid.NewGuid().ToString() + ".cfg");
             File.WriteAllLines(tmpOverride, File.ReadAllLines(overrideFile).Take(6).ToArray());
 
             try
@@ -627,7 +702,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 //get the size of the log file before we start
                 int startingLine = TestHelper.LogFileCurrentLineCount();
 
-                var parser = CommandLineBuilder.GetCommandParser();
+                var parser = CommandLineBuilder.GetRootCommand();
                 string jobName = TestHelper.GetUniqueJobName("aci");
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
@@ -637,6 +712,7 @@ namespace SqlBuildManager.Console.ExternalTest
                     "aci",  "run",
                     "--settingsfile", settingsFile,
                     "--jobname", jobName,
+                    "--aciname", "postgresAci",
                     "--packagename", sbmFileName,
                      "--override", tmpOverride,
                     "--concurrencytype", concurrencyType.ToString(),
@@ -648,10 +724,20 @@ namespace SqlBuildManager.Console.ExternalTest
                     "--eventhublogging", EventHubLogging.IndividualScriptResults.ToString()
                 };
 
-                var val = parser.InvokeAsync(args);
+                var val = parser.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
                 Assert.AreEqual(0, result);
+
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var dbCount = File.ReadAllLines(tmpOverride).Where(l => !string.IsNullOrWhiteSpace(l)).Count();
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
             }
             finally
             {
@@ -660,7 +746,4 @@ namespace SqlBuildManager.Console.ExternalTest
         }
     }
 }
-
-
-
 

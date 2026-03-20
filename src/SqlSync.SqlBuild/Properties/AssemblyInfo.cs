@@ -20,3 +20,6 @@ using System.Runtime.InteropServices;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.SqlBuild.UnitTest")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.SqlBuild.Dependent.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.SqlBuild.Dependent.TestBase")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]

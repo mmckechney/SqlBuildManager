@@ -1,4 +1,4 @@
-﻿using SqlSync.Connection;
+using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Status;
 using System;
@@ -13,11 +13,11 @@ namespace SqlSync.ObjectScript.Hash
 {
     public class HashCollector
     {
-        MultiDbData multiDbData;
+        MultiDbData multiDbData = null!;
         private static SyncObject SyncObj = new SyncObject();
         private List<HashCollectionRunner> runners = new List<HashCollectionRunner>();
         private List<string> dbsSelected = new List<string>();
-        private BackgroundWorker bgWorker;
+        private BackgroundWorker bgWorker = null!;
         public HashCollector(MultiDbData multiDbData)
         {
             this.multiDbData = multiDbData;
@@ -86,7 +86,7 @@ namespace SqlSync.ObjectScript.Hash
                 bgWorker.ReportProgress(0, "Collating Results...");
 
             List<ObjectScriptHashData> hashes = new List<ObjectScriptHashData>();
-            ObjectScriptHashData baseLine = null;
+            ObjectScriptHashData baseLine = null!;
             foreach (HashCollectionRunner runner in runners)
             {
                 if (runner.IsBaseLine)
@@ -110,11 +110,11 @@ namespace SqlSync.ObjectScript.Hash
         {
             bgWorker.ReportProgress(0, e);
         }
-        private void ProcessThreadedHashCollection(object objRunner)
+        private void ProcessThreadedHashCollection(object? objRunner)
         {
             try
             {
-                HashCollectionRunner runner = (HashCollectionRunner)objRunner;
+                HashCollectionRunner runner = (HashCollectionRunner)objRunner!;
                 runner.CollectHashes();
             }
             finally

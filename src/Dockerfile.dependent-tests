@@ -1,0 +1,72 @@
+# Dockerfile for running all non-External tests with a SQL Server sidecar
+# Builds all UnitTest projects (excluding ExternalTest) and includes the test runner
+# Used with run_dependent_tests_in_aci.ps1 which provides a SQL Server sidecar container
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+
+WORKDIR /src
+
+# Copy everything
+COPY . .
+
+# Restore all non-External test projects
+RUN dotnet restore SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.csproj && \
+    dotnet restore SqlBuildManager.Console.Dependent.UnitTest/SqlBuildManager.Console.Dependent.UnitTest.csproj && \
+    dotnet restore SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.UnitTest.csproj && \
+    dotnet restore SqlSync.DbInformation.Dependent.UnitTest/SqlSync.DbInformation.Dependent.UnitTest.csproj && \
+    dotnet restore SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.csproj && \
+    dotnet restore SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj && \
+    dotnet restore SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj && \
+    dotnet restore SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj && \
+    dotnet restore SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj && \
+    dotnet restore SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj && \
+    dotnet restore SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.csproj && \
+    dotnet restore SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj && \
+    dotnet restore SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj && \
+    dotnet restore SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj
+
+# Build all non-External test projects (errors only, suppress warnings)
+RUN dotnet build SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.SqlBuild.Dependent.UnitTest && \
+    dotnet build SqlBuildManager.Console.Dependent.UnitTest/SqlBuildManager.Console.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.Dependent.UnitTest && \
+    dotnet build SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.ObjectScript.Dependent.UnitTest && \
+    dotnet build SqlSync.DbInformation.Dependent.UnitTest/SqlSync.DbInformation.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.DbInformation.Dependent.UnitTest && \
+    dotnet build SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.Connection.Dependent.UnitTest && \
+    dotnet build SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest && \
+    dotnet build SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest && \
+    dotnet build SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.SqlBuild.UnitTest && \
+    dotnet build SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.ObjectScript.UnitTest && \
+    dotnet build SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.Connection.UnitTest && \
+    dotnet build SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.DbInformation.UnitTest && \
+    dotnet build SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.ScriptHandling.UnitTest && \
+    dotnet build SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.UnitTest && \
+    dotnet build SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Enterprise.UnitTest
+
+# Final test runner image
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS testrunner
+
+# Install Azure CLI for uploading results and sqlcmd for health checks
+RUN apt-get update && \
+    apt-get install -y curl gnupg lsb-release && \
+    curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /tests
+
+# Copy built test assemblies
+COPY --from=build /tests .
+
+# SQL Server connection environment variables (configured for sidecar)
+ENV SBM_TEST_SQL_SERVER=localhost
+ENV SBM_TEST_SQL_USER=sa
+ENV SBM_TEST_SQL_PASSWORD=""
+ENV SBM_TEST_POSTGRES_SERVER=localhost
+ENV SBM_TEST_POSTGRES_USER=postgres
+ENV SBM_TEST_POSTGRES_PASSWORD=""
+ENV DOTNET_ENVIRONMENT=Production
+
+# Copy test runner script and ensure Unix line endings
+COPY run-dependent-tests.sh /tests/run-tests.sh
+RUN sed -i 's/\r$//' /tests/run-tests.sh && chmod +x /tests/run-tests.sh
+
+ENTRYPOINT ["/bin/bash", "/tests/run-tests.sh"]

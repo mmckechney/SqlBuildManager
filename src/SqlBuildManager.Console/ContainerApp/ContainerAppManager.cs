@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Arm;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.ContainerApp.Internal;
@@ -25,7 +25,7 @@ namespace SqlBuildManager.Console.ContainerApp
 {
     internal class ContainerAppManager
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         internal static async Task<bool> DeleteContainerApp(CommandLineArgs cmdLine)
         {
@@ -59,6 +59,7 @@ namespace SqlBuildManager.Console.ContainerApp
             Environment.SetEnvironmentVariable(ContainerEnvVariables.UserName, cmdLine.AuthenticationArgs.UserName, target);
             Environment.SetEnvironmentVariable(ContainerEnvVariables.AuthType, cmdLine.AuthenticationArgs.AuthenticationType.ToString(), target);
             Environment.SetEnvironmentVariable(ContainerEnvVariables.IdentityClientId, cmdLine.IdentityArgs?.ClientId, target);
+            Environment.SetEnvironmentVariable(ContainerEnvVariables.DatabasePlatform, cmdLine.AuthenticationArgs.DatabasePlatform.ToString(), target);
 
         }
 
@@ -160,6 +161,7 @@ namespace SqlBuildManager.Console.ContainerApp
 
 
             parms.Add(ContainerEnvVariables.EventHubLogging, string.Join("|",cmdLine.EventHubArgs.Logging));
+            parms.Add(ContainerEnvVariables.DatabasePlatform, cmdLine.AuthenticationArgs.DatabasePlatform.ToString());
             return parms;
 
         }

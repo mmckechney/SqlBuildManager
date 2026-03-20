@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -16,27 +16,11 @@ namespace SqlSync.Connection.UnitTest
     {
 
 
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; }
 
         #region Additional test attributes
 
-        private static string appNameString;
+        private static string appNameString = string.Empty;
         [ClassInitialize()]
         public static void MyClassInitialize(TestContext testContext)
         {
@@ -101,7 +85,7 @@ namespace SqlSync.Connection.UnitTest
             connData.AuthenticationType = AuthenticationType.Password;
             connData.UserId = "User";
             connData.Password = "Password";
-            string expected = String.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=User;Password=Password;Pooling=False;Connect Timeout=20;Authentication=SqlPassword;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
+            string expected = String.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=User;Password=Password;Pooling=False;Connect Timeout=20;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
             string actual;
             actual = ConnectionHelper.GetConnectionString(connData);
             Assert.AreEqual(expected, actual);
@@ -117,7 +101,7 @@ namespace SqlSync.Connection.UnitTest
             connData.UserId = "User";
             connData.Password = "Password";
             connData.ScriptTimeout = 30;
-            string expected = string.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=User;Password=Password;Pooling=False;Connect Timeout=30;Authentication=SqlPassword;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
+            string expected = string.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=User;Password=Password;Pooling=False;Connect Timeout=30;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
             string actual = ConnectionHelper.GetConnectionString(connData);
             Assert.AreEqual(expected, actual);
         }
@@ -133,7 +117,7 @@ namespace SqlSync.Connection.UnitTest
             string uid = "userid";
             string pw = "password";
             int scriptTimeOut = 100;
-            string expected = string.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=userid;Password=password;Pooling=False;Connect Timeout=100;Authentication=SqlPassword;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
+            string expected = string.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=userid;Password=password;Pooling=False;Connect Timeout=100;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
             string actual;
             actual = ConnectionHelper.GetConnectionString(dbName, serverName, uid, pw, AuthenticationType.Password, scriptTimeOut, "");
             Assert.AreEqual(expected, actual);
@@ -150,7 +134,7 @@ namespace SqlSync.Connection.UnitTest
             string uid = "userid";
             string pw = "password";
             int scriptTimeOut = 100;
-            string expected = string.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=userid;Password=password;Pooling=False;Connect Timeout=100;Authentication=SqlPassword;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
+            string expected = string.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=userid;Password=password;Pooling=False;Connect Timeout=100;Trust Server Certificate=True;Authentication=SqlPassword;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
             SqlConnection actual;
             actual = ConnectionHelper.GetConnection(dbName, serverName, uid, pw, AuthenticationType.Password, scriptTimeOut,"");
             Assert.IsNotNull(actual);
@@ -224,7 +208,7 @@ namespace SqlSync.Connection.UnitTest
             overrides.Add(new DatabaseOverride("server1", "default1", "override1"));
             overrides.Add(new DatabaseOverride("server1", "default2", "override2"));
 
-            string actual = ConnectionHelper.GetTargetDatabase(null, overrides);
+            string actual = ConnectionHelper.GetTargetDatabase(null!, overrides);
             Assert.AreEqual("override1", actual);
 
 
@@ -304,7 +288,7 @@ namespace SqlSync.Connection.UnitTest
         [TestMethod()]
         public void ValidateDatabaseOverridesTest_NullList()
         {
-            List<DatabaseOverride> overrides = null;
+            List<DatabaseOverride> overrides = null!;
             bool expected = false;
             bool actual;
             actual = ConnectionHelper.ValidateDatabaseOverrides(overrides);
@@ -320,7 +304,7 @@ namespace SqlSync.Connection.UnitTest
             List<DatabaseOverride> overrides = new List<DatabaseOverride>();
             overrides.Add(new DatabaseOverride("server1", "default1", "override1"));
             overrides.Add(new DatabaseOverride("server1", "default2", "override2"));
-            overrides.Add(null);
+            overrides.Add(null!);
             overrides.Add(new DatabaseOverride("server1", "MixedCASE", "override5"));
 
             bool expected = false;
@@ -338,7 +322,7 @@ namespace SqlSync.Connection.UnitTest
         {
             string dbName = "SqlBuildTest";
             string serverName = "BadServerName";
-            int scriptTimeOut = 20;
+            int scriptTimeOut = 2;
             bool expected = false;
             bool actual;
             actual = ConnectionHelper.TestDatabaseConnection(dbName, serverName, "", "", AuthenticationType.Windows, scriptTimeOut,"");
@@ -355,7 +339,7 @@ namespace SqlSync.Connection.UnitTest
             ConnectionData connData = new ConnectionData()
             {
                 DatabaseName = "BadDatabaseNAme",
-                ScriptTimeout = 20,
+                ScriptTimeout = 2,
                 SQLServerName = "localhost\\SQLEXPRESS",
                 AuthenticationType = AuthenticationType.Windows
             };

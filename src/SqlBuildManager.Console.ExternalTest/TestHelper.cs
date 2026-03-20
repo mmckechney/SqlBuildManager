@@ -53,7 +53,7 @@ namespace SqlBuildManager.Console.ExternalTest
             using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 0x1000, FileOptions.SequentialScan))
             using (var sr = new StreamReader(fs, Encoding.UTF8))
             {
-                string line;
+                string? line;
                 while ((line = sr.ReadLine()) != null)
                 {
                     yield return line;
@@ -78,7 +78,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             return startingLines;
         }
-        public static string ReleventLogFileContents(int startingLine)
+        public static string RelevantLogFileContents(int startingLine)
         {
 
             string logFile = Path.Combine(Path.GetTempPath(), LogFileName);

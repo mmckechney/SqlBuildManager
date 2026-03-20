@@ -23,7 +23,9 @@ namespace SqlSync.SqlBuild.Status
             set
             {
                 buildFileNameFull = value;
-                buildFileNameShort = System.IO.Path.GetFileName(value);
+                // Handle both Windows and Unix path separators for cross-platform compatibility
+                int lastSep = Math.Max(value.LastIndexOf('/'), value.LastIndexOf('\\'));
+                buildFileNameShort = lastSep >= 0 ? value.Substring(lastSep + 1) : value;
             }
         }
         private ServerDictionary serverDict = new ServerDictionary();

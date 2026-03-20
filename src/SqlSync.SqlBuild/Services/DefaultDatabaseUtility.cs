@@ -7,27 +7,33 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+#nullable enable
+
 namespace SqlSync.SqlBuild.Services
 {
     internal class DefaultDatabaseUtility :IDatabaseUtility
     {
-        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private readonly ISqlLoggingService sqlLoggingService;
         private readonly IConnectionsService connectionsService;
         private readonly IProgressReporter progressReporter;
         private readonly ISqlBuildFileHelper fileHelper;
 
-        public DefaultDatabaseUtility(IConnectionsService connectionsService, ISqlLoggingService sqlLoggingService, IProgressReporter progressReporter, ISqlBuildFileHelper fileHelper) 
+        private readonly ISqlResourceProvider resourceProvider;
+
+        public DefaultDatabaseUtility(IConnectionsService connectionsService, ISqlLoggingService sqlLoggingService, IProgressReporter progressReporter, ISqlBuildFileHelper fileHelper, ISqlResourceProvider? resourceProvider = null) 
         {
             this.connectionsService = connectionsService;
             this.sqlLoggingService = sqlLoggingService;
             this.progressReporter = progressReporter;
             this.fileHelper = fileHelper ?? new DefaultSqlBuildFileHelper();
+            this.resourceProvider = resourceProvider ?? new SqlServerResourceProvider();
         }
         /// <summary>
         /// Checks to see if the specified script has a block against running more than once. If so, returns some data about it
@@ -53,26 +59,30 @@ namespace SqlSync.SqlBuild.Services
                 return false;
             }
 
-            SqlCommand cmd = new SqlCommand("SELECT AllowScriptBlock,ScriptFileHash,CommitDate,ScriptText FROM SqlBuild_Logging WITH (NOLOCK) WHERE ScriptId = @ScriptId ORDER BY CommitDate DESC");
-            cmd.Parameters.AddWithValue("@ScriptId", scriptId);
-            cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(databaseName, cData.SQLServerName, cData.UserId, cData.Password, cData.AuthenticationType, 2, cData.ManagedIdentityClientId);
+            var conn = SqlSync.Connection.ConnectionHelper.GetDbConnection(new ConnectionData() { DatabaseName = databaseName, SQLServerName = cData.SQLServerName, UserId = cData.UserId, Password = cData.Password, AuthenticationType = cData.AuthenticationType, ScriptTimeout = 2, ManagedIdentityClientId = cData.ManagedIdentityClientId, DatabasePlatform = cData.DatabasePlatform });
+            DbCommand cmd = conn.CreateCommand();
+            cmd.CommandText = resourceProvider.GetHasBlockingSqlLogQuery();
+            var param = cmd.CreateParameter();
+            param.ParameterName = "@ScriptId";
+            param.Value = scriptId;
+            cmd.Parameters.Add(param);
             try
             {
-                cmd.Connection.Open();
+                cmd.Connection!.Open();
                 int i = 0;
-                using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
+                using (DbDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
                 {
                     while (reader.Read())
                     {
                         if (i == 0)
                         {
-                            scriptHash = (reader[1] == DBNull.Value) ? string.Empty : reader[1].ToString();
-                            commitDate = (reader[2] == DBNull.Value) ? DateTime.MinValue : DateTime.Parse(reader[2].ToString());
-                            scriptTextHash = (reader[3] == DBNull.Value) ? string.Empty : fileHelper.GetSHA1Hash(reader[3].ToString());
+                            scriptHash = (reader[1] == DBNull.Value) ? string.Empty : reader[1].ToString() ?? string.Empty;
+                            commitDate = (reader[2] == DBNull.Value) ? DateTime.MinValue : DateTime.Parse(reader[2].ToString()!);
+                            scriptTextHash = (reader[3] == DBNull.Value) ? string.Empty : fileHelper.GetSHA1Hash(reader[3].ToString()!);
                             i++;
                         }
 
-                        if (reader.GetSqlBoolean(0) == true)
+                        if (Convert.ToBoolean(reader[0]))
                         {
                             hasBlock = true;
                             break;
@@ -82,19 +92,19 @@ namespace SqlSync.SqlBuild.Services
                 }
                 return hasBlock;
             }
-            catch (SqlException)
+            catch (DbException)
             {
                 //swallow the exception
                 return false;
             }
             catch (Exception exe)
             {
-                log.LogWarning(exe, $"Unable to check for blocking SQL for script {scriptId.ToString()} on database {cmd.Connection.DataSource}.{cmd.Connection.Database}");
+                log.LogWarning(exe, $"Unable to check for blocking SQL for script {scriptId.ToString()} on database {cmd.Connection!.DataSource}.{cmd.Connection.Database}");
                 return false;
             }
             finally
             {
-                cmd.Connection.Close();
+                cmd.Connection!.Close();
             }
         }
         /// <summary>
@@ -107,9 +117,14 @@ namespace SqlSync.SqlBuild.Services
         {
             try
             {
-                SqlCommand cmd = new SqlCommand("SELECT * FROM SqlBuild_Logging WHERE ScriptId = @ScriptId AND AllowScriptBlock = 1", connData.Connection, connData.Transaction);
-                cmd.Parameters.AddWithValue("@ScriptId", scriptId);
-                object has = cmd.ExecuteScalar();
+                DbCommand cmd = connData.Connection.CreateCommand();
+                cmd.CommandText = resourceProvider.GetBlockingScriptLogQuery();
+                cmd.Transaction = connData.Transaction;
+                var param = cmd.CreateParameter();
+                param.ParameterName = "@ScriptId";
+                param.Value = scriptId;
+                cmd.Parameters.Add(param);
+                object? has = cmd.ExecuteScalar();
                 if (has == null || has == DBNull.Value)
                     return false;
                 else
@@ -131,10 +146,14 @@ namespace SqlSync.SqlBuild.Services
         {
             try
             {
-                SqlCommand cmd = new SqlCommand("SELECT * FROM SqlBuild_Logging WITH (NOLOCK) WHERE ScriptId = @ScriptId ORDER BY CommitDate DESC");
-                cmd.Parameters.AddWithValue("@ScriptId", scriptId);
-                cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
-                cmd.Connection.Open();
+                using var conn = SqlSync.Connection.ConnectionHelper.GetDbConnection(connData);
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = resourceProvider.GetScriptRunLogQuery();
+                var param = cmd.CreateParameter();
+                param.ParameterName = "@ScriptId";
+                param.Value = scriptId;
+                cmd.Parameters.Add(param);
                 var list = new List<SqlSync.SqlBuild.Models.ScriptRunLogEntry>();
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -160,10 +179,14 @@ namespace SqlSync.SqlBuild.Services
         {
             try
             {
-                SqlCommand cmd = new SqlCommand("SELECT * FROM SqlBuild_Logging WITH (NOLOCK) WHERE [ScriptFileName] = @ScriptFileName ORDER BY CommitDate DESC");
-                cmd.Parameters.AddWithValue("@ScriptFileName", objectFileName);
-                cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
-                cmd.Connection.Open();
+                using var conn = SqlSync.Connection.ConnectionHelper.GetDbConnection(connData);
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = resourceProvider.GetObjectRunHistoryQuery();
+                var param = cmd.CreateParameter();
+                param.ParameterName = "@ScriptFileName";
+                param.Value = objectFileName;
+                cmd.Parameters.Add(param);
                 var list = new List<SqlSync.SqlBuild.Models.ScriptRunLogEntry>();
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
