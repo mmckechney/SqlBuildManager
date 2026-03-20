@@ -26,9 +26,9 @@ dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configura
 - `*.UnitTest.csproj` - True unit tests with no external dependencies
 - `*.Dependent.UnitTest.csproj` - Require local SQL Express (SQL Server) or local PostgreSQL; run `SqlSync.SqlBuild.Dependent.UnitTest` first on new machines to create databases
 - `*.Dependent.PostgreSQL.UnitTest.csproj` - PostgreSQL-specific dependent tests (require PostgreSQL instance)
-- `SqlBuildManager.Console.ExternalTest` - Integration tests for SQL Server requiring Azure resources (run `scripts/templates/create_azure_resources.ps1` first)
+- `SqlBuildManager.Console.ExternalTest` - Integration tests for SQL Server requiring Azure resources (run `azd up` first to provision resources)
 - `SqlBuildManager.Console.PostgreSQL.ExternalTest` - Integration tests for PostgreSQL requiring Azure resources
-- External tests run in ACI containers via `scripts/tests/run_tests_in_aci.ps1` using `src/Dockerfile.tests`
+- External tests run in ACI containers via `scripts/tests/run_all_external_tests_in_aci.ps1` using `src/Dockerfile.tests`
 
 ## Architecture Overview
 
@@ -40,7 +40,7 @@ The application supports two database platforms, selected via `--platform` CLI o
 Platform abstraction uses interfaces with per-platform implementations:
 - `IDbConnectionFactory` → `SqlServerConnectionFactory` / `PostgresConnectionFactory`
 - `ITransactionManager` → `SqlServerTransactionManager` / `PostgresTransactionManager`
-- `IScriptSyntaxProvider` → `SqlServerScriptSyntaxProvider` / `PostgresScriptSyntaxProvider`
+- `IScriptSyntaxProvider` → `SqlServerSyntaxProvider` / `PostgresSyntaxProvider`
 - `ISqlResourceProvider` → `SqlServerResourceProvider` / `PostgresResourceProvider`
 
 Platform is propagated via `ConnectionData.DatabasePlatform` (set from `cmdLine.AuthenticationArgs.DatabasePlatform`).
@@ -62,7 +62,7 @@ SqlSync.Constants                       ← Shared constants
 ```
 
 ### Console Application Pattern
-The CLI uses **System.CommandLine** (beta 4) with .NET Generic Host:
+The CLI uses **System.CommandLine** (v2.0.3) with .NET Generic Host:
 
 - **Program.cs** - Configures `IHostBuilder` with DI, logging, and `Worker` as `IHostedService`
 - **Worker.cs** - Invokes the command parser and routes to handler methods
@@ -115,11 +115,10 @@ Configuration can be saved to encrypted JSON settings files using `--settingsfil
 
 ## Infrastructure Provisioning
 
-Azure resources can be provisioned two ways:
+Azure resources can be provisioned via the Azure Developer CLI:
 1. **Azure Developer CLI**: `azd up` (uses `infra/` Bicep templates, including `infra/modules/postgresql.bicep`)
-2. **PowerShell scripts**: `scripts/templates/create_azure_resources.ps1`
 
-Both create: Storage Account, Service Bus, Event Hub, Key Vault, Managed Identity, and optionally Batch/AKS/Container Apps/ACR/SQL databases/PostgreSQL databases.
+This creates: Storage Account, Service Bus, Event Hub, Key Vault, Managed Identity, and optionally Batch/AKS/Container Apps/ACR/SQL databases/PostgreSQL databases.
 
 ### Database Setup Scripts
 - `scripts/Database/create_database_override_files.ps1` - SQL Server override configs

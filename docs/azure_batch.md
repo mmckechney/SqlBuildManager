@@ -40,7 +40,7 @@ To leverage Azure Batch, you will need an [Azure subscription](https://azure.mic
 
 ## Upload or Update SQL Build Manager binaries
 
-**_Note_**: If you ran the scripts from [here](azure_batch_resources.md) to upload a local build, you can re-run  `create_azure_resources.ps1` at any time (using the same parameter values) to easily update the code package
+**_Note_**: If you ran `azd up` from [Setting up an Azure Environment](setup_azure_environment.md), the Batch application packages were already uploaded for you.
 
 But, if you want to do it manually:
 
@@ -50,7 +50,7 @@ But, if you want to do it manually:
 
       ```bash
         cd ./src/SqlBuildManager.Console
-        dotnet publish sbm.csproj -r [win-x64 or linux-x64] --configuration [Debug or Release] -f net5.0
+        dotnet publish sbm.csproj -r [win-x64 or linux-x64] --configuration [Debug or Release] -f net10.0 --self-contained
       ```
 
 2. Zip up all of the files in the publish folder - or grab the latest release Zip file from [GitHub](https://github.com/mmckechney/SqlBuildManager/releases/latest)
@@ -70,7 +70,7 @@ Azure Batch builds are started locally via `sbm.exe`. This process communicates 
 
 ### Settings File
 
-While all of the values can be provided as arguments in the command line, it is strongly suggested you leverage `--settingsfile` and `--settingsfilekey` (the `--settingsfilekey` parameter is not required if you are leveraging `--keyvaultname`). A settings JSON file was created for you via [`create_azure_resources.ps1`](../scripts/templates/create_azure_resources.ps1) but can also be re-created for any set of Azure resources via [`create_batch_settingsfile.ps1`](../scripts/templates/Batch/create_batch_settingsfiles.ps1)
+While all of the values can be provided as arguments in the command line, it is strongly suggested you leverage `--settingsfile` and `--settingsfilekey` (the `--settingsfilekey` parameter is not required if you are leveraging `--keyvaultname`). A settings JSON file is created for you when running `azd up` (see [Setting up an Azure Environment](setup_azure_environment.md)), but can also be re-created via the `scripts/create_batch_settingsfiles_mi_only.ps1` script.
 
 You can also build it manually by executing `sbm batch savesettings` command and providing the appropriate arguments. See the argument details [here](azure_batch_commands.md#azure-batch-save-settings)
 

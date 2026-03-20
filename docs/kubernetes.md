@@ -39,7 +39,7 @@ az acr build --image $nameAndTag --registry $azureContainerRegistryName --file D
 
 As mentioned above, in addition to a Kubernetes cluster, the Kubernetes deployment leverages [Azure Service Bus](https://azure.microsoft.com/en-us/services/service-bus/) and [Azure Event Hub](https://azure.microsoft.com/en-us/services/event-hubs). You can create your own resources either through the [Azure portal](https://portal.azure.com), [az cli](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) or [Azure PowerShell](https://docs.microsoft.com/en-us/powershell/azure/). The only special configuration is with Azure Service Bus which requires a Topic named `sqlbuildmanager`.
 
-It is recommended that you can create the resources via the included PowerShell [create_azure_resources.ps1](../scripts/templates/create_azure_resources.ps1). This script will create all of the resources you need for both Azure Batch and Kubernetes builds: Azure Batch Account, Kubernetes Cluster, Storage Account, Event Hub, Service Bus, Managed Identity and an option for 2 SQL servers and 20 databases in elastic pools. It will also create a new folder and pre-configured settings files in a folder `./src/TestConfig`. The settings files are needed for running integration tests but also serve as excellent references for you to create your own settings files.
+It is recommended that you create the resources via the Azure Developer CLI (`azd up`). See [Setting up an Azure Environment](setup_azure_environment.md) for full details. This will create all of the resources you need for Azure Batch, Kubernetes, Container Apps and ACI builds, including AKS Cluster, Storage Account, Event Hub, Service Bus, Managed Identity, and optionally SQL servers and databases. It will also create pre-configured settings files in `./src/TestConfig`. The settings files are needed for running integration tests but also serve as excellent references for you to create your own settings files.
 
 ### Basic Overview
 
@@ -72,7 +72,7 @@ sbm k8s run --settingsfile "<settings file name>" --settingsfilekey "<settings f
 
 ## Multi-step deployment
 
-The standard deployment definition for SQL Build Manger (see [sample_job.yaml](../scripts/templates/kubernetes/sample_job.yaml)) mounts two volumes - one for [secrets](../scripts/templates/kubernetes/sample_secrets.yaml) named `sbm` and one for [configmap runtime configuration](../scripts/templates/kubernetes/sample_runtime_configmap.yaml) named `runtime`. The secrets files contains the Base64 encoded values for your connection strings and passwords while the runtime configuration contains the parameters that will be used to execute the build. Both of these should be deployed to Kubernetes prior to creating your pods. Before you `kubetcl apply` the `runtime.yaml` file, you will need to add the `PackageName` and `JobName` values - this can be done for you with the [`sbm prep` command below](#3-upload-your-sbm-package-file-to-your-storage-account)
+The standard deployment definition for SQL Build Manager mounts two volumes - one for secrets named `sbm` and one for configmap runtime configuration named `runtime`. The secrets files contains the Base64 encoded values for your connection strings and passwords while the runtime configuration contains the parameters that will be used to execute the build. Both of these should be deployed to Kubernetes prior to creating your pods.
 
 
 
@@ -101,8 +101,6 @@ As explained above in the [Basic Overview](#basic-overview) the pods leverage bo
 
 ``` bash
 sbm k8s savesettings  -u "<sql username>" -p "<sql password>" --storageaccountname "<storage acct name>" --storageaccountkey "<storage acct key>"  -eh "<event hub connection string>" -sb "<service bus topic connection string>"--concurrency "<int value>" --concurrencytype "<Count|Server|MaxServer>"
-
-sbm k8s createyaml --settingsfile "<setting file name>" --settingsfilekey "<setting file key name>" --path "<dir to save files>" --prefix "prefix" --jobname "<name of build>" -packagename "<sbm file name>" --imagename "<container image name>"--imagetag "<image tag>" --registry "<container registry>"
 ```    
 **Alternatively use the Key Vault PowerShell commands as highlighted above**
 ### 3. Upload your SBM Package file to your storage account

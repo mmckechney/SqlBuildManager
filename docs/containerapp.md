@@ -31,7 +31,7 @@ az acr build --image $nameAndTag --registry $azureContainerRegistryName --file D
 
 While the Container App execution process will create the app for you, you will need a Container App Environment to deploy the app into. It also leverages [Azure Service Bus](https://azure.microsoft.com/en-us/services/service-bus/), [Azure Event Hub](https://azure.microsoft.com/en-us/services/event-hubs) and [Azure Blob Storage](https://azure.microsoft.com/en-us/services/storage/blobs/). You can create your own resources either through the [Azure portal](https://portal.azure.com), [az cli](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) or [Azure PowerShell](https://docs.microsoft.com/en-us/powershell/azure/). The only special configuration is with Azure Service Bus which requires a Topic named `sqlbuildmanager`.
 
-It is recommended that you can create the resources via the included PowerShell [create_azure_resources.ps1](../scripts/templates/create_azure_resources.ps1). This script will create all of the resources you need and an option for 2 SQL servers and 20 databases in elastic pools. It will also create a new folder and pre-configured settings files in a folder `./src/TestConfig`. The settings files are needed for running integration tests but also serve as excellent references for you to create your own settings files.
+It is recommended that you create the resources via the Azure Developer CLI (`azd up`). See [Setting up an Azure Environment](setup_azure_environment.md) for full details. This will create all of the resources you need, including an option for SQL servers and databases. It will also create pre-configured settings files in `./src/TestConfig`. The settings files are needed for running integration tests but also serve as excellent references for you to create your own settings files.
 
 ----
 
@@ -45,14 +45,7 @@ The recommended way to run an Container App deployment is to first save the sett
 sbm containerapp savesettings -settingsfile "<settings file name>" --settingsfilekey "<settings file key name>" --environmentname "<container app env>" --location "<azure location of env>" --image "<container image name>" --imagetag "<image tag>" g "<environment resource group>" -sb "<service bus topic connection string>"  -kv "<Key Vault Name>" --storageaccountname "<storage acct name>" --storageaccountkey "<storage acct key>" -eh "<event hub connection string>" --defaultscripttimeout 500 --subscriptionid "<azure subscription id>" --force 
 ```
 
-You can automate they collection and saving of secrets with the included PowerShell script:
-
-- [create_containerapp_settingsfile.ps1](../scripts/templates/ContainerApp/create_containerapp_settingsfile.ps1) - saves secrets to Key Vault and creates the settings JSON file for you.
-
-``` PowerShell
-# Collects resource keys and creates settings encrypted file
-create_containerapp_settingsfile.ps1 -path "<path to save the files>" -resourceGroupName "<resource group with the KV and identity>" -containerAppEnvironmentName "<env name>" -containerRegistryName "<if using Azure Container registry>" -storageAccountName "<Name of storage account>" -eventHubNamespaceName "<Name of event hub namespace>" -serviceBusNamespaceName "<Name of service bus namespace>" -sqlUserName "<SQL user name" -sqlPassword "<SQL Password>" -withContainerRegistry ($true|$false) 
-```
+You can automate the collection and saving of secrets with the included PowerShell script `scripts/create_containerapp_settingsfile_mi_only.ps1`.
 ### **Single Command execution**
 
 ### 2. Use `run` command

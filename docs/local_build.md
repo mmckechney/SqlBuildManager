@@ -13,7 +13,7 @@ sbm build
     --database "targetdb" ^
 ```
 
-With a local build, the build history and log are stored within the `.sbm` file. You can get access to the logs either by opening up the Windows app `sqlbuildmanager.exe`'s Logging -> Show Build Logs menu or opening the `.sbm` file with a Zip file handler (7-zip, Windows zip handler, etc.) and see the `.log` files.
+With a local build, the build history and log are stored within the `.sbm` file. You can get access to the logs by opening the `.sbm` file with a Zip file handler (7-zip, Windows zip handler, etc.) and viewing the `.log` files.
 
 FYI: an `.sbm` file is a zip file that contains:
 

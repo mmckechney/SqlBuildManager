@@ -1,10 +1,14 @@
-# Template Scripts reference
+# Template Scripts reference (LEGACY)
 
-**NOTE**: All scripts will require the Azure CLI be installed. See [here](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) for installation instructions.
+> **⚠️ NOTE**: The scripts in this directory have been superseded by the Azure Developer CLI (`azd`) deployment workflow. All scripts here are prefixed with `xxOBSOLETE_` and are retained for historical reference only.
+>
+> **For current resource provisioning, use `azd up` from the repository root.** See [Setting up an Azure Environment](../../docs/setup_azure_environment.md) for full details.
+>
+> Active helper scripts can be found in the parent `scripts/` directory (e.g., `scripts/create_batch_settingsfiles_mi_only.ps1`, `scripts/create_aci_settingsfile_mi_only.ps1`, etc.).
 
 ----
 
-## create_azure_resources.ps1
+## Legacy: create_azure_resources.ps1
 
 This is a one-stop script for creating all of the resources you will need to leverage SQL Build Manager. Uses the `azuredeploy_main.bicep` file which will leverage the bicep modules in the `Modules` folder as needed per the parameters passed in. 
 
@@ -35,7 +39,7 @@ Otherwise you can specify a `-deploy` value of `Batch`, `AKS`, `ContainerApp` or
 
 ----
 
-## create_all_settingsfiles_fromprefix.ps1
+## Legacy: create_all_settingsfiles_fromprefix.ps1
 
 A helper script that will create the settings files for all of the deployment types. If you run `create_azure_resources.ps1`, it will already create the settings files for you. 
 
