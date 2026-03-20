@@ -217,6 +217,12 @@ namespace SqlBuildManager.Console
             multiData = null!;
             string extension = Path.GetExtension(multiDbOverrideSettingFileName).ToLowerInvariant();
 
+            if(!File.Exists(multiDbOverrideSettingFileName))
+            {
+                errorMessages = [$"The Multi DB configuration file was not found at {multiDbOverrideSettingFileName}. Unable to create MultiDbData object"];
+                return (int)ExecutionReturn.MissingTargetDbOverrideSetting;
+            }
+
             switch (extension)
             {
                 case ".multidb":

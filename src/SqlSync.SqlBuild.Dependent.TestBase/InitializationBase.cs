@@ -293,5 +293,32 @@ namespace SqlSync.SqlBuild.Dependent.TestBase
             if (File.Exists(buildHistoryXmlFile))
                 try { File.Delete(buildHistoryXmlFile); } catch { }
         }
+
+        /// <summary>
+        /// Creates a SqlBuildRunDataModel with configurable transactional and trial settings.
+        /// Uses the init's projectFileName as buildFileName for query consistency with GetSqlBuildLoggingRowCountByBuildFileName.
+        /// </summary>
+        public SqlBuildRunDataModel GetSqlBuildRunDataModel(SqlSyncBuildDataModel buildData, bool isTransactional, bool isTrial, int defaultScriptTimeout = 500)
+        {
+            return new SqlBuildRunDataModel(
+                buildDataModel: buildData,
+                buildType: "Development",
+                server: serverName,
+                buildDescription: "UnitTestRun",
+                startIndex: 0,
+                projectFileName: projectFileName,
+                isTrial: isTrial,
+                runItemIndexes: Array.Empty<double>(),
+                runScriptOnly: false,
+                buildFileName: projectFileName,
+                logToDatabaseName: string.Empty,
+                isTransactional: isTransactional,
+                platinumDacPacFileName: string.Empty,
+                targetDatabaseOverrides: GetDatabaseOverrides(),
+                forceCustomDacpac: false,
+                buildRevision: string.Empty,
+                defaultScriptTimeout: defaultScriptTimeout,
+                allowObjectDelete: false);
+        }
     }
 }

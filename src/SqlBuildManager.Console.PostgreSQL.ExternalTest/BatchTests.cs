@@ -1,5 +1,6 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.ExternalTest;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -90,7 +91,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.Server, 2)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.MaxPerServer, 2)]
         [TestMethod]
-        public void Batch_PG_Override_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_PG_Override_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = PgTestHelper.GetPgSimpleSelectSbm();
             settingsFile = Path.GetFullPath(settingsFile);
@@ -123,11 +124,20 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "Batch PG run should have completed successfully");
             Assert.IsTrue(logFileContents.Contains("Batch complete"), "Should indicate a batch job");
+
+            // Validate blob storage logs agree with local test result
+            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            await blobValidator.LoadLogsAsync();
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.Count, 10)]
         [TestMethod]
-        public void Batch_PG_Override_SBMSource_ManagedIdentity_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_PG_Override_SBMSource_ManagedIdentity_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = PgTestHelper.GetPgSimpleSelectSbm();
             settingsFile = Path.GetFullPath(settingsFile);
@@ -159,12 +169,21 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "Batch PG MI run should have completed successfully");
+
+            // Validate blob storage logs
+            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            await blobValidator.LoadLogsAsync();
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.Count, 10)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.Server, 2)]
         [TestMethod]
-        public void Batch_PG_Queue_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_PG_Queue_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             string sbmFileName = PgTestHelper.GetPgSimpleSelectSbm();
@@ -212,11 +231,20 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+
+            // Validate blob storage logs
+            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            await blobValidator.LoadLogsAsync();
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
         [DataRow("query", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
-        public void Batch_PG_Query_Override_SelectSuccess(string batchMethod, string settingsFile)
+        public async Task Batch_PG_Query_Override_SelectSuccess(string batchMethod, string settingsFile)
         {
             string outputFile = Path.GetFullPath($"{Guid.NewGuid()}.csv");
             try
@@ -254,6 +282,15 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
                 Assert.IsTrue(outputLength > overrideFileContents.Count, "There should be more lines in the output than targets");
+
+                // Validate blob storage logs
+                BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+                var blobValidator = new BlobLogValidator(
+                    cmdLine.ConnectionArgs.StorageAccountName,
+                    cmdLine.ConnectionArgs.StorageAccountKey,
+                    jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertQuerySuccess(TestContext);
             }
             finally
             {
@@ -295,7 +332,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.Count, 10)]
         [TestMethod]
-        public void Batch_PG_Queue_SBMSource_ManagedIdentity_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_PG_Queue_SBMSource_ManagedIdentity_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             string sbmFileName = PgTestHelper.GetPgSimpleSelectSbm();
@@ -344,6 +381,15 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+
+            // Validate blob storage logs
+            BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
+            var blobValidator = new BlobLogValidator(
+                cmdLine.ConnectionArgs.StorageAccountName,
+                cmdLine.ConnectionArgs.StorageAccountKey,
+                jobName);
+            await blobValidator.LoadLogsAsync();
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
     }
 }

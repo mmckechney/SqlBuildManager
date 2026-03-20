@@ -50,8 +50,8 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.SetAction((parseResult) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
-                    var unittest = parseResult.GetValue(unitTestOption);
-                    return Worker.SaveAndEncryptAciSettings(cmdLine, unittest);
+                    var clearText = parseResult.GetValue(cleartextOption);
+                    return Worker.SaveAndEncryptAciSettings(cmdLine: cmdLine, clearText: clearText);
                 });
 
                 return cmd;
@@ -103,8 +103,8 @@ namespace SqlBuildManager.Console.CommandLine
                     var monitor = parseResult.GetValue(aciMonitorOption);
                     var unittest = parseResult.GetValue(unitTestOption);
                     var force = parseResult.GetValue(forceOption);
-                    var allowObjectDelete = parseResult.GetValue(allowForObjectDeletionOption);
-                    return await Worker.AciRun(cmdLine, packagename!, platinumdacpac!, monitor, unittest, force, allowObjectDelete);
+                    var stream = parseResult.GetValue(streamEventsOption);
+                    return await Worker.AciRun(cmdLine: cmdLine, packageName: packagename!, platinumDacpac: platinumdacpac!, unittest: unittest, stream: stream, monitor: monitor, force: force);
                 });
                 return cmd;
             }
@@ -156,7 +156,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var unittest = parseResult.GetValue(unitTestOption);
                     var force = parseResult.GetValue(forceOption);
                     var stream = parseResult.GetValue(streamEventsOption);
-                    return await Worker.AciQuery(cmdLine, force, stream, monitor, unittest);
+                    return await Worker.AciQuery(cmdLine: cmdLine, force: force, monitor: monitor, stream: stream, unittest: unittest);
                 });
                 return cmd;
 
@@ -190,7 +190,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
                     var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
                     var force = parseResult.GetValue(forceOption);
-                    return await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine, packagename!, platinumdacpac!, force);
+                    return await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine: cmdLine, packageName: packagename!, platinumDacpac: platinumdacpac!, force: force);
                 });
 
                 return cmd;
@@ -264,8 +264,8 @@ namespace SqlBuildManager.Console.CommandLine
                     var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
                     var monitor = parseResult.GetValue(aciMonitorOption);
                     var unittest = parseResult.GetValue(unitTestOption);
-                    var allowObjectDelete = parseResult.GetValue(allowForObjectDeletionOption);
-                    return await Worker.AciDeploy(cmdLine, packagename!, platinumdacpac!, monitor, unittest, allowObjectDelete);
+                    var stream = parseResult.GetValue(streamEventsOption);
+                    return await Worker.AciDeploy(cmdLine: cmdLine, packageName: packagename!, platinumDacpac: platinumdacpac!, monitor: monitor, unittest: unittest, stream: stream);
                 });
                 return cmd;
             }
@@ -295,7 +295,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var unittest = parseResult.GetValue(unitTestOption);
                     var stream = parseResult.GetValue(streamEventsOption);
                     // DateTime is null when called from command line (vs. internally after deploy)
-                    return await Worker.AciMonitorRuntimeProgress(cmdLine, null, unittest, stream);
+                    return await Worker.AciMonitorRuntimeProgress(cmdLine: cmdLine, utcMonitorStart: null, unitest: unittest, stream: stream);
                 });
 
                 return cmd;

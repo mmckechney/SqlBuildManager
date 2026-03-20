@@ -41,5 +41,54 @@ namespace SqlSync.SqlBuild.UnitTest
             StringAssert.Contains(result, "hash");
             StringAssert.Contains(result, "file.sbm");
         }
+
+        [TestMethod]
+        public void ReplaceTokens_NoTokensPresent_ReturnsScriptUnchanged()
+        {
+            var svc = new DefaultTokenReplacementService();
+            var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
+            helper.buildDescription = "desc";
+
+            var script = "SELECT 1";
+            var result = svc.ReplaceTokens(script, helper);
+            Assert.AreEqual("SELECT 1", result);
+        }
+
+        [TestMethod]
+        public void ReplaceTokens_CaseInsensitive()
+        {
+            var svc = new DefaultTokenReplacementService();
+            var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
+            helper.buildDescription = "MyBuild";
+
+            var script = "#builddescription#";
+            var result = svc.ReplaceTokens(script, helper);
+            Assert.AreEqual("MyBuild", result);
+        }
+
+        [TestMethod]
+        public void ReplaceTokens_NullValues_ReplacesWithEmptyString()
+        {
+            var svc = new DefaultTokenReplacementService();
+            var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
+            helper.buildDescription = null!;
+            helper.buildPackageHash = null!;
+
+            var script = "#BuildDescription# #BuildPackageHash#";
+            var result = svc.ReplaceTokens(script, helper);
+            Assert.AreEqual(" ", result);
+        }
+
+        [TestMethod]
+        public void ReplaceTokens_NullBuildFileName_UsesDefault()
+        {
+            var svc = new DefaultTokenReplacementService();
+            var helper = new SqlBuildHelper(new ConnectionData("srv", "db"), createScriptRunLogFile: false);
+            helper.buildFileName = null!;
+
+            var script = "#BuildFileName#";
+            var result = svc.ReplaceTokens(script, helper);
+            Assert.AreEqual("sbx file", result);
+        }
     }
 }

@@ -28,7 +28,7 @@ namespace SqlBuildManager.Console.CommandLine
 				cmd.SetAction(async (parseResult, ct) => {
 					var packages = parseResult.GetValue(packagesOption);
 					var withHash = parseResult.GetValue(withHashOption);
-					await Worker.ListPackageScripts(packages!, withHash);
+					await Worker.ListPackageScripts(packages: packages!, withHash: withHash);
 					return 0;
 				});
 				return cmd;
@@ -147,7 +147,7 @@ namespace SqlBuildManager.Console.CommandLine
 				cmd.SetAction(async (parseResult, ct) => {
 					var directory = parseResult.GetValue(unpackDirectoryOption);
 					var package = parseResult.GetValue(unpackPackageOption);
-					await Worker.UnpackSbmFile(directory!, package!);
+					await Worker.UnpackSbmFile(directory: directory!, package: package!);
 					return 0;
 				});
 				return cmd;
@@ -262,7 +262,7 @@ namespace SqlBuildManager.Console.CommandLine
 					var stream = parseResult.GetValue(streamEventsOption);
 					var timeout = parseResult.GetValue(timeoutOption);
 					var startDate = parseResult.GetValue(startDateOption);
-					return Worker.GetEventHubEvents(cmdLine, stream, timeout, startDate);
+					return Worker.GetEventHubEvents(cmdLine: cmdLine, stream: stream, timeout: timeout, startDate: startDate);
 				});
 				return cmd;
 			}
@@ -291,7 +291,7 @@ namespace SqlBuildManager.Console.CommandLine
 				cmd.SetAction((parseResult) => {
 				    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
 				    var unittest = parseResult.GetValue(unitTestOption);
-				    return Worker.GenerateOverrideFileFromSqlScript(cmdLine, unittest);
+				    return Worker.GenerateOverrideFileFromSqlScript(cmdLine: cmdLine, force: unittest);
 				});
 				return cmd;
 			}
@@ -309,7 +309,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.SetAction((parseResult) => {
 					var cmdLine = CommandLineArgsBinder.Bind(parseResult);
 					var settingsfilekey = parseResult.GetValue(settingsfileKeyRequiredOption);
-					Worker.DecryptSettingsFile(cmdLine, settingsfilekey!);
+					Worker.DecryptSettingsFile(cmdLine: cmdLine, settingsfilekey: settingsfilekey!);
 					return 0;
 				});
 				cmd.Hidden = true;

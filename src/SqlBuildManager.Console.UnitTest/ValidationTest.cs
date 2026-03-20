@@ -256,12 +256,12 @@ namespace SqlBuildManager.Console.UnitTest
             string multiDbOverrideSettingFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "test_not_here.multidb");
             MultiDbData multiData = null!;
             string[] errorMessages = null!;
-            int expected = (int)ExecutionReturn.NullMultiDbConfig;
+            int expected = (int)ExecutionReturn.MissingTargetDbOverrideSetting;
             int actual;
             actual = Validation.ValidateAndLoadMultiDbData(multiDbOverrideSettingFileName, null!, out multiData, out errorMessages);
             Assert.IsNull(multiData);
-            Assert.AreEqual(2, errorMessages.Length);
-            Assert.IsTrue(errorMessages[0].IndexOf("Unable to read in configuration file") > -1);
+            Assert.AreEqual(1, errorMessages.Length);
+            Assert.IsTrue(errorMessages[0].IndexOf("The Multi DB configuration file was not found") > -1);
             Assert.AreEqual(expected, actual);
 
         }
@@ -275,12 +275,12 @@ namespace SqlBuildManager.Console.UnitTest
             string multiDbOverrideSettingFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "test_not_here.multidbq");
             MultiDbData multiData = null!;
             string[] errorMessages = null!;
-            int expected = (int)ExecutionReturn.NullMultiDbConfig;
+            int expected = (int)ExecutionReturn.MissingTargetDbOverrideSetting;
             int actual;
             actual = Validation.ValidateAndLoadMultiDbData(multiDbOverrideSettingFileName, null!, out multiData, out errorMessages);
             Assert.IsNull(multiData);
-            Assert.AreEqual(2, errorMessages.Length);
-            Assert.IsTrue(errorMessages[0].IndexOf("Unable to read in configuration file") > -1);
+            Assert.AreEqual(1, errorMessages.Length);
+            Assert.IsTrue(errorMessages[0].IndexOf("The Multi DB configuration file was not found") > -1);
             Assert.AreEqual(expected, actual);
 
         }
@@ -294,12 +294,12 @@ namespace SqlBuildManager.Console.UnitTest
             string multiDbOverrideSettingFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(),"test_not_here.multidbq");
             MultiDbData multiData = null!;
             string[] errorMessages = null!;
-            int expected = (int)ExecutionReturn.NullMultiDbConfig;
+            int expected = (int)ExecutionReturn.MissingTargetDbOverrideSetting;
             int actual;
             actual = Validation.ValidateAndLoadMultiDbData(multiDbOverrideSettingFileName, null!, out multiData, out errorMessages);
             Assert.IsNull(multiData);
-            Assert.AreEqual(2, errorMessages.Length);
-            Assert.IsTrue(errorMessages[0].IndexOf("Unable to read in configuration file") > -1);
+            Assert.AreEqual(1, errorMessages.Length);
+            Assert.IsTrue(errorMessages[0].IndexOf("The Multi DB configuration file was not found") > -1);
             Assert.AreEqual(expected, actual);
 
         }

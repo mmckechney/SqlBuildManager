@@ -113,7 +113,7 @@ if ($null -ne $aadAdmins) {
     if (-not [string]::IsNullOrWhiteSpace($aadToken)) {
         # Parameters: (name, isAdmin, isMfa) — managed identities don't use MFA
         $createRoleSql = "SELECT * FROM pgaadauth_create_principal('${identityName}', false, false)"
-        $createOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $aadAdmins --admin-password "$aadToken" --querytext "$createRoleSql" --output none 2>&1
+        $createOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $aadAdmins --admin-password "$aadToken" --querytext "$createRoleSql" --output none 2>&1 3>$null
         if ($LASTEXITCODE -eq 0) {
             Write-Host "  ✓ Role '$identityName' created (Entra ID auth)" -ForegroundColor Green
             $roleCreated = $true
@@ -131,7 +131,7 @@ if ($null -ne $aadAdmins) {
 if (-not $roleCreated) {
     # Fallback: try with local admin (will only work if the role already exists or for non-MI roles)
     $createRoleSql = "SELECT * FROM pgaadauth_create_principal('${identityName}', false, false)"
-    $createOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$createRoleSql" --output none 2>&1
+    $createOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$createRoleSql" --output none 2>&1 3>$null
     if ($LASTEXITCODE -eq 0) {
         Write-Host "  ✓ Role '$identityName' created" -ForegroundColor Green
     } elseif ($createOutput -match "already exists") {
@@ -139,7 +139,7 @@ if (-not $roleCreated) {
     } else {
         Write-Host "  ⚠ pgaadauth_create_principal failed, trying direct CREATE ROLE..." -ForegroundColor Yellow
         $fallbackSql = "CREATE ROLE ""${identityName}"" WITH LOGIN"
-        $fallbackOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$fallbackSql" --output none 2>&1
+        $fallbackOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$fallbackSql" --output none 2>&1 3>$null
         if ($LASTEXITCODE -eq 0) {
             Write-Host "  ✓ Role '$identityName' created via CREATE ROLE" -ForegroundColor Green
         } elseif ($fallbackOutput -match "already exists") {
@@ -171,7 +171,7 @@ foreach ($db in $dbs) {
 
     $allSucceeded = $true
     foreach ($grantSql in $grantStatements) {
-        az postgres flexible-server execute --name $pgServerName --database-name $db --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$grantSql" --output none 2>&1 3>$null
+        $null = az postgres flexible-server execute --name $pgServerName --database-name $db --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$grantSql" --output none 2>&1 3>$null
         if ($LASTEXITCODE -ne 0) {
             $allSucceeded = $false
             Write-Host "    ⚠ Grant statement failed: $grantSql" -ForegroundColor Yellow

@@ -44,6 +44,7 @@ local.properties
 .vs/
 .vscode/
 launchsettings.json
+*.testlog
 
 # Build results
 
@@ -226,3 +227,4 @@ Command_scratch.txt
 /src/SqlBuildManager.Console/ContainerApp/parms2.json
 src/env.txt
 /scripts/templates/test.ps1
+ACI_Queue_PG_DoubleDbConfig_SBMSource_Success-639077055111877999.testlog

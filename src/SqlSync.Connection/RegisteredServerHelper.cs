@@ -166,7 +166,7 @@ namespace SqlSync.Connection
             }
             catch (Exception exe) when (exe is System.UnauthorizedAccessException || exe is System.IO.IOException)
             {
-                log.LogError(exe, $"Unable to serialze file to {fileName}");
+                log.LogError(exe, $"Unable to serialize file to {fileName}");
                 return false;
             }
         }

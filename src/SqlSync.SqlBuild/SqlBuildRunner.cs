@@ -123,7 +123,7 @@ namespace SqlSync.SqlBuild
                         log.LogError(e, "Error establishing connection data");
                         _ctx.ErrorOccured = true;
                         buildFailure = true;
-                        progress.ReportProgress(0, new ScriptRunStatusEventArgs($"ERROR connecting to {serverName}.{targetDatabase}", TimeSpan.Zero));
+                        progress.ReportProgress(0, new ScriptRunStatusEventArgs($"Connection failed for {serverName}.{targetDatabase}", TimeSpan.Zero));
                         if (currentRun != null)
                         {
                             currentRun.Success = false;
@@ -294,7 +294,7 @@ namespace SqlSync.SqlBuild
             }
         }
 
-        private (bool buildFailure, bool timeoutDetected) HandleSqlException(SqlException e, string fileName, string batchScript, string targetDatabase, string savePointName, DateTime start, bool rollBackOnError, bool causesBuildFailure, BuildConnectData cData, ref BuildModels.ScriptRun currentRun)
+        internal (bool buildFailure, bool timeoutDetected) HandleSqlException(SqlException e, string fileName, string batchScript, string targetDatabase, string savePointName, DateTime start, bool rollBackOnError, bool causesBuildFailure, BuildConnectData cData, ref BuildModels.ScriptRun currentRun)
         {
             var log = _ctx.Log;
             var progress = _ctx.ProgressReporter ?? new DefaultProgressReporter();

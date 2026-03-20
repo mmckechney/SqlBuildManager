@@ -20,6 +20,9 @@ namespace SqlBuildManager.Console.CloudStorage
     public class StorageManager
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+        // Unique per-process instance ID to prevent blob path collisions when multiple
+        // containers in the same ACI group share the same HOSTNAME.
+        private static readonly string _instanceSuffix = Guid.NewGuid().ToString("N").Substring(0, 8);
         internal static BlobServiceClient CreateStorageClient(string storageAccountName, string storageAccountKey)
         {
             BlobServiceClient serviceClient = null!;
@@ -551,11 +554,14 @@ namespace SqlBuildManager.Console.CloudStorage
                 }
                 if (string.IsNullOrEmpty(taskId))
                 {
-                    taskId = Environment.GetEnvironmentVariable("HOSTNAME");
+                    // ACI containers in the same group share HOSTNAME — append instance suffix for uniqueness
+                    var hostname = Environment.GetEnvironmentVariable("HOSTNAME");
+                    if (!string.IsNullOrEmpty(hostname))
+                        taskId = $"{hostname}-{_instanceSuffix}";
                 }
                 if (string.IsNullOrEmpty(taskId))
                 {
-                    taskId = Environment.MachineName;
+                    taskId = $"{Environment.MachineName}-{_instanceSuffix}";
                 }
                 if (string.IsNullOrEmpty(taskId))
                 {

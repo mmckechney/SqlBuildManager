@@ -78,7 +78,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var platinumdacpac = parseResult.GetValue(platinumdacpacSourceOption);
                     var targetdacpac = parseResult.GetValue(targetdacpacSourceOption);
                     var allowObjectDelete = parseResult.GetValue(allowForObjectDeletionOption);
-                    return Worker.CreatePackageFromDacpacs(outputsbm!, platinumdacpac!, targetdacpac!, allowObjectDelete);
+                    return Worker.CreatePackageFromDacpacs(outputSbm: outputsbm!, platinumDacpac: platinumdacpac!, targetDacpac: targetdacpac!, allowObjectDelete: allowObjectDelete);
                 });
                 return cmd;
             }

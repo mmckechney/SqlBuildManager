@@ -1068,5 +1068,102 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
         }
 
         #endregion
+
+        #region .: ProcessBuildAsync End-to-End :.
+
+        [TestMethod]
+        public async Task PostgreSQL_ProcessBuildAsync_MultipleScripts_AllCommitAndLog()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            init.AddInsertScript(ref buildData, true);
+            init.AddInsertScript(ref buildData, true);
+            init.AddInsertScript(ref buildData, true);
+            buildData.Script[0].BuildOrder = 1;
+            buildData.Script[1].BuildOrder = 2;
+            buildData.Script[2].BuildOrder = 3;
+
+            SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, isTransactional: true, isTrial: false);
+
+            Build actual = await target.ProcessBuildAsync(runData, 0, string.Empty, null!);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
+
+            int testTableCount = init.GetTestTableRowCount(0);
+            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+            Assert.IsTrue(testTableCount >= 3, $"Expected at least 3 rows in transactiontest but found {testTableCount}");
+            Assert.IsTrue(sqlLoggingCount >= 3, $"Expected at least 3 rows in sqlbuild_logging but found {sqlLoggingCount}");
+        }
+
+        [TestMethod]
+        public async Task PostgreSQL_ProcessBuildAsync_NonTransactional_PartialCommitOnFailure()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            init.AddInsertScript(ref buildData, true);
+            init.AddFailureScript(ref buildData, rollBackOnError: true, causeBuildFailure: true);
+
+            SqlBuildHelper target = init.CreateSqlBuildHelper_NonTransactional(buildData, false);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, isTransactional: false, isTrial: false);
+
+            Build actual = await target.ProcessBuildAsync(runData, 0, string.Empty, null!);
+            Assert.AreEqual(BuildItemStatus.FailedNoTransaction, actual.FinalStatus);
+
+            // Non-transactional: the first insert should persist even though build failed
+            int testTableCount = init.GetTestTableRowCount(0);
+            Assert.IsTrue(testTableCount >= 1, $"Expected at least 1 row in transactiontest (partial commit) but found {testTableCount}");
+        }
+
+        [TestMethod]
+        public async Task PostgreSQL_ProcessBuildAsync_Trial_RollsBackWithNoDataChanges()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            init.AddInsertScript(ref buildData, true);
+
+            SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, isTransactional: true, isTrial: true);
+
+            Build actual = await target.ProcessBuildAsync(runData, 0, string.Empty, null!);
+            Assert.AreEqual(BuildItemStatus.TrialRolledBack, actual.FinalStatus);
+
+            int testTableCount = init.GetTestTableRowCount(0);
+            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+            Assert.AreEqual(0, testTableCount, $"Expected 0 rows in transactiontest after trial but found {testTableCount}");
+            Assert.AreEqual(0, sqlLoggingCount, $"Expected 0 rows in sqlbuild_logging after trial but found {sqlLoggingCount}");
+        }
+
+        [TestMethod]
+        public async Task PostgreSQL_ProcessBuildAsync_BatchedScripts_AllBatchesExecute()
+        {
+            if (!isPostgresAvailable)
+                Assert.Inconclusive("PostgreSQL is not available.");
+
+            PostgresInitialization init = GetInitializationObject();
+            SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
+            init.AddBatchInsertScripts(ref buildData, true);
+
+            SqlBuildHelper target = init.CreateSqlBuildHelper(buildData);
+            SqlBuildRunDataModel runData = init.GetSqlBuildRunDataModel(buildData, isTransactional: true, isTrial: false);
+
+            Build actual = await target.ProcessBuildAsync(runData, 0, string.Empty, null!);
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
+
+            int testTableCount = init.GetTestTableRowCount(0);
+            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
+            Assert.IsTrue(testTableCount >= 2, $"Expected at least 2 rows from batched script but found {testTableCount}");
+            Assert.IsTrue(sqlLoggingCount >= 1, $"Expected at least 1 row in sqlbuild_logging but found {sqlLoggingCount}");
+        }
+
+        #endregion
     }
 }

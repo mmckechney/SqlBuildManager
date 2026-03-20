@@ -647,7 +647,7 @@ namespace SqlBuildManager.Console.Queue
                     case ConcurrencyType.Count:
                         if (!await AdminClient.SubscriptionExistsAsync(topicName, topicSubscriptionName))
                         {
-                            log.LogInformation($"Creating topic subscripton for `{jobName}'");
+                            log.LogInformation($"Creating topic subscription for `{jobName}'");
                             var stdOptions = new CreateSubscriptionOptions(topicName, topicSubscriptionName);
                             var result = await AdminClient.CreateSubscriptionAsync(stdOptions);
                         }
@@ -659,7 +659,7 @@ namespace SqlBuildManager.Console.Queue
                     case ConcurrencyType.MaxPerTag:
                         if (!await AdminClient.SubscriptionExistsAsync(topicName, topicSessionSubscriptionName))
                         {
-                            log.LogInformation($"Creating session enabled topic subscripton for `{jobName}'");
+                            log.LogInformation($"Creating session enabled topic subscription for `{jobName}'");
                             var sessionOptions = new CreateSubscriptionOptions(topicName, topicSessionSubscriptionName);
                             sessionOptions.RequiresSession = true;
                             var result = await AdminClient.CreateSubscriptionAsync(sessionOptions);
@@ -690,7 +690,7 @@ namespace SqlBuildManager.Console.Queue
             }
             try
             {
-                log.LogDebug($"Creating Topic filter for Batch job name: {jobName}");
+                log.LogDebug($"Creating Topic filter for job name: {jobName}");
                 string filter = jobName;
                 var pollyRetryPolicyForCreate = Policy.Handle<Exception>(ex => !ex.Message.Contains("already exists")).WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.3, retryAttempt)));
                 await pollyRetryPolicyForCreate.ExecuteAsync(async () =>

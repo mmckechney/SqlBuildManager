@@ -72,7 +72,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var unittest = parseResult.GetValue(unitTestOption);
-                    return await Worker.RunThreadedExecutionAsync(cmdLine, unittest);
+                    return await Worker.RunThreadedExecutionAsync(cmdLine: cmdLine, unittest: unittest);
                 });
                 return cmd;
             }

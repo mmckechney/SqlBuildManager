@@ -38,8 +38,8 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.SetAction((parseResult) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
-                    var unittest = parseResult.GetValue(unitTestOption);
-                    return Worker.SaveAndEncryptContainerAppSettings(cmdLine, unittest);
+                    var clearText = parseResult.GetValue(cleartextOption);
+                    return Worker.SaveAndEncryptContainerAppSettings(cmdLine: cmdLine, clearText: clearText);
                 });
                 return cmd;
             }
@@ -86,7 +86,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var monitor = parseResult.GetValue(containerAppMonitorOption);
                     var deleteApp = parseResult.GetValue(containerAppDeleteAppUponCompletion);
                     var force = parseResult.GetValue(forceOption);
-                    return await Worker.ContainerAppsRun(cmdLine, unittest, stream, monitor, deleteApp, force);
+                    return await Worker.ContainerAppsRun(cmdLine: cmdLine, unittest: unittest, stream: stream, monitor: monitor, deleteWhenDone: deleteApp, force: force);
                 });
                 return cmd;
             }
@@ -118,7 +118,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
                     var platinumdacpac = parseResult.GetValue(platinumdacpacFileInfoOption);
                     var force = parseResult.GetValue(forceOption);
-                    return await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine, packagename!, platinumdacpac!, force);
+                    return await GenericContainer.PrepAndUploadContainerBuildPackage(cmdLine: cmdLine, packageName: packagename!, platinumDacpac: platinumdacpac!, force: force);
                 });
 
                 return cmd;
@@ -187,7 +187,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var stream = parseResult.GetValue(streamEventsOption);
                     var monitor = parseResult.GetValue(containerAppMonitorOption);
                     var deleteApp = parseResult.GetValue(containerAppDeleteAppUponCompletion);
-                    return await Worker.ContainerAppDeploy(cmdLine, unittest, stream, monitor, deleteApp);
+                    return await Worker.ContainerAppDeploy(cmdLine: cmdLine, unittest: unittest, stream: stream, monitor: monitor, deleteWhenDone: deleteApp);
                 });
 
                 return cmd;
@@ -219,7 +219,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var unittest = parseResult.GetValue(unitTestOption);
                     var stream = parseResult.GetValue(streamEventsOption);
                     // DateTime is null when called from command line (vs. internally after deploy)
-                    return await Worker.MonitorContainerAppRuntimeProgress(cmdLine, unittest, null, stream);
+                    return await Worker.MonitorContainerAppRuntimeProgress(cmdLine: cmdLine, stream: stream, utcMonitorStart: null, unitest: unittest);
                 });
 
                 return cmd;

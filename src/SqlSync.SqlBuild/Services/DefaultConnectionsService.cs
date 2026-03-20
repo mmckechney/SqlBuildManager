@@ -50,7 +50,8 @@ namespace SqlSync.SqlBuild.Services
             }
             catch (Exception exe)
             {
-                log.LogError("Error preparing connection and transaction for " + buildConnectData.ServerName + "." + buildConnectData.DatabaseName + " : " + exe.Message);
+                string message = (exe is NullReferenceException) ? "" : exe.Message;
+                log.LogError($"Error preparing connection and transaction for {buildConnectData.ServerName}.{buildConnectData.DatabaseName}. {message}");
                 throw;
             }
         }

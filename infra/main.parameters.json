@@ -18,16 +18,19 @@
       "value": "${AZURE_PRINCIPAL_NAME}"
     },
     "deployBatchAccount": {
-      "value": true
+      "value": "${DEPLOY_BATCH}"
     },
     "deployContainerRegistry": {
-      "value": true
+      "value": "${DEPLOY_CONTAINER_REGISTRY}"
     },
     "deployContainerAppEnv": {
-      "value": true
+      "value": "${DEPLOY_CONTAINERAPP}"
     },
     "deployAks": {
-      "value": true
+      "value": "${DEPLOY_AKS}"
+    },
+    "deploySqlServer": {
+      "value": "${DEPLOY_SQLSERVER}"
     },
     "testDbCountPerServer": {
       "value": 10
@@ -42,7 +45,7 @@
       "value": true
     },
     "deployPostgreSQL": {
-      "value": true
+      "value": "${DEPLOY_POSTGRESQL}"
     },
     "pgAdminPassword": {
       "value": "${PG_ADMIN_PASSWORD}"

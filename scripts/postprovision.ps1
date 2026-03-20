@@ -52,14 +52,20 @@ Write-Host "Repo Root: $repoRoot" -ForegroundColor DarkGreen
 $sbmExe = Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Debug\net10.0\sbm.exe"
 write-Host "SBM Executable: $sbmExe" -ForegroundColor DarkGreen
 
-# Run the grant identity permissions script
-$scriptPath = Join-Path $repoRoot "scripts\Database\grant_identity_permissions.ps1"
-if (Test-Path $scriptPath) {
-    & $scriptPath -prefix $prefix -resourceGroupName $resourceGroupName
+# Grant SQL Server managed identity permissions (only if SQL Server is deployed)
+$sqlServerDeployed = Get-AzdEnvValue "DEPLOY_SQLSERVER"
+if ($sqlServerDeployed -ne "false") {
+    # Run the grant identity permissions script
+    $scriptPath = Join-Path $repoRoot "scripts\Database\grant_identity_permissions.ps1"
+    if (Test-Path $scriptPath) {
+        & $scriptPath -prefix $prefix -resourceGroupName $resourceGroupName
+    } else {
+        Write-Host "Script not found at: $scriptPath" -ForegroundColor Yellow
+        Write-Host "Skipping SQL permissions grant. Run manually after deployment:" -ForegroundColor Yellow
+        Write-Host "  .\scripts\Database\grant_identity_permissions.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
+    }
 } else {
-    Write-Host "Script not found at: $scriptPath" -ForegroundColor Yellow
-    Write-Host "Skipping SQL permissions grant. Run manually after deployment:" -ForegroundColor Yellow
-    Write-Host "  .\scripts\Database\grant_identity_permissions.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
+    Write-Host "SQL Server not deployed — skipping SQL permissions grant" -ForegroundColor DarkGray
 }
 
 # Grant PostgreSQL managed identity permissions
@@ -142,25 +148,30 @@ metadata:
 #     Write-Host "  azd env set GENERATE_MI_SETTINGS true" -ForegroundColor DarkGray
 # }
 
-# Generate database override config files for integration tests
-Write-Host ""
-Write-Host "===============================================" -ForegroundColor Cyan
-Write-Host "Post-Provision: Creating Database Config Files" -ForegroundColor Cyan
-Write-Host "===============================================" -ForegroundColor Cyan
+# Generate SQL Server database override config files (only if SQL Server is deployed)
+$sqlServerDeployedForConfig = Get-AzdEnvValue "DEPLOY_SQLSERVER"
+if ($sqlServerDeployedForConfig -ne "false") {
+    Write-Host ""
+    Write-Host "===============================================" -ForegroundColor Cyan
+    Write-Host "Post-Provision: Creating Database Config Files" -ForegroundColor Cyan
+    Write-Host "===============================================" -ForegroundColor Cyan
 
-$dbConfigScriptPath = Join-Path $repoRoot "scripts\Database\create_database_override_files.ps1"
-$outputPath = Join-Path $repoRoot "src\TestConfig"
+    $dbConfigScriptPath = Join-Path $repoRoot "scripts\Database\create_database_override_files.ps1"
+    $outputPath = Join-Path $repoRoot "src\TestConfig"
 
-# Ensure output directory exists
-if (-not (Test-Path $outputPath)) {
-    New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
-}
+    # Ensure output directory exists
+    if (-not (Test-Path $outputPath)) {
+        New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
+    }
 
-if (Test-Path $dbConfigScriptPath) {
-    & $dbConfigScriptPath -prefix $prefix -path $outputPath
+    if (Test-Path $dbConfigScriptPath) {
+        & $dbConfigScriptPath -prefix $prefix -path $outputPath
+    } else {
+        Write-Host "Database config script not found at: $dbConfigScriptPath" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\Database\create_database_override_files.ps1 -prefix $prefix -path $outputPath" -ForegroundColor Yellow
+    }
 } else {
-    Write-Host "Database config script not found at: $dbConfigScriptPath" -ForegroundColor Yellow
-    Write-Host "Run manually: .\scripts\Database\create_database_override_files.ps1 -prefix $prefix -path $outputPath" -ForegroundColor Yellow
+    Write-Host "SQL Server not deployed — skipping database config generation" -ForegroundColor DarkGray
 }
 
 # Generate PostgreSQL database override config files
@@ -180,9 +191,10 @@ if ($pgDeployedForConfig -eq "true") {
 }
 
 
-# Build and upload Batch application packages if BUILD_BATCH_PACKAGES is set
+# Build and upload Batch application packages (only if Batch is deployed)
 $buildBatch = Get-AzdEnvValue "BUILD_BATCH_PACKAGES"
-if ($buildBatch -eq "true") {
+$batchDeployed = Get-AzdEnvValue "DEPLOY_BATCH"
+if ($buildBatch -eq "true" -and $batchDeployed -ne "false") {
     Write-Host ""
     Write-Host "====================================================" -ForegroundColor Cyan
     Write-Host "Post-Provision: Building Batch Application Packages" -ForegroundColor Cyan
@@ -205,9 +217,10 @@ if ($buildBatch -eq "true") {
 
 
 
-# Build and push Docker container images if BUILD_CONTAINER_IMAGES is set
+# Build and push Docker container images (only if Container Registry is deployed)
 $buildContainers = Get-AzdEnvValue "BUILD_CONTAINER_IMAGES"
-if ($buildContainers -eq "true") {
+$crDeployed = Get-AzdEnvValue "DEPLOY_CONTAINER_REGISTRY"
+if ($buildContainers -eq "true" -and $crDeployed -ne "false") {
     Write-Host ""
     Write-Host "=========================================" -ForegroundColor Cyan
     Write-Host "Post-Provision: Building Container Images" -ForegroundColor Cyan
@@ -229,9 +242,9 @@ if ($buildContainers -eq "true") {
 }
 
 
-# Build and push Docker container images if BUILD_CONTAINER_IMAGES is set
+# Build and push Docker testing container image (only if Container Registry is deployed)
 $buildContainers = Get-AzdEnvValue "BUILD_CONTAINER_IMAGES"
-if ($buildContainers -eq "true") {
+if ($buildContainers -eq "true" -and $crDeployed -ne "false") {
     Write-Host ""
     Write-Host "================================================" -ForegroundColor Cyan
     Write-Host "Post-Provision: Building Testing Container Image" -ForegroundColor Cyan
@@ -252,9 +265,9 @@ if ($buildContainers -eq "true") {
     Write-Host "  azd env set BUILD_CONTAINER_IMAGES true" -ForegroundColor DarkGray
 }
 
-# Build and push Docker container images if BUILD_CONTAINER_IMAGES is set
+# Build and push Docker dependent tests container image (only if Container Registry is deployed)
 $buildContainers = Get-AzdEnvValue "BUILD_CONTAINER_IMAGES"
-if ($buildContainers -eq "true") {
+if ($buildContainers -eq "true" -and $crDeployed -ne "false") {
     Write-Host ""
     Write-Host "========================================================" -ForegroundColor Cyan
     Write-Host "Post-Provision: Building Dependent Tests Container Image" -ForegroundColor Cyan

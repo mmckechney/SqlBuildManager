@@ -31,6 +31,9 @@ param deployContainerAppEnv bool = true
 @description('Whether to deploy AKS')
 param deployAks bool = true
 
+@description('Whether to deploy SQL Server databases')
+param deploySqlServer bool = true
+
 @description('Number of test databases to create per server (0 to skip database deployment)')
 param testDbCountPerServer int = 10
 
@@ -156,7 +159,7 @@ module containerAppEnv './modules/containerappenv.bicep' = if(deployContainerApp
 }
 
 // Databases
-module databases './modules/database.bicep' = if(testDbCountPerServer > 0 && userIdGuid != '' && userLoginName != ''){
+module databases './modules/database.bicep' = if(deploySqlServer && testDbCountPerServer > 0 && userIdGuid != '' && userLoginName != ''){
   name: 'databases'
   scope: rg
   params: { 
@@ -299,6 +302,7 @@ output DEPLOY_BATCH_ACCOUNT bool = deployBatchAccount
 output DEPLOY_CONTAINER_REGISTRY bool = deployContainerRegistry
 output DEPLOY_CONTAINERAPP_ENV bool = deployContainerAppEnv
 output DEPLOY_AKS bool = deployAks
+output DEPLOY_SQLSERVER bool = deploySqlServer
 output TEST_DB_COUNT_PER_SERVER int = testDbCountPerServer
 output EVENTHUB_SKU string = eventhubSku
 output SERVICEBUS_SKU string = serviceBusSku

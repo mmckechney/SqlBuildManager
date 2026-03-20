@@ -55,7 +55,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var unittest = parseResult.GetValue(unitTestOption);
                     var monitor = parseResult.GetValue(batchMonitorOption);
                     var stream = parseResult.GetValue(streamEventsOption);
-                    return await Worker.Batch_RunBuild(cmdLine, unittest, monitor, stream);
+                    return await Worker.Batch_RunBuild(cmdLine: cmdLine, monitor: monitor, unittest: unittest, stream: stream);
                 });
                 return cmd;
             }
@@ -98,7 +98,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var unittest = parseResult.GetValue(unitTestOption);
-                    return await Worker.RunThreadedExecutionAsync(cmdLine, unittest);
+                    return await Worker.RunThreadedExecutionAsync(cmdLine: cmdLine, unittest: unittest);
                 });
                 cmd.Hidden = true;
                 return cmd;
@@ -207,8 +207,8 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(EventHubResourceOptions);
                 cmd.SetAction((parseResult) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
-                    var unittest = parseResult.GetValue(unitTestOption);
-                    return Worker.SaveAndEncryptBatchSettings(cmdLine, unittest);
+                    var clearText = parseResult.GetValue(cleartextOption);
+                    return Worker.SaveAndEncryptBatchSettings(cmdLine: cmdLine, clearText: clearText);
                 });
                 return cmd;
             }
@@ -294,7 +294,7 @@ namespace SqlBuildManager.Console.CommandLine
                     var unittest = parseResult.GetValue(unitTestOption);
                     var monitor = parseResult.GetValue(batchMonitorOption);
                     var stream = parseResult.GetValue(streamEventsOption);
-                    return await Worker.Batch_RunQuery(cmdLine, unittest, monitor, stream);
+                    return await Worker.Batch_RunQuery(cmdLine: cmdLine, monitor: monitor, unittest: unittest, stream: stream);
                 });
                 return cmd;
             }

@@ -37,10 +37,10 @@ namespace SqlBuildManager.Enterprise.UnitTest
             configPath = Path.GetFullPath(configPath!);
             EnterpriseConfiguration actual;
             actual = EnterpriseConfigHelper.LoadEnterpriseConfiguration(configPath);
-            Assert.Inconclusive();
-            //Assert.AreEqual(1, actual.TableWatch.Length);
-            //Assert.AreEqual(2, actual.TableWatch[0].Notify.Length);
-            //Assert.AreEqual(2, actual.TableWatch[0].Table.Length);
+            Assert.IsNotNull(actual, "The Enterprise config object should not be null when a valid path is provided.");
+            Assert.AreEqual(1, actual.TableWatch.Length);
+            Assert.AreEqual(2, actual.TableWatch[0].Notify.Length);
+            Assert.AreEqual(2, actual.TableWatch[0].Table.Length);
         }
 
         /// <summary>

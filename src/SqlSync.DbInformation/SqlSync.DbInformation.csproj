@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="SizeAnalysis.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
   </ItemGroup>
 
@@ -15,6 +19,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="SizeAnalysis.sql" />
   </ItemGroup>
 
   <ItemGroup>

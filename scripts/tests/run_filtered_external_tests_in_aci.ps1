@@ -324,40 +324,6 @@ Write-Debug "Container State: $containerState"
 Write-Debug "Test Exit Code: $exitCode" 
 Write-Debug ""
 
-# Get full logs and save to file
-# $testLogs = az container logs --name $testContainerName --resource-group $resourceGroupName 2>&1 | Out-String
-
-# Show test summary instead of full logs
-# if ($testLogs) {
-#     $testLogsArray = $testLogs -split "`n"
-#     Show-TestSummary -logs $testLogsArray -startTime $startTime
-# }
-# else {
-#     Write-Host "No test logs available" -ForegroundColor Yellow
-# }
-
-# Save logs to file with proper formatting
-# $logHeader = @"
-# ============================================
-# Integration Test Results
-# ============================================
-# Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
-# Container Name: $testContainerName
-# Resource Group: $resourceGroupName
-# Test Filter: $(if ($testFilter) { $testFilter } else { "(all tests)" })
-# Container State: $containerState
-# Exit Code: $exitCode
-# ============================================
-
-# "@
-
-# $logHeader | Set-Content -Path $logFilePath -Encoding UTF8
-# $testLogs | Add-Content -Path $logFilePath -Encoding UTF8
-
-# Test results are now uploaded to blob storage
-# Write-Host ""
-# Write-Host "Test results uploaded to blob storage: $blobContainerName/$blobPath" -ForegroundColor Cyan
-# Write-Host ""
 
 # Download test results from blob storage
 $tmp = Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContainerName $blobContainerName -localDestination "./testresults" -blobPath $blobPath

@@ -87,7 +87,7 @@ namespace SqlSync.Connection.UnitTest
         ///A test for ReloadRegisteredServerData
         ///</summary>
         [TestMethod()]
-        public void ReloadRegisteredServerDataTest_FileExists()
+        public void ReloadRegisteredServerDataTest_FileDoesntExists()
         {
             string fileName = string.Empty;
 
