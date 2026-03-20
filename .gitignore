@@ -228,3 +228,5 @@ Command_scratch.txt
 src/env.txt
 /scripts/templates/test.ps1
 ACI_Queue_PG_DoubleDbConfig_SBMSource_Success-639077055111877999.testlog
+__azurite_db_table__.json
+AzuriteConfig
