@@ -89,10 +89,10 @@ All execution models work with PostgreSQL:
 
 ## Settings File
 
-The `--platform` setting can be saved to a settings file like any other option:
+The `--platform` setting can be saved to a settings file like any other option when using `savesettings` for remote execution types:
 
 ```bash
-sbm threaded savesettings ^
+sbm batch savesettings ^
     --settingsfile "pg-settings.json" ^
     --settingsfilekey "mykey" ^
     --platform PostgreSQL ^
@@ -104,7 +104,7 @@ sbm threaded savesettings ^
 Then use it in subsequent builds:
 
 ```bash
-sbm threaded run ^
+sbm batch run ^
     --settingsfile "pg-settings.json" ^
     --settingsfilekey "mykey" ^
     --packagename "mypackage.sbm" ^
@@ -130,12 +130,22 @@ The following features are currently SQL Server-only and are not available when 
 
 ## Authentication
 
-PostgreSQL connections use standard username/password authentication:
+PostgreSQL connections support the following authentication methods:
+
+### Username/Password
 
 ```bash
 --authtype Password --username "pguser" --password "pgpassword"
 ```
 
-Connection strings are built automatically using the `--server`, `--database`, `--username`, and `--password` options. Npgsql handles SSL/TLS negotiation with the PostgreSQL server according to server configuration.
+### Managed Identity
 
-> **Note**: Managed Identity authentication (`--authtype ManagedIdentity`) is not currently supported for PostgreSQL. Use username/password authentication.
+Managed Identity authentication is supported for Azure Database for PostgreSQL:
+
+```bash
+--authtype ManagedIdentity --identityclientid "<managed-identity-client-id>"
+```
+
+When using Managed Identity, the application acquires an Azure AD token for the `https://ossrdbms-aad.database.windows.net` scope and uses it to authenticate to PostgreSQL. This works with all remote execution types (Batch, Kubernetes, Container Apps, ACI).
+
+Connection strings are built automatically using the `--server`, `--database`, `--username`, and `--password` options. Npgsql handles SSL/TLS negotiation with the PostgreSQL server according to server configuration.

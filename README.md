@@ -17,7 +17,6 @@ SQL Build Manager now supports **PostgreSQL** as an alternative database target 
 Features **not yet available** for PostgreSQL:
 - DACPAC operations (extract, compare, `create fromdacpacs` / `create fromdacpacdiff`)
 - Object scripting (SMO-based)
-- Windows/Integrated authentication (use `--authtype Password`)
 - Some SQL Server-specific script policies (`WithNoLockPolicy`, `QualifiedNamesPolicy`)
 
 ---
@@ -57,6 +56,7 @@ With this update, it significantly reduces the the need to save and manage secre
   - [Querying across databases (command line)](#querying-across-databases-command-line)
     - [Threaded](#threaded-1)
     - [Batch, Kubernetes and ACI](#batch-kubernetes-and-aci)
+  - [Command Line Reference](docs/commandline.md) - Full command reference with runtime options
   - [Detailed Process Flow](docs/threaded_build_process_flow.md)
 
 ---
