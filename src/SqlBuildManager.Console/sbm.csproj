@@ -27,7 +27,7 @@
 		<ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Azure.Core" Version="1.51.1" />
+		<PackageReference Include="Azure.Core" Version="1.52.0" />
 		<PackageReference Include="Azure.Identity" Version="1.19.0" />
 		<PackageReference Include="System.Memory.Data" Version="10.0.5" />
 		<PackageReference Include="Azure.Messaging.EventHubs" Version="5.12.2" />
