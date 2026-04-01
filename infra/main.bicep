@@ -162,6 +162,9 @@ module containerAppEnv './modules/containerappenv.bicep' = if(deployContainerApp
 module databases './modules/database.bicep' = if(deploySqlServer && testDbCountPerServer > 0 && userIdGuid != '' && userLoginName != ''){
   name: 'databases'
   scope: rg
+  dependsOn: [
+    identityResource
+  ]
   params: { 
     currentIpAddress: currentIpAddress
     location: location

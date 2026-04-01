@@ -707,6 +707,24 @@ namespace SqlBuildManager.Console.Batch
                             }
                         }
                         
+                        // Check if network configuration matches (subnet is immutable — requires pool recreation)
+                        var existingSubnetId = poolresult.Value.Data.NetworkConfiguration?.SubnetId?.ToString();
+                        var requestedSubnetId = data.NetworkConfiguration?.SubnetId?.ToString();
+                        bool networkMismatch = !string.Equals(existingSubnetId ?? "", requestedSubnetId ?? "", StringComparison.OrdinalIgnoreCase);
+
+                        if (networkMismatch)
+                        {
+                            log.LogWarning($"The pool {poolId} network configuration does not match. Existing subnet: '{existingSubnetId ?? "none"}', Requested subnet: '{requestedSubnetId ?? "none"}'");
+                            log.LogWarning($"Deleting pool {poolId} to recreate with correct network configuration (subnet is immutable)...");
+                            await poolresult.Value.DeleteAsync(Azure.WaitUntil.Completed);
+                            log.LogInformation($"Pool {poolId} deleted. Recreating with correct network configuration...");
+
+                            ArmOperation<BatchAccountPoolResource> lro = await collection.CreateOrUpdateAsync(Azure.WaitUntil.Completed, poolId, data);
+                            BatchAccountPoolResource result = lro.Value;
+                            log.LogInformation($"Successfully recreated {os} pool {poolId} with {nodeCount} nodes");
+                            return true;
+                        }
+
                         // Check if User-Assigned Managed Identity needs to be assigned
                         var requestedIdentityResourceId = new ResourceIdentifier(cmdLine.IdentityArgs.ResourceId);
                         bool identityAssigned = poolresult.Value.Data.Identity?.UserAssignedIdentities?.ContainsKey(requestedIdentityResourceId) == true;

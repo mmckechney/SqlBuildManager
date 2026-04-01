@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.39.26.7824",
-      "templateHash": "13997598022504672822"
+      "version": "0.41.2.15936",
+      "templateHash": "16903517472333661973"
     }
   },
   "parameters": {
@@ -72,6 +72,13 @@
         "description": "Whether to deploy AKS"
       }
     },
+    "deploySqlServer": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether to deploy SQL Server databases"
+      }
+    },
     "testDbCountPerServer": {
       "type": "int",
       "defaultValue": 10,
@@ -84,6 +91,20 @@
       "defaultValue": false,
       "metadata": {
         "description": "Whether to use private endpoints for SQL Server connectivity instead of public network access"
+      }
+    },
+    "deployPostgreSQL": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether to deploy Azure Database for PostgreSQL Flexible Server"
+      }
+    },
+    "pgAdminPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Administrator password for PostgreSQL Flexible Server"
       }
     },
     "eventhubSku": {
@@ -193,8 +214,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "9139758266500504447"
+              "version": "0.41.2.15936",
+              "templateHash": "2224254650562741268"
             }
           },
           "parameters": {
@@ -591,8 +612,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "9581136584625360812"
+              "version": "0.41.2.15936",
+              "templateHash": "16847190691054535560"
             }
           },
           "parameters": {
@@ -692,6 +713,45 @@
               "dependsOn": [
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName'))]"
               ]
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2020-04-01-preview",
+              "name": "[guid(parameters('resourceGroupName'), 'kubernetesClusterAdmin', parameters('identityName'))]",
+              "properties": {
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', '0ab0b1a8-8aac-4efd-b8c2-3ee1fb270be8')]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName')), '2023-01-31').principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2020-04-01-preview",
+              "name": "[guid(parameters('resourceGroupName'), 'kubernetesRbacAdmin', parameters('identityName'))]",
+              "properties": {
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', '3498e952-d568-435e-9b2c-8d77e338d7f7')]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName')), '2023-01-31').principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2020-04-01-preview",
+              "name": "[guid(parameters('resourceGroupName'), 'kubernetesServiceAdmin', parameters('identityName'))]",
+              "properties": {
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', 'a7ffa36f-339b-4b5c-8bdf-e2c188b2c0eb')]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName')), '2023-01-31').principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName'))]"
+              ]
             }
           ],
           "outputs": {
@@ -744,8 +804,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "10230576418256444235"
+              "version": "0.41.2.15936",
+              "templateHash": "6489548732844840811"
             }
           },
           "parameters": {
@@ -880,8 +940,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "10964669659935231485"
+              "version": "0.41.2.15936",
+              "templateHash": "16138724210690245444"
             }
           },
           "parameters": {
@@ -962,8 +1022,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "1368607086433929292"
+              "version": "0.41.2.15936",
+              "templateHash": "3097809086701671639"
             }
           },
           "parameters": {
@@ -1053,7 +1113,7 @@
       ]
     },
     {
-      "condition": "[and(and(greater(parameters('testDbCountPerServer'), 0), not(equals(parameters('userIdGuid'), ''))), not(equals(parameters('userLoginName'), '')))]",
+      "condition": "[and(and(and(parameters('deploySqlServer'), greater(parameters('testDbCountPerServer'), 0)), not(equals(parameters('userIdGuid'), ''))), not(equals(parameters('userLoginName'), '')))]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
       "name": "databases",
@@ -1101,8 +1161,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "17864223431006277455"
+              "version": "0.41.2.15936",
+              "templateHash": "17090119488604772271"
             }
           },
           "parameters": {
@@ -1174,10 +1234,10 @@
             }
           },
           "variables": {
-            "resourceGroupNameVar": "[format('{0}-rg', parameters('namePrefix'))]",
             "sqlserverNameVar": "[format('{0}sql', parameters('namePrefix'))]",
             "sqlpoolNameVar": "[format('{0}pool', parameters('namePrefix'))]",
             "identityNameVar": "[format('{0}identity', parameters('namePrefix'))]",
+            "vnetNameVar": "[format('{0}vnet', parameters('namePrefix'))]",
             "subnetNamesArray": "[split(parameters('subnetNames'), ',')]",
             "sqlPrivateDnsZoneName": "[format('privatelink{0}', environment().suffixes.sqlServerHostname)]"
           },
@@ -1224,10 +1284,9 @@
               "name": "[format('{0}/{1}', format('{0}-a', variables('sqlserverNameVar')), format('{0}A_{1}', variables('sqlserverNameVar'), variables('subnetNamesArray')[copyIndex()]))]",
               "properties": {
                 "ignoreMissingVnetServiceEndpoint": false,
-                "virtualNetworkSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupNameVar')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.vnetName.value, variables('subnetNamesArray')[copyIndex()])]"
+                "virtualNetworkSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetNameVar'), variables('subnetNamesArray')[copyIndex()])]"
               },
               "dependsOn": [
-                "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupNameVar')), 'Microsoft.Resources/deployments', 'networkResource')]",
                 "[resourceId('Microsoft.Sql/servers', format('{0}-a', variables('sqlserverNameVar')))]"
               ]
             },
@@ -1324,10 +1383,9 @@
               "name": "[format('{0}/{1}', format('{0}-b', variables('sqlserverNameVar')), format('{0}B_{1}', variables('sqlserverNameVar'), variables('subnetNamesArray')[copyIndex()]))]",
               "properties": {
                 "ignoreMissingVnetServiceEndpoint": false,
-                "virtualNetworkSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupNameVar')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.vnetName.value, variables('subnetNamesArray')[copyIndex()])]"
+                "virtualNetworkSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetNameVar'), variables('subnetNamesArray')[copyIndex()])]"
               },
               "dependsOn": [
-                "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupNameVar')), 'Microsoft.Resources/deployments', 'networkResource')]",
                 "[resourceId('Microsoft.Sql/servers', format('{0}-b', variables('sqlserverNameVar')))]"
               ]
             },
@@ -1496,12 +1554,460 @@
                 "[resourceId('Microsoft.Network/privateDnsZones', variables('sqlPrivateDnsZoneName'))]",
                 "[resourceId('Microsoft.Network/privateEndpoints', format('{0}sql-b-pe', parameters('namePrefix')))]"
               ]
+            }
+          ],
+          "outputs": {
+            "identityName": {
+              "type": "string",
+              "value": "[variables('identityNameVar')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'identityResource')]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource')]",
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
+      ]
+    },
+    {
+      "condition": "[and(and(and(parameters('deployPostgreSQL'), not(equals(parameters('userIdGuid'), ''))), not(equals(parameters('userLoginName'), ''))), not(equals(parameters('pgAdminPassword'), '')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "postgresql",
+      "resourceGroup": "[variables('resourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "namePrefix": {
+            "value": "[parameters('namePrefix')]"
+          },
+          "testDbCountPerServer": {
+            "value": "[parameters('testDbCountPerServer')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "currentIpAddress": {
+            "value": "[parameters('currentIpAddress')]"
+          },
+          "subnetNames": {
+            "value": "[join(reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.subnetNames.value, ',')]"
+          },
+          "pgAdminObjectId": {
+            "value": "[parameters('userIdGuid')]"
+          },
+          "pgAdminLogin": {
+            "value": "[parameters('userLoginName')]"
+          },
+          "pgAdminPassword": {
+            "value": "[parameters('pgAdminPassword')]"
+          },
+          "usePrivateEndpoint": {
+            "value": "[parameters('usePrivateEndpoint')]"
+          },
+          "vnetId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.vnetId.value]"
+          },
+          "privateEndpointSubnetId": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.privateEndpointSubnetId.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.41.2.15936",
+              "templateHash": "10740458311415523395"
+            }
+          },
+          "parameters": {
+            "namePrefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Prefix to prepend to account names"
+              }
+            },
+            "testDbCountPerServer": {
+              "type": "int",
+              "defaultValue": 10,
+              "metadata": {
+                "description": "Number of test databases to create per server"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for all resources."
+              }
+            },
+            "currentIpAddress": {
+              "type": "string",
+              "metadata": {
+                "description": "Current machine IP address to allow access to the PostgreSQL server."
+              }
+            },
+            "subnetNames": {
+              "type": "string",
+              "metadata": {
+                "description": "Array of subnet resource ids to allow access via VNet rules."
+              }
+            },
+            "pgAdminObjectId": {
+              "type": "string",
+              "metadata": {
+                "description": "Object ID (GUID) of the Entra ID user or group to set as PG AAD admin"
+              }
+            },
+            "pgAdminLogin": {
+              "type": "string",
+              "metadata": {
+                "description": "Login name (email) of the Entra ID admin"
+              }
+            },
+            "pgAdminPassword": {
+              "type": "securestring",
+              "metadata": {
+                "description": "Administrator password for PostgreSQL (used for local/password-based auth)"
+              }
+            },
+            "usePrivateEndpoint": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether to use private endpoints instead of public network access"
+              }
+            },
+            "vnetId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "VNet ID for private DNS zone link (required when usePrivateEndpoint is true)"
+              }
+            },
+            "privateEndpointSubnetId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Private endpoint subnet ID (required when usePrivateEndpoint is true)"
+              }
+            }
+          },
+          "variables": {
+            "pgServerNameA": "[format('{0}pgserver-a', parameters('namePrefix'))]",
+            "pgServerNameB": "[format('{0}pgserver-b', parameters('namePrefix'))]",
+            "pgAdminUser": "[format('{0}pgadmin', parameters('namePrefix'))]",
+            "subnetNamesArray": "[split(parameters('subnetNames'), ',')]",
+            "pgPrivateDnsZoneName": "privatelink.postgres.database.azure.com"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers",
+              "apiVersion": "2024-08-01",
+              "name": "[variables('pgServerNameA')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard_B1ms",
+                "tier": "Burstable"
+              },
+              "properties": {
+                "version": "16",
+                "administratorLogin": "[variables('pgAdminUser')]",
+                "administratorLoginPassword": "[parameters('pgAdminPassword')]",
+                "storage": {
+                  "storageSizeGB": 32,
+                  "autoGrow": "Disabled"
+                },
+                "backup": {
+                  "backupRetentionDays": 7,
+                  "geoRedundantBackup": "Disabled"
+                },
+                "highAvailability": {
+                  "mode": "Disabled"
+                },
+                "authConfig": {
+                  "activeDirectoryAuth": "Enabled",
+                  "passwordAuth": "Enabled",
+                  "tenantId": "[subscription().tenantId]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers/administrators",
+              "apiVersion": "2024-08-01",
+              "name": "[format('{0}/{1}', variables('pgServerNameA'), parameters('pgAdminObjectId'))]",
+              "properties": {
+                "principalType": "User",
+                "principalName": "[parameters('pgAdminLogin')]",
+                "tenantId": "[subscription().tenantId]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers/firewallRules', variables('pgServerNameA'), 'AllowAzureServices')]",
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers/firewallRules', variables('pgServerNameA'), format('{0}_AllowCurrentIpA', parameters('namePrefix')))]",
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameA'))]"
+              ]
+            },
+            {
+              "condition": "[not(equals(parameters('currentIpAddress'), ''))]",
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers/firewallRules",
+              "apiVersion": "2024-08-01",
+              "name": "[format('{0}/{1}', variables('pgServerNameA'), format('{0}_AllowCurrentIpA', parameters('namePrefix')))]",
+              "properties": {
+                "startIpAddress": "[parameters('currentIpAddress')]",
+                "endIpAddress": "[parameters('currentIpAddress')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers/firewallRules', variables('pgServerNameA'), 'AllowAzureServices')]",
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameA'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers/firewallRules",
+              "apiVersion": "2024-08-01",
+              "name": "[format('{0}/{1}', variables('pgServerNameA'), 'AllowAzureServices')]",
+              "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "0.0.0.0"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameA'))]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "pgDatabasesA",
+                "count": "[length(range(1, parameters('testDbCountPerServer')))]",
+                "mode": "serial",
+                "batchSize": 1
+              },
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers/databases",
+              "apiVersion": "2024-08-01",
+              "name": "[format('{0}/{1}', variables('pgServerNameA'), format('sbm_pg_test{0}', range(1, parameters('testDbCountPerServer'))[copyIndex()]))]",
+              "properties": {
+                "charset": "UTF8",
+                "collation": "en_US.utf8"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers/administrators', variables('pgServerNameA'), parameters('pgAdminObjectId'))]",
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameA'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers",
+              "apiVersion": "2024-08-01",
+              "name": "[variables('pgServerNameB')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard_B1ms",
+                "tier": "Burstable"
+              },
+              "properties": {
+                "version": "16",
+                "administratorLogin": "[variables('pgAdminUser')]",
+                "administratorLoginPassword": "[parameters('pgAdminPassword')]",
+                "storage": {
+                  "storageSizeGB": 32,
+                  "autoGrow": "Disabled"
+                },
+                "backup": {
+                  "backupRetentionDays": 7,
+                  "geoRedundantBackup": "Disabled"
+                },
+                "highAvailability": {
+                  "mode": "Disabled"
+                },
+                "authConfig": {
+                  "activeDirectoryAuth": "Enabled",
+                  "passwordAuth": "Enabled",
+                  "tenantId": "[subscription().tenantId]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers/administrators",
+              "apiVersion": "2024-08-01",
+              "name": "[format('{0}/{1}', variables('pgServerNameB'), parameters('pgAdminObjectId'))]",
+              "properties": {
+                "principalType": "User",
+                "principalName": "[parameters('pgAdminLogin')]",
+                "tenantId": "[subscription().tenantId]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers/firewallRules', variables('pgServerNameB'), 'AllowAzureServices')]",
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers/firewallRules', variables('pgServerNameB'), format('{0}_AllowCurrentIpB', parameters('namePrefix')))]",
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameB'))]"
+              ]
+            },
+            {
+              "condition": "[not(equals(parameters('currentIpAddress'), ''))]",
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers/firewallRules",
+              "apiVersion": "2024-08-01",
+              "name": "[format('{0}/{1}', variables('pgServerNameB'), format('{0}_AllowCurrentIpB', parameters('namePrefix')))]",
+              "properties": {
+                "startIpAddress": "[parameters('currentIpAddress')]",
+                "endIpAddress": "[parameters('currentIpAddress')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers/firewallRules', variables('pgServerNameB'), 'AllowAzureServices')]",
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameB'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers/firewallRules",
+              "apiVersion": "2024-08-01",
+              "name": "[format('{0}/{1}', variables('pgServerNameB'), 'AllowAzureServices')]",
+              "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "0.0.0.0"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameB'))]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "pgDatabasesB",
+                "count": "[length(range(1, parameters('testDbCountPerServer')))]",
+                "mode": "serial",
+                "batchSize": 1
+              },
+              "type": "Microsoft.DBforPostgreSQL/flexibleServers/databases",
+              "apiVersion": "2024-08-01",
+              "name": "[format('{0}/{1}', variables('pgServerNameB'), format('sbm_pg_test{0}', range(1, parameters('testDbCountPerServer'))[copyIndex()]))]",
+              "properties": {
+                "charset": "UTF8",
+                "collation": "en_US.utf8"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers/administrators', variables('pgServerNameB'), parameters('pgAdminObjectId'))]",
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameB'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateDnsZones",
+              "apiVersion": "2020-06-01",
+              "name": "[variables('pgPrivateDnsZoneName')]",
+              "location": "global"
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/{1}', variables('pgPrivateDnsZoneName'), format('{0}-pg-vnet-link', parameters('namePrefix')))]",
+              "location": "global",
+              "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                  "id": "[parameters('vnetId')]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('pgPrivateDnsZoneName'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}pg-a-pe', parameters('namePrefix'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "subnet": {
+                  "id": "[parameters('privateEndpointSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}pg-a-plsc', parameters('namePrefix'))]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameA'))]",
+                      "groupIds": [
+                        "postgresqlServer"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameA'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}', format('{0}pg-a-pe', parameters('namePrefix')), 'default')]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "privatelink-postgres-database-azure-com",
+                    "properties": {
+                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('pgPrivateDnsZoneName'))]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('pgPrivateDnsZoneName'))]",
+                "[resourceId('Microsoft.Network/privateEndpoints', format('{0}pg-a-pe', parameters('namePrefix')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}pg-b-pe', parameters('namePrefix'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "subnet": {
+                  "id": "[parameters('privateEndpointSubnetId')]"
+                },
+                "privateLinkServiceConnections": [
+                  {
+                    "name": "[format('{0}pg-b-plsc', parameters('namePrefix'))]",
+                    "properties": {
+                      "privateLinkServiceId": "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameB'))]",
+                      "groupIds": [
+                        "postgresqlServer"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameB'))]"
+              ]
+            },
+            {
+              "condition": "[parameters('usePrivateEndpoint')]",
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}', format('{0}pg-b-pe', parameters('namePrefix')), 'default')]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "privatelink-postgres-database-azure-com",
+                    "properties": {
+                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('pgPrivateDnsZoneName'))]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('pgPrivateDnsZoneName'))]",
+                "[resourceId('Microsoft.Network/privateEndpoints', format('{0}pg-b-pe', parameters('namePrefix')))]"
+              ]
             },
             {
               "type": "Microsoft.Resources/deployments",
               "apiVersion": "2025-04-01",
-              "name": "networkResource",
-              "resourceGroup": "[variables('resourceGroupNameVar')]",
+              "name": "pgNetworkResource",
               "properties": {
                 "expressionEvaluationOptions": {
                   "scope": "inner"
@@ -1521,8 +2027,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.39.26.7824",
-                      "templateHash": "9139758266500504447"
+                      "version": "0.41.2.15936",
+                      "templateHash": "2224254650562741268"
                     }
                   },
                   "parameters": {
@@ -1891,164 +2397,32 @@
                   }
                 }
               }
-            },
-            {
-              "type": "Microsoft.Resources/deployments",
-              "apiVersion": "2025-04-01",
-              "name": "identityResource",
-              "resourceGroup": "[variables('resourceGroupNameVar')]",
-              "properties": {
-                "expressionEvaluationOptions": {
-                  "scope": "inner"
-                },
-                "mode": "Incremental",
-                "parameters": {
-                  "identityName": {
-                    "value": "[variables('identityNameVar')]"
-                  },
-                  "location": {
-                    "value": "[parameters('location')]"
-                  }
-                },
-                "template": {
-                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                  "contentVersion": "1.0.0.0",
-                  "metadata": {
-                    "_generator": {
-                      "name": "bicep",
-                      "version": "0.39.26.7824",
-                      "templateHash": "9581136584625360812"
-                    }
-                  },
-                  "parameters": {
-                    "identityName": {
-                      "type": "string"
-                    },
-                    "location": {
-                      "type": "string",
-                      "defaultValue": "[resourceGroup().location]"
-                    },
-                    "resourceGroupName": {
-                      "type": "string",
-                      "defaultValue": "[resourceGroup().name]"
-                    }
-                  },
-                  "resources": [
-                    {
-                      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
-                      "apiVersion": "2023-01-31",
-                      "name": "[parameters('identityName')]",
-                      "location": "[parameters('location')]"
-                    },
-                    {
-                      "type": "Microsoft.Authorization/roleAssignments",
-                      "apiVersion": "2020-04-01-preview",
-                      "name": "[guid(parameters('resourceGroupName'), 'storageBlobDataContributor', parameters('identityName'))]",
-                      "properties": {
-                        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
-                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName')), '2023-01-31').principalId]",
-                        "principalType": "ServicePrincipal"
-                      },
-                      "dependsOn": [
-                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName'))]"
-                      ]
-                    },
-                    {
-                      "type": "Microsoft.Authorization/roleAssignments",
-                      "apiVersion": "2020-04-01-preview",
-                      "name": "[guid(parameters('resourceGroupName'), 'ServiceBusDataOwner', parameters('identityName'))]",
-                      "properties": {
-                        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', '090c5cfd-751d-490a-894a-3ce6f1109419')]",
-                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName')), '2023-01-31').principalId]",
-                        "principalType": "ServicePrincipal"
-                      },
-                      "dependsOn": [
-                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName'))]"
-                      ]
-                    },
-                    {
-                      "type": "Microsoft.Authorization/roleAssignments",
-                      "apiVersion": "2020-04-01-preview",
-                      "name": "[guid(parameters('resourceGroupName'), 'EventHubsDataReceiver', parameters('identityName'))]",
-                      "properties": {
-                        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', 'a638d3c7-ab3a-418d-83e6-5f17a39d4fde')]",
-                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName')), '2023-01-31').principalId]",
-                        "principalType": "ServicePrincipal"
-                      },
-                      "dependsOn": [
-                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName'))]"
-                      ]
-                    },
-                    {
-                      "type": "Microsoft.Authorization/roleAssignments",
-                      "apiVersion": "2020-04-01-preview",
-                      "name": "[guid(parameters('resourceGroupName'), 'EventHubsDataSender', parameters('identityName'))]",
-                      "properties": {
-                        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', '2b629674-e913-4c01-ae53-ef4638d8f975')]",
-                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName')), '2023-01-31').principalId]",
-                        "principalType": "ServicePrincipal"
-                      },
-                      "dependsOn": [
-                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName'))]"
-                      ]
-                    },
-                    {
-                      "type": "Microsoft.Authorization/roleAssignments",
-                      "apiVersion": "2020-04-01-preview",
-                      "name": "[guid(parameters('resourceGroupName'), 'AcrPull', parameters('identityName'))]",
-                      "properties": {
-                        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
-                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName')), '2023-01-31').principalId]",
-                        "principalType": "ServicePrincipal"
-                      },
-                      "dependsOn": [
-                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName'))]"
-                      ]
-                    },
-                    {
-                      "type": "Microsoft.Authorization/roleAssignments",
-                      "apiVersion": "2020-04-01-preview",
-                      "name": "[guid(parameters('resourceGroupName'), 'Contributor', parameters('identityName'))]",
-                      "properties": {
-                        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
-                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName')), '2023-01-31').principalId]",
-                        "principalType": "ServicePrincipal"
-                      },
-                      "dependsOn": [
-                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName'))]"
-                      ]
-                    }
-                  ],
-                  "outputs": {
-                    "clientId": {
-                      "type": "string",
-                      "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName')), '2023-01-31').clientId]"
-                    },
-                    "tenantId": {
-                      "type": "string",
-                      "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName')), '2023-01-31').tenantId]"
-                    },
-                    "principalId": {
-                      "type": "string",
-                      "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName')), '2023-01-31').principalId]"
-                    },
-                    "name": {
-                      "type": "string",
-                      "value": "[parameters('identityName')]"
-                    },
-                    "id": {
-                      "type": "string",
-                      "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('identityName'))]"
-                    }
-                  }
-                }
-              }
             }
           ],
           "outputs": {
-            "identityName": {
+            "pgServerNameA": {
               "type": "string",
-              "value": "[variables('identityNameVar')]"
+              "value": "[variables('pgServerNameA')]"
+            },
+            "pgServerFqdnA": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameA')), '2024-08-01').fullyQualifiedDomainName]"
+            },
+            "pgServerNameB": {
+              "type": "string",
+              "value": "[variables('pgServerNameB')]"
+            },
+            "pgServerFqdnB": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('pgServerNameB')), '2024-08-01').fullyQualifiedDomainName]"
+            },
+            "pgAdminUser": {
+              "type": "string",
+              "value": "[variables('pgAdminUser')]"
+            },
+            "pgDatabaseCountPerServer": {
+              "type": "int",
+              "value": "[parameters('testDbCountPerServer')]"
             }
           }
         }
@@ -2092,8 +2466,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "3294596986679570136"
+              "version": "0.41.2.15936",
+              "templateHash": "4188474950963573327"
             }
           },
           "parameters": {
@@ -2220,8 +2594,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "2354031357425139855"
+              "version": "0.41.2.15936",
+              "templateHash": "17277977249020294607"
             }
           },
           "parameters": {
@@ -2429,8 +2803,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "10883610697897859022"
+              "version": "0.41.2.15936",
+              "templateHash": "16928681150804771891"
             }
           },
           "parameters": {
@@ -2546,6 +2920,25 @@
                 },
                 "accessTier": "Hot"
               }
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices",
+              "apiVersion": "2023-01-01",
+              "name": "[format('{0}/{1}', parameters('storageAccountName'), 'default')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+              "apiVersion": "2023-01-01",
+              "name": "[format('{0}/{1}/{2}', parameters('storageAccountName'), 'default', 'testresults')]",
+              "properties": {
+                "publicAccess": "None"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountName'), 'default')]"
+              ]
             },
             {
               "condition": "[parameters('usePrivateEndpoint')]",
@@ -2727,8 +3120,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "17078450746681495508"
+              "version": "0.41.2.15936",
+              "templateHash": "17268673842830550628"
             }
           },
           "parameters": {
@@ -2834,8 +3227,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "9258375249646276319"
+              "version": "0.41.2.15936",
+              "templateHash": "13083824312320113333"
             }
           },
           "parameters": {
@@ -3135,8 +3528,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.39.26.7824",
-              "templateHash": "11812872965367337640"
+              "version": "0.41.2.15936",
+              "templateHash": "1133093448843533247"
             }
           },
           "parameters": {
@@ -3406,6 +3799,10 @@
       "type": "bool",
       "value": "[parameters('deployAks')]"
     },
+    "DEPLOY_SQLSERVER": {
+      "type": "bool",
+      "value": "[parameters('deploySqlServer')]"
+    },
     "TEST_DB_COUNT_PER_SERVER": {
       "type": "int",
       "value": "[parameters('testDbCountPerServer')]"
@@ -3425,6 +3822,10 @@
     "USE_PRIVATE_ENDPOINT": {
       "type": "bool",
       "value": "[parameters('usePrivateEndpoint')]"
+    },
+    "DEPLOY_POSTGRESQL": {
+      "type": "bool",
+      "value": "[parameters('deployPostgreSQL')]"
     },
     "RESOURCE_GROUP_NAME": {
       "type": "string",
@@ -3565,6 +3966,30 @@
     "AKS_SERVICE_ACCOUNT_NAME": {
       "type": "string",
       "value": "[if(parameters('deployAks'), reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'aks'), '2025-04-01').outputs.serviceAccountName.value, '')]"
+    },
+    "PG_SERVER_NAME_A": {
+      "type": "string",
+      "value": "[if(and(parameters('deployPostgreSQL'), not(equals(parameters('pgAdminPassword'), ''))), reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.pgServerNameA.value, '')]"
+    },
+    "PG_SERVER_FQDN_A": {
+      "type": "string",
+      "value": "[if(and(parameters('deployPostgreSQL'), not(equals(parameters('pgAdminPassword'), ''))), reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.pgServerFqdnA.value, '')]"
+    },
+    "PG_SERVER_NAME_B": {
+      "type": "string",
+      "value": "[if(and(parameters('deployPostgreSQL'), not(equals(parameters('pgAdminPassword'), ''))), reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.pgServerNameB.value, '')]"
+    },
+    "PG_SERVER_FQDN_B": {
+      "type": "string",
+      "value": "[if(and(parameters('deployPostgreSQL'), not(equals(parameters('pgAdminPassword'), ''))), reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.pgServerFqdnB.value, '')]"
+    },
+    "PG_ADMIN_USER": {
+      "type": "string",
+      "value": "[if(and(parameters('deployPostgreSQL'), not(equals(parameters('pgAdminPassword'), ''))), reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.pgAdminUser.value, '')]"
+    },
+    "PG_DATABASE_COUNT_PER_SERVER": {
+      "type": "int",
+      "value": "[if(and(parameters('deployPostgreSQL'), not(equals(parameters('pgAdminPassword'), ''))), reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'postgresql'), '2025-04-01').outputs.pgDatabaseCountPerServer.value, 0)]"
     }
   }
 }
