@@ -50,6 +50,18 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.AddRange(EventHubResourceOptions);
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Build Options", new List<Option> { overrideRequiredOption, packagenameNotReqOption, rootloggingpathOption, defaultscripttimeoutOption, batchJobMonitorTimeoutMin, batchMonitorOption }),
+                    new OptionGroup("DACPAC", new List<Option> { platinumdacpacOption, targetdacpacOption, forcecustomdacpacOption, platinumdbsourceOption, platinumserversourceOption }),
+                    new OptionGroup("Settings File", SettingsFileExistingOptions),
+                    new OptionGroup("Batch Settings", BatchSettingsOptions),
+                    new OptionGroup("Batch Compute", BatchComputeOptions),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Connections & Secrets", ConnectionAndSecretsOptionsForBatch),
+                    new OptionGroup("Identity", IdentityArgumentsForBatch),
+                    new OptionGroup("Concurrency", ConcurrencyOptions),
+                    new OptionGroup("Event Hub", EventHubResourceOptions)
+                );
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var unittest = parseResult.GetValue(unitTestOption);
@@ -205,6 +217,16 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
                 cmd.AddRange(EventHubResourceOptions);
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Settings File", SettingsFileNewOptions),
+                    new OptionGroup("Execution", new List<Option> { deletebatchjobOption, rootloggingpathOption, defaultscripttimeoutOption, timeoutretrycountOption, pollbatchpoolstatusOption, silentOption, cleartextOption }),
+                    new OptionGroup("Batch Compute", BatchComputeOptions),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Connections & Secrets", ConnectionAndSecretsOptionsForBatch),
+                    new OptionGroup("Identity", IdentityArgumentsForBatch),
+                    new OptionGroup("Concurrency", ConcurrencyOptions),
+                    new OptionGroup("Event Hub", EventHubResourceOptions)
+                );
                 cmd.SetAction((parseResult) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var clearText = parseResult.GetValue(cleartextOption);
@@ -289,6 +311,17 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
                 cmd.AddRange(IdentityArgumentsForBatch);
                 cmd.AddRange(ConcurrencyOptions);
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Query", new List<Option> { overrideRequiredOption, queryFileRequiredOption, outputFileRequiredOption, silentOption }),
+                    new OptionGroup("Batch Settings", new List<Option> { deletebatchjobOption, jobnameOption, rootloggingpathOption, defaultscripttimeoutOption, batchMonitorOption }),
+                    new OptionGroup("Settings File", SettingsFileExistingOptions),
+                    new OptionGroup("Batch Compute", BatchComputeOptions),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Connections & Secrets", ConnectionAndSecretsOptionsForBatch),
+                    new OptionGroup("Identity", IdentityArgumentsForBatch),
+                    new OptionGroup("Concurrency", ConcurrencyOptions),
+                    new OptionGroup("Event Hub", EventHubResourceOptions)
+                );
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var unittest = parseResult.GetValue(unitTestOption);

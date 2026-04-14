@@ -36,6 +36,17 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.AddRange(ConcurrencyOptions);
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Settings File", SettingsFileNewOptions),
+                    new OptionGroup("Execution", new List<Option> { defaultscripttimeoutOption, cleartextOption, silentOption }),
+                    new OptionGroup("Container App", ContainerAppOptions),
+                    new OptionGroup("Identity", IdentityArgumentsForContainerApp),
+                    new OptionGroup("Connections & Secrets", ConnectionAndSecretsOptions),
+                    new OptionGroup("Event Hub", EventHubResourceOptions),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Container Registry", ContainerRegistryAndImageOptions),
+                    new OptionGroup("Concurrency", ConcurrencyOptions)
+                );
                 cmd.SetAction((parseResult) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var clearText = parseResult.GetValue(cleartextOption);
@@ -79,6 +90,18 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.AddRange(ConcurrencyOptions);
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Build Options", new List<Option> { packagenameOption, platinumdacpacOption, defaultscripttimeoutOption, overrideOption, jobnameRequiredOption, decryptedOption, allowForObjectDeletionOption, forceOption }),
+                    new OptionGroup("Settings File", SettingsFileExistingOptions),
+                    new OptionGroup("Container App", ContainerAppOptions),
+                    new OptionGroup("Container App Execution", new List<Option> { containerAppMonitorOption, containerAppDeleteAppUponCompletion }),
+                    new OptionGroup("Identity", IdentityArgumentsForContainerApp),
+                    new OptionGroup("Connections & Secrets", ConnectionAndSecretsOptions),
+                    new OptionGroup("Event Hub", EventHubResourceOptions),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Container Registry", ContainerRegistryAndImageOptions),
+                    new OptionGroup("Concurrency", ConcurrencyOptions)
+                );
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var unittest = parseResult.GetValue(unitTestOption);
@@ -181,6 +204,18 @@ namespace SqlBuildManager.Console.CommandLine
 
                 cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.AddRange(ConcurrencyOptions);
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Build Options", new List<Option> { packagenameOption, platinumdacpacOption, defaultscripttimeoutOption, overrideOption, jobnameRequiredOption, decryptedOption, allowForObjectDeletionOption }),
+                    new OptionGroup("Settings File", SettingsFileExistingOptions),
+                    new OptionGroup("Container App", ContainerAppOptions),
+                    new OptionGroup("Container App Execution", new List<Option> { containerAppMonitorOption, containerAppDeleteAppUponCompletion }),
+                    new OptionGroup("Identity", IdentityArgumentsForContainerApp),
+                    new OptionGroup("Connections & Secrets", ConnectionAndSecretsOptions),
+                    new OptionGroup("Event Hub", EventHubResourceOptions),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Container Registry", ContainerRegistryAndImageOptions),
+                    new OptionGroup("Concurrency", ConcurrencyOptions)
+                );
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var unittest = parseResult.GetValue(unitTestOption);
