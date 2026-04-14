@@ -32,6 +32,12 @@ namespace SqlBuildManager.Console.CommandLine
                     timeoutretrycountOption
                 };
                 cmd.AddRange(DatabaseAuthArgs);
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Database Connection", new List<Option> { serverOption, databaseOption }),
+                    new OptionGroup("Build Options", new List<Option> { packagenameOption, overrideOption, trialOption, transactionalOption, descriptionOption, buildrevisionOption, scriptsrcdirOption, timeoutretrycountOption }),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Logging", new List<Option> { rootloggingpathOption, logtodatabasenamedOption })
+                );
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     return await Worker.RunLocalBuildAsync(cmdLine);
@@ -69,6 +75,13 @@ namespace SqlBuildManager.Console.CommandLine
                 };
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConcurrencyOptions);
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Build Options", new List<Option> { packagenameOption, overrideOption, trialOption, transactionalOption, descriptionOption, buildrevisionOption, scriptsrcdirOption, timeoutretrycountOption, defaultscripttimeoutOption }),
+                    new OptionGroup("DACPAC", new List<Option> { platinumdacpacOption, targetdacpacOption, forcecustomdacpacOption, platinumdbsourceOption, platinumserversourceOption }),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Concurrency", ConcurrencyOptions),
+                    new OptionGroup("Logging", new List<Option> { rootloggingpathOption, logtodatabasenamedOption })
+                );
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var unittest = parseResult.GetValue(unitTestOption);
@@ -95,6 +108,12 @@ namespace SqlBuildManager.Console.CommandLine
                 };
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConcurrencyOptions);
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Query", new List<Option> { queryFileRequiredOption, outputFileRequiredOption, silentOption }),
+                    new OptionGroup("Database Targets", new List<Option> { overrideRequiredOption, defaultscripttimeoutOption }),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Concurrency", ConcurrencyOptions)
+                );
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     return await Worker.QueryDatabasesAsync(cmdLine);

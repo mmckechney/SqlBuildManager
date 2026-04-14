@@ -28,29 +28,14 @@ param vnetId string = ''
 @description('Private endpoint subnet ID (required when usePrivateEndpoint is true)')
 param privateEndpointSubnetId string = ''
 
-var resourceGroupNameVar = '${namePrefix}-rg'
 var sqlserverNameVar = '${namePrefix}sql'
 var sqlpoolNameVar = '${namePrefix}pool'
 var identityNameVar = '${namePrefix}identity'
+var vnetNameVar = '${namePrefix}vnet'
 var subnetNamesArray = split(subnetNames,',')
 
-
-module networkResource 'network.bicep' = {
-  name: 'networkResource'
-  scope: resourceGroup(resourceGroupNameVar)
-  params: {
-    namePrefix: namePrefix
-    location: location
-  }
-}
-
-module identityResource 'identity.bicep' = {
-  name: 'identityResource'
-  scope: resourceGroup(resourceGroupNameVar)
-  params: {
-    identityName: identityNameVar
-    location: location
-  }
+resource existingVnet 'Microsoft.Network/virtualNetworks@2023-05-01' existing = {
+  name: vnetNameVar
 }
 
 
@@ -92,7 +77,7 @@ resource sqlserverA_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2021-11-
   name: '${sqlserverNameVar}A_${subnet}'
   properties: {
     ignoreMissingVnetServiceEndpoint: false
-    virtualNetworkSubnetId: resourceId('Microsoft.Network/virtualNetworks/subnets',networkResource.outputs.vnetName, subnet)
+    virtualNetworkSubnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', existingVnet.name, subnet)
 
   }
 }]
@@ -171,7 +156,7 @@ resource sqlserverB_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2021-11-
   name: '${sqlserverNameVar}B_${subnet}'
   properties: {
     ignoreMissingVnetServiceEndpoint: false
-    virtualNetworkSubnetId: resourceId('Microsoft.Network/virtualNetworks/subnets',networkResource.outputs.vnetName, subnet)
+    virtualNetworkSubnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', existingVnet.name, subnet)
 
   }
 }]

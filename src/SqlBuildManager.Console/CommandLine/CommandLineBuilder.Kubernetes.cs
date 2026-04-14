@@ -53,6 +53,17 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(subscriptionIdOption);
                 cmd.Add(unitTestOption);
 
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Build Options", new List<Option> { jobnameOption, overrideAsFileOption, packagenameAsFileToUploadOption, platinumdacpacFileInfoOption, forceOption, allowForObjectDeletionOption, k8sCleanupOnFailureOption }),
+                    new OptionGroup("Kubernetes", new List<Option> { podCountOption, subscriptionIdOption }),
+                    new OptionGroup("Container Registry", new List<Option> { imageTagOption, imageNameOption, imageRepositoryOption }),
+                    new OptionGroup("Settings File", SettingsFileExistingOptions),
+                    new OptionGroup("Identity", IdentityArgumentsForKubernetes),
+                    new OptionGroup("Connections & Secrets", ConnectionAndSecretsOptions),
+                    new OptionGroup("Event Hub", EventHubResourceOptions),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Concurrency", ConcurrencyOptions)
+                );
 
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
@@ -103,6 +114,17 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(subscriptionIdOption);
                 cmd.Add(unitTestOption);
 
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Query", new List<Option> { overrideRequiredOption, queryFileOption, outputFileOption }),
+                    new OptionGroup("Kubernetes", new List<Option> { podCountOption, k8sCleanupOnFailureOption, subscriptionIdOption }),
+                    new OptionGroup("Container Registry", new List<Option> { imageTagOption, imageNameOption, imageRepositoryOption }),
+                    new OptionGroup("Settings File", SettingsFileExistingOptions),
+                    new OptionGroup("Identity", IdentityArgumentsForKubernetes),
+                    new OptionGroup("Connections & Secrets", ConnectionAndSecretsOptions),
+                    new OptionGroup("Event Hub", EventHubResourceOptions),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Concurrency", ConcurrencyOptions)
+                );
 
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
@@ -255,6 +277,17 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(clientIdOption);
                 cmd.Add(cleartextOption);
 
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Settings File", SettingsFileNewOptions),
+                    new OptionGroup("Kubernetes", new List<Option> { podCountOption, subscriptionIdOption }),
+                    new OptionGroup("Container Registry", new List<Option> { imageTagOption, imageNameOption, imageRepositoryOption }),
+                    new OptionGroup("Identity", new List<Option> { serviceAccountNameOption, tenantIdOption, identityNameNotReqOption, identityResourceGroupNotReqOption, clientIdOption }),
+                    new OptionGroup("Connections & Secrets", ConnectionAndSecretsOptions),
+                    new OptionGroup("Event Hub", EventHubResourceOptions),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Concurrency", ConcurrencyOptions),
+                    new OptionGroup("Execution", new List<Option> { silentOption, cleartextOption })
+                );
 
                 cmd.SetAction((parseResult) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);

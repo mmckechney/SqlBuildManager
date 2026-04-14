@@ -48,6 +48,17 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(IdentityArgumentsForContainerApp);
                 cmd.AddRange(ContainerRegistryAndImageOptions);
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Settings File", new List<Option> { settingsfileNewOption }),
+                    new OptionGroup("ACI", new List<Option> { aciIResourceGroupNameOption, aciInstanceNameOption, subscriptionIdOption }),
+                    new OptionGroup("Execution", new List<Option> { sectionPlaceholderOption, defaultscripttimeoutOption, timeoutretrycountOption, silentOption, cleartextOption }),
+                    new OptionGroup("Connections & Secrets", new List<Option> { keyVaultNameOption, storageaccountnameOption, storageaccountkeyOption, eventhubconnectionOption, serviceBusconnectionOption }),
+                    new OptionGroup("Event Hub", EventHubResourceOptions),
+                    new OptionGroup("VNET", VnetOptions),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Identity", IdentityArgumentsForContainerApp),
+                    new OptionGroup("Container Registry", ContainerRegistryAndImageOptions)
+                );
                 cmd.SetAction((parseResult) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var clearText = parseResult.GetValue(cleartextOption);
@@ -96,6 +107,17 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(identityResourceGroupOption);
                 cmd.Add(subscriptionIdOption);
                 cmd.AddRange(ConcurrencyRequiredOptions);
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Build Options", new List<Option> { jobnameRequiredOption, packagenameAsFileToUploadOption, overrideRequiredOption, platinumdacpacFileInfoOption, allowForObjectDeletionOption, aciMonitorOption, forceOption }),
+                    new OptionGroup("ACI", new List<Option> { aciIResourceGroupNameNotReqOption, aciInstanceNameNotReqOption, aciContainerCountOption }),
+                    new OptionGroup("Event Hub", EventHubResourceOptions),
+                    new OptionGroup("VNET", VnetOptions),
+                    new OptionGroup("Container Registry", ContainerRegistryAndImageOptions),
+                    new OptionGroup("Connections & Secrets", new List<Option> { keyVaultNameOption, storageaccountnameOption, storageaccountkeyOption }),
+                    new OptionGroup("Authentication", DatabaseAuthArgs),
+                    new OptionGroup("Identity", new List<Option> { clientIdOption, identityNameOption, identityResourceGroupOption, subscriptionIdOption }),
+                    new OptionGroup("Concurrency", ConcurrencyRequiredOptions)
+                );
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var packagename = parseResult.GetValue(packagenameAsFileToUploadOption);
@@ -148,7 +170,19 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(subscriptionIdOption);
                 cmd.AddRange(ConcurrencyRequiredOptions);
                 cmd.Add(streamEventsOption);
-
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Query", new List<Option> { overrideRequiredOption, queryFileOption, outputFileOption }),
+                    new OptionGroup("ACI", new List<Option> { aciIResourceGroupNameNotReqOption, aciInstanceNameNotReqOption, aciContainerCountOption }),
+                    new OptionGroup("Execution", new List<Option> { jobnameOption, aciMonitorOption, forceOption }),
+                    new OptionGroup("Settings File", SettingsFileExistingOptions),
+                    new OptionGroup("Event Hub", EventHubResourceOptions),
+                    new OptionGroup("VNET", VnetOptions),
+                    new OptionGroup("Container Registry", ContainerRegistryAndImageOptions),
+                    new OptionGroup("Connections & Secrets", new List<Option> { keyVaultNameOption, storageaccountnameOption, storageaccountkeyOption }),
+                    new OptionGroup("Authentication", new List<Option> { authtypeOption, platformOption }),
+                    new OptionGroup("Identity", new List<Option> { clientIdOption, identityNameOption, identityResourceGroupOption, subscriptionIdOption }),
+                    new OptionGroup("Concurrency", ConcurrencyRequiredOptions)
+                );
 
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
@@ -257,6 +291,18 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.Add(clientIdOption);
                 cmd.Add(subscriptionIdOption);
                 cmd.AddRange(ConcurrencyRequiredOptions);
+                cmd.SetGroupedHelp(
+                    new OptionGroup("Build Options", new List<Option> { jobnameRequiredOption, packagenameAsFileToUploadOption, overrideOption, platinumdacpacFileInfoOption, allowForObjectDeletionOption, aciMonitorOption }),
+                    new OptionGroup("ACI", new List<Option> { aciIResourceGroupNameNotReqOption, aciInstanceNameNotReqOption, aciContainerCountOption }),
+                    new OptionGroup("Settings File", new List<Option> { settingsfileExistingOption }),
+                    new OptionGroup("Event Hub", EventHubResourceOptions),
+                    new OptionGroup("VNET", VnetOptions),
+                    new OptionGroup("Container Registry", ContainerRegistryAndImageOptions),
+                    new OptionGroup("Connections & Secrets", new List<Option> { keyVaultNameOption, storageaccountnameOption, storageaccountkeyOption }),
+                    new OptionGroup("Authentication", new List<Option> { authtypeOption, platformOption }),
+                    new OptionGroup("Identity", new List<Option> { identityNameOption, identityResourceGroupOption, clientIdOption, subscriptionIdOption }),
+                    new OptionGroup("Concurrency", ConcurrencyRequiredOptions)
+                );
 
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);

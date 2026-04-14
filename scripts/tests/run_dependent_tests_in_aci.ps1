@@ -1,6 +1,6 @@
  param
 (
-    [Parameter(Mandatory=$true)]
+    [Parameter()]
     [string] $prefix,
 
     [string] $resourceGroupName,
@@ -60,6 +60,23 @@
 #>
 
 $ErrorActionPreference = "Stop"
+
+# Resolve prefix: parameter > azd env AZURE_NAME_PREFIX
+if ([string]::IsNullOrWhiteSpace($prefix)) {
+    $prefix = azd env get-value AZURE_NAME_PREFIX 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($prefix)) {
+        $prefix = $null
+    } else {
+        Write-Host "Using prefix '$prefix' from azd environment variable AZURE_NAME_PREFIX" -ForegroundColor DarkGreen
+    }
+}
+
+if ([string]::IsNullOrWhiteSpace($prefix)) {
+    Write-Host "ERROR: The -prefix parameter is required." -ForegroundColor Red
+    Write-Host "  Provide it as a parameter:  .\run_dependent_tests_in_aci.ps1 -prefix <your-prefix>" -ForegroundColor Yellow
+    Write-Host "  Or set it in your azd environment:  azd env set AZURE_NAME_PREFIX <your-prefix>" -ForegroundColor Yellow
+    exit 1
+}
 
 Clear-Host 
 

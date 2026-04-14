@@ -4,6 +4,7 @@ using SqlBuildManager.Console.ContainerApp.Internal;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -302,6 +303,19 @@ namespace SqlBuildManager.Console.CommandLine
             cmd.Add(opt);
          }
       }
+
+      /// <summary>
+      /// Registers a custom grouped help action on the command, replacing the default help rendering.
+      /// Options are displayed under named group headings for improved readability.
+      /// </summary>
+      public static void SetGroupedHelp(this Command command, params OptionGroup[] groups)
+      {
+         var helpOption = new HelpOption();
+         var defaultHelp = (HelpAction)helpOption.Action!;
+         helpOption.Action = new GroupedHelpAction(defaultHelp, groups.ToList());
+         command.Add(helpOption);
+      }
+
       public static string Quoted(this string str)
       {
          return "\"" + str + "\"";
