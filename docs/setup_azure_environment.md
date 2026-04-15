@@ -42,7 +42,7 @@ The simplest way to provision all Azure resources is using the [Azure Developer 
 
 ### What happens during `azd up`
 
-#### Pre-provision Hook (`scripts/preprovision.ps1`)
+#### Pre-provision Hook (`infra/scripts/preprovision.ps1`)
 - Captures your current IP address (for SQL firewall rules)
 - Retrieves your Azure AD user info (for RBAC and SQL admin)
 - Sets default environment variables for post-provision steps
@@ -62,7 +62,7 @@ Creates the following Azure resources with the environment name as prefix:
 - **Container App Environment** (`{prefix}containerappenv`)
 - **Azure SQL Servers** (`{prefix}sql-a` and `{prefix}sql-b`) - Each with test databases
 
-#### Post-provision Hook (`scripts/postprovision.ps1`)
+#### Post-provision Hook (`infra/scripts/postprovision.ps1`)
 - Grants managed identity SQL permissions on all test databases
 - Creates Kubernetes namespace and service account (if AKS deployed)
 - Generates MI-only settings files for integration testing

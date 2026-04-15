@@ -19,11 +19,11 @@ hooks:
   # Pre-provision hook to set current user info and IP address
   preprovision:
     shell: pwsh
-    run: ./scripts/preprovision.ps1
+    run: ./infra/scripts/preprovision.ps1
     interactive: true
 
   # Post-provision hook to grant managed identity SQL permissions and generate settings files, build container images and Batch packages
   postprovision:
     shell: pwsh
-    run: ./scripts/postprovision.ps1
+    run: ./infra/scripts/postprovision.ps1
     interactive: true
