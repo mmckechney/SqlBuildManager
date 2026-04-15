@@ -1,3 +1,13 @@
+<#
+.SYNOPSIS
+    Updates NuGet packages and rebuilds all projects in the src folder.
+.DESCRIPTION
+    Optionally updates dotnet-outdated-tool and runs it to upgrade all NuGet packages,
+    then builds each project directory under src (excluding Manual, SetUp, TestConfig,
+    and TestResults folders).
+.PARAMETER update
+    When true, updates dotnet-outdated-tool and runs package upgrades. Default: true.
+#>
 [CmdletBinding()]
 param (
     [Parameter()]

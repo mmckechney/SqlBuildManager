@@ -1,3 +1,15 @@
+<#
+.SYNOPSIS
+    Runs all integration test suites in ACI, filtered by deployed platforms.
+.DESCRIPTION
+    Reads AZD environment configuration to determine which compute platforms (ACI,
+    Batch, Container Apps, AKS) and database platforms (SQL Server, PostgreSQL) are
+    deployed. For each available combination, launches the filtered external test
+    runner in ACI. After all tests complete, downloads results from Azure Storage
+    and invokes GitHub Copilot CLI to analyze the test output.
+.PARAMETER prefix
+    Environment name prefix. Can also be set via azd env AZURE_NAME_PREFIX.
+#>
 [CmdletBinding()]
 param (
     [Parameter()]

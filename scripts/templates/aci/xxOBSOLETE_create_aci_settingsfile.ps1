@@ -1,3 +1,12 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates ACI settings files for SQL Build Manager.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Creates Azure Container Instances (ACI) settings
+    files by retrieving keys and connection strings from Azure resources (Storage, Event Hub,
+    Service Bus, ACR) and invoking 'sbm aci savesettings'. Generates settings for both Password
+    and Managed Identity authentication types.
+#>
 param
 (
     [string] $sbmExe = "sbm.exe",

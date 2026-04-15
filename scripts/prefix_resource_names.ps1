@@ -1,6 +1,14 @@
-#################################################################################
-# Sets the resource name variables that are used in the "*fromprefix.ps1" scripts
-#################################################################################
+<#
+.SYNOPSIS
+    Sets standard Azure resource name variables derived from a deployment prefix.
+.DESCRIPTION
+    Defines variables for all Azure resource names used by the "*fromprefix.ps1"
+    scripts (e.g. storage account, Batch account, AKS cluster, container registry,
+    Event Hub, Service Bus, SQL servers, managed identity, and resource group).
+    Designed to be dot-sourced by other scripts.
+.PARAMETER prefix
+    Environment name prefix appended to resource name conventions.
+#>
 
 param 
 (

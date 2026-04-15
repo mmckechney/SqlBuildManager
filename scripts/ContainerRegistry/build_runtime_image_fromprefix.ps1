@@ -1,3 +1,19 @@
+<#
+.SYNOPSIS
+    Resolves resource names from a prefix and delegates to build_runtime_image.ps1.
+.DESCRIPTION
+    Wrapper script that loads standard resource names from a deployment prefix,
+    then calls build_runtime_image.ps1 to build and push the production runtime
+    container image to Azure Container Registry.
+.PARAMETER prefix
+    Environment name prefix used to derive resource names.
+.PARAMETER resourceGroupName
+    Azure resource group containing the container registry.
+.PARAMETER path
+    Output directory for key files. Defaults to src\TestConfig.
+.PARAMETER wait
+    Whether to wait for the ACR build to complete. Default: true.
+#>
 param
 (
     [string] $prefix,

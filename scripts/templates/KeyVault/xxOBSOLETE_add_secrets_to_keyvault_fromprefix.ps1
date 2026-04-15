@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Adds secrets to Azure Key Vault from a resource naming prefix.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Resolves Azure resource names from a naming prefix
+    and delegates to add_secrets_to_keyvault.ps1. Managed Identity with RBAC is now used instead
+    of storing secrets in Key Vault.
+#>
 param
 (
     [Parameter(Mandatory=$true)]

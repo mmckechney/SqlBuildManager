@@ -1,3 +1,12 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates Container App settings files for SQL Build Manager.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Creates Azure Container App settings files by retrieving
+    keys and connection strings from Azure resources (Storage, Event Hub, Service Bus, ACR) and
+    invoking 'sbm containerapp savesettings'. Generates settings for both Password and Managed
+    Identity authentication types.
+#>
 param
 (
     [string] $sbmExe = "sbm.exe",

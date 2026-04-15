@@ -1,3 +1,15 @@
+<#
+.SYNOPSIS
+    Removes Service Bus topic subscriptions created by integration tests.
+.DESCRIPTION
+    Lists all subscriptions on the "sqlbuildmanager" Service Bus topic and deletes
+    those matching test naming prefixes (aci-, k8s-, c-, ca-, batch-, bat-).
+    Subscriptions that don't match are skipped.
+.PARAMETER prefix
+    Environment name prefix used to derive the Service Bus namespace name.
+.PARAMETER resourceGroupName
+    Azure resource group. Defaults to {prefix}-rg.
+#>
 param
 (
     [string] $prefix,

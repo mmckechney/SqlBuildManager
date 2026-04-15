@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates Container App settings files from a resource naming prefix.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Resolves Azure resource names from a naming prefix
+    and delegates to create_containerapp_settingsfile.ps1 to generate Container App settings files
+    for SQL Build Manager. Supports optional container registry and Key Vault configuration.
+#>
 param
 (
     [string] $sbmExe = "sbm.exe",

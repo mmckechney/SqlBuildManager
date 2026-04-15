@@ -1,3 +1,19 @@
+<#
+.SYNOPSIS
+    Resolves resource names from a prefix and delegates to build_and_upload_batch.ps1.
+.DESCRIPTION
+    Wrapper script that loads standard resource names from a deployment prefix,
+    then calls build_and_upload_batch.ps1 to publish, package, and upload the
+    SQL Build Manager console application as Azure Batch application packages.
+.PARAMETER prefix
+    Environment name prefix used to derive resource names.
+.PARAMETER resourceGroupName
+    Azure resource group name. Derived from prefix if not specified.
+.PARAMETER action
+    BuildOnly, UploadOnly, or BuildAndUpload (default).
+.PARAMETER path
+    Output directory for build artifacts. Defaults to src\TestConfig.
+#>
 param
 (
     [Parameter(Mandatory=$true)]

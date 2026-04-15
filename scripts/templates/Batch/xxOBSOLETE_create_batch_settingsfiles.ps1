@@ -1,3 +1,12 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates Azure Batch settings files for SQL Build Manager.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Creates multiple Azure Batch settings files by
+    retrieving keys and connection strings from Azure resources and invoking 'sbm batch savesettings'.
+    Generates settings for Windows/Linux, Password/ManagedIdentity auth, with/without Service Bus
+    queues and Key Vault combinations.
+#>
 param
 (
     [string] $sbmExe = "sbm.exe",

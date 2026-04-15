@@ -1,11 +1,17 @@
+<#
+.SYNOPSIS
+    Stops the AKS cluster for a given deployment prefix.
+.DESCRIPTION
+    Resolves the AKS cluster name from the prefix and stops it to save costs
+    when the cluster is not in use.
+.PARAMETER prefix
+    Environment name prefix used to derive resource names.
+#>
 param
 (
     [Parameter(Mandatory=$true)]
     [string] $prefix
 )
-
-# Get the repo root
-$repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
 }

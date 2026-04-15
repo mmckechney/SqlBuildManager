@@ -1,3 +1,12 @@
+<#
+.SYNOPSIS
+    Lists and deletes all Azure Container Apps in a resource group.
+.DESCRIPTION
+    Enumerates all Container Apps in the specified resource group, displays them,
+    then deletes each one. Used to clean up Container App resources after testing.
+.PARAMETER resourceGroupName
+    Azure resource group containing the Container Apps to delete.
+#>
 param
 (
     [string] $resourceGroupName

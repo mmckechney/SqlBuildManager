@@ -1,10 +1,16 @@
+<#
+.SYNOPSIS
+    Deletes the Service Bus namespace for a given deployment prefix.
+.DESCRIPTION
+    Resolves the Service Bus namespace name from the prefix and deletes it from
+    the resource group. Used to tear down messaging resources after testing.
+.PARAMETER prefix
+    Environment name prefix used to derive resource names.
+#>
 param
 (
     [string] $prefix
 )
-
-# Get the repo root
-$repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
 }

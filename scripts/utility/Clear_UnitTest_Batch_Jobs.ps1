@@ -1,3 +1,17 @@
+<#
+.SYNOPSIS
+    Deletes completed Azure Batch jobs matching test naming conventions.
+.DESCRIPTION
+    Lists Batch jobs in the specified account and deletes those whose names start
+    with "SqlBuild", "batch-", or "bat-". Optionally includes active (non-completed)
+    jobs when includeActive is true.
+.PARAMETER prefix
+    Environment name prefix used to derive the Batch account name.
+.PARAMETER resourceGroupName
+    Azure resource group. Defaults to {prefix}-rg.
+.PARAMETER includeActive
+    When true, deletes active jobs in addition to completed jobs. Default: false.
+#>
 param
 (
     [string] $prefix,

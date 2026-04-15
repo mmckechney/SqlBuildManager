@@ -1,3 +1,15 @@
+<#
+.SYNOPSIS
+    Deletes non-system storage containers from the test storage account.
+.DESCRIPTION
+    Lists all blob containers in the prefix storage account and deletes those that
+    do not start with "app-" or "eventhubcheckpoint". These are test-generated
+    containers that can be safely removed after integration tests.
+.PARAMETER prefix
+    Environment name prefix used to derive the storage account name.
+.PARAMETER resourceGroupName
+    Azure resource group. Defaults to {prefix}-rg.
+#>
 param
 (
     [string] $prefix,

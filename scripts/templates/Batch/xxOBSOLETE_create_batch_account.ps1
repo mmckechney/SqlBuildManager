@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates an Azure Batch account via Bicep deployment.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Creates an Azure Batch account by deploying the
+    batch.bicep Bicep template to a resource group with the specified prefix, storage account,
+    and managed identity parameters.
+#>
 param
 (
     [string] $prefix,

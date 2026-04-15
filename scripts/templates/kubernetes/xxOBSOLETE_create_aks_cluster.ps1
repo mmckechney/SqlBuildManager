@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates an Azure Kubernetes Service (AKS) cluster.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Creates an AKS cluster by deploying the aks.bicep
+    Bicep template, retrieves cluster credentials, creates the 'sqlbuildmanager' Kubernetes
+    namespace, and configures a Kubernetes service account with Azure workload identity federation.
+#>
 param
 (
     [string] $prefix,

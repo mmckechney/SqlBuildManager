@@ -1,3 +1,15 @@
+<#
+.SYNOPSIS
+    Validates that every settings file in TestConfig is referenced by unit tests.
+.DESCRIPTION
+    Scans all .yaml and .json files in the TestConfig directory and checks that each
+    is referenced somewhere in the ExternalTest project source. Reports any unreferenced
+    settings files as errors.
+.PARAMETER path
+    Path to the TestConfig directory. Default: ../../src/TestConfig.
+.PARAMETER testPath
+    Path to the ExternalTest project directory. Default: ../../src/SqlBuildManager.Console.ExternalTest.
+#>
 param
 (
     [string] $path = "..\..\src\TestConfig",

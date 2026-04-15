@@ -1,4 +1,16 @@
-
+<#
+.SYNOPSIS
+    Creates or reads settings file key, SQL username, and SQL password files.
+.DESCRIPTION
+    Ensures that settingsfilekey.txt, un.txt, and pw.txt exist in the TestConfig
+    output directory. If they do not exist, generates new values (AES-256 key and
+    random password). These files are consumed by settings file generation scripts
+    to encrypt test configuration.
+.PARAMETER prefix
+    Environment name prefix (unused directly, passed through for consistency).
+.PARAMETER path
+    Output directory for the key/credential files. Defaults to src\TestConfig.
+#>
 param (
     $prefix,
     $path

@@ -1,3 +1,12 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Master script to provision all Azure resources and generate settings files.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Provisions all Azure resources including Resource Group,
+    VNet, Storage, Event Hub, Service Bus, Key Vault, Managed Identity, SQL databases, AKS cluster,
+    Batch account, Container Registry, and Container App Environment via Bicep templates. Then
+    generates all settings files for each execution target. Superseded by 'azd up'.
+#>
 param(
 [Parameter(Mandatory=$True)]
 [string]

@@ -1,3 +1,20 @@
+<#
+.SYNOPSIS
+    Runs all test artifact cleanup scripts in parallel.
+.DESCRIPTION
+    Orchestrates parallel cleanup of integration test remnants across multiple Azure
+    services: Batch jobs, Service Bus topic subscriptions, storage containers,
+    Container Apps, Kubernetes resources (jobs, config maps, secrets), YAML files,
+    and ACI JSON files.
+.PARAMETER prefix
+    Environment name prefix used to derive resource names.
+.PARAMETER resourceGroupName
+    Azure resource group. Defaults to {prefix}-rg.
+.PARAMETER includeActiveBatchJobs
+    When true, deletes active Batch jobs too. Default: true.
+.PARAMETER removeAllContainerApps
+    When true, deletes all Container Apps. Default: true.
+#>
 param
 (
     [string] $prefix,

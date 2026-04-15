@@ -1,3 +1,10 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates an Azure Container App Environment via Bicep deployment.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Creates an Azure Container App Environment by deploying
+    the containerappenv.bicep Bicep template with Log Analytics workspace and VNet subnet configuration.
+#>
 param
 (
     [string] $prefix,

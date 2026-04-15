@@ -1,3 +1,12 @@
+<#
+.SYNOPSIS
+    Deletes all Azure Batch pools in all Batch accounts for a given deployment prefix.
+.DESCRIPTION
+    Lists all Batch accounts in the prefix resource group, enumerates their pools,
+    and deletes each pool. Used to clean up Batch resources after integration tests.
+.PARAMETER prefix
+    Environment name prefix used to derive resource names.
+#>
 param
 (
     [Parameter(Mandatory=$true)]

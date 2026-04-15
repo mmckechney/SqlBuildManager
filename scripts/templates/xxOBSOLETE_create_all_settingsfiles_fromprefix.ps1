@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates all settings files from a resource naming prefix.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Orchestrates creation of all settings files for
+    AKS, Batch, Container App, ACI, and Database from a naming prefix by invoking each service's
+    respective settings file creation script.
+#>
 [CmdletBinding()]
 param (
     [Parameter(Mandatory=$true)]

@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates SQL Server databases and grants managed identity permissions.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Deploys SQL Server databases, elastic pools, and
+    firewall settings via Bicep templates (network.bicep and database.bicep), then grants managed
+    identity permissions to the databases. Uses Entra ID (Azure AD) only authentication.
+#>
 param
 (
     [string] $prefix,

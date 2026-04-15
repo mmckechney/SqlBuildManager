@@ -1,3 +1,12 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Adds service connection secrets to Azure Key Vault.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Previously stored connection strings and keys for
+    Batch, Storage, Event Hub, and Service Bus in Azure Key Vault. Now displays a deprecation
+    message indicating that Managed Identity with RBAC is used for all service-to-service
+    communication instead.
+#>
 param
 (
     [string] $path,

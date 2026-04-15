@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates AKS settings files from a resource naming prefix.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Resolves Azure resource names from a naming prefix
+    and delegates to create_aks_settingsfile.ps1 to generate Kubernetes settings files for
+    SQL Build Manager. Also creates a runnerpod.yaml from a template.
+#>
 param
 (
     [Parameter(Mandatory=$true)]

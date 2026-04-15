@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates an Azure Virtual Network with subnets.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Creates an Azure Virtual Network with subnets for
+    AKS, Container Apps, ACI, and Batch by deploying the network.bicep Bicep template with
+    configurable subnet names and IP address ranges.
+#>
 [CmdletBinding()]
 param (
 

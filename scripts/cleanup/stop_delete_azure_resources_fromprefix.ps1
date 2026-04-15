@@ -1,10 +1,17 @@
+<#
+.SYNOPSIS
+    Orchestrates full cleanup of Azure resources for a given deployment prefix.
+.DESCRIPTION
+    Sequentially deletes SQL databases, Batch pools, Service Bus namespace,
+    Event Hub namespace, and stops the AKS cluster by calling the individual
+    cleanup scripts for each resource type.
+.PARAMETER prefix
+    Environment name prefix used to derive resource names.
+#>
 param
 (
     [string] $prefix
 )
-
-# Get the repo root
-$repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
 }

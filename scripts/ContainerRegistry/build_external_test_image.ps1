@@ -1,4 +1,20 @@
-
+<#
+.SYNOPSIS
+    Builds and pushes the external (integration) test container image to ACR.
+.DESCRIPTION
+    Copies the src/ folder (excluding build artifacts like .vs, bin, obj) to a temp
+    directory and uses ACR Build to build the Dockerfile.tests image. The resulting
+    image contains the test runner, Azure CLI, and kubectl for running integration
+    tests in Azure Container Instances.
+.PARAMETER prefix
+    Environment name prefix used to derive the ACR name.
+.PARAMETER resourceGroupName
+    Azure resource group containing the container registry.
+.PARAMETER wait
+    Whether to wait for the ACR build to complete. Default: true.
+.PARAMETER imageTag
+    Tag for the built image. Default: "test-runner".
+#>
 param
 (
     [string] $prefix,

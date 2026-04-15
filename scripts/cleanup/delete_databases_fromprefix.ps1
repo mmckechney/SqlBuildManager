@@ -1,3 +1,12 @@
+<#
+.SYNOPSIS
+    Deletes all SQL Server instances in the resource group for a given deployment prefix.
+.DESCRIPTION
+    Lists all SQL servers in the prefix resource group and deletes each one,
+    including their elastic pools and databases. Used to tear down test databases.
+.PARAMETER prefix
+    Environment name prefix used to derive resource names.
+#>
 param
 (
     [Parameter(Mandatory=$true)]

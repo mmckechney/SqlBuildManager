@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+    Runs all unit test projects with code coverage collection and generates a report.
+.DESCRIPTION
+    Discovers all *.UnitTest.csproj projects under src, runs each with code coverage
+    collection into a dated results folder, converts .coverage files to .coveragexml
+    using the CodeCoverage tool, and generates an HTML report via ReportGenerator.
+#>
 
 try {
 

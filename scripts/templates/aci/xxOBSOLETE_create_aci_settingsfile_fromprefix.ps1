@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates ACI settings files from a resource naming prefix.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Resolves Azure resource names from a naming prefix
+    and delegates to create_aci_settingsfile.ps1 to generate Azure Container Instances (ACI)
+    settings files for SQL Build Manager. Creates settings with and without container registry.
+#>
 param
 (
     [string] $sbmExe = "sbm.exe",

@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates Batch settings files from a resource naming prefix.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Resolves Azure resource names from a naming prefix
+    and delegates to create_batch_settingsfiles.ps1 to generate Azure Batch settings files for
+    SQL Build Manager.
+#>
 param
 (
     [Parameter(Mandatory=$true)]

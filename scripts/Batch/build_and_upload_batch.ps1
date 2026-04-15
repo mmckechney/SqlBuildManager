@@ -1,3 +1,20 @@
+<#
+.SYNOPSIS
+    Publishes the sbm console app for Windows and Linux, then uploads as Azure Batch application packages.
+.DESCRIPTION
+    Builds self-contained publish artifacts for win-x64 and linux-x64 targets, creates zip
+    packages from the publish output, and uploads them to an Azure Batch account as versioned
+    application packages (SqlBuildManagerWindows and SqlBuildManagerLinux). The version is
+    read from the built sbm.exe assembly.
+.PARAMETER path
+    Directory for zip output artifacts.
+.PARAMETER resourceGroupName
+    Azure resource group containing the Batch account.
+.PARAMETER batchAcctName
+    Name of the Azure Batch account.
+.PARAMETER action
+    BuildOnly, UploadOnly, or BuildAndUpload (default).
+#>
 param
 (
     [string] $path,

@@ -1,4 +1,17 @@
-
+<#
+.SYNOPSIS
+    Builds and pushes the production SQL Build Manager runtime container image to ACR.
+.DESCRIPTION
+    Copies the src/ folder to a clean temp directory (excluding .vs, bin, obj, TestConfig,
+    TestResults), reads the assembly version from AssemblyVersioning.cs, then builds the
+    Dockerfile via ACR Build with date, version, and latest-vNext tags.
+.PARAMETER azureContainerRegistry
+    Name of the Azure Container Registry.
+.PARAMETER resourceGroupName
+    Azure resource group containing the container registry.
+.PARAMETER wait
+    Whether to wait for the ACR build to complete. Default: true.
+#>
 param
 (
     [string] $azureContainerRegistry, 

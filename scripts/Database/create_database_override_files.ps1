@@ -1,3 +1,16 @@
+<#
+.SYNOPSIS
+    Creates SQL Server database override config files for integration tests.
+.DESCRIPTION
+    Enumerates all SQL Servers and databases in the resource group and generates
+    multiple test configuration files: database target lists (with tags, bad targets,
+    client targets, double-client targets) and a server.txt file. These files are
+    used by ExternalTest projects to target the correct databases during integration tests.
+.PARAMETER path
+    Output directory for config files. Defaults to src\TestConfig.
+.PARAMETER prefix
+    Environment name prefix used to derive resource names.
+#>
 param
 (
     [string] $path,

@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates all Container App settings file variants from a prefix.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Orchestrates creation of all Container App settings
+    file variants by calling create_containerapp_settingsfile_fromprefix.ps1 with all combinations
+    of container registry (with/without) and Key Vault (with/without) options.
+#>
 param
 (
     [Parameter(Mandatory=$true)]

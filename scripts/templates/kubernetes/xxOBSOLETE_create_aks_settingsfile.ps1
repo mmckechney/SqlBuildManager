@@ -1,3 +1,12 @@
+<#
+.SYNOPSIS
+    [OBSOLETE] Creates AKS/Kubernetes settings files for SQL Build Manager.
+.DESCRIPTION
+    OBSOLETE: This script is no longer used. Creates Kubernetes settings files by retrieving keys
+    and connection strings from Azure resources (Storage, Event Hub, Service Bus) and invoking
+    'sbm k8s savesettings'. Generates settings for Password/ManagedIdentity auth with/without
+    Key Vault combinations.
+#>
 param
 (
     [string] $sbmExe = "sbm.exe",
