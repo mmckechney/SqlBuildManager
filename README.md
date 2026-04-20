@@ -1,3 +1,5 @@
+<img src="src/SqlBuildManager.Console/images/SqlBuildManager_logo.png" alt="Logo" width="50%" />
+
 # SQL Build Manager
 
 SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases (both SQL Server and PostgreSQL). It provides a comprehensive set of command line options for the management from one to many thousands of databases.
