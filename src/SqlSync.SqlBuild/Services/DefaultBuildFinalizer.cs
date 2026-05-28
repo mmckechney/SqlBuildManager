@@ -281,7 +281,11 @@ namespace SqlSync.SqlBuild.Services
                 if (!context.IsTransactional)
                 {
                     updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
-                    await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
+                    var auditLogged = await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
+                    if (!auditLogged)
+                    {
+                        ReportAuditLoggingFailure();
+                    }
                 }
             }
             else
@@ -300,8 +304,17 @@ namespace SqlSync.SqlBuild.Services
                     {
                         myBuild.FinalStatus = BuildItemStatus.Committed;
                         updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
-                        await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
-                        finalizerContext.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
+                        var auditLogged = await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
+                        if (auditLogged)
+                        {
+                            finalizerContext.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
+                        }
+                        else
+                        {
+                            myBuild.FinalStatus = BuildItemStatus.Unknown;
+                            ReportAuditLoggingFailure();
+                            finalizerContext.RaiseBuildErrorRollBackEvent(context);
+                        }
                     }
                     else
                     {
@@ -362,6 +375,11 @@ namespace SqlSync.SqlBuild.Services
                     log.LogWarning($"Build was not committed. Final status is {myBuild.FinalStatus}");
                     finalBuildResult = ConvertBuildItemStatusToResultStatus(myBuild.FinalStatus, context.IsTransactional, context.IsTrialBuild);
                 }
+                else if (myBuild.FinalStatus != BuildItemStatus.Committed && myBuild.FinalStatus != BuildItemStatus.TrialRolledBack)
+                {
+                    log.LogWarning($"Build completed with non-success status {myBuild.FinalStatus}");
+                    finalBuildResult = ConvertBuildItemStatusToResultStatus(myBuild.FinalStatus, context.IsTransactional, context.IsTrialBuild);
+                }
                 else
                 {
                     if (context.IsTrialBuild == false)
@@ -387,6 +405,13 @@ namespace SqlSync.SqlBuild.Services
             }
             connectionsService.Connections.Clear();
             return (myBuild, updatedDataModel, finalBuildResult);
+        }
+
+        private void ReportAuditLoggingFailure()
+        {
+            const string message = "Committed script audit logging failed.";
+            log.LogError(message);
+            progressReporter.ReportProgress(100, new CommitFailureEventArgs(message));
         }
 
         public BuildResultStatus CalculateFinalStatus(IList<BuildResultStatus> buildResults)

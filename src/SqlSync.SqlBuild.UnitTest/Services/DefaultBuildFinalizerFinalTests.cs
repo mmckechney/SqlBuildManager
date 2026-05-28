@@ -29,6 +29,12 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         public void Setup()
         {
             _mockSqlLoggingService = new Mock<ISqlLoggingService>();
+            _mockSqlLoggingService
+                .Setup(x => x.LogCommittedScriptsToDatabase(
+                    It.IsAny<List<SqlSync.SqlBuild.SqlLogging.CommittedScript>>(),
+                    It.IsAny<ISqlBuildRunnerProperties>(),
+                    It.IsAny<MultiDbData>()))
+                .ReturnsAsync(true);
             _mockProgressReporter = new Mock<IProgressReporter>();
             _finalizer = new DefaultBuildFinalizer(_mockSqlLoggingService.Object, _mockProgressReporter.Object);
             
@@ -155,6 +161,31 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         #endregion
 
         #region PerformRunScriptFinalization Tests
+
+        [TestMethod]
+        public async Task PerformRunScriptFinalization_AuditLoggingFailure_ReturnsUnknown()
+        {
+            _mockSqlLoggingService
+                .Setup(x => x.LogCommittedScriptsToDatabase(
+                    It.IsAny<List<SqlSync.SqlBuild.SqlLogging.CommittedScript>>(),
+                    It.IsAny<ISqlBuildRunnerProperties>(),
+                    It.IsAny<MultiDbData>()))
+                .ReturnsAsync(false);
+
+            var mockConnectionsService = new Mock<IConnectionsService>();
+            mockConnectionsService.Setup(x => x.Connections).Returns(new Dictionary<string, BuildConnectData>());
+            var mockFinalizerContext = new Mock<IBuildFinalizerContext>();
+            var mockContext = CreateMockContext(isTransactional: false, isTrialBuild: false);
+            var build = new Build("Test", "Full", DateTime.Now, null, "Server", BuildItemStatus.Pending, "BUILD1", "User");
+
+            var (updatedBuild, _, result) = await _finalizer.PerformRunScriptFinalizationAsync(
+                mockContext.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: false, build);
+
+            Assert.AreEqual(BuildItemStatus.Unknown, updatedBuild.FinalStatus);
+            Assert.AreEqual(BuildResultStatus.UNKNOWN, result);
+            mockFinalizerContext.Verify(x => x.RaiseBuildCommittedEvent(It.IsAny<object>(), It.IsAny<RunnerReturn>()), Times.Never);
+            mockFinalizerContext.Verify(x => x.RaiseBuildErrorRollBackEvent(It.IsAny<object>()), Times.Once);
+        }
 
         [TestMethod]
         public async Task PerformRunScriptFinalization_WithNullContext_ThrowsArgumentNullException()
