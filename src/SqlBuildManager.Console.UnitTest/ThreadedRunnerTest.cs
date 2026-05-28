@@ -3,6 +3,7 @@ using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -249,6 +250,61 @@ namespace SqlBuildManager.Console.UnitTest
 
             // Assert - should work fine
             Assert.IsNotNull(runner.Server);
+        }
+
+        [TestMethod]
+        public void ThreadedRunner_Constructor_EmptyOverrides_ThrowsClearError()
+        {
+            var cmdArgs = CreateMinimalCmdArgs();
+
+            var ex = CaptureArgumentException(() =>
+                new ThreadedRunner("TestServer", new List<DatabaseOverride>(), cmdArgs, "testuser", false));
+
+            Assert.IsTrue(ex.Message.Contains("At least one database override is required"));
+        }
+
+        [TestMethod]
+        public void Worker_ParseSingleDatabaseOverride_ParsesDefaultAndTarget()
+        {
+            var parsed = Worker.ParseSingleDatabaseOverride("TestServer", "DefaultDb,TargetDb");
+
+            Assert.AreEqual("TestServer", parsed.Server);
+            Assert.AreEqual("DefaultDb", parsed.DefaultDbTarget);
+            Assert.AreEqual("TargetDb", parsed.OverrideDbTarget);
+        }
+
+        [TestMethod]
+        public void Worker_ParseSingleDatabaseOverride_ParsesServerPrefixedPostgresHost()
+        {
+            var parsed = Worker.ParseSingleDatabaseOverride("localhost:5432", "localhost:5432:DefaultDb,TargetDb#TagA");
+
+            Assert.AreEqual("DefaultDb", parsed.DefaultDbTarget);
+            Assert.AreEqual("TargetDb", parsed.OverrideDbTarget);
+            Assert.AreEqual("TagA", parsed.ConcurrencyTag);
+        }
+
+        [TestMethod]
+        public void Worker_ParseSingleDatabaseOverride_InvalidOverride_ThrowsClearError()
+        {
+            var ex = CaptureArgumentException(() =>
+                Worker.ParseSingleDatabaseOverride("TestServer", "DefaultDbOnly"));
+
+            Assert.IsTrue(ex.Message.Contains("default,target"));
+        }
+
+        private static ArgumentException CaptureArgumentException(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (ArgumentException ex)
+            {
+                return ex;
+            }
+
+            Assert.Fail("Expected an ArgumentException.");
+            return null!;
         }
     }
 }

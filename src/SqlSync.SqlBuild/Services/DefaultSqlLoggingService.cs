@@ -175,7 +175,7 @@ namespace SqlSync.SqlBuild.Services
         {
             try
             {
-                DbCommand cmd = conn.CreateCommand();
+                using DbCommand cmd = conn.CreateCommand();
                 cmd.CommandText = resourceProvider.CheckTableExistsQuery("SqlBuild_Logging");
                 if (cmd!.Connection!.State == ConnectionState.Closed)
                     cmd.Connection.Open();
@@ -341,7 +341,7 @@ namespace SqlSync.SqlBuild.Services
             var sql = new StringBuilder();
             sql.AppendLine($"INSERT INTO {tableName}(BuildFileName,ScriptFileName,ScriptId,ScriptFileHash,CommitDate,Sequence,UserId,AllowScriptBlock,ScriptText,Tag,TargetDatabase,RunWithVersion,BuildProjectHash,BuildRequestedBy,ScriptRunStart,ScriptRunEnd,Description) VALUES");
 
-            var cmd = connData.Connection.CreateCommand();
+            using var cmd = connData.Connection.CreateCommand();
             if (connData.Transaction != null)
                 cmd.Transaction = connData.Transaction;
 
@@ -390,7 +390,7 @@ namespace SqlSync.SqlBuild.Services
             if (connData.Connection.State == ConnectionState.Closed)
                 await connData.Connection.OpenAsync();
 
-            var cmd = connData.Connection.CreateCommand();
+            using var cmd = connData.Connection.CreateCommand();
             cmd.CommandText = resourceProvider.LogScriptInsert;
             if (connData.Transaction != null)
                 cmd.Transaction = connData.Transaction;

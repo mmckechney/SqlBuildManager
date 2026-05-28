@@ -148,6 +148,7 @@ namespace SqlBuildManager.Console
             if (string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.SubscriptionId))
             {
                 log.LogError("The value for --subscriptionid is required as a parameter or inclusion in the --settingsfile");
+                return 1;
             }
 
             var utcMonitorStart = DateTime.UtcNow;

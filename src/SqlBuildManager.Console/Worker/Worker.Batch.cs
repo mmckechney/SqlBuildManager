@@ -143,9 +143,7 @@ namespace SqlBuildManager.Console
                 stream = false;
             }
 
-            Task<(int, string)> batchExeTask = batchExe.StartBatch(stream, unittest);
-            batchExeTask.Wait();
-            (retVal, readOnlySas) = batchExeTask.Result;
+            (retVal, readOnlySas) = await batchExe.StartBatch(stream, unittest).ConfigureAwait(false);
 
             if (monitorTask != null)
             {

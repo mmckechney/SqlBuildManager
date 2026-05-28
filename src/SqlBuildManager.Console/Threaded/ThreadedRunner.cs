@@ -110,6 +110,17 @@ namespace SqlBuildManager.Console.Threaded
 
         public ThreadedRunner(string serverName, List<DatabaseOverride> overrides, CommandLineArgs cmdArgs, string buildRequestedBy, bool forceCustomDacpac, BuildExecutionContext context = null!)
         {
+            if (string.IsNullOrWhiteSpace(serverName))
+                throw new ArgumentException("Server name or concurrency tag is required.", nameof(serverName));
+            if (overrides == null || overrides.Count == 0)
+                throw new ArgumentException("At least one database override is required.", nameof(overrides));
+            if (cmdArgs == null)
+                throw new ArgumentNullException(nameof(cmdArgs));
+            if (cmdArgs.AuthenticationArgs == null)
+                throw new ArgumentException("Authentication arguments are required.", nameof(cmdArgs));
+            if (cmdArgs.DacPacArgs == null)
+                throw new ArgumentException("DACPAC arguments are required.", nameof(cmdArgs));
+
             _context = context ?? new BuildExecutionContext();
             if (serverName.StartsWith("#"))
             {

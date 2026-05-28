@@ -430,7 +430,7 @@ namespace SqlSync.SqlBuild
 
             public SqlExecutionResult Execute(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional)
             {
-                var cmd = cData.Connection.CreateCommand();
+                using var cmd = cData.Connection.CreateCommand();
                 cmd.CommandText = sql;
                 if (isTransactional)
                     cmd.Transaction = cData.Transaction;
@@ -470,7 +470,7 @@ namespace SqlSync.SqlBuild
 
             public async Task<SqlExecutionResult> ExecuteAsync(string sql, int timeoutSeconds, BuildConnectData cData, bool isTransactional, CancellationToken cancellationToken = default)
             {
-                var cmd = cData.Connection.CreateCommand();
+                using var cmd = cData.Connection.CreateCommand();
                 cmd.CommandText = sql;
                 if (isTransactional)
                     cmd.Transaction = cData.Transaction;
