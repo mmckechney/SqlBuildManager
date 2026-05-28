@@ -38,10 +38,10 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             try { if (Directory.Exists(_testDir)) Directory.Delete(_testDir, true); } catch { }
         }
 
-        #region High Priority: Finalizer Commit Fails → RolledBack (DefaultBuildFinalizer.cs:201-207)
+        #region High Priority: Finalizer Commit Fails → Failure Status (DefaultBuildFinalizer.cs:201-207)
 
         [TestMethod]
-        public async Task Finalizer_CommitBuildThrows_SetsRolledBackAndRaisesErrorEvent()
+        public async Task Finalizer_CommitBuildThrows_SetsFailureAndRaisesErrorEvent()
         {
             // Arrange: create a finalizer with a connection service whose Transaction.Commit() throws
             var mockSqlLoggingService = new Mock<ISqlLoggingService>();
@@ -73,17 +73,50 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var (updatedBuild, _, result) = await finalizer.PerformRunScriptFinalizationAsync(
                 context.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: false, build);
 
-            // Assert: commit failed → should be RolledBack, not Committed
-            Assert.AreEqual(BuildItemStatus.RolledBack, updatedBuild.FinalStatus,
-                "When CommitBuild fails, FinalStatus should be RolledBack");
-            Assert.AreEqual(BuildResultStatus.BUILD_COMMITTED, result,
-                "BuildResultStatus follows the non-failure path since buildFailure was false");
+            // Assert: commit failed → should not be reported as Committed
+            Assert.AreEqual(BuildItemStatus.PendingRollBack, updatedBuild.FinalStatus,
+                "When CommitBuild fails, FinalStatus should not be Committed");
+            Assert.AreEqual(BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK, result,
+                "Commit failure should produce a failed build result");
             
             // Verify error rollback event was raised
             mockFinalizerContext.Verify(
                 x => x.RaiseBuildErrorRollBackEvent(It.IsAny<ISqlBuildRunnerProperties>()),
                 Times.Once,
                 "Should raise error rollback event when commit fails");
+        }
+
+        [TestMethod]
+        public async Task Finalizer_BuildFailureTransactional_RollsBackTransaction()
+        {
+            var mockSqlLoggingService = new Mock<ISqlLoggingService>();
+            var mockProgressReporter = new Mock<IProgressReporter>();
+            var finalizer = new DefaultBuildFinalizer(mockSqlLoggingService.Object, mockProgressReporter.Object);
+
+            var mockTransaction = new Mock<DbTransaction>();
+            var mockConnection = new Mock<DbConnection>();
+            var connData = new BuildConnectData
+            {
+                ServerName = "TestServer",
+                DatabaseName = "TestDb",
+                Transaction = mockTransaction.Object,
+                Connection = mockConnection.Object
+            };
+
+            var connections = new Dictionary<string, BuildConnectData> { { "TestServer.TestDb", connData } };
+            var mockConnectionsService = new Mock<IConnectionsService>();
+            mockConnectionsService.Setup(x => x.Connections).Returns(connections);
+
+            var context = CreateMockRunnerProperties(isTransactional: true, isTrialBuild: false);
+            var mockFinalizerContext = new Mock<IBuildFinalizerContext>();
+            var build = new Build("Test", "Full", DateTime.Now, null, "Server", BuildItemStatus.Pending, "BUILD1", "User");
+
+            var (updatedBuild, _, result) = await finalizer.PerformRunScriptFinalizationAsync(
+                context.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: true, build);
+
+            mockTransaction.Verify(x => x.Rollback(), Times.Once);
+            Assert.AreEqual(BuildItemStatus.RolledBack, updatedBuild.FinalStatus);
+            Assert.AreEqual(BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK, result);
         }
 
         [TestMethod]
@@ -144,10 +177,10 @@ namespace SqlSync.SqlBuild.UnitTest.Services
 
         #endregion
 
-        #region High Priority: Savepoint Rollback Throws SqlException → Full Rollback (SqlBuildRunner.cs:347-361)
+        #region High Priority: Savepoint Rollback Throws SqlException → Finalizer Rollback (SqlBuildRunner.cs:347-361)
 
         [TestMethod]
-        public void HandleSqlException_SavepointRollbackThrowsSqlException_TriggersFullRollback()
+        public void HandleSqlException_SavepointRollbackThrowsSqlException_DefersFullRollback()
         {
             // Arrange: call HandleSqlException directly with a real SqlException
             var ctx = MockFactory.CreateMockRunnerContext();
@@ -180,8 +213,8 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             Assert.IsTrue(buildFailure, "buildFailure should be true when savepoint rollback throws SqlException");
             mockBuildFinalizer.Verify(
                 x => x.RollbackBuild(It.IsAny<IConnectionsService>(), true),
-                Times.AtLeastOnce,
-                "Full RollbackBuild should be called when savepoint rollback throws SqlException");
+                Times.Never,
+                "Finalization owns full build rollback when savepoint rollback fails");
         }
 
         #endregion
@@ -229,7 +262,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void HandleSqlException_SavepointRollbackInvalidOp_NotZombied_TriggersFullRollback()
+        public void HandleSqlException_SavepointRollbackInvalidOp_NotZombied_DefersFullRollback()
         {
             // Arrange
             var ctx = MockFactory.CreateMockRunnerContext();
@@ -260,12 +293,12 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 sqlEx, "test.sql", "INSERT INTO T VALUES(1)", "db", "savepoint1",
                 DateTime.Now, rollBackOnError: true, causesBuildFailure: true, cData, ref scriptRun);
 
-            // Assert: not zombied → full rollback called
+            // Assert: not zombied → finalizer owns full rollback
             Assert.IsTrue(buildFailure);
             mockBuildFinalizer.Verify(
                 x => x.RollbackBuild(It.IsAny<IConnectionsService>(), true),
-                Times.AtLeastOnce,
-                "Full RollbackBuild should be called when transaction is NOT zombied");
+                Times.Never,
+                "Finalization owns full build rollback when transaction is NOT zombied");
         }
 
         #endregion
@@ -735,7 +768,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         }
 
         [TestMethod]
-        public void HandleSqlException_CausesFailureTrue_NoRollbackOnError_StillTriggersRollback()
+        public void HandleSqlException_CausesFailureTrue_NoRollbackOnError_DefersRollback()
         {
             // Arrange: rollBackOnError=false but causesBuildFailure=true
             var ctx = MockFactory.CreateMockRunnerContext();
@@ -757,12 +790,12 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 sqlEx, "test.sql", "SELECT 1", "db", "savepoint1",
                 DateTime.Now, rollBackOnError: false, causesBuildFailure: true, cData, ref scriptRun);
 
-            // Assert: build failure AND rollback triggered via causesBuildFailure path (line 387-397)
+            // Assert: build failure, with full rollback deferred to finalization
             Assert.IsTrue(buildFailure, "buildFailure should be true when causesBuildFailure=true");
             mockBuildFinalizer.Verify(
                 x => x.RollbackBuild(It.IsAny<IConnectionsService>(), true),
-                Times.Once,
-                "Full RollbackBuild should be called via causesBuildFailure path even when rollBackOnError=false");
+                Times.Never,
+                "Finalization owns full build rollback even when rollBackOnError=false");
         }
 
         [TestMethod]

@@ -169,9 +169,9 @@ namespace SqlSync.SqlBuild
                             currentRun.Results = (currentRun.Results ?? string.Empty) + execResult.Results;
                             _ctx.PublishScriptLog(false, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, fileName, currentRun.Results + _ctx.SqlInfoMessage));
                         }
-                        catch (SqlException e)
+                        catch (DbException e)
                         {
-                            var (handledBuildFailure, timeoutDetected) = HandleSqlException(e, fileName, batchScripts[x], targetDatabase, savePointName, start, rollBackOnError, causesBuildFailure, cData, ref currentRun);
+                            var (handledBuildFailure, timeoutDetected) = HandleDbException(e, fileName, batchScripts[x], targetDatabase, savePointName, start, rollBackOnError, causesBuildFailure, cData, ref currentRun);
                             failureDueToScriptTimeout = failureDueToScriptTimeout || timeoutDetected;
                             buildFailure = buildFailure || handledBuildFailure;
                         }
@@ -296,26 +296,42 @@ namespace SqlSync.SqlBuild
 
         internal (bool buildFailure, bool timeoutDetected) HandleSqlException(SqlException e, string fileName, string batchScript, string targetDatabase, string savePointName, DateTime start, bool rollBackOnError, bool causesBuildFailure, BuildConnectData cData, ref BuildModels.ScriptRun currentRun)
         {
+            return HandleDbException(e, fileName, batchScript, targetDatabase, savePointName, start, rollBackOnError, causesBuildFailure, cData, ref currentRun);
+        }
+
+        internal (bool buildFailure, bool timeoutDetected) HandleDbException(DbException e, string fileName, string batchScript, string targetDatabase, string savePointName, DateTime start, bool rollBackOnError, bool causesBuildFailure, BuildConnectData cData, ref BuildModels.ScriptRun currentRun)
+        {
             var log = _ctx.Log;
             var progress = _ctx.ProgressReporter ?? new DefaultProgressReporter();
             var logMsg = new StringBuilder($"Script File: {fileName}{Environment.NewLine}");
             bool timeoutDetected = false;
-            foreach (SqlError error in e.Errors)
+            if (e is SqlException sqlException)
             {
-                logMsg.Append($"Line Number: {error.LineNumber}{Environment.NewLine}");
-                logMsg.Append($"Error Message: {error.Message}{Environment.NewLine}");
+                foreach (SqlError error in sqlException.Errors)
+                {
+                    logMsg.Append($"Line Number: {error.LineNumber}{Environment.NewLine}");
+                    logMsg.Append($"Error Message: {error.Message}{Environment.NewLine}");
+                    logMsg.Append($"Offending Script:{Environment.NewLine}{batchScript}");
+                    logMsg.Append("----------------");
+                    log.LogError($"Error running script in: {fileName}");
+                    log.LogError(error.Message);
+
+                    // Check for timeout error number (-2) or timeout message
+                    if (error.Number == -2 || IsTimeoutMessage(error.Message))
+                    {
+                        timeoutDetected = true;
+                    }
+                }
+            }
+            else
+            {
+                logMsg.Append($"Error Message: {e.Message}{Environment.NewLine}");
                 logMsg.Append($"Offending Script:{Environment.NewLine}{batchScript}");
                 logMsg.Append("----------------");
                 log.LogError($"Error running script in: {fileName}");
-                log.LogError(error.Message);
-
-                // Check for timeout error number (-2) or timeout message
-                if (error.Number == -2 || error.Message.Trim().ToLower().Contains("timeout expired."))
-                {
-                    timeoutDetected = true;
-                }
+                log.LogError(e.Message);
             }
-            if (!timeoutDetected && e.Message.Trim().ToLower().Contains("timeout expired."))
+            if (!timeoutDetected && IsTimeoutMessage(e.Message))
             {
                 log.LogWarning($"Encountered a Timeout exception for script: \"{batchScript}\"");
                 timeoutDetected = true;
@@ -344,34 +360,34 @@ namespace SqlSync.SqlBuild
                     else
                         log.LogError($"Script Error. No Rollback Available for {fileName}");
                 }
-                catch (SqlException sqle)
+                catch (DbException dbException)
                 {
                     logMsg.Clear();
-                    foreach (SqlError err in sqle.Errors)
-                        logMsg.Append(err.Message + "\r\n");
-                    currentRun.Results = (currentRun.Results ?? string.Empty) + logMsg.ToString();
-                    if (_ctx.IsTransactional)
+                    if (dbException is SqlException savePointSqlException)
                     {
-                        _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);
-                        log.LogWarning($"Build Rolled Back");
+                        foreach (SqlError err in savePointSqlException.Errors)
+                            logMsg.Append(err.Message + "\r\n");
                     }
                     else
-                        log.LogError($"Error. No Rollback Available.");
+                    {
+                        logMsg.Append(dbException.Message + Environment.NewLine);
+                    }
+                    currentRun.Results = (currentRun.Results ?? string.Empty) + logMsg.ToString();
+                    log.LogWarning($"Save point rollback failed for {fileName}. Build will be rolled back during finalization.");
                     buildFailure = true;
                 }
                 catch (InvalidOperationException invalExe)
                 {
                     logMsg.Clear(); logMsg.Append(invalExe.Message + Environment.NewLine);
                     currentRun.Results = (currentRun.Results ?? string.Empty) + logMsg.ToString();
-                    if (_ctx.IsTransactional && !_transactionManager.IsTransactionZombied(invalExe))
-                    {
-                        _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);
-                        log.LogWarning($"Build Rolled Back");
-                    }
-                    else
+                    if (_ctx.IsTransactional && _transactionManager.IsTransactionZombied(invalExe))
                     {
                         log.LogError($"Error. No Rollback Available.");
                         zombiedTransaction = true;
+                    }
+                    else
+                    {
+                        log.LogWarning($"Save point rollback failed for {fileName}. Build will be rolled back during finalization.");
                     }
                     buildFailure = true;
                 }
@@ -388,8 +404,7 @@ namespace SqlSync.SqlBuild
             {
                 if (_ctx.IsTransactional && !zombiedTransaction)
                 {
-                    _buildFinalizer.RollbackBuild(_connectionsService, _ctx.IsTransactional);
-                    log.LogWarning($"Build Rolled Back");
+                    log.LogWarning($"Build marked for rollback during finalization");
                 }
                 else
                     log.LogError("Error. No Rollback Available.");
@@ -397,6 +412,12 @@ namespace SqlSync.SqlBuild
             }
 
             return (buildFailure, timeoutDetected);
+        }
+
+        private static bool IsTimeoutMessage(string message)
+        {
+            return message.Trim().Contains("timeout expired", StringComparison.OrdinalIgnoreCase)
+                || message.Trim().Contains("timed out", StringComparison.OrdinalIgnoreCase);
         }
 
         private void WriteFinalScriptLog(List<string> dbTargets, bool buildFailure, bool isTransactional, bool isTrialBuild)
