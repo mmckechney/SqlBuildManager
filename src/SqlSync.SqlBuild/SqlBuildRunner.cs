@@ -395,7 +395,14 @@ namespace SqlSync.SqlBuild
             else
             {
                 if (_ctx.IsTransactional)
+                {
                     log.LogError($"Error, Save Point Not Rolled Back");
+                    if (e is not SqlException)
+                    {
+                        log.LogWarning("Provider transaction state is unknown after an error without savepoint rollback. Build will be rolled back during finalization.");
+                        buildFailure = true;
+                    }
+                }
                 else
                     log.LogError($"Error. No Rollback Available.");
             }

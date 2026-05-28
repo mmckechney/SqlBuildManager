@@ -319,10 +319,8 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
         [TestMethod]
         public async Task PostgreSQL_RunBuildScripts_WithFailureDontCauseFailure()
         {
-            // PostgreSQL behavior: when an error occurs inside a transaction, the transaction
-            // enters an "aborted" state and no further commands can run. Unlike SQL Server,
-            // PostgreSQL cannot continue after an error in a transaction even with CausesBuildFailure=false.
-            // The build will roll back.
+            // PostgreSQL can continue after a non-fatal script error when the error is rolled
+            // back to the per-script savepoint.
             var init = GetInitializationObject();
             SqlSyncBuildDataModel buildData = init.CreateSqlSyncSqlBuildDataModelObject();
             init.AddInsertScript(ref buildData, true);
@@ -333,13 +331,12 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
 
             var actual = await RunBuildScriptsAsync(sbh, buildData, myBuild, init.serverName, false, null!);
 
-            // PostgreSQL rolls back the whole transaction on any error
-            Assert.AreEqual(BuildItemStatus.RolledBack, actual.FinalStatus, "PostgreSQL aborts transaction on error, causing rollback");
+            Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus, "PostgreSQL should commit non-fatal errors that are rolled back to a savepoint");
 
             int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(0);
             int testTableCount = init.GetTestTableRowCount(0);
-            Assert.AreEqual(0, sqlLoggingCount, "Should have no logging rows after rollback");
-            Assert.AreEqual(0, testTableCount, "Should have no test rows after rollback");
+            Assert.AreEqual(1, sqlLoggingCount, "Successful script should be logged");
+            Assert.AreEqual(1, testTableCount, "Successful script should persist");
         }
 
         [TestMethod]
