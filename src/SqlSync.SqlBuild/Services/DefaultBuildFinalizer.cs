@@ -178,7 +178,10 @@ namespace SqlSync.SqlBuild.Services
                 throw new ArgumentException(message);
             }
 
-            await SqlBuildFileHelper.SaveSqlBuildProjectFileAsync(context.BuildDataModel, context.ProjectFileName, context.BuildFileName, includeHistoryAndLogs: true).ConfigureAwait(false);
+            var modelToSave = MergeBuildHistory(context.BuildDataModel, context.BuildHistoryModel);
+            context.BuildDataModel = modelToSave;
+
+            await SqlBuildFileHelper.SaveSqlBuildProjectFileAsync(modelToSave, context.ProjectFileName, context.BuildFileName, includeHistoryAndLogs: true).ConfigureAwait(false);
 
 
             if (context.BuildHistoryXmlFile == null || context.BuildHistoryXmlFile.Length == 0)
@@ -188,9 +191,65 @@ namespace SqlSync.SqlBuild.Services
                 throw new ArgumentException(message);
             }
 
-            await SqlSyncBuildDataXmlSerializer.SaveAsync(context.BuildHistoryXmlFile, context.BuildDataModel).ConfigureAwait(false);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(context.BuildHistoryXmlFile, modelToSave).ConfigureAwait(false);
 
             log.LogInformation("Build Data saved successfully.");
+        }
+
+        private static SqlSyncBuildDataModel MergeBuildHistory(SqlSyncBuildDataModel buildDataModel, SqlSyncBuildDataModel buildHistoryModel)
+        {
+            var model = buildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            if (buildHistoryModel == null)
+            {
+                return model;
+            }
+
+            var builds = new List<Build>(model.Build ?? new List<Build>());
+            foreach (var build in buildHistoryModel.Build ?? new List<Build>())
+            {
+                if (!builds.Any(existing => SameBuild(existing, build)))
+                {
+                    builds.Add(build);
+                }
+            }
+
+            var scriptRuns = new List<ScriptRun>(model.ScriptRun ?? new List<ScriptRun>());
+            foreach (var scriptRun in buildHistoryModel.ScriptRun ?? new List<ScriptRun>())
+            {
+                if (!scriptRuns.Any(existing => SameScriptRun(existing, scriptRun)))
+                {
+                    scriptRuns.Add(scriptRun);
+                }
+            }
+
+            return new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: model.SqlSyncBuildProject,
+                script: model.Script,
+                build: builds,
+                scriptRun: scriptRuns,
+                committedScript: model.CommittedScript);
+        }
+
+        private static bool SameBuild(Build left, Build right)
+        {
+            if (!string.IsNullOrWhiteSpace(left.BuildId) && !string.IsNullOrWhiteSpace(right.BuildId))
+            {
+                return string.Equals(left.BuildId, right.BuildId, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return ReferenceEquals(left, right);
+        }
+
+        private static bool SameScriptRun(ScriptRun left, ScriptRun right)
+        {
+            if (!string.IsNullOrWhiteSpace(left.ScriptRunId) && !string.IsNullOrWhiteSpace(right.ScriptRunId))
+            {
+                return string.Equals(left.ScriptRunId, right.ScriptRunId, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return string.Equals(left.BuildId, right.BuildId, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(left.FileName, right.FileName, StringComparison.OrdinalIgnoreCase)
+                && left.RunOrder == right.RunOrder;
         }
         public async Task<(Build updatedBuild, SqlSyncBuildDataModel updatedModel, BuildResultStatus buildResult)> PerformRunScriptFinalizationAsync(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, IBuildFinalizerContext finalizerContext, bool buildFailure, Build myBuild)
         {

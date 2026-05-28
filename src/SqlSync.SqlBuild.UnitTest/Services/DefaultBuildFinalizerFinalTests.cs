@@ -111,6 +111,47 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 _finalizer.SaveBuildDataModelAsync(mockContext.Object, true));
         }
 
+        [TestMethod]
+        public async Task SaveBuildDataModel_MergesScriptRunHistoryIntoSavedModel()
+        {
+            string projFileName = Path.Combine(_testDir, "test.xml");
+            string buildFileName = Path.Combine(_testDir, "test.sbm");
+            string historyFile = Path.Combine(_testDir, "history.xml");
+
+            var baseModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var build = new Build("Test", "Unit", DateTime.UtcNow, null, "srv", BuildItemStatus.Committed, "BUILD1", "user");
+            var scriptRun = new ScriptRun(
+                fileHash: "HASH",
+                results: "OK",
+                fileName: "script.sql",
+                runOrder: 1,
+                runStart: DateTime.UtcNow,
+                runEnd: DateTime.UtcNow,
+                success: true,
+                database: "db",
+                scriptRunId: "RUN1",
+                buildId: "BUILD1");
+            var historyModel = new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: baseModel.SqlSyncBuildProject,
+                script: baseModel.Script,
+                build: new List<Build> { build },
+                scriptRun: new List<ScriptRun> { scriptRun },
+                committedScript: baseModel.CommittedScript);
+
+            var mockContext = new Mock<ISqlBuildRunnerProperties>();
+            mockContext.SetupProperty(x => x.BuildDataModel, baseModel);
+            mockContext.Setup(x => x.BuildHistoryModel).Returns(historyModel);
+            mockContext.Setup(x => x.ProjectFileName).Returns(projFileName);
+            mockContext.Setup(x => x.BuildFileName).Returns(buildFileName);
+            mockContext.Setup(x => x.BuildHistoryXmlFile).Returns(historyFile);
+
+            await _finalizer.SaveBuildDataModelAsync(mockContext.Object, true);
+
+            Assert.AreEqual(1, mockContext.Object.BuildDataModel.Build.Count);
+            Assert.AreEqual(1, mockContext.Object.BuildDataModel.ScriptRun.Count);
+            Assert.AreEqual("RUN1", mockContext.Object.BuildDataModel.ScriptRun[0].ScriptRunId);
+        }
+
         #endregion
 
         #region PerformRunScriptFinalization Tests
