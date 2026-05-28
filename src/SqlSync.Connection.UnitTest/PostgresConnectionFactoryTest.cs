@@ -36,6 +36,19 @@ namespace SqlSync.Connection.UnitTest
         }
 
         [TestMethod]
+        public void RedactConnectionString_ShouldRemovePasswordValue()
+        {
+            string connStr = factory.BuildConnectionString("mydb", "localhost", "pguser", "pgpass", AuthenticationType.Password, 30, "");
+
+            string redacted = ConnectionStringRedactor.Redact(connStr);
+            var redactedBuilder = new NpgsqlConnectionStringBuilder(redacted);
+
+            Assert.IsFalse(redacted.Contains("pgpass"), "Should not contain password value");
+            Assert.AreEqual("***REDACTED***", redactedBuilder.Password, "Should retain a redacted password marker");
+            Assert.AreEqual("pguser", redactedBuilder.Username, "Should preserve non-secret connection details");
+        }
+
+        [TestMethod]
         public void BuildConnectionString_DefaultPort_ShouldBe5432()
         {
             string connStr = factory.BuildConnectionString("mydb", "localhost", "pguser", "pgpass", AuthenticationType.Password, 30, "");

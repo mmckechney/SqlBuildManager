@@ -75,7 +75,7 @@ namespace SqlSync.Connection
                     builder.TrustServerCertificate = true;
                     break;
             }
-            log.LogDebug($"Database Connection string: {builder.ConnectionString}");
+            log.LogDebug($"Database Connection string: {ConnectionStringRedactor.Redact(builder.ConnectionString)}");
             return builder.ConnectionString;
         }
 

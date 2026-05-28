@@ -34,6 +34,19 @@ namespace SqlSync.Connection.UnitTest
         }
 
         [TestMethod]
+        public void RedactConnectionString_ShouldRemovePasswordValue()
+        {
+            string connStr = factory.BuildConnectionString("mydb", "myserver", "myuser", "mypass", AuthenticationType.Password, 30, "");
+
+            string redacted = ConnectionStringRedactor.Redact(connStr);
+            var redactedBuilder = new SqlConnectionStringBuilder(redacted);
+
+            Assert.IsFalse(redacted.Contains("mypass"), "Should not contain password value");
+            Assert.AreEqual("***REDACTED***", redactedBuilder.Password, "Should retain a redacted password marker");
+            Assert.AreEqual("myuser", redactedBuilder.UserID, "Should preserve non-secret connection details");
+        }
+
+        [TestMethod]
         public void BuildConnectionString_WindowsAuth_ShouldSetIntegratedSecurity()
         {
             string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.Windows, 30, "");

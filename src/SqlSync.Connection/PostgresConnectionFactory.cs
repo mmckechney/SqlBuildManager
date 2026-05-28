@@ -91,7 +91,7 @@ namespace SqlSync.Connection
                     break;
             }
 
-            log.LogDebug($"PostgreSQL Connection string: {builder.ConnectionString}");
+            log.LogDebug($"PostgreSQL Connection string: {ConnectionStringRedactor.Redact(builder.ConnectionString)}");
             return builder.ConnectionString;
         }
 

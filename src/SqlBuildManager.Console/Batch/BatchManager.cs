@@ -855,10 +855,10 @@ namespace SqlBuildManager.Console.Batch
                 switch (os)
                 {
                     case OsType.Windows:
-                        sb.Append($"cmd /c set &&  %AZ_BATCH_APP_PACKAGE_{applicationPackage}%\\sbm.exe ");
+                        sb.Append($"cmd /c %AZ_BATCH_APP_PACKAGE_{applicationPackage}%\\sbm.exe ");
                         break;
                     case OsType.Linux:
-                        sb.Append($"/bin/sh -c 'printenv && $AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/sbm ");
+                        sb.Append($"/bin/sh -c '$AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/sbm ");
                         break;
                 }
                 sb.Append($"--loglevel {threadCmdLine.LogLevel} batch ");
