@@ -47,6 +47,8 @@ namespace SqlBuildManager.Console.ExternalTest
         /// <returns></returns>
         internal static string CreateRandomTable(CommandLineArgs cmdLine, List<string> overrideLines)
         {
+            SqlServerAuthenticationProvider.Register();
+
             string server, database;
             string randomTableName = "R" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10);
             string randomColumnName = "R" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10);

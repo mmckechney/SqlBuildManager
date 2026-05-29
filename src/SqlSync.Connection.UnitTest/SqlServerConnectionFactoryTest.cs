@@ -65,6 +65,25 @@ namespace SqlSync.Connection.UnitTest
         }
 
         [TestMethod]
+        public void BuildConnectionString_AzureADDefault_WithManagedIdentityClientId_ShouldSetUserId()
+        {
+            string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.AzureADDefault, 30, "my-client-id");
+
+            Assert.IsTrue(connStr.Contains("Authentication=ActiveDirectoryDefault"), "Should set AD Default auth");
+            Assert.IsTrue(connStr.Contains("User ID=my-client-id"), "Should use managed identity client ID as User ID");
+        }
+
+        [TestMethod]
+        public void Register_ShouldSetAzureIdentitySqlAuthenticationProviders()
+        {
+            SqlServerAuthenticationProvider.Register();
+
+            Assert.IsNotNull(SqlAuthenticationProvider.GetProvider(SqlAuthenticationMethod.ActiveDirectoryDefault));
+            Assert.IsNotNull(SqlAuthenticationProvider.GetProvider(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity));
+            Assert.IsNotNull(SqlAuthenticationProvider.GetProvider(SqlAuthenticationMethod.ActiveDirectoryMSI));
+        }
+
+        [TestMethod]
         public void BuildConnectionString_ManagedIdentity_ShouldSetClientId()
         {
             string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.ManagedIdentity, 30, "my-client-id");
