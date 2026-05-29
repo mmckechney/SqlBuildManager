@@ -163,7 +163,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         #region PerformRunScriptFinalization Tests
 
         [TestMethod]
-        public async Task PerformRunScriptFinalization_AuditLoggingFailure_ReturnsUnknown()
+        public async Task PerformRunScriptFinalization_AuditLoggingFailure_ReturnsCommitted()
         {
             _mockSqlLoggingService
                 .Setup(x => x.LogCommittedScriptsToDatabase(
@@ -181,10 +181,11 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             var (updatedBuild, _, result) = await _finalizer.PerformRunScriptFinalizationAsync(
                 mockContext.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: false, build);
 
-            Assert.AreEqual(BuildItemStatus.Unknown, updatedBuild.FinalStatus);
-            Assert.AreEqual(BuildResultStatus.UNKNOWN, result);
-            mockFinalizerContext.Verify(x => x.RaiseBuildCommittedEvent(It.IsAny<object>(), It.IsAny<RunnerReturn>()), Times.Never);
-            mockFinalizerContext.Verify(x => x.RaiseBuildErrorRollBackEvent(It.IsAny<object>()), Times.Once);
+            Assert.AreEqual(BuildItemStatus.Committed, updatedBuild.FinalStatus);
+            Assert.AreEqual(BuildResultStatus.BUILD_COMMITTED, result);
+            mockFinalizerContext.Verify(x => x.RaiseBuildCommittedEvent(It.IsAny<ISqlBuildRunnerProperties>(), RunnerReturn.BuildCommitted), Times.Once);
+            mockFinalizerContext.Verify(x => x.RaiseBuildErrorRollBackEvent(It.IsAny<object>()), Times.Never);
+            _mockProgressReporter.Verify(x => x.ReportProgress(It.IsAny<int>(), It.Is<object>(state => state is CommitFailureEventArgs)), Times.Never);
         }
 
         [TestMethod]

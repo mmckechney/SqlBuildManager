@@ -311,9 +311,8 @@ namespace SqlSync.SqlBuild.Services
                         }
                         else
                         {
-                            myBuild.FinalStatus = BuildItemStatus.Unknown;
                             ReportAuditLoggingFailure();
-                            finalizerContext.RaiseBuildErrorRollBackEvent(context);
+                            finalizerContext.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
                         }
                     }
                     else
@@ -411,7 +410,6 @@ namespace SqlSync.SqlBuild.Services
         {
             const string message = "Committed script audit logging failed.";
             log.LogError(message);
-            progressReporter.ReportProgress(100, new CommitFailureEventArgs(message));
         }
 
         public BuildResultStatus CalculateFinalStatus(IList<BuildResultStatus> buildResults)
