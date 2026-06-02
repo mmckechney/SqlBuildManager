@@ -32,34 +32,36 @@ namespace SqlSync.SqlBuild.Services
 
             Dictionary<string, BuildConnectData>.KeyCollection keys = connectionsService.Connections.Keys;
             bool success = true;
+            bool continueCommitting = true;
             foreach (string key in keys)
             {
-                try
+                var connData = (BuildConnectData)connectionsService.Connections[key];
+                if (continueCommitting)
                 {
-                    log.LogInformation($"Committing transaction for {key}");
-                    ((BuildConnectData)connectionsService.Connections[key]).Transaction.Commit();
-                    ((BuildConnectData)connectionsService.Connections[key]).Transaction = null!;
-                    log.LogInformation($"Commit Successful for {key}");
-                }
-                catch (Exception e)
-                {
-                    log.LogError(e, $"Error in CommitBuild Transaction.Commit() for database '{key}'");
-                    progressReporter.ReportProgress(100, new CommitFailureEventArgs(e.Message));
-                    success = false;
-                }
-                try
-                {
-                    log.LogDebug($"Closing connection for {key}");
-                    var connData = (BuildConnectData)connectionsService.Connections[key];
-                    if (connData.Connection != null)
+                    try
                     {
-                        connData.Connection.Close();
+                        log.LogInformation($"Committing transaction for {key}");
+                        connData.Transaction?.Commit();
+                        connData.Transaction?.Dispose();
+                        connData.Transaction = null!;
+                        log.LogInformation($"Commit Successful for {key}");
+                    }
+                    catch (Exception e)
+                    {
+                        log.LogError(e, $"Error in CommitBuild Transaction.Commit() for database '{key}'");
+                        progressReporter.ReportProgress(100, new CommitFailureEventArgs(e.Message));
+                        success = false;
+                        continueCommitting = false;
+                        TryRollbackTransaction(connData, key);
                     }
                 }
-                catch (Exception e)
+                else
                 {
-                    log.LogWarning(e, $"Error in CommitBuild Connection.Close() for database '{key}'");
-                    progressReporter.ReportProgress(100, new CommitFailureEventArgs(e.Message));
+                    success = !TryRollbackTransaction(connData, key) ? false : success;
+                }
+
+                if (!TryCloseConnection(connData, key, reportCommitFailure: true))
+                {
                     success = false;
                 }
             }
@@ -77,29 +79,66 @@ namespace SqlSync.SqlBuild.Services
             }
 
             Dictionary<string, BuildConnectData>.KeyCollection keys = connectionsService.Connections.Keys;
+            bool success = true;
             foreach (string key in keys)
             {
-                try
+                var connData = (BuildConnectData)connectionsService.Connections[key];
+                if (!TryRollbackTransaction(connData, key))
                 {
-                    log.LogInformation($"Rolling back transaction for {key}");
-                    ((BuildConnectData)connectionsService.Connections[key]).Transaction.Rollback();
+                    success = false;
                 }
-                catch (Exception e)
+                if (!TryCloseConnection(connData, key, reportCommitFailure: false))
                 {
-                    log.LogError($"Error in RollbackBuild Transaction.Rollback() for database '{key}'. {e.Message}");
-                }
-                try
-                {
-                    log.LogDebug($"Closing connection for {key}");
-                    ((BuildConnectData)connectionsService.Connections[key]).Connection.Close();
-                }
-                catch (Exception e)
-                {
-                    log.LogError($"Error in RollbackBuild Connection.Close() for database '{key}'. {e.Message}");
+                    success = false;
                 }
             }
 
-            return true;
+            return success;
+        }
+
+        private bool TryRollbackTransaction(BuildConnectData connData, string key)
+        {
+            if (connData.Transaction == null)
+            {
+                return true;
+            }
+
+            try
+            {
+                log.LogInformation($"Rolling back transaction for {key}");
+                connData.Transaction.Rollback();
+                connData.Transaction.Dispose();
+                connData.Transaction = null!;
+                return true;
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, $"Error rolling back transaction for database '{key}'");
+                return false;
+            }
+        }
+
+        private bool TryCloseConnection(BuildConnectData connData, string key, bool reportCommitFailure)
+        {
+            try
+            {
+                log.LogDebug($"Closing connection for {key}");
+                connData.Connection?.Close();
+                return true;
+            }
+            catch (Exception e)
+            {
+                if (reportCommitFailure)
+                {
+                    log.LogWarning(e, $"Error in CommitBuild Connection.Close() for database '{key}'");
+                    progressReporter.ReportProgress(100, new CommitFailureEventArgs(e.Message));
+                }
+                else
+                {
+                    log.LogError(e, $"Error in RollbackBuild Connection.Close() for database '{key}'");
+                }
+                return false;
+            }
         }
 
         public SqlSyncBuildDataModel RecordCommittedScripts(List<LoggingCommittedScript> committedScripts, SqlSyncBuildDataModel buildDataModel)
@@ -139,7 +178,10 @@ namespace SqlSync.SqlBuild.Services
                 throw new ArgumentException(message);
             }
 
-            await SqlBuildFileHelper.SaveSqlBuildProjectFileAsync(context.BuildDataModel, context.ProjectFileName, context.BuildFileName, includeHistoryAndLogs: true).ConfigureAwait(false);
+            var modelToSave = MergeBuildHistory(context.BuildDataModel, context.BuildHistoryModel);
+            context.BuildDataModel = modelToSave;
+
+            await SqlBuildFileHelper.SaveSqlBuildProjectFileAsync(modelToSave, context.ProjectFileName, context.BuildFileName, includeHistoryAndLogs: true).ConfigureAwait(false);
 
 
             if (context.BuildHistoryXmlFile == null || context.BuildHistoryXmlFile.Length == 0)
@@ -149,9 +191,65 @@ namespace SqlSync.SqlBuild.Services
                 throw new ArgumentException(message);
             }
 
-            await SqlSyncBuildDataXmlSerializer.SaveAsync(context.BuildHistoryXmlFile, context.BuildDataModel).ConfigureAwait(false);
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(context.BuildHistoryXmlFile, modelToSave).ConfigureAwait(false);
 
             log.LogInformation("Build Data saved successfully.");
+        }
+
+        private static SqlSyncBuildDataModel MergeBuildHistory(SqlSyncBuildDataModel buildDataModel, SqlSyncBuildDataModel buildHistoryModel)
+        {
+            var model = buildDataModel ?? SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            if (buildHistoryModel == null)
+            {
+                return model;
+            }
+
+            var builds = new List<Build>(model.Build ?? new List<Build>());
+            foreach (var build in buildHistoryModel.Build ?? new List<Build>())
+            {
+                if (!builds.Any(existing => SameBuild(existing, build)))
+                {
+                    builds.Add(build);
+                }
+            }
+
+            var scriptRuns = new List<ScriptRun>(model.ScriptRun ?? new List<ScriptRun>());
+            foreach (var scriptRun in buildHistoryModel.ScriptRun ?? new List<ScriptRun>())
+            {
+                if (!scriptRuns.Any(existing => SameScriptRun(existing, scriptRun)))
+                {
+                    scriptRuns.Add(scriptRun);
+                }
+            }
+
+            return new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: model.SqlSyncBuildProject,
+                script: model.Script,
+                build: builds,
+                scriptRun: scriptRuns,
+                committedScript: model.CommittedScript);
+        }
+
+        private static bool SameBuild(Build left, Build right)
+        {
+            if (!string.IsNullOrWhiteSpace(left.BuildId) && !string.IsNullOrWhiteSpace(right.BuildId))
+            {
+                return string.Equals(left.BuildId, right.BuildId, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return ReferenceEquals(left, right);
+        }
+
+        private static bool SameScriptRun(ScriptRun left, ScriptRun right)
+        {
+            if (!string.IsNullOrWhiteSpace(left.ScriptRunId) && !string.IsNullOrWhiteSpace(right.ScriptRunId))
+            {
+                return string.Equals(left.ScriptRunId, right.ScriptRunId, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return string.Equals(left.BuildId, right.BuildId, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(left.FileName, right.FileName, StringComparison.OrdinalIgnoreCase)
+                && left.RunOrder == right.RunOrder;
         }
         public async Task<(Build updatedBuild, SqlSyncBuildDataModel updatedModel, BuildResultStatus buildResult)> PerformRunScriptFinalizationAsync(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, IBuildFinalizerContext finalizerContext, bool buildFailure, Build myBuild)
         {
@@ -167,7 +265,14 @@ namespace SqlSync.SqlBuild.Services
             if (buildFailure)
             {
                 if (context.IsTransactional)
+                {
+                    var rollbackSuccess = RollbackBuild(connectionsService, context.IsTransactional);
                     myBuild.FinalStatus = BuildItemStatus.RolledBack;
+                    if (!rollbackSuccess)
+                    {
+                        myBuild.FinalStatus = BuildItemStatus.PendingRollBack;
+                    }
+                }
                 else
                     myBuild.FinalStatus = BuildItemStatus.FailedNoTransaction;
                
@@ -176,7 +281,11 @@ namespace SqlSync.SqlBuild.Services
                 if (!context.IsTransactional)
                 {
                     updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
-                    await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
+                    var auditLogged = await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
+                    if (!auditLogged)
+                    {
+                        ReportAuditLoggingFailure();
+                    }
                 }
             }
             else
@@ -195,12 +304,20 @@ namespace SqlSync.SqlBuild.Services
                     {
                         myBuild.FinalStatus = BuildItemStatus.Committed;
                         updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
-                        await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
-                        finalizerContext.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
+                        var auditLogged = await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
+                        if (auditLogged)
+                        {
+                            finalizerContext.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
+                        }
+                        else
+                        {
+                            ReportAuditLoggingFailure();
+                            finalizerContext.RaiseBuildCommittedEvent(context, RunnerReturn.BuildCommitted);
+                        }
                     }
                     else
                     {
-                        myBuild.FinalStatus = BuildItemStatus.RolledBack;
+                        myBuild.FinalStatus = BuildItemStatus.PendingRollBack;
                         //updatedDataModel = RecordCommittedScripts(context.CommittedScripts, updatedDataModel);
                         //await sqlLoggingService.LogCommittedScriptsToDatabase(context.CommittedScripts, context, context.MultiDbRunData).ConfigureAwait(false);
                         finalizerContext.RaiseBuildErrorRollBackEvent(context);
@@ -252,6 +369,16 @@ namespace SqlSync.SqlBuild.Services
                     log.LogInformation("Script Generation Complete");
                     finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.SCRIPT_GENERATION_COMPLETE;
                 }
+                else if (myBuild.FinalStatus == BuildItemStatus.RolledBack || myBuild.FinalStatus == BuildItemStatus.PendingRollBack)
+                {
+                    log.LogWarning($"Build was not committed. Final status is {myBuild.FinalStatus}");
+                    finalBuildResult = ConvertBuildItemStatusToResultStatus(myBuild.FinalStatus, context.IsTransactional, context.IsTrialBuild);
+                }
+                else if (myBuild.FinalStatus != BuildItemStatus.Committed && myBuild.FinalStatus != BuildItemStatus.TrialRolledBack)
+                {
+                    log.LogWarning($"Build completed with non-success status {myBuild.FinalStatus}");
+                    finalBuildResult = ConvertBuildItemStatusToResultStatus(myBuild.FinalStatus, context.IsTransactional, context.IsTrialBuild);
+                }
                 else
                 {
                     if (context.IsTrialBuild == false)
@@ -277,6 +404,12 @@ namespace SqlSync.SqlBuild.Services
             }
             connectionsService.Connections.Clear();
             return (myBuild, updatedDataModel, finalBuildResult);
+        }
+
+        private void ReportAuditLoggingFailure()
+        {
+            const string message = "Committed script audit logging failed.";
+            log.LogError(message);
         }
 
         public BuildResultStatus CalculateFinalStatus(IList<BuildResultStatus> buildResults)

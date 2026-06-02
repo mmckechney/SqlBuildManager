@@ -24,5 +24,5 @@
 //   2) Update the installer version to match the AssemblyVersion below.
 //   These can be found in SqlBuildManager.Setup -> Organize Your Setup -> General Information
 
-[assembly: AssemblyVersion("16.0.0")]
-[assembly: AssemblyFileVersion("16.0.0")]
+[assembly: AssemblyVersion("16.0.1")]
+[assembly: AssemblyFileVersion("16.0.1")]

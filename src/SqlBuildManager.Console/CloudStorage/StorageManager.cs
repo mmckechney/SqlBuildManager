@@ -202,7 +202,8 @@ namespace SqlBuildManager.Console.CloudStorage
             // Get user delegation key
             var startsOn = DateTimeOffset.UtcNow.AddHours(-1);
             var expiresOn = forRead ? DateTimeOffset.UtcNow.AddHours(7) : DateTimeOffset.UtcNow.AddHours(4);
-            var userDelegationKey = await serviceClient.GetUserDelegationKeyAsync(startsOn, expiresOn);
+
+            var userDelegationKey = await serviceClient.GetUserDelegationKeyAsync(startsOn, expiresOn, cancellationToken);
 
             var container = serviceClient.GetBlobContainerClient(outputContainerName);
             await container.CreateIfNotExistsAsync();
@@ -455,7 +456,7 @@ namespace SqlBuildManager.Console.CloudStorage
 
             var startsOn = DateTimeOffset.UtcNow.AddHours(-1);
             var expiresOn = DateTimeOffset.UtcNow.AddHours(3);
-            var userDelegationKey = await serviceClient.GetUserDelegationKeyAsync(startsOn, expiresOn);
+            var userDelegationKey = await serviceClient.GetUserDelegationKeyAsync(startsOn, expiresOn, cancellationToken);
 
             var sasBuilder = new BlobSasBuilder(BlobSasPermissions.Read, expiresOn)
             {

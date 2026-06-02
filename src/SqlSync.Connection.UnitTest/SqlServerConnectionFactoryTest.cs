@@ -34,6 +34,19 @@ namespace SqlSync.Connection.UnitTest
         }
 
         [TestMethod]
+        public void RedactConnectionString_ShouldRemovePasswordValue()
+        {
+            string connStr = factory.BuildConnectionString("mydb", "myserver", "myuser", "mypass", AuthenticationType.Password, 30, "");
+
+            string redacted = ConnectionStringRedactor.Redact(connStr);
+            var redactedBuilder = new SqlConnectionStringBuilder(redacted);
+
+            Assert.IsFalse(redacted.Contains("mypass"), "Should not contain password value");
+            Assert.AreEqual("***REDACTED***", redactedBuilder.Password, "Should retain a redacted password marker");
+            Assert.AreEqual("myuser", redactedBuilder.UserID, "Should preserve non-secret connection details");
+        }
+
+        [TestMethod]
         public void BuildConnectionString_WindowsAuth_ShouldSetIntegratedSecurity()
         {
             string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.Windows, 30, "");
@@ -49,6 +62,25 @@ namespace SqlSync.Connection.UnitTest
 
             Assert.IsTrue(connStr.Contains("Authentication=ActiveDirectoryDefault"), "Should set AD Default auth");
             Assert.IsTrue(connStr.Contains("Trust Server Certificate=True"), "Should trust server cert");
+        }
+
+        [TestMethod]
+        public void BuildConnectionString_AzureADDefault_WithManagedIdentityClientId_ShouldSetUserId()
+        {
+            string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.AzureADDefault, 30, "my-client-id");
+
+            Assert.IsTrue(connStr.Contains("Authentication=ActiveDirectoryDefault"), "Should set AD Default auth");
+            Assert.IsTrue(connStr.Contains("User ID=my-client-id"), "Should use managed identity client ID as User ID");
+        }
+
+        [TestMethod]
+        public void Register_ShouldSetAzureIdentitySqlAuthenticationProviders()
+        {
+            SqlServerAuthenticationProvider.Register();
+
+            Assert.IsNotNull(SqlAuthenticationProvider.GetProvider(SqlAuthenticationMethod.ActiveDirectoryDefault));
+            Assert.IsNotNull(SqlAuthenticationProvider.GetProvider(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity));
+            Assert.IsNotNull(SqlAuthenticationProvider.GetProvider(SqlAuthenticationMethod.ActiveDirectoryMSI));
         }
 
         [TestMethod]

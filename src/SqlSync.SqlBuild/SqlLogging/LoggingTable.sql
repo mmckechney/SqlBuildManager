@@ -17,7 +17,7 @@ IF NOT EXISTS (SELECT 1 FROM sys.objects WHERE name = 'SqlBuild_Logging' AND typ
 			[TargetDatabase] [varchar](200) NULL,
 			[RunWithVersion] [varchar](20) NULL,
 			[BuildProjectHash] [varchar](45) NULL,
-			[BuildRequestedBy] [varchar](50) NULL,
+			[BuildRequestedBy] [varchar](256) NULL,
 			[ScriptRunStart] [datetime] NULL,
 			[ScriptRunEnd] [datetime] NULL,
 			[Description] [varchar](150) NULL
@@ -104,12 +104,18 @@ END
 -- Append to table if needed
 IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.Columns WHERE TABLE_NAME = 'SqlBuild_Logging' AND COLUMN_NAME = 'BuildRequestedBy')
 BEGIN
-	ALTER TABLE SqlBuild_Logging ADD [BuildRequestedBy] varchar(50) NULL
+	ALTER TABLE SqlBuild_Logging ADD [BuildRequestedBy] varchar(256) NULL
 		PRINT 'Added [BuildRequestedBy] column to SqlBuild_Logging table'
 	END
 ELSE
 	BEGIN
 		PRINT '[BuildRequestedBy] column already exists in SqlBuild_Logging table'
+END
+
+IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.Columns WHERE TABLE_NAME = 'SqlBuild_Logging' AND COLUMN_NAME = 'BuildRequestedBy' AND CHARACTER_MAXIMUM_LENGTH BETWEEN 1 AND 255)
+BEGIN
+	ALTER TABLE SqlBuild_Logging ALTER COLUMN [BuildRequestedBy] varchar(256) NULL
+		PRINT 'Expanded [BuildRequestedBy] column in SqlBuild_Logging table'
 END
 
 -- Append to table if needed

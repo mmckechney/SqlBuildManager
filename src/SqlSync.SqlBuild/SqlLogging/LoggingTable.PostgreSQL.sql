@@ -13,8 +13,25 @@ CREATE TABLE IF NOT EXISTS sqlbuild_logging (
     targetdatabase VARCHAR(200) NULL,
     runwithversion VARCHAR(50) NULL,
     buildprojecthash VARCHAR(100) NULL,
-    buildrequestedby VARCHAR(200) NULL,
+    buildrequestedby VARCHAR(256) NULL,
     scriptrunstart TIMESTAMP NULL,
     scriptrunend TIMESTAMP NULL,
     description VARCHAR(500) NULL
 );
+
+ALTER TABLE sqlbuild_logging ADD COLUMN IF NOT EXISTS buildrequestedby VARCHAR(256);
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = current_schema()
+          AND table_name = 'sqlbuild_logging'
+          AND column_name = 'buildrequestedby'
+          AND character_maximum_length IS NOT NULL
+          AND character_maximum_length < 256
+    ) THEN
+        ALTER TABLE sqlbuild_logging ALTER COLUMN buildrequestedby TYPE VARCHAR(256);
+    END IF;
+END $$;

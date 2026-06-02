@@ -63,6 +63,7 @@ namespace SqlSync.Connection
 
         public static SqlConnection GetConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId)
         {
+            SqlServerAuthenticationProvider.Register();
             String conn = GetConnectionString(dbName, serverName, uid, pw, authType, scriptTimeOut, managedIdentityClientId);
             SqlConnection dbConn = new SqlConnection(conn);
 
@@ -96,6 +97,7 @@ namespace SqlSync.Connection
         }
         public static string GetConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId)
         {
+            SqlServerAuthenticationProvider.Register();
 
             var builder = new SqlConnectionStringBuilder();
             builder.DataSource = serverName;
@@ -120,6 +122,8 @@ namespace SqlSync.Connection
                     break;
                 case AuthenticationType.AzureADDefault:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault;
+                    if (!string.IsNullOrWhiteSpace(managedIdentityClientId))
+                        builder.UserID = managedIdentityClientId;
                     builder.TrustServerCertificate = true;
                     break;
                 case AuthenticationType.AzureADPassword:

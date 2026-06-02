@@ -9,6 +9,7 @@ namespace SqlBuildManager.Console.Aad
 {
     public class AadHelper
     {
+        private static readonly TimeSpan CredentialProcessTimeout = TimeSpan.FromSeconds(60);
         private static CancellationTokenSource src = new CancellationTokenSource();
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private static string _managedIdentityClientId = string.Empty;
@@ -83,8 +84,14 @@ namespace SqlBuildManager.Console.Aad
                     }
                     else
                     {
-                        AzureCliCredentialOptions cliOpts = new AzureCliCredentialOptions();
-                        AzurePowerShellCredentialOptions pwshOpts = new AzurePowerShellCredentialOptions();
+                        AzureCliCredentialOptions cliOpts = new AzureCliCredentialOptions()
+                        {
+                            ProcessTimeout = CredentialProcessTimeout
+                        };
+                        AzurePowerShellCredentialOptions pwshOpts = new AzurePowerShellCredentialOptions()
+                        {
+                            ProcessTimeout = CredentialProcessTimeout
+                        };
                         if (!string.IsNullOrEmpty(AadHelper.TenantId))
                         {
                             cliOpts.TenantId = AadHelper.TenantId;

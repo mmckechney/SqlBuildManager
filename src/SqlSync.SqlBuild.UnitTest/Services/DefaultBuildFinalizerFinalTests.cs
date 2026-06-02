@@ -29,6 +29,12 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         public void Setup()
         {
             _mockSqlLoggingService = new Mock<ISqlLoggingService>();
+            _mockSqlLoggingService
+                .Setup(x => x.LogCommittedScriptsToDatabase(
+                    It.IsAny<List<SqlSync.SqlBuild.SqlLogging.CommittedScript>>(),
+                    It.IsAny<ISqlBuildRunnerProperties>(),
+                    It.IsAny<MultiDbData>()))
+                .ReturnsAsync(true);
             _mockProgressReporter = new Mock<IProgressReporter>();
             _finalizer = new DefaultBuildFinalizer(_mockSqlLoggingService.Object, _mockProgressReporter.Object);
             
@@ -111,9 +117,76 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 _finalizer.SaveBuildDataModelAsync(mockContext.Object, true));
         }
 
+        [TestMethod]
+        public async Task SaveBuildDataModel_MergesScriptRunHistoryIntoSavedModel()
+        {
+            string projFileName = Path.Combine(_testDir, "test.xml");
+            string buildFileName = Path.Combine(_testDir, "test.sbm");
+            string historyFile = Path.Combine(_testDir, "history.xml");
+
+            var baseModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            var build = new Build("Test", "Unit", DateTime.UtcNow, null, "srv", BuildItemStatus.Committed, "BUILD1", "user");
+            var scriptRun = new ScriptRun(
+                fileHash: "HASH",
+                results: "OK",
+                fileName: "script.sql",
+                runOrder: 1,
+                runStart: DateTime.UtcNow,
+                runEnd: DateTime.UtcNow,
+                success: true,
+                database: "db",
+                scriptRunId: "RUN1",
+                buildId: "BUILD1");
+            var historyModel = new SqlSyncBuildDataModel(
+                sqlSyncBuildProject: baseModel.SqlSyncBuildProject,
+                script: baseModel.Script,
+                build: new List<Build> { build },
+                scriptRun: new List<ScriptRun> { scriptRun },
+                committedScript: baseModel.CommittedScript);
+
+            var mockContext = new Mock<ISqlBuildRunnerProperties>();
+            mockContext.SetupProperty(x => x.BuildDataModel, baseModel);
+            mockContext.Setup(x => x.BuildHistoryModel).Returns(historyModel);
+            mockContext.Setup(x => x.ProjectFileName).Returns(projFileName);
+            mockContext.Setup(x => x.BuildFileName).Returns(buildFileName);
+            mockContext.Setup(x => x.BuildHistoryXmlFile).Returns(historyFile);
+
+            await _finalizer.SaveBuildDataModelAsync(mockContext.Object, true);
+
+            Assert.AreEqual(1, mockContext.Object.BuildDataModel.Build.Count);
+            Assert.AreEqual(1, mockContext.Object.BuildDataModel.ScriptRun.Count);
+            Assert.AreEqual("RUN1", mockContext.Object.BuildDataModel.ScriptRun[0].ScriptRunId);
+        }
+
         #endregion
 
         #region PerformRunScriptFinalization Tests
+
+        [TestMethod]
+        public async Task PerformRunScriptFinalization_AuditLoggingFailure_ReturnsCommitted()
+        {
+            _mockSqlLoggingService
+                .Setup(x => x.LogCommittedScriptsToDatabase(
+                    It.IsAny<List<SqlSync.SqlBuild.SqlLogging.CommittedScript>>(),
+                    It.IsAny<ISqlBuildRunnerProperties>(),
+                    It.IsAny<MultiDbData>()))
+                .ReturnsAsync(false);
+
+            var mockConnectionsService = new Mock<IConnectionsService>();
+            mockConnectionsService.Setup(x => x.Connections).Returns(new Dictionary<string, BuildConnectData>());
+            var mockFinalizerContext = new Mock<IBuildFinalizerContext>();
+            var mockContext = CreateMockContext(isTransactional: false, isTrialBuild: false);
+            var build = new Build("Test", "Full", DateTime.Now, null, "Server", BuildItemStatus.Pending, "BUILD1", "User");
+
+            var (updatedBuild, _, result) = await _finalizer.PerformRunScriptFinalizationAsync(
+                mockContext.Object, mockConnectionsService.Object, mockFinalizerContext.Object, buildFailure: false, build);
+
+            Assert.AreEqual(BuildItemStatus.Committed, updatedBuild.FinalStatus);
+            Assert.AreEqual(BuildResultStatus.BUILD_COMMITTED, result);
+            mockFinalizerContext.Verify(x => x.RaiseBuildCommittedEvent(It.IsAny<ISqlBuildRunnerProperties>(), RunnerReturn.BuildCommitted), Times.Once);
+            mockFinalizerContext.Verify(x => x.RaiseBuildErrorRollBackEvent(It.IsAny<object>()), Times.Never);
+            _mockProgressReporter.Verify(x => x.ReportProgress(It.IsAny<int>(), It.Is<object>(state => state is CommitFailureEventArgs)), Times.Never);
+        }
 
         [TestMethod]
         public async Task PerformRunScriptFinalization_WithNullContext_ThrowsArgumentNullException()

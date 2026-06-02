@@ -71,17 +71,11 @@ namespace SqlBuildManager.Console
                 else if (string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets) && !string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
                 {
                     cmdLine.ManualOverRideSets = await sqlB.SqlBuildFileHelper.InferOverridesFromPackageAsync(cmdLine.BuildFileName, cmdLine.Database).ConfigureAwait(false);
-                    var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
-                    var def = ovrRide.Split(':')[1].Split(',')[0];
-                    var target = ovrRide.Split(':')[1].Split(',')[1];
-                    overrides = new List<DatabaseOverride>() { new DatabaseOverride() { DefaultDbTarget = def, OverrideDbTarget = target } };
+                    overrides = new List<DatabaseOverride>() { ParseSingleDatabaseOverride(cmdLine.Server, cmdLine.ManualOverRideSets) };
                 }
                 else if (!string.IsNullOrWhiteSpace(cmdLine.ManualOverRideSets))
                 {
-                    var ovrRide = $"{cmdLine.Server}:{cmdLine.ManualOverRideSets}";
-                    var def = ovrRide.Split(':')[1].Split(',')[0];
-                    var target = ovrRide.Split(':')[1].Split(',')[1];
-                    overrides = new List<DatabaseOverride>() { new DatabaseOverride() { DefaultDbTarget = def, OverrideDbTarget = target } };
+                    overrides = new List<DatabaseOverride>() { ParseSingleDatabaseOverride(cmdLine.Server, cmdLine.ManualOverRideSets) };
                 }
 
 
@@ -192,6 +186,42 @@ namespace SqlBuildManager.Console
                 return 0;
             else
                 return -2;
+        }
+
+        internal static DatabaseOverride ParseSingleDatabaseOverride(string serverName, string overrideValue)
+        {
+            if (string.IsNullOrWhiteSpace(overrideValue))
+            {
+                throw new ArgumentException("A database override must be provided in the format 'default,target'.", nameof(overrideValue));
+            }
+
+            var overrideSet = overrideValue.Trim();
+            var firstComma = overrideSet.IndexOf(',');
+            var serverSeparator = firstComma > 0 ? overrideSet.LastIndexOf(':', firstComma) : -1;
+            if (serverSeparator >= 0)
+            {
+                overrideSet = overrideSet.Substring(serverSeparator + 1);
+            }
+
+            if (overrideSet.Contains(';'))
+            {
+                throw new ArgumentException("Local build execution accepts a single database override in the format 'default,target'. Use a multi-db override file for multiple targets.", nameof(overrideValue));
+            }
+
+            var values = overrideSet.Split(',', 2, StringSplitOptions.TrimEntries);
+            if (values.Length != 2 || string.IsNullOrWhiteSpace(values[0]) || string.IsNullOrWhiteSpace(values[1]))
+            {
+                throw new ArgumentException("A database override must be provided in the format 'default,target'.", nameof(overrideValue));
+            }
+
+            var targetParts = values[1].Split('#', 2, StringSplitOptions.TrimEntries);
+            return new DatabaseOverride
+            {
+                Server = serverName,
+                DefaultDbTarget = values[0],
+                OverrideDbTarget = targetParts[0],
+                ConcurrencyTag = targetParts.Length == 2 ? targetParts[1] : string.Empty
+            };
         }
 
         private static void Bg_ProgressChanged(object sender, ProgressChangedEventArgs e)
