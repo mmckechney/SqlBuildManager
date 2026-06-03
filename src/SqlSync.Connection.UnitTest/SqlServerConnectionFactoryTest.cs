@@ -41,8 +41,8 @@ namespace SqlSync.Connection.UnitTest
             string redacted = ConnectionStringRedactor.Redact(connStr);
             var redactedBuilder = new SqlConnectionStringBuilder(redacted);
 
-            Assert.IsFalse(redacted.Contains("mypass"), "Should not contain password value");
-            Assert.AreEqual("***REDACTED***", redactedBuilder.Password, "Should retain a redacted password marker");
+            Assert.IsFalse(redacted.Contains("mypass"), "Should not contain full password value");
+            Assert.AreEqual("mypaxx", redactedBuilder.Password, "Password should be masked keeping the first 4 chars");
             Assert.AreEqual("myuser", redactedBuilder.UserID, "Should preserve non-secret connection details");
         }
 
@@ -52,7 +52,7 @@ namespace SqlSync.Connection.UnitTest
             string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.Windows, 30, "");
 
             Assert.IsTrue(connStr.Contains("Integrated Security=True"), "Should set Integrated Security");
-            Assert.IsTrue(connStr.Contains("Trust Server Certificate=True"), "Should trust server cert");
+            Assert.IsFalse(connStr.Contains("Trust Server Certificate=True"), "Should NOT trust server cert by default (secure-by-default)");
         }
 
         [TestMethod]
@@ -61,7 +61,7 @@ namespace SqlSync.Connection.UnitTest
             string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.AzureADDefault, 30, "");
 
             Assert.IsTrue(connStr.Contains("Authentication=ActiveDirectoryDefault"), "Should set AD Default auth");
-            Assert.IsTrue(connStr.Contains("Trust Server Certificate=True"), "Should trust server cert");
+            Assert.IsFalse(connStr.Contains("Trust Server Certificate=True"), "Should NOT trust server cert by default (secure-by-default)");
         }
 
         [TestMethod]
@@ -161,6 +161,103 @@ namespace SqlSync.Connection.UnitTest
             Assert.IsTrue(connStr.Contains("Data Source=sqlserver1"), "Should use server from ConnectionData");
             Assert.IsTrue(connStr.Contains("Initial Catalog=testdb"), "Should use database from ConnectionData");
             Assert.IsTrue(connStr.Contains("Connect Timeout=45"), "Should use timeout from ConnectionData");
+        }
+
+        #endregion
+
+        #region TrustServerCertificate (TLS) Tests
+
+        [TestMethod]
+        public void BuildConnectionString_PasswordAuth_DefaultsToNoTrust()
+        {
+            string connStr = factory.BuildConnectionString("mydb", "myserver", "u", "p", AuthenticationType.Password, 30, "");
+
+            var builder = new SqlConnectionStringBuilder(connStr);
+            Assert.IsFalse(builder.TrustServerCertificate, "Default (7-arg) overload must NOT trust the server certificate");
+        }
+
+        [TestMethod]
+        public void BuildConnectionString_PasswordAuth_TrustOptIn_SetsTrustTrue()
+        {
+            string connStr = factory.BuildConnectionString("mydb", "myserver", "u", "p", AuthenticationType.Password, 30, "", true);
+
+            var builder = new SqlConnectionStringBuilder(connStr);
+            Assert.IsTrue(builder.TrustServerCertificate, "Opt-in (8-arg) overload must trust the server certificate when requested");
+        }
+
+        [TestMethod]
+        public void BuildConnectionString_WindowsAuth_TrustOptIn_SetsTrustTrue()
+        {
+            string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.Windows, 30, "", true);
+
+            var builder = new SqlConnectionStringBuilder(connStr);
+            Assert.IsTrue(builder.TrustServerCertificate, "Windows auth should honor the trust opt-in");
+        }
+
+        [TestMethod]
+        public void BuildConnectionString_FromConnectionData_HonorsTrustServerCertificate()
+        {
+            var connData = new ConnectionData
+            {
+                DatabaseName = "testdb",
+                SQLServerName = "sqlserver1",
+                UserId = "user1",
+                Password = "pass1",
+                AuthenticationType = AuthenticationType.Password,
+                ScriptTimeout = 45,
+                TrustServerCertificate = true
+            };
+
+            var builder = new SqlConnectionStringBuilder(factory.BuildConnectionString(connData));
+            Assert.IsTrue(builder.TrustServerCertificate, "ConnectionData.TrustServerCertificate should flow into the connection string");
+        }
+
+        [TestMethod]
+        public void BuildConnectionString_FromConnectionData_DefaultsToNoTrust()
+        {
+            var connData = new ConnectionData
+            {
+                DatabaseName = "testdb",
+                SQLServerName = "sqlserver1",
+                UserId = "user1",
+                Password = "pass1",
+                AuthenticationType = AuthenticationType.Password,
+                ScriptTimeout = 45
+            };
+
+            var builder = new SqlConnectionStringBuilder(factory.BuildConnectionString(connData));
+            Assert.IsFalse(builder.TrustServerCertificate, "ConnectionData defaults to NOT trusting the server certificate");
+        }
+
+        [TestMethod]
+        public void Postgres_BuildConnectionString_IgnoresTrustServerCertificate()
+        {
+            var pgFactory = new PostgresConnectionFactory();
+            string withTrust = pgFactory.BuildConnectionString("db", "srv", "u", "p", AuthenticationType.Password, 30, "", true);
+            string withoutTrust = pgFactory.BuildConnectionString("db", "srv", "u", "p", AuthenticationType.Password, 30, "");
+
+            Assert.AreEqual(withoutTrust, withTrust, "PostgreSQL uses SslMode and must ignore the TrustServerCertificate flag");
+            Assert.IsFalse(withTrust.Contains("Trust Server Certificate"), "PostgreSQL connection string should not contain TrustServerCertificate");
+        }
+
+        [TestMethod]
+        public void BuildConnectionString_AmbientDefault_AppliesToFieldOverloads()
+        {
+            // The process-wide ambient default lets the operator opt in once (e.g. via
+            // --trustservercertificate) so helper paths that rebuild connections from individual
+            // fields honor that choice even though they don't carry a ConnectionData.
+            bool original = ConnectionHelper.TrustServerCertificate;
+            try
+            {
+                ConnectionHelper.TrustServerCertificate = true;
+                var builder = new SqlConnectionStringBuilder(
+                    factory.BuildConnectionString("mydb", "myserver", "u", "p", AuthenticationType.Password, 30, ""));
+                Assert.IsTrue(builder.TrustServerCertificate, "Field-based overload should honor the ambient ConnectionHelper.TrustServerCertificate default");
+            }
+            finally
+            {
+                ConnectionHelper.TrustServerCertificate = original;
+            }
         }
 
         #endregion

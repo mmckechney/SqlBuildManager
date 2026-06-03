@@ -47,6 +47,7 @@ With this update, it significantly reduces the the need to save and manage secre
     - [**Remote Build Execution**](#remote-build-execution)
     - [**"Settings" file**](#settings-file)
     - [**"jobname"**](#jobname)
+    - [**Security**](#security)
   - [Key Features](#key-features)
   - [Running Builds (command line)](#running-builds-command-line)
     - [**Local**](#local)
@@ -90,6 +91,14 @@ A configuration file that can be saved and re-used across multiple builds. It sa
 ### **"jobname"**
 
 The name of a build. This is used as the name or name prefix for all of the Azure services used in a remote build including the blob storage container, running docker containers, service bus topic, etc.
+
+### **Security**
+
+SQL Build Manager is an operator-run tool that handles connection strings, account keys and SAS tokens. A few behaviors are worth understanding:
+
+- **Secrets are masked in logs.** Account/access keys are shown as their first 4 characters followed by `x`'s, passwords as their first and last character with the middle masked, and connection strings have their embedded secrets masked the same way. SAS tokens are never logged (only the storage account name is). This prevents credential leakage through log aggregation, Batch node logs, or support bundles.
+- **Settings-file encryption.** Sensitive values in a settings file are protected with AES-256 using a random salt and IV per value, PBKDF2-SHA256 (100,000 iterations) key derivation, and an HMAC integrity check. Existing settings files created by earlier versions remain readable and are upgraded to the stronger format the next time the file is saved.
+- **TLS certificate validation (`--trustservercertificate`).** Database server certificates are validated by default. If you connect to a server with a self-signed or otherwise untrusted certificate (common for local SQL Express), pass `--trustservercertificate true` to opt in to trusting it. This setting can also be stored in the settings file.
 
 ---
 

@@ -10,8 +10,10 @@ namespace SqlSync.Connection
     {
         DbConnection CreateConnection(ConnectionData connData);
         DbConnection CreateConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId);
+        DbConnection CreateConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId, bool trustServerCertificate);
         string BuildConnectionString(ConnectionData connData);
         string BuildConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId);
+        string BuildConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId, bool trustServerCertificate);
         DbCommand CreateCommand(string sql, DbConnection connection, DbTransaction transaction = null!);
         DbParameter CreateParameter(string name, object value);
     }

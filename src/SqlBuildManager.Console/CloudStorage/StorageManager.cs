@@ -6,6 +6,7 @@ using Azure.Storage.Sas;
 using Microsoft.Azure.Batch;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
+using SqlSync.Connection;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -626,7 +627,7 @@ namespace SqlBuildManager.Console.CloudStorage
             {
 
                 var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
-                log.LogDebug($"Creating container with account name '{storageAccountName}' and container name '{containerName}' and key '{storageAccountKey}'. ");
+                log.LogDebug($"Creating container with account name '{storageAccountName}' and container name '{containerName}' and key '{ConnectionStringRedactor.MaskKey(storageAccountKey)}'. ");
                 containerClient = new BlobContainerClient(connstr, containerName);
             }
 

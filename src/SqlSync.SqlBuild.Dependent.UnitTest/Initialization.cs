@@ -78,6 +78,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             testDatabaseNames.Add("SqlBuildTest_SyncTest3");
 
             connData = new ConnectionData(serverName, testDatabaseNames[0]);
+            connData.TrustServerCertificate = true;
             var sqlUser = Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER");
             var sqlPassword = Environment.GetEnvironmentVariable("SBM_TEST_SQL_PASSWORD");
             if (!string.IsNullOrWhiteSpace(sqlUser))
@@ -325,6 +326,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             cd.AuthenticationType = connData.AuthenticationType;
             cd.UserId = connData.UserId;
             cd.Password = connData.Password;
+            cd.TrustServerCertificate = connData.TrustServerCertificate;
             return cd;
         }
 

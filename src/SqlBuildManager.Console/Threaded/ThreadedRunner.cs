@@ -248,6 +248,7 @@ namespace SqlBuildManager.Console.Threaded
                 connData.AuthenticationType = cmdArgs.AuthenticationArgs.AuthenticationType;
                 connData.ManagedIdentityClientId = cmdArgs.IdentityArgs.ClientId;
                 connData.DatabasePlatform = cmdArgs.AuthenticationArgs.DatabasePlatform;
+                connData.TrustServerCertificate = cmdArgs.AuthenticationArgs.TrustServerCertificate;
 
                 // For PG MI auth, use identity name as UserId (PG role name)
                 if (connData.DatabasePlatform == SqlSync.Connection.DatabasePlatform.PostgreSQL

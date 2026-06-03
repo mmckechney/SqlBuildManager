@@ -53,6 +53,17 @@ namespace SqlBuildManager.Console.CommandLine
             }
         }
 
+        [JsonIgnore]
+        public virtual bool TrustServerCertificate
+        {
+            set
+            {
+                if (AuthenticationArgs == null) AuthenticationArgs = new Authentication();
+                AuthenticationArgs.TrustServerCertificate = value;
+                this.DirectPropertyChangeTracker.Add("Authentication.TrustServerCertificate");
+            }
+        }
+
         [Serializable]
         public class Authentication : ArgsBase
         {
@@ -66,6 +77,9 @@ namespace SqlBuildManager.Console.CommandLine
             [JsonConverter(typeof(JsonStringEnumConverter))]
             [DefaultValue(SqlSync.Connection.DatabasePlatform.SqlServer)]
             public SqlSync.Connection.DatabasePlatform DatabasePlatform { get; set; } = SqlSync.Connection.DatabasePlatform.SqlServer;
+
+            [DefaultValue(false)]
+            public bool TrustServerCertificate { get; set; } = false;
         }
     }
 }

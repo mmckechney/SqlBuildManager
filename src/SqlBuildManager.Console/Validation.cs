@@ -301,6 +301,7 @@ namespace SqlBuildManager.Console
             connData.Password = cmdLine.AuthenticationArgs.Password;
             connData.AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType;
             connData.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+            connData.TrustServerCertificate = cmdLine.AuthenticationArgs.TrustServerCertificate;
 
             return connData;
         }

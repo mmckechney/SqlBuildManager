@@ -22,6 +22,7 @@ namespace SqlBuildManager.Console
             }
 
             ConnectionData connectionData = new ConnectionData(cmdLine.Server, cmdLine.Database);
+            connectionData.TrustServerCertificate = cmdLine.AuthenticationArgs.TrustServerCertificate;
             if (cmdLine.AuthenticationArgs.Password.Length > 0)
                 connectionData.Password = cmdLine.AuthenticationArgs.Password;
             if (cmdLine.AuthenticationArgs.UserName.Length > 0)
