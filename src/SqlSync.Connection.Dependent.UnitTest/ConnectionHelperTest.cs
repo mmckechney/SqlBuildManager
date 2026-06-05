@@ -55,7 +55,7 @@ namespace SqlSync.Connection.Dependent.UnitTest
             int scriptTimeOut = 20;
             bool expected = true;
             bool actual;
-            actual = ConnectionHelper.TestDatabaseConnection(dbName, serverName, TestSqlUser ?? "", TestSqlPassword ?? "", TestAuthType, scriptTimeOut,"");
+            actual = ConnectionHelper.TestDatabaseConnection(dbName, serverName, TestSqlUser ?? "", TestSqlPassword ?? "", TestAuthType, scriptTimeOut,"", true);
             Assert.AreEqual(expected, actual, $"NOTE: If this test fails, please make sure you have {serverName} instance running.");
         }
 
@@ -72,7 +72,8 @@ namespace SqlSync.Connection.Dependent.UnitTest
                 SQLServerName = TestServerName,
                 AuthenticationType = TestAuthType,
                 UserId = TestSqlUser ?? "",
-                Password = TestSqlPassword ?? ""
+                Password = TestSqlPassword ?? "",
+                TrustServerCertificate = true
             };
             bool expected = true;
             bool actual;

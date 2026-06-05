@@ -43,6 +43,7 @@ namespace SqlBuildManager.Console.CommandLine
             EnsureInitialized();
             var args = new CommandLineArgs();
             _registry.ApplyValues(parseResult, args);
+            SeedConnectionDefaults(args);
             return args;
         }
 
@@ -56,6 +57,19 @@ namespace SqlBuildManager.Console.CommandLine
 
             EnsureInitialized();
             _registry.ApplyValues(parseResult, args);
+            SeedConnectionDefaults(args);
+        }
+
+        /// <summary>
+        /// Seeds process-wide connection defaults from the fully-resolved arguments (settings file
+        /// merged + CLI overrides applied). Runs for every command so the operator's run-level
+        /// <c>--trustservercertificate</c> choice is honored by all downstream connection paths,
+        /// including helpers that rebuild connections from individual fields rather than a
+        /// <see cref="ConnectionData"/>.
+        /// </summary>
+        private static void SeedConnectionDefaults(CommandLineArgs args)
+        {
+            ConnectionHelper.TrustServerCertificate = args?.AuthenticationArgs?.TrustServerCertificate ?? false;
         }
 
         /// <summary>
@@ -201,6 +215,7 @@ namespace SqlBuildManager.Console.CommandLine
             _registry.Register(CommandLineBuilder.passwordOption, (args, v) => args.Password = v);
             _registry.Register(CommandLineBuilder.authtypeOption, (args, v) => args.AuthenticationType = v);
             _registry.Register(CommandLineBuilder.platformOption, (args, v) => args.DatabasePlatform = v);
+            _registry.Register(CommandLineBuilder.trustServerCertificateOption, (args, v) => args.TrustServerCertificate = v);
         }
 
         #endregion

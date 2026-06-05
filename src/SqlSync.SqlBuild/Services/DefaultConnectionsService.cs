@@ -107,7 +107,7 @@ namespace SqlSync.SqlBuild.Services
                 if (Connections.ContainsKey(databaseKey) == false)
                 {
                     BuildConnectData cData = new BuildConnectData();
-                    cData.Connection = _connectionFactory.CreateConnection(databaseName, serverName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+                    cData.Connection = _connectionFactory.CreateConnection(databaseName, serverName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId, connData.TrustServerCertificate || ConnectionHelper.TrustServerCertificate);
                     cData = PrepConnectionAndTransaction(cData, isTransactional);
                     cData.DatabaseName = databaseName;
                     cData.ServerName = serverName;

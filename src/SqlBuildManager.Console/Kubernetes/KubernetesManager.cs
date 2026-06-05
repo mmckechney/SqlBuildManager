@@ -408,13 +408,13 @@ namespace SqlBuildManager.Console.Kubernetes
          if (File.Exists("/etc/runtime/EventHubConnectionString"))
          {
             args.EventHubConnection = File.ReadAllText("/etc/runtime/EventHubConnectionString");
-            log.LogDebug($"EventHubConnectionString= {args.ConnectionArgs.EventHubConnectionString}");
+            log.LogDebug($"EventHubConnectionString= {ConnectionStringRedactor.RedactConnectionString(args.ConnectionArgs.EventHubConnectionString)}");
          }
 
          if (File.Exists("/etc/runtime/ServiceBusTopicConnectionString"))
          {
             args.ServiceBusTopicConnection = File.ReadAllText("/etc/runtime/ServiceBusTopicConnectionString");
-            log.LogDebug($"ServiceBusTopicConnectionString= {args.ConnectionArgs.ServiceBusTopicConnectionString}");
+            log.LogDebug($"ServiceBusTopicConnectionString= {ConnectionStringRedactor.RedactConnectionString(args.ConnectionArgs.ServiceBusTopicConnectionString)}");
          }
 
          if (File.Exists("/etc/runtime/StorageAccountName"))
@@ -478,29 +478,29 @@ namespace SqlBuildManager.Console.Kubernetes
             if (File.Exists("/etc/sbm/EventHubConnectionString"))
             {
                args.EventHubConnection = File.ReadAllText("/etc/sbm/EventHubConnectionString");
-               log.LogDebug($"eventhub= {args.ConnectionArgs.EventHubConnectionString}");
+               log.LogDebug($"eventhub= {ConnectionStringRedactor.RedactConnectionString(args.ConnectionArgs.EventHubConnectionString)}");
             }
 
             if (File.Exists("/etc/sbm/ServiceBusTopicConnectionString"))
             {
                args.ServiceBusTopicConnection = File.ReadAllText("/etc/sbm/ServiceBusTopicConnectionString");
-               log.LogDebug($"serviceBus= {args.ConnectionArgs.ServiceBusTopicConnectionString}");
+               log.LogDebug($"serviceBus= {ConnectionStringRedactor.RedactConnectionString(args.ConnectionArgs.ServiceBusTopicConnectionString)}");
             }
 
             if (File.Exists("/etc/sbm/StorageAccountKey"))
             {
                args.StorageAccountKey = File.ReadAllText("/etc/sbm/StorageAccountKey");
-               log.LogDebug($"storageaccountkey= {args.ConnectionArgs.StorageAccountKey}");
+               log.LogDebug($"storageaccountkey= {ConnectionStringRedactor.MaskKey(args.ConnectionArgs.StorageAccountKey)}");
             }
 
             if (args.AuthenticationArgs.AuthenticationType != AuthenticationType.ManagedIdentity
                && args.AuthenticationArgs.AuthenticationType != AuthenticationType.AzureADDefault)
             {
                args.Password = File.ReadAllText("/etc/sbm/Password");
-               log.LogDebug($"password= {args.AuthenticationArgs.Password}");
+               log.LogDebug($"password= {ConnectionStringRedactor.MaskPassword(args.AuthenticationArgs.Password)}");
 
                args.UserName = File.ReadAllText("/etc/sbm/UserName");
-               log.LogDebug($"username= {args.AuthenticationArgs.UserName}");
+               log.LogDebug($"username= {ConnectionStringRedactor.MaskPassword(args.AuthenticationArgs.UserName)}");
             }
 
             return (true, args);

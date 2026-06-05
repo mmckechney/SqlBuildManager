@@ -20,6 +20,16 @@ namespace SqlSync.Connection
 
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static string appName = "Sql Build Manager v{0} [{1}];";
+
+        /// <summary>
+        /// Process-wide opt-in for trusting (not validating) the SQL Server TLS certificate.
+        /// Secure-by-default (false): certificates are validated. The operator opts in once at
+        /// startup via the <c>--trustservercertificate</c> flag (or settings file), which is seeded
+        /// here so that connection-string overloads that don't carry a <see cref="ConnectionData"/>
+        /// still honor the operator's run-level choice. Connection-data based overloads OR this with
+        /// the per-connection <see cref="ConnectionData.TrustServerCertificate"/> value.
+        /// </summary>
+        public static bool TrustServerCertificate { get; set; } = false;
         static ConnectionHelper()
         {
             string version;
@@ -74,13 +84,7 @@ namespace SqlSync.Connection
             if (connData == null)
                 return null!;
 
-            return GetConnection(connData.DatabaseName,
-                connData.SQLServerName,
-                connData.UserId,
-                connData.Password,
-                connData.AuthenticationType,
-                connData.ScriptTimeout,
-                connData.ManagedIdentityClientId);
+            return new SqlConnection(GetConnectionString(connData));
         }
         public static string GetConnectionString(ConnectionData connData)
         {
@@ -93,9 +97,14 @@ namespace SqlSync.Connection
                 connData.Password,
                 connData.AuthenticationType,
                 connData.ScriptTimeout,
-                connData.ManagedIdentityClientId);
+                connData.ManagedIdentityClientId,
+                connData.TrustServerCertificate || TrustServerCertificate);
         }
         public static string GetConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId)
+        {
+            return GetConnectionString(dbName, serverName, uid, pw, authType, scriptTimeOut, managedIdentityClientId, TrustServerCertificate);
+        }
+        public static string GetConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId, bool trustServerCertificate)
         {
             SqlServerAuthenticationProvider.Register();
 
@@ -113,18 +122,18 @@ namespace SqlSync.Connection
             {
                 case AuthenticationType.Windows:
                     builder.IntegratedSecurity = true;
-                    builder.TrustServerCertificate = true;
+                    builder.TrustServerCertificate = trustServerCertificate;
                     break;
                 case AuthenticationType.AzureADIntegrated:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryIntegrated;
                     builder.IntegratedSecurity = true;
-                    builder.TrustServerCertificate = true;
+                    builder.TrustServerCertificate = trustServerCertificate;
                     break;
                 case AuthenticationType.AzureADDefault:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault;
                     if (!string.IsNullOrWhiteSpace(managedIdentityClientId))
                         builder.UserID = managedIdentityClientId;
-                    builder.TrustServerCertificate = true;
+                    builder.TrustServerCertificate = trustServerCertificate;
                     break;
                 case AuthenticationType.AzureADPassword:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryPassword;
@@ -143,10 +152,10 @@ namespace SqlSync.Connection
                     builder.Authentication = SqlAuthenticationMethod.SqlPassword;
                     builder.UserID = uid;
                     builder.Password = pw;
-                    builder.TrustServerCertificate = true;
+                    builder.TrustServerCertificate = trustServerCertificate;
                     break;
             }
-            log.LogDebug($"Database Connection string: {builder.ConnectionString}");
+            log.LogDebug($"Database Connection string: {ConnectionStringRedactor.Redact(builder.ConnectionString)}");
             return builder.ConnectionString;
         }
 
@@ -184,6 +193,10 @@ namespace SqlSync.Connection
 
         public static bool TestDatabaseConnection(string dbName, string serverName, string username, string password, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId)
         {
+            return TestDatabaseConnection(dbName, serverName, username, password, authType, scriptTimeOut, managedIdentityClientId, TrustServerCertificate);
+        }
+        public static bool TestDatabaseConnection(string dbName, string serverName, string username, string password, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId, bool trustServerCertificate)
+        {
             return TestDatabaseConnection(new ConnectionData()
             {
                 DatabaseName = dbName,
@@ -192,7 +205,8 @@ namespace SqlSync.Connection
                 UserId = username,
                 Password = password,
                 AuthenticationType = authType,
-                ManagedIdentityClientId = managedIdentityClientId                
+                ManagedIdentityClientId = managedIdentityClientId,
+                TrustServerCertificate = trustServerCertificate
             });
         }
         public static bool TestDatabaseConnection(ConnectionData connData)

@@ -39,7 +39,7 @@ namespace SqlBuildManager.Console.Threaded
             }
 
             var query = File.ReadAllText(cmdLine.QueryFile.FullName);
-            var connData = new ConnectionData() { UserId = cmdLine.AuthenticationArgs.UserName, Password = cmdLine.AuthenticationArgs.Password, AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType, ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId, DatabasePlatform = cmdLine.AuthenticationArgs.DatabasePlatform };
+            var connData = new ConnectionData() { UserId = cmdLine.AuthenticationArgs.UserName, Password = cmdLine.AuthenticationArgs.Password, AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType, ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId, DatabasePlatform = cmdLine.AuthenticationArgs.DatabasePlatform, TrustServerCertificate = cmdLine.AuthenticationArgs.TrustServerCertificate };
             // For PG MI auth, use identity name as UserId (PG role name)
             if (connData.DatabasePlatform == DatabasePlatform.PostgreSQL
                 && string.IsNullOrEmpty(connData.UserId)

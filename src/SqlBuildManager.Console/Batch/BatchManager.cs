@@ -202,7 +202,7 @@ namespace SqlBuildManager.Console.Batch
                     storageCreds = StorageManager.GetStorageSharedKeyCredential(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
                     containerSasToken = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, false).ConfigureAwait(false);
                 }
-                log.LogDebug($"Output write SAS token: {containerSasToken}");
+                log.LogDebug($"Generated output write SAS token for storage account '{cmdLine.ConnectionArgs.StorageAccountName}'");
 
 
                 // Get a Batch client using account creds or Managed Identity

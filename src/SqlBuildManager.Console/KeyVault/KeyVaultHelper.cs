@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CommandLine;
+using SqlSync.Connection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,7 +83,7 @@ namespace SqlBuildManager.Console.KeyVault
             }
             catch (Exception exe)
             {
-                log.LogError($"Unable to save secret '{secretName}' to vault {keyVaultName}: {exe.ToString()}");
+                log.LogError($"Unable to save secret '{secretName}' to vault {keyVaultName}: [{exe.GetType()}] {exe.Message}");
                 return null!;
             }
         }

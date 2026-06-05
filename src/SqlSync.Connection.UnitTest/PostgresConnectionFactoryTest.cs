@@ -43,8 +43,8 @@ namespace SqlSync.Connection.UnitTest
             string redacted = ConnectionStringRedactor.Redact(connStr);
             var redactedBuilder = new NpgsqlConnectionStringBuilder(redacted);
 
-            Assert.IsFalse(redacted.Contains("pgpass"), "Should not contain password value");
-            Assert.AreEqual("***REDACTED***", redactedBuilder.Password, "Should retain a redacted password marker");
+            Assert.IsFalse(redacted.Contains("pgpass"), "Should not contain full password value");
+            Assert.AreEqual("pgpaxx", redactedBuilder.Password, "Password should be masked keeping the first 4 chars");
             Assert.AreEqual("pguser", redactedBuilder.Username, "Should preserve non-secret connection details");
         }
 

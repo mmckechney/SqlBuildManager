@@ -20,6 +20,8 @@ namespace SqlSync.Connection
 
         private string _ManagedIdentityClientId = string.Empty;
 
+        private bool _TrustServerCertificate = false;
+
         private AuthenticationType authType = AuthenticationType.Password;
 
         private DatabasePlatform _DatabasePlatform = DatabasePlatform.SqlServer;
@@ -146,6 +148,22 @@ namespace SqlSync.Connection
             }
         }
 
+        /// <summary>
+        /// When true, the SQL Server TLS certificate is trusted without validation (TrustServerCertificate=true).
+        /// Defaults to false (secure): the server certificate is validated. SQL Server only; ignored for PostgreSQL.
+        /// </summary>
+        public virtual bool TrustServerCertificate
+        {
+            get
+            {
+                return _TrustServerCertificate;
+            }
+            set
+            {
+                _TrustServerCertificate = value;
+            }
+        }
+
         public virtual ConnectionData Fill(ConnectionData dataClass)
         {
             try
@@ -159,6 +177,7 @@ namespace SqlSync.Connection
                 ScriptTimeout = dataClass.ScriptTimeout;
                 ManagedIdentityClientId = dataClass.ManagedIdentityClientId;
                 _DatabasePlatform = dataClass._DatabasePlatform;
+                _TrustServerCertificate = dataClass._TrustServerCertificate;
                 return this;
             }
             catch (System.Exception ex)

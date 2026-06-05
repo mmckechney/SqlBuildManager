@@ -31,6 +31,12 @@ namespace SqlSync.Connection
             return new NpgsqlConnection(conn);
         }
 
+        // PostgreSQL uses SslMode (not TrustServerCertificate); the flag is accepted for interface parity and ignored.
+        public DbConnection CreateConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId, bool trustServerCertificate)
+        {
+            return CreateConnection(dbName, serverName, uid, pw, authType, scriptTimeOut, managedIdentityClientId);
+        }
+
         public string BuildConnectionString(ConnectionData connData)
         {
             return BuildConnectionString(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password,
@@ -93,6 +99,12 @@ namespace SqlSync.Connection
 
             log.LogDebug($"PostgreSQL Connection string: {ConnectionStringRedactor.Redact(builder.ConnectionString)}");
             return builder.ConnectionString;
+        }
+
+        // PostgreSQL uses SslMode (not TrustServerCertificate); the flag is accepted for interface parity and ignored.
+        public string BuildConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId, bool trustServerCertificate)
+        {
+            return BuildConnectionString(dbName, serverName, uid, pw, authType, scriptTimeOut, managedIdentityClientId);
         }
 
         /// <summary>

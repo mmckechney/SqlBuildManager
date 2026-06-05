@@ -124,7 +124,8 @@ namespace SqlBuildManager.Console
                     UserId = cmdLine.AuthenticationArgs.UserName,
                     Password = cmdLine.AuthenticationArgs.Password,
                     ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId,
-                    DatabasePlatform = cmdLine.AuthenticationArgs.DatabasePlatform
+                    DatabasePlatform = cmdLine.AuthenticationArgs.DatabasePlatform,
+                    TrustServerCertificate = cmdLine.AuthenticationArgs.TrustServerCertificate
                 };
                 // For PG MI auth, use identity name as UserId (PG role name)
                 if (connData.DatabasePlatform == DatabasePlatform.PostgreSQL

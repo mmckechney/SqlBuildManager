@@ -231,7 +231,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
         }
 
         [TestMethod]
-        public void EncryptText_SameInputProducesSameOutput()
+        public void EncryptText_SameInputProducesDifferentOutput()
         {
             // Arrange
             string input = "Hello World";
@@ -241,8 +241,13 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             var encrypted1 = Cryptography.EncryptText(input, password);
             var encrypted2 = Cryptography.EncryptText(input, password);
 
-            // Assert
-            Assert.AreEqual(encrypted1, encrypted2);
+            // Assert — v1 encryption is non-deterministic (random salt/IV); both still round-trip.
+            Assert.AreNotEqual(encrypted1, encrypted2);
+            var (s1, d1) = Cryptography.DecryptText(encrypted1, password, "t", true);
+            var (s2, d2) = Cryptography.DecryptText(encrypted2, password, "t", true);
+            Assert.IsTrue(s1 && s2);
+            Assert.AreEqual(input, d1);
+            Assert.AreEqual(input, d2);
         }
 
         [TestMethod]

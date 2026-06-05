@@ -32,7 +32,7 @@ namespace SqlSync.Connection.UnitTest
 
             Assert.IsTrue(result.Contains("Authentication=ActiveDirectoryIntegrated"));
             Assert.IsTrue(result.Contains("Integrated Security=True"));
-            Assert.IsTrue(result.Contains("Trust Server Certificate=True"));
+            Assert.IsFalse(result.Contains("Trust Server Certificate=True"), "Should not trust server cert by default (secure-by-default)");
         }
 
         [TestMethod]

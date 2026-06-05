@@ -205,6 +205,7 @@ These options apply to `build`, `threaded run`, and the remote execution command
 | `--authtype` | enum | `Password` | Authentication method: `Password`, `Windows`, `ManagedIdentity`, `AzureADPassword`, `AzureADIntegrated`, `AzureADDefault`, `AzureADInteractive` |
 | `--username` / `-u` | string | | Database username (required for `Password` and `AzureADPassword` auth types) |
 | `--password` / `-p` | string | | Database password (required for `Password` and `AzureADPassword` auth types) |
+| `--trustservercertificate` / `--trustcert` | bool | `false` | SQL Server only. When `true`, skips TLS certificate validation (`TrustServerCertificate=true`). Default validates the server certificate; only enable for trusted networks or self-signed certificates you control. |
 | `--identityclientid` / `--clientid` | string | | Client ID of the Azure User Assigned Managed Identity |
 | `--tenantid` | string | | Azure AD Tenant ID (optional, for explicit tenant targeting) |
 

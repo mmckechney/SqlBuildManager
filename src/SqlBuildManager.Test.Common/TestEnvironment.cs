@@ -9,6 +9,14 @@ namespace SqlBuildManager.Test.Common
     /// </summary>
     public static class TestEnvironment
     {
+        // Dependent SQL tests run against a local SQL Express instance with a self-signed
+        // certificate. Mirror the operator opting into --trustservercertificate so that helper
+        // paths which rebuild connections from individual fields (e.g. InfoHelper) connect.
+        static TestEnvironment()
+        {
+            ConnectionHelper.TrustServerCertificate = true;
+        }
+
         // SQL Server settings
         public static string SqlServer { get; } = Environment.GetEnvironmentVariable("SBM_TEST_SQL_SERVER") ?? @"(local)\SQLEXPRESS";
         public static string SqlUser { get; } = Environment.GetEnvironmentVariable("SBM_TEST_SQL_USER") ?? string.Empty;
@@ -37,6 +45,7 @@ namespace SqlBuildManager.Test.Common
         public static ConnectionData GetConnectionData(string databaseName)
         {
             var data = new ConnectionData(SqlServer, databaseName);
+            data.TrustServerCertificate = true;
             if (UseSqlAuth)
             {
                 data.AuthenticationType = AuthenticationType.Password;
@@ -48,13 +57,14 @@ namespace SqlBuildManager.Test.Common
 
         /// <summary>
         /// CLI auth arguments for SQL Server tests (--authtype, --username, --password).
+        /// Includes --trustservercertificate because local/dev SQL Server instances use self-signed certs.
         /// </summary>
         public static string[] GetSqlAuthArgs()
         {
             if (UseSqlAuth)
-                return new[] { "--authtype", AuthenticationType.Password.ToString(), "--username", SqlUser, "--password", SqlPassword };
+                return new[] { "--authtype", AuthenticationType.Password.ToString(), "--username", SqlUser, "--password", SqlPassword, "--trustservercertificate", "true" };
             else
-                return new[] { "--authtype", AuthenticationType.Windows.ToString() };
+                return new[] { "--authtype", AuthenticationType.Windows.ToString(), "--trustservercertificate", "true" };
         }
 
         /// <summary>

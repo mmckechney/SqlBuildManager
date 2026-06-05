@@ -88,6 +88,7 @@ namespace SqlSync.SqlBuild.AdHocQuery
                 connData.ScriptTimeout = scriptTimeout;
                 connData.DatabasePlatform = masterConnData.DatabasePlatform;
                 connData.ManagedIdentityClientId = masterConnData.ManagedIdentityClientId;
+                connData.TrustServerCertificate = masterConnData.TrustServerCertificate;
                 DbConnection conn = ConnectionHelper.GetDbConnection(connData);
                 DbCommand cmd = conn.CreateCommand();
                 cmd.CommandText = query;

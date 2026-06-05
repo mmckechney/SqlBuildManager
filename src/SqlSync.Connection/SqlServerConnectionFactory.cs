@@ -14,23 +14,33 @@ namespace SqlSync.Connection
         public DbConnection CreateConnection(ConnectionData connData)
         {
             return CreateConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password,
-                connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+                connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId, connData.TrustServerCertificate || ConnectionHelper.TrustServerCertificate);
         }
 
         public DbConnection CreateConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId)
         {
+            return CreateConnection(dbName, serverName, uid, pw, authType, scriptTimeOut, managedIdentityClientId, ConnectionHelper.TrustServerCertificate);
+        }
+
+        public DbConnection CreateConnection(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId, bool trustServerCertificate)
+        {
             SqlServerAuthenticationProvider.Register();
-            string conn = BuildConnectionString(dbName, serverName, uid, pw, authType, scriptTimeOut, managedIdentityClientId);
+            string conn = BuildConnectionString(dbName, serverName, uid, pw, authType, scriptTimeOut, managedIdentityClientId, trustServerCertificate);
             return new SqlConnection(conn);
         }
 
         public string BuildConnectionString(ConnectionData connData)
         {
             return BuildConnectionString(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password,
-                connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+                connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId, connData.TrustServerCertificate || ConnectionHelper.TrustServerCertificate);
         }
 
         public string BuildConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId)
+        {
+            return BuildConnectionString(dbName, serverName, uid, pw, authType, scriptTimeOut, managedIdentityClientId, ConnectionHelper.TrustServerCertificate);
+        }
+
+        public string BuildConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId, bool trustServerCertificate)
         {
             var builder = new SqlConnectionStringBuilder();
             builder.DataSource = serverName;
@@ -45,18 +55,18 @@ namespace SqlSync.Connection
             {
                 case AuthenticationType.Windows:
                     builder.IntegratedSecurity = true;
-                    builder.TrustServerCertificate = true;
+                    builder.TrustServerCertificate = trustServerCertificate;
                     break;
                 case AuthenticationType.AzureADIntegrated:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryIntegrated;
                     builder.IntegratedSecurity = true;
-                    builder.TrustServerCertificate = true;
+                    builder.TrustServerCertificate = trustServerCertificate;
                     break;
                 case AuthenticationType.AzureADDefault:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault;
                     if (!string.IsNullOrWhiteSpace(managedIdentityClientId))
                         builder.UserID = managedIdentityClientId;
-                    builder.TrustServerCertificate = true;
+                    builder.TrustServerCertificate = trustServerCertificate;
                     break;
                 case AuthenticationType.AzureADPassword:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryPassword;
@@ -75,7 +85,7 @@ namespace SqlSync.Connection
                     builder.Authentication = SqlAuthenticationMethod.SqlPassword;
                     builder.UserID = uid;
                     builder.Password = pw;
-                    builder.TrustServerCertificate = true;
+                    builder.TrustServerCertificate = trustServerCertificate;
                     break;
             }
             log.LogDebug($"Database Connection string: {ConnectionStringRedactor.Redact(builder.ConnectionString)}");
