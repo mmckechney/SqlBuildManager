@@ -28,7 +28,7 @@ dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configura
 - `*.Dependent.PostgreSQL.UnitTest.csproj` - PostgreSQL-specific dependent tests (require PostgreSQL instance)
 - `SqlBuildManager.Console.ExternalTest` - Integration tests for SQL Server requiring Azure resources (run `azd up` first to provision resources)
 - `SqlBuildManager.Console.PostgreSQL.ExternalTest` - Integration tests for PostgreSQL requiring Azure resources
-- External tests run in ACI containers via `scripts/tests/run_all_external_tests_in_aci.ps1` using `src/Dockerfile.tests`
+- External tests run in ACI containers via `scripts/tests/run_all_sqlserver_external_tests_in_aci.ps1` and `scripts/tests/run_all_postgres_external_tests_in_aci.ps1` using `src/Dockerfile.tests`
 
 ## Architecture Overview
 
