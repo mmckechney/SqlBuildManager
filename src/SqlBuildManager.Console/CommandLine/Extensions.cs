@@ -1,4 +1,4 @@
-﻿using Azure.ResourceManager.Resources.Models;
+using Azure.ResourceManager.Resources.Models;
 using Microsoft.SqlServer.Management.Dmf;
 using SqlBuildManager.Console.ContainerApp.Internal;
 using System;
@@ -88,6 +88,20 @@ namespace SqlBuildManager.Console.CommandLine
                      if (cmd.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity || cmd.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault)
                      {
                         args.AddRange(new string[] { "--authtype", "ManagedIdentity".Quoted() });
+                     }
+                     else if (cmd.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.Password)
+                     {
+                        args.AddRange(new string[] { "--authtype", "Password".Quoted() });
+                        
+                        // Honor passed username and password parameters when using Password authentication
+                        if (!string.IsNullOrWhiteSpace(cmd.AuthenticationArgs.UserName))
+                        {
+                           args.AddRange(new string[] { "--username", cmd.AuthenticationArgs.UserName.Quoted() });
+                        }
+                        if (!string.IsNullOrWhiteSpace(cmd.AuthenticationArgs.Password))
+                        {
+                           args.AddRange(new string[] { "--password", cmd.AuthenticationArgs.Password.Quoted() });
+                        }
                      }
                   }
 
