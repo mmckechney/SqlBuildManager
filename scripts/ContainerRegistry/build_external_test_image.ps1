@@ -38,6 +38,15 @@ $testImageName = "sqlbuildmanager-tests"
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
 . $prefixScript -prefix $prefix
 
+$acrLoginServer = az acr show `
+    --name $containerRegistryName `
+    --resource-group $resourceGroupName `
+    --query loginServer `
+    --output tsv
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($acrLoginServer)) {
+    throw "Unable to determine the login server for Azure Container Registry '$containerRegistryName'."
+}
+
 #############################################
 # Build and push test image if requested
 #############################################
