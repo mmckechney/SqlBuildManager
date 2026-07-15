@@ -17,11 +17,11 @@ param
     Grants the managed identity access to all SQL databases using Entra ID (Azure AD) authentication.
 
 .DESCRIPTION
-    This script connects to each SQL Server and database using the current user's Entra ID credentials
+    This script connects to each SQL Server and database using the active Azure identity
     and creates a database user for the managed identity, then grants it the specified role.
     
     Prerequisites:
-    - The current user must be an Entra ID admin on the SQL Server
+    - The active Azure identity must be an Entra ID admin on the SQL Server
     - The host running this script must have connectivity to the SQL private endpoints
     - Az CLI must be installed and logged in
     - SqlServer PowerShell module must be installed (Install-Module -Name SqlServer)
@@ -47,13 +47,13 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($path)) {
-    $path = Join-Path $repoRoot "src\TestConfig"
+    $path = Join-Path $repoRoot 'src' 'TestConfig'
 }
 
 #############################################
 # Get set resource name variables from prefix
 #############################################
-$prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
+$prefixScript = Join-Path $repoRoot 'scripts' 'prefix_resource_names.ps1'
 . $prefixScript -prefix $prefix
 
 Write-Host "Granting Managed Identity '$identityName' access to SQL databases" -ForegroundColor Cyan
@@ -76,7 +76,6 @@ if ($null -eq $identity) {
 }
 
 $identityClientId = $identity.clientId
-$identityPrincipalId = $identity.principalId
 Write-Host "Managed Identity Name: $identityName" -ForegroundColor DarkGreen
 Write-Host "Managed Identity Client ID: $identityClientId" -ForegroundColor DarkGreen
 
@@ -97,6 +96,7 @@ if ($null -eq $sqlServers -or $sqlServers.Count -eq 0) {
 
 Write-Host "Found $($sqlServers.Count) SQL server(s)" -ForegroundColor DarkGreen
 
+$failureCount = 0
 foreach ($server in $sqlServers) {
     $serverFqdn = $server.fullyQualifiedDomainName
     Write-Host "`nProcessing SQL Server: $serverFqdn" -ForegroundColor Cyan
@@ -112,14 +112,17 @@ foreach ($server in $sqlServers) {
     foreach ($dbName in $databases) {
         Write-Host "  Processing database: $dbName" -ForegroundColor DarkGreen
 
-        # SQL to create user and grant role
-        # For external (Entra ID) users, we use CREATE USER ... FROM EXTERNAL PROVIDER
+        # Create the external user from its client ID without requiring Microsoft Graph
+        # directory lookup permissions on the SQL logical server.
         $sql = @"
--- Check if user already exists
+DECLARE @name SYSNAME = '$identityName';
+DECLARE @clientId UNIQUEIDENTIFIER = '$identityClientId';
+DECLARE @sid NVARCHAR(34) = CONVERT(VARCHAR(34), CONVERT(VARBINARY(16), @clientId), 1);
+
 IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = '$identityName')
 BEGIN
-    -- Create user from external provider (Entra ID / Azure AD)
-    CREATE USER [$identityName] FROM EXTERNAL PROVIDER;
+    DECLARE @createUser NVARCHAR(MAX) = N'CREATE USER [' + @name + '] WITH SID = ' + @sid + ', TYPE = E;';
+    EXEC (@createUser);
     PRINT 'Created user [$identityName]';
 END
 ELSE
@@ -144,14 +147,30 @@ BEGIN
 END
 "@
 
-        try {
-            Invoke-Sqlcmd -ServerInstance $serverFqdn -Database $dbName -AccessToken $accessToken -Query $sql -ErrorAction Stop
-            Write-Host "    ✓ Granted $databaseRole to $identityName" -ForegroundColor Green
-        }
-        catch {
-            Write-Host "    ✗ Failed to grant permissions: $($_.Exception.Message)" -ForegroundColor Red
+        $success = $false
+        for ($attempt = 1; $attempt -le 5 -and -not $success; $attempt++) {
+            try {
+                Invoke-Sqlcmd -ServerInstance $serverFqdn -Database $dbName -AccessToken $accessToken -Query $sql -ErrorAction Stop
+                Write-Host "    ✓ Granted $databaseRole to $identityName" -ForegroundColor Green
+                $success = $true
+            }
+            catch {
+                if ($attempt -lt 5) {
+                    Write-Host "    Connection attempt $attempt failed; retrying while private DNS and administrator changes propagate..." -ForegroundColor Yellow
+                    Start-Sleep -Seconds 15
+                }
+                else {
+                    Write-Host "    ✗ Failed to grant permissions: $($_.Exception.Message)" -ForegroundColor Red
+                    $failureCount++
+                }
+            }
         }
     }
+}
+
+if ($failureCount -gt 0) {
+    Write-Error "Failed to grant SQL permissions on $failureCount database(s)."
+    exit 1
 }
 
 Write-Host "`n========================================" -ForegroundColor Cyan

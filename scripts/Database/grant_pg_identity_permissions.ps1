@@ -18,8 +18,9 @@ param
     for the managed identity, then grants it appropriate permissions on each database.
     
     Prerequisites:
-    - The current user must be an Entra ID admin on the PostgreSQL server
+    - The active Azure identity must be an Entra ID admin on the PostgreSQL server
     - Az CLI must be installed and logged in
+    - psql must be installed
     - The managed identity must exist in the resource group
 
 .PARAMETER prefix
@@ -39,11 +40,11 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($path)) {
-    $path = Join-Path $repoRoot "src\TestConfig"
+    $path = Join-Path $repoRoot 'src' 'TestConfig'
 }
 
 # Get set resource name variables from prefix
-$prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
+$prefixScript = Join-Path $repoRoot 'scripts' 'prefix_resource_names.ps1'
 . $prefixScript -prefix $prefix
 
 Write-Host "Granting Managed Identity '$identityName' access to PostgreSQL databases" -ForegroundColor Cyan
@@ -56,26 +57,29 @@ if ($null -eq $identity) {
     exit 1
 }
 
-$identityClientId = $identity.clientId
+$identityPrincipalId = $identity.principalId
 Write-Host "Managed Identity Name: $identityName" -ForegroundColor DarkGreen
-Write-Host "Managed Identity Client ID: $identityClientId" -ForegroundColor DarkGreen
+Write-Host "Managed Identity Object ID: $identityPrincipalId" -ForegroundColor DarkGreen
 
-# Get PG admin credentials
-$pgAdminUser = "${prefix}pgadmin"
-$pgAdminPassword = azd env get-value PG_ADMIN_PASSWORD 2>$null
-if ([string]::IsNullOrWhiteSpace($pgAdminPassword) -or $pgAdminPassword -like "ERROR:*") {
-    $pgPwFile = Join-Path $path "pg-pw.txt"
-    if (Test-Path $pgPwFile) {
-        $pgAdminPassword = (Get-Content -Path $pgPwFile).Trim()
-    } else {
-        Write-Host "ERROR: Cannot find PG admin password. Set PG_ADMIN_PASSWORD env var or create pg-pw.txt" -ForegroundColor Red
-        exit 1
-    }
+$entraAdminName = $env:POSTPROVISION_IDENTITY_NAME
+if ([string]::IsNullOrWhiteSpace($entraAdminName)) {
+    $entraAdminName = az account show --query user.name -o tsv
+}
+if ([string]::IsNullOrWhiteSpace($entraAdminName)) {
+    Write-Error "Unable to determine the PostgreSQL Entra administrator name."
+    exit 1
 }
 
-# Ensure the rdbms-connect extension is installed (needed for az postgres flexible-server execute)
-Write-Host "Ensuring rdbms-connect extension is installed..." -ForegroundColor DarkGreen
-az extension add --name rdbms-connect --yes 2>$null
+$aadToken = az account get-access-token --resource-type oss-rdbms --query accessToken -o tsv
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($aadToken)) {
+    Write-Error "Unable to acquire a PostgreSQL access token."
+    exit 1
+}
+
+$env:PGPASSWORD = $aadToken
+$escapedIdentityName = $identityName.Replace("'", "''")
+$quotedIdentityName = $identityName.Replace('"', '""')
+$failureCount = 0
 
 # Process both PostgreSQL servers
 $pgServerNames = @($pgServerNameA, $pgServerNameB)
@@ -86,6 +90,7 @@ foreach ($pgServerName in $pgServerNames) {
 $pgServer = az postgres flexible-server show --resource-group $resourceGroupName --name $pgServerName | ConvertFrom-Json
 if ($null -eq $pgServer) {
     Write-Host "ERROR: Could not find PostgreSQL server '$pgServerName'" -ForegroundColor Red
+    $failureCount++
     continue
 }
 
@@ -93,67 +98,21 @@ $pgFqdn = $pgServer.fullyQualifiedDomainName
 Write-Host ""
 Write-Host "Processing PostgreSQL Server: $pgFqdn" -ForegroundColor Cyan
 
-# Step 1: Create the managed identity role in the 'postgres' database
-# pgaadauth_create_principal only exists in the postgres database and creates a server-wide role.
-# IMPORTANT: This function can only be run by an Entra ID admin, not a local (password) admin.
-# We acquire an Azure AD token for the current user and authenticate with that.
 Write-Host "Ensuring Entra ID role '$identityName' exists..." -ForegroundColor DarkGreen
 
-# Get Entra ID admin info from the server
-$aadAdmins = az rest --method get --uri "/subscriptions/$(az account show --query id -o tsv)/resourceGroups/$resourceGroupName/providers/Microsoft.DBforPostgreSQL/flexibleServers/$pgServerName/administrators?api-version=2024-08-01" --query "value[0].properties.principalName" -o tsv 2>$null
-if ([string]::IsNullOrWhiteSpace($aadAdmins)) {
-    Write-Host "  ⚠ Could not determine Entra ID admin — falling back to local admin" -ForegroundColor Yellow
-    $aadAdmins = $null
+$createRoleSql = "SELECT * FROM pgaadauth_create_principal_with_oid('$escapedIdentityName', '$identityPrincipalId', 'service', false, false);"
+$createOutput = & psql --host=$pgFqdn --port=5432 --dbname=postgres --username=$entraAdminName --set=ON_ERROR_STOP=1 --command=$createRoleSql 2>&1
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "  ✓ Role '$identityName' created" -ForegroundColor Green
+} elseif ("$createOutput" -match "already exists") {
+    Write-Host "  Role '$identityName' already exists — OK" -ForegroundColor DarkGreen
+} else {
+    Write-Host "  ✗ Unable to create role '$identityName': $createOutput" -ForegroundColor Red
+    $failureCount++
+    continue
 }
 
-$roleCreated = $false
-if ($null -ne $aadAdmins) {
-    # Authenticate as Entra ID admin using Azure AD token
-    $aadToken = az account get-access-token --resource-type oss-rdbms --query accessToken -o tsv 2>$null
-    if (-not [string]::IsNullOrWhiteSpace($aadToken)) {
-        # Parameters: (name, isAdmin, isMfa) — managed identities don't use MFA
-        $createRoleSql = "SELECT * FROM pgaadauth_create_principal('${identityName}', false, false)"
-        $createOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $aadAdmins --admin-password "$aadToken" --querytext "$createRoleSql" --output none 2>&1 3>$null
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "  ✓ Role '$identityName' created (Entra ID auth)" -ForegroundColor Green
-            $roleCreated = $true
-        } elseif ($createOutput -match "already exists") {
-            Write-Host "  Role '$identityName' already exists — OK" -ForegroundColor DarkGreen
-            $roleCreated = $true
-        } else {
-            Write-Host "  ⚠ pgaadauth_create_principal via Entra ID admin failed: $createOutput" -ForegroundColor Yellow
-        }
-    } else {
-        Write-Host "  ⚠ Could not acquire Azure AD token — falling back to local admin" -ForegroundColor Yellow
-    }
-}
-
-if (-not $roleCreated) {
-    # Fallback: try with local admin (will only work if the role already exists or for non-MI roles)
-    $createRoleSql = "SELECT * FROM pgaadauth_create_principal('${identityName}', false, false)"
-    $createOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$createRoleSql" --output none 2>&1 3>$null
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "  ✓ Role '$identityName' created" -ForegroundColor Green
-    } elseif ($createOutput -match "already exists") {
-        Write-Host "  Role '$identityName' already exists — OK" -ForegroundColor DarkGreen
-    } else {
-        Write-Host "  ⚠ pgaadauth_create_principal failed, trying direct CREATE ROLE..." -ForegroundColor Yellow
-        $fallbackSql = "CREATE ROLE ""${identityName}"" WITH LOGIN"
-        $fallbackOutput = az postgres flexible-server execute --name $pgServerName --database-name postgres --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$fallbackSql" --output none 2>&1 3>$null
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "  ✓ Role '$identityName' created via CREATE ROLE" -ForegroundColor Green
-        } elseif ($fallbackOutput -match "already exists") {
-            Write-Host "  Role '$identityName' already exists — OK" -ForegroundColor DarkGreen
-        } else {
-            Write-Host "  ERROR: Could not create role for managed identity. Grants may fail." -ForegroundColor Red
-            Write-Host "  $fallbackOutput" -ForegroundColor Red
-        }
-    }
-}
-
-# Step 2: Grant privileges on each test database
-# List all databases
-$dbs = az postgres flexible-server db list --resource-group $resourceGroupName --server-name $pgServerName --query "[].name" -o tsv
+$dbs = @(az postgres flexible-server db list --resource-group $resourceGroupName --server-name $pgServerName --query "[].name" -o tsv)
 
 foreach ($db in $dbs) {
     if ($db -eq "postgres" -or $db -eq "azure_maintenance" -or $db -eq "azure_sys") {
@@ -164,28 +123,36 @@ foreach ($db in $dbs) {
 
     # Grant privileges (run each as a separate statement)
     $grantStatements = @(
-        "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ""${identityName}""",
-        "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO ""${identityName}""",
-        "GRANT USAGE, CREATE ON SCHEMA public TO ""${identityName}"""
+        "GRANT CONNECT ON DATABASE ""$db"" TO ""$quotedIdentityName""",
+        "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ""$quotedIdentityName""",
+        "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ""$quotedIdentityName""",
+        "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO ""$quotedIdentityName""",
+        "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO ""$quotedIdentityName""",
+        "GRANT USAGE, CREATE ON SCHEMA public TO ""$quotedIdentityName"""
     )
 
     $allSucceeded = $true
     foreach ($grantSql in $grantStatements) {
-        $null = az postgres flexible-server execute --name $pgServerName --database-name $db --admin-user $pgAdminUser --admin-password "$pgAdminPassword" --querytext "$grantSql" --output none 2>&1 3>$null
+        $grantOutput = & psql --host=$pgFqdn --port=5432 --dbname=$db --username=$entraAdminName --set=ON_ERROR_STOP=1 --command=$grantSql 2>&1
         if ($LASTEXITCODE -ne 0) {
             $allSucceeded = $false
-            Write-Host "    ⚠ Grant statement failed: $grantSql" -ForegroundColor Yellow
+            Write-Host "    ✗ Grant statement failed: $grantOutput" -ForegroundColor Red
         }
     }
 
     if ($allSucceeded) {
         Write-Host "    ✓ Granted permissions to $identityName on $db" -ForegroundColor Green
     } else {
-        Write-Host "    ⚠ Some permissions may not have been granted on $db" -ForegroundColor Yellow
+        $failureCount++
     }
 }
 
 } # end foreach pgServerName
+
+if ($failureCount -gt 0) {
+    Write-Error "PostgreSQL permission initialization failed for $failureCount operation(s)."
+    exit 1
+}
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan

@@ -22,9 +22,6 @@ param userLoginName string = ''
 @description('Whether to deploy the Batch Account')
 param deployBatchAccount bool = true
 
-@description('Whether to deploy the container registry')
-param deployContainerRegistry bool = true
-
 @description('Whether to deploy the Container App Environment')
 param deployContainerAppEnv bool = true
 
@@ -78,6 +75,7 @@ var containerAppEnvNameVar = '${namePrefix}containerappenv'
 var logAnalyticsWorkspaceVar = '${namePrefix}loganalytics'
 var containerRegistryNameVar = '${namePrefix}containerregistry'
 var identityNameVar = '${namePrefix}identity'
+var postProvisionIdentityNameVar = '${namePrefix}postprovision'
 var eventHubNamespaceNameVar = '${namePrefix}eventhubnamespace'
 var eventHubNameVar = '${namePrefix}eventhub'
 var serviceBusNamespaceNameVar = '${namePrefix}servicebus'
@@ -126,6 +124,16 @@ module identityResource './modules/identity.bicep' = {
   }
 }
 
+// Dedicated identity for the VNet-integrated post-provision bootstrap container.
+module postProvisionIdentity './modules/postprovisionidentity.bicep' = {
+  name: 'postProvisionIdentity'
+  scope: rg
+  params: {
+    identityName: postProvisionIdentityNameVar
+    location: location
+  }
+}
+
 // User Identity RBAC
 module userIdentityResource './modules/useridentity.bicep' = if(userIdGuid != ''){
   name: 'userIdentityResource'
@@ -136,7 +144,7 @@ module userIdentityResource './modules/useridentity.bicep' = if(userIdGuid != ''
 }
 
 // Container Registry
-module containerRegistry './modules/containerregistry.bicep' = if(deployContainerRegistry){
+module containerRegistry './modules/containerregistry.bicep' = {
   name: 'containerRegistry'
   scope: rg
   params: {
@@ -187,6 +195,8 @@ module postgresql './modules/postgresql.bicep' = if(deployPostgreSQL && userIdGu
     pgAdminObjectId: userIdGuid
     pgAdminLogin: userLoginName
     pgAdminPassword: pgAdminPassword
+    postProvisionAdminObjectId: postProvisionIdentity.outputs.principalId
+    postProvisionAdminName: postProvisionIdentity.outputs.name
     vnetId: networkResource.outputs.vnetId
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
   }
@@ -296,7 +306,7 @@ output AZURE_NAME_PREFIX string = namePrefix
 
 // Deployment parameter outputs
 output DEPLOY_BATCH_ACCOUNT bool = deployBatchAccount
-output DEPLOY_CONTAINER_REGISTRY bool = deployContainerRegistry
+output DEPLOY_CONTAINER_REGISTRY bool = true
 output DEPLOY_CONTAINERAPP_ENV bool = deployContainerAppEnv
 output DEPLOY_AKS bool = deployAks
 output DEPLOY_SQLSERVER bool = deploySqlServer
@@ -315,6 +325,7 @@ output VNET_NAME string = networkResource.outputs.vnetName
 output VNET_ID string = networkResource.outputs.vnetId
 output NSG_NAME string = networkResource.outputs.nsgName
 output ACI_SUBNET_NAME string = networkResource.outputs.aciSubnetName
+output ACI_SUBNET_ID string = networkResource.outputs.aciSubnetId
 output BATCH_SUBNET_NAME string = networkResource.outputs.batchSubnetName
 output CONTAINERAPP_SUBNET_NAME string = networkResource.outputs.containerAppSubnetName
 output AKS_SUBNET_NAME string = networkResource.outputs.aksSubnetName
@@ -324,6 +335,11 @@ output MANAGED_IDENTITY_NAME string = identityResource.outputs.name
 output MANAGED_IDENTITY_ID string = identityResource.outputs.id
 output MANAGED_IDENTITY_CLIENT_ID string = identityResource.outputs.clientId
 output MANAGED_IDENTITY_PRINCIPAL_ID string = identityResource.outputs.principalId
+
+output POSTPROVISION_IDENTITY_NAME string = postProvisionIdentity.outputs.name
+output POSTPROVISION_IDENTITY_ID string = postProvisionIdentity.outputs.id
+output POSTPROVISION_IDENTITY_CLIENT_ID string = postProvisionIdentity.outputs.clientId
+output POSTPROVISION_IDENTITY_PRINCIPAL_ID string = postProvisionIdentity.outputs.principalId
 
 output STORAGE_ACCOUNT_NAME string = storageAccountResource.outputs.name
 output STORAGE_ACCOUNT_ID string = storageAccountResource.outputs.id
@@ -339,9 +355,9 @@ output EVENTHUB_NAME string = eventHubNamespaceResource.outputs.eventHubName
 output SERVICEBUS_NAMESPACE_NAME string = serviceBusResource.outputs.namespaceName
 output SERVICEBUS_NAMESPACE_ID string = serviceBusResource.outputs.namespaceId
 
-output CONTAINER_REGISTRY_NAME string = deployContainerRegistry ? containerRegistry!.outputs.name : ''
-output CONTAINER_REGISTRY_ID string = deployContainerRegistry ? containerRegistry!.outputs.id : ''
-output CONTAINER_REGISTRY_LOGIN_SERVER string = deployContainerRegistry ? containerRegistry!.outputs.loginServer : ''
+output CONTAINER_REGISTRY_NAME string = containerRegistry.outputs.name
+output CONTAINER_REGISTRY_ID string = containerRegistry.outputs.id
+output CONTAINER_REGISTRY_LOGIN_SERVER string = containerRegistry.outputs.loginServer
 
 output CONTAINERAPP_ENVIRONMENT_NAME string = deployContainerAppEnv ? containerAppEnv!.outputs.name : ''
 output CONTAINERAPP_ENVIRONMENT_ID string = deployContainerAppEnv ? containerAppEnv!.outputs.id : ''

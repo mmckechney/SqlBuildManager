@@ -16,7 +16,7 @@ function Get-AzdEnvValue {
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Post-Provision: Granting SQL Permissions" -ForegroundColor Cyan
+Write-Host "Post-Provision: Private Initialization" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
 # Get the environment name (used as prefix)
@@ -25,9 +25,6 @@ $resourceGroupName = Get-AzdEnvValue "RESOURCE_GROUP_NAME"
 
 Write-Host "Environment: $prefix" -ForegroundColor DarkGreen
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
-
-# SQL Server and PostgreSQL use private endpoints only. Database permission grants
-# therefore require this hook to run from a host with connectivity to the deployed VNet.
 
 # Get the repo root (where azure.yaml is located)
 # First try AZD_PROJECT_PATH, then derive from script location, then fall back to current directory
@@ -51,37 +48,19 @@ Write-Host "Repo Root: $repoRoot" -ForegroundColor DarkGreen
 $sbmExe = Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Debug\net10.0\sbm.exe"
 write-Host "SBM Executable: $sbmExe" -ForegroundColor DarkGreen
 
-# Grant SQL Server managed identity permissions (only if SQL Server is deployed)
 $sqlServerDeployed = Get-AzdEnvValue "DEPLOY_SQLSERVER"
-if ($sqlServerDeployed -ne "false") {
-    # Run the grant identity permissions script
-    $scriptPath = Join-Path $repoRoot "scripts\Database\grant_identity_permissions.ps1"
-    if (Test-Path $scriptPath) {
-        & $scriptPath -prefix $prefix -resourceGroupName $resourceGroupName
-    } else {
-        Write-Host "Script not found at: $scriptPath" -ForegroundColor Yellow
-        Write-Host "Skipping SQL permissions grant. Run manually after deployment:" -ForegroundColor Yellow
-        Write-Host "  .\scripts\Database\grant_identity_permissions.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
-    }
-} else {
-    Write-Host "SQL Server not deployed — skipping SQL permissions grant" -ForegroundColor DarkGray
-}
-
-# Grant PostgreSQL managed identity permissions
 $pgDeployed = Get-AzdEnvValue "DEPLOY_POSTGRESQL"
-if ($pgDeployed -eq "true") {
-    Write-Host ""
-    Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host "Post-Provision: Granting PostgreSQL Permissions" -ForegroundColor Cyan
-    Write-Host "========================================" -ForegroundColor Cyan
-
-    $pgScriptPath = Join-Path $repoRoot "scripts\Database\grant_pg_identity_permissions.ps1"
-    if (Test-Path $pgScriptPath) {
-        & $pgScriptPath -prefix $prefix -resourceGroupName $resourceGroupName
-    } else {
-        Write-Host "Script not found at: $pgScriptPath" -ForegroundColor Yellow
-    }
+$privateInitializationScript = Join-Path $repoRoot "scripts\ContainerRegistry\run_private_postprovision_container.ps1"
+if (-not (Test-Path $privateInitializationScript)) {
+    throw "Private initialization script not found at '$privateInitializationScript'."
 }
+
+& $privateInitializationScript `
+    -prefix $prefix `
+    -resourceGroupName $resourceGroupName `
+    -repoRoot $repoRoot `
+    -deploySqlServer ($sqlServerDeployed -ne "false") `
+    -deployPostgreSQL ($pgDeployed -eq "true")
 
 $aksDeployed = Get-AzdEnvValue "DEPLOY_AKS"
 if ($aksDeployed -eq "true") {
@@ -218,7 +197,7 @@ if ($buildBatch -eq "true" -and $batchDeployed -ne "false") {
 
 # Build and push Docker container images (only if Container Registry is deployed)
 $buildContainers = Get-AzdEnvValue "BUILD_CONTAINER_IMAGES"
-$crDeployed = Get-AzdEnvValue "DEPLOY_CONTAINER_REGISTRY"
+$crDeployed = "true"
 if ($buildContainers -eq "true" -and $crDeployed -ne "false") {
     Write-Host ""
     Write-Host "=========================================" -ForegroundColor Cyan

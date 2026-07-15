@@ -29,6 +29,8 @@ $containerRegistryName = $prefix + "containerregistry"
 $identityName = $prefix + "identity"
 $userAssignedIdentity = $identityName
 $userAssignedIdentityName = $identityName
+$postProvisionIdentityName = $prefix + "postprovision"
+$postProvisionContainerName = $prefix + "postprovision"
 
 $eventHubNamespaceName = $prefix + "eventhubnamespace" 
 $eventHubName = $prefix + "eventhub" 
@@ -48,5 +50,4 @@ $federatedIdName = $prefix + "federatedidname"
 #Used with PostgreSQL Flexible Server
 $pgServerNameA = $prefix + "pgserver-a"
 $pgServerNameB = $prefix + "pgserver-b"
-
 

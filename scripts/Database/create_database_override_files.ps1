@@ -46,6 +46,12 @@ $taggedClientDbConfigFile = Join-Path $path "clientdbtargets-tag.cfg"
 $serverTextFile = Join-Path $path "server.txt"
 $tag = @("TagA","TagB","TagC")
 $counter = 0
+$outputDbConfig = @()
+$databaseDbWithBadTargetConfig = @()
+$clientDbConfig = @()
+$doubleClientDbConfig = @()
+$taggedDbConfig = @()
+$taggedClientDbConfig = @()
 
 $sqlServers =  (az sql server list --resource-group $resourceGroupName ) | ConvertFrom-Json
 Write-Host "Using server targets: $sqlServers"  -ForegroundColor Cyan
@@ -76,7 +82,8 @@ foreach($server in $sqlServers)
 
 foreach($server in $sqlServers)
 {
-    foreach($db in $dbs)
+    $serverDatabases = az sql db list --resource-group $resourceGroupName --server "$($server.name)" --query "[].name" -o tsv
+    foreach($db in $serverDatabases)
     {
         if($db -ne "master")
         {
@@ -97,7 +104,7 @@ Write-Host "Writing test database config to path $clientDbConfigFile" -Foregroun
 $clientDbConfig | Set-Content -Path $clientDbConfigFile
 
 Write-Host "Writing test database config with tags to path $taggedClientDbConfigFile" -ForegroundColor DarkGreen
-$taggedClientDbConfigFile | Set-Content -Path $taggedClientDbConfigFile
+$taggedClientDbConfig | Set-Content -Path $taggedClientDbConfigFile
 
 Write-Host "Writing test database config to path $doubleClientDbConfigFile" -ForegroundColor DarkGreen
 $doubleClientDbConfig | Set-Content -Path $doubleClientDbConfigFile
@@ -110,4 +117,3 @@ $taggedDbConfig | Set-Content -Path $taggedDbConfigFile
 
 Write-Host "Creating server.txt file for SQL Query override config tests" -ForegroundColor DarkGreen
 $sqlServers[0].fullyQualifiedDomainName.trim()   | Set-Content -Path $serverTextFile
-

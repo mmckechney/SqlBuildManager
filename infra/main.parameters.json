@@ -20,9 +20,6 @@
     "deployBatchAccount": {
       "value": "${DEPLOY_BATCH}"
     },
-    "deployContainerRegistry": {
-      "value": "${DEPLOY_CONTAINER_REGISTRY}"
-    },
     "deployContainerAppEnv": {
       "value": "${DEPLOY_CONTAINERAPP}"
     },
