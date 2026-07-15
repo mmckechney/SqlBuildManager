@@ -22,6 +22,7 @@ param
     
     Prerequisites:
     - The current user must be an Entra ID admin on the SQL Server
+    - The host running this script must have connectivity to the SQL private endpoints
     - Az CLI must be installed and logged in
     - SqlServer PowerShell module must be installed (Install-Module -Name SqlServer)
 
@@ -96,21 +97,6 @@ if ($null -eq $sqlServers -or $sqlServers.Count -eq 0) {
 
 Write-Host "Found $($sqlServers.Count) SQL server(s)" -ForegroundColor DarkGreen
 
-# Get current IP address and add firewall rules
-$currentIpAddress = (Invoke-WebRequest -Uri "https://api.ipify.org" -UseBasicParsing).Content.Trim()
-Write-Host "Current IP Address: $currentIpAddress" -ForegroundColor DarkGreen
-$firewallRuleName = "GrantIdentityPermissions_TempRule"
-
-# Add temporary firewall rules to all SQL servers
-foreach ($server in $sqlServers) {
-    Write-Host "Adding temporary firewall rule to $($server.name)..." -ForegroundColor DarkGreen
-    az sql server firewall-rule create --resource-group $resourceGroupName --server $server.name --name $firewallRuleName --start-ip-address $currentIpAddress --end-ip-address $currentIpAddress --output none 2>$null
-}
-
-# Wait a moment for firewall rules to propagate
-Write-Host "Waiting for firewall rules to propagate..." -ForegroundColor DarkGreen
-Start-Sleep -Seconds 10
-
 foreach ($server in $sqlServers) {
     $serverFqdn = $server.fullyQualifiedDomainName
     Write-Host "`nProcessing SQL Server: $serverFqdn" -ForegroundColor Cyan
@@ -158,64 +144,12 @@ BEGIN
 END
 "@
 
-        $maxRetries = 3
-        $retryCount = 0
-        $success = $false
-
-        while (-not $success -and $retryCount -lt $maxRetries) {
-            try {
-                # Execute SQL using the access token
-                Invoke-Sqlcmd -ServerInstance $serverFqdn -Database $dbName -AccessToken $accessToken -Query $sql -ErrorAction Stop
-                Write-Host "    ✓ Granted $databaseRole to $identityName" -ForegroundColor Green
-                $success = $true
-            }
-            catch {
-                $errorMessage = $_.Exception.Message
-                
-                # Check if the error is due to blocked IP address
-                if ($errorMessage -match "Client with IP address '([0-9\.]+)' is not allowed") {
-                    $blockedIp = $matches[1]
-                    Write-Host "    ⚠ Connection blocked for IP: $blockedIp" -ForegroundColor Yellow
-                    Write-Host "    Adding IP $blockedIp to firewall rules..." -ForegroundColor Yellow
-                    
-                    # Add the blocked IP to firewall rules
-                    $dynamicRuleName = "GrantIdentityPermissions_Dynamic_$blockedIp"
-                    az sql server firewall-rule create --resource-group $resourceGroupName --server $server.name --name $dynamicRuleName --start-ip-address $blockedIp --end-ip-address $blockedIp --output none 2>$null
-                    
-                    # Wait for firewall rule to propagate
-                    Write-Host "    Waiting for firewall rule to propagate..." -ForegroundColor Yellow
-                    Start-Sleep -Seconds 5
-                    
-                    $retryCount++
-                    Write-Host "    Retrying ($retryCount/$maxRetries)..." -ForegroundColor Yellow
-                }
-                else {
-                    # Different error, don't retry
-                    Write-Host "    ✗ Failed to grant permissions: $errorMessage" -ForegroundColor Red
-                    break
-                }
-            }
+        try {
+            Invoke-Sqlcmd -ServerInstance $serverFqdn -Database $dbName -AccessToken $accessToken -Query $sql -ErrorAction Stop
+            Write-Host "    ✓ Granted $databaseRole to $identityName" -ForegroundColor Green
         }
-
-        if (-not $success -and $retryCount -ge $maxRetries) {
-            Write-Host "    ✗ Failed after $maxRetries retries" -ForegroundColor Red
-        }
-    }
-}
-
-# Clean up temporary firewall rules
-Write-Host "`nCleaning up temporary firewall rules..." -ForegroundColor DarkGreen
-foreach ($server in $sqlServers) {
-    # Remove the main temporary firewall rule
-    az sql server firewall-rule delete --resource-group $resourceGroupName --server $server.name --name $firewallRuleName --output none 2>$null
-    Write-Host "  Removed firewall rule from $($server.name)" -ForegroundColor DarkGreen
-    
-    # Remove any dynamically created firewall rules
-    $allRules = az sql server firewall-rule list --resource-group $resourceGroupName --server $server.name --query "[?starts_with(name, 'GrantIdentityPermissions_Dynamic_')].name" -o tsv
-    if ($allRules) {
-        foreach ($ruleName in $allRules) {
-            az sql server firewall-rule delete --resource-group $resourceGroupName --server $server.name --name $ruleName --output none 2>$null
-            Write-Host "  Removed dynamic firewall rule: $ruleName" -ForegroundColor DarkGreen
+        catch {
+            Write-Host "    ✗ Failed to grant permissions: $($_.Exception.Message)" -ForegroundColor Red
         }
     }
 }

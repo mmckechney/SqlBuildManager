@@ -26,9 +26,8 @@ $resourceGroupName = Get-AzdEnvValue "RESOURCE_GROUP_NAME"
 Write-Host "Environment: $prefix" -ForegroundColor DarkGreen
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 
-# NOTE: Public network access remains enabled on all resources.
-# Security is enforced via network rules (defaultAction: Deny + allowed IPs/VNets).
-# This allows local integration testing while private endpoints are also configured.
+# SQL Server and PostgreSQL use private endpoints only. Database permission grants
+# therefore require this hook to run from a host with connectivity to the deployed VNet.
 
 # Get the repo root (where azure.yaml is located)
 # First try AZD_PROJECT_PATH, then derive from script location, then fall back to current directory

@@ -7,46 +7,28 @@ param testDbCountPerServer int = 10
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
-@description('Current machine IP address to allow access to the SQL Server.')
-param currentIpAddress string
-
-@description('Array of subnet resource ids to allow access to the SQL Server.')
-param subnetNames string
-
 @description('Object ID (GUID) of the Entra ID user or group to set as SQL admin')
 param sqlAdminObjectId string
 
 @description('Login name (email or display name) of the Entra ID admin')
 param sqlAdminLogin string
 
-@description('Whether to use private endpoints instead of public network access')
-param usePrivateEndpoint bool = false
+@description('VNet ID for the private DNS zone link')
+param vnetId string
 
-@description('VNet ID for private DNS zone link (required when usePrivateEndpoint is true)')
-param vnetId string = ''
-
-@description('Private endpoint subnet ID (required when usePrivateEndpoint is true)')
-param privateEndpointSubnetId string = ''
+@description('Private endpoint subnet ID')
+param privateEndpointSubnetId string
 
 var sqlserverNameVar = '${namePrefix}sql'
 var sqlpoolNameVar = '${namePrefix}pool'
 var identityNameVar = '${namePrefix}identity'
-var vnetNameVar = '${namePrefix}vnet'
-var subnetNamesArray = split(subnetNames,',')
-
-resource existingVnet 'Microsoft.Network/virtualNetworks@2023-05-01' existing = {
-  name: vnetNameVar
-}
-
-
 // SQL Server 'A' resources - Entra ID Only Authentication
 resource sqlserverAResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
   name: '${sqlserverNameVar}-a'
   location: location
   
   properties: {
-    // Always start with public access enabled so firewall rules can be created
-    publicNetworkAccess: 'Enabled'
+    publicNetworkAccess: 'Disabled'
     restrictOutboundNetworkAccess: 'Disabled'
     minimalTlsVersion: '1.2'
     administrators: {
@@ -62,25 +44,6 @@ resource sqlserverAResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
 
 // Output managed identity name for reference (used by grant_identity_permissions.ps1)
 output identityName string = identityNameVar
-
-resource sqlserverAFirewallRule 'Microsoft.Sql/servers/firewallRules@2021-11-01' = if(currentIpAddress != '') {
-  parent: sqlserverAResource
-  name: '${sqlserverNameVar}A_AllowIp'
-  properties: {
-    startIpAddress: currentIpAddress
-    endIpAddress: currentIpAddress
-  }
-}
-
-resource sqlserverA_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2021-11-01' = [for subnet in subnetNamesArray: {
-  parent: sqlserverAResource
-  name: '${sqlserverNameVar}A_${subnet}'
-  properties: {
-    ignoreMissingVnetServiceEndpoint: false
-    virtualNetworkSubnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', existingVnet.name, subnet)
-
-  }
-}]
 
 resource sqlserverAResource_Pool 'Microsoft.Sql/servers/elasticPools@2021-11-01' = {
   parent: sqlserverAResource
@@ -128,8 +91,7 @@ resource sqlserverBResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
   name: '${sqlserverNameVar}-b'
   location: location  
   properties: {
-    // Always start with public access enabled so firewall rules can be created
-    publicNetworkAccess: 'Enabled'
+    publicNetworkAccess: 'Disabled'
     restrictOutboundNetworkAccess: 'Disabled'
     minimalTlsVersion: '1.2'
     administrators: {
@@ -142,25 +104,6 @@ resource sqlserverBResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
     } 
   } 
 }
-resource sqlserverBFirewallRule 'Microsoft.Sql/servers/firewallRules@2021-11-01' = if(currentIpAddress != '') {
-  parent: sqlserverBResource
-  name: '${sqlserverNameVar}B_AllowIp'
-  properties: {
-    startIpAddress: currentIpAddress
-    endIpAddress: currentIpAddress
-  }
-}
-
-resource sqlserverB_VnetRule 'Microsoft.Sql/servers/virtualNetworkRules@2021-11-01' = [for subnet in subnetNamesArray: {
-  parent: sqlserverBResource
-  name: '${sqlserverNameVar}B_${subnet}'
-  properties: {
-    ignoreMissingVnetServiceEndpoint: false
-    virtualNetworkSubnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', existingVnet.name, subnet)
-
-  }
-}]
-
 resource sqlserverBResource_Pool 'Microsoft.Sql/servers/elasticPools@2021-11-01' = {
   parent: sqlserverBResource
   name: '${sqlpoolNameVar}-b'  
@@ -204,14 +147,14 @@ resource sqlserverBResource_Database 'Microsoft.Sql/servers/databases@2021-11-01
 // Private DNS zone name for SQL Server using environment suffix
 var sqlPrivateDnsZoneName = 'privatelink${environment().suffixes.sqlServerHostname}'
 
-// Private DNS Zone for SQL Server (only when using private endpoints)
-resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if(usePrivateEndpoint) {
+// Private DNS Zone for SQL Server
+resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: sqlPrivateDnsZoneName
   location: 'global'
 }
 
 // Link private DNS zone to VNet
-resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if(usePrivateEndpoint) {
+resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   parent: privateDnsZone
   name: '${namePrefix}-sql-vnet-link'
   location: 'global'
@@ -224,7 +167,7 @@ resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
 }
 
 // Private Endpoint for SQL Server A
-resource privateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = if(usePrivateEndpoint) {
+resource privateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = {
   name: '${namePrefix}sql-a-pe'
   location: location
   properties: {
@@ -246,7 +189,7 @@ resource privateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = if(u
 }
 
 // DNS Zone Group for SQL Server A private endpoint
-resource privateEndpointADnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = if(usePrivateEndpoint) {
+resource privateEndpointADnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
   parent: privateEndpointA
   name: 'default'
   properties: {
@@ -262,7 +205,7 @@ resource privateEndpointADnsGroup 'Microsoft.Network/privateEndpoints/privateDns
 }
 
 // Private Endpoint for SQL Server B
-resource privateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = if(usePrivateEndpoint) {
+resource privateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = {
   name: '${namePrefix}sql-b-pe'
   location: location
   properties: {
@@ -284,7 +227,7 @@ resource privateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = if(u
 }
 
 // DNS Zone Group for SQL Server B private endpoint
-resource privateEndpointBDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = if(usePrivateEndpoint) {
+resource privateEndpointBDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
   parent: privateEndpointB
   name: 'default'
   properties: {
@@ -298,7 +241,3 @@ resource privateEndpointBDnsGroup 'Microsoft.Network/privateEndpoints/privateDns
     ]
   }
 }
-
-// NOTE: Disabling public network access is handled in postprovision.ps1 via Azure CLI
-// This allows both VNet rules and private endpoints to coexist for flexible switching
-// The Bicep policy may block inline updates, but az sql server update works fine

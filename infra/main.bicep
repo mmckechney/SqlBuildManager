@@ -166,14 +166,11 @@ module databases './modules/database.bicep' = if(deploySqlServer && testDbCountP
     identityResource
   ]
   params: { 
-    currentIpAddress: currentIpAddress
     location: location
-    subnetNames: join(networkResource.outputs.subnetNames, ',')
     namePrefix: namePrefix
     testDbCountPerServer: testDbCountPerServer
     sqlAdminObjectId: userIdGuid
     sqlAdminLogin: userLoginName
-    usePrivateEndpoint: usePrivateEndpoint
     vnetId: networkResource.outputs.vnetId
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
   }
@@ -187,12 +184,9 @@ module postgresql './modules/postgresql.bicep' = if(deployPostgreSQL && userIdGu
     namePrefix: namePrefix
     testDbCountPerServer: testDbCountPerServer
     location: location
-    currentIpAddress: currentIpAddress
-    subnetNames: join(networkResource.outputs.subnetNames, ',')
     pgAdminObjectId: userIdGuid
     pgAdminLogin: userLoginName
     pgAdminPassword: pgAdminPassword
-    usePrivateEndpoint: usePrivateEndpoint
     vnetId: networkResource.outputs.vnetId
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
   }
