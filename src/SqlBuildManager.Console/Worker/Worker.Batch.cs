@@ -23,7 +23,7 @@ namespace SqlBuildManager.Console
 
             return SaveAndEncryptSettings(cmdLine, clearText);
         }
-        internal static int Batch_NodeCleanUp(CommandLineArgs cmdLine)
+        internal static async Task<int> Batch_NodeCleanUp(CommandLineArgs cmdLine)
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
@@ -31,7 +31,7 @@ namespace SqlBuildManager.Console
 
             DateTime start = DateTime.Now;
             Batch.BatchManager batchExe = new Batch.BatchManager(cmdLine);
-            var retVal = batchExe.CleanUpBatchNodes();
+            var retVal = await batchExe.CleanUpBatchNodes();
 
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
@@ -78,7 +78,7 @@ namespace SqlBuildManager.Console
             //If using queue and subscription doesn't already exist from a `sbm batch enqueue` command, create it and enqueue targets
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
-                var qManager = new QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.JobName, cmdLine.ConcurrencyType);
+                var qManager = await QueueManager.CreateAsync(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.JobName, cmdLine.ConcurrencyType);
 
                 //Get message count
                 var messageCount = qManager.MonitorServiceBustopic(cmdLine.ConcurrencyType);

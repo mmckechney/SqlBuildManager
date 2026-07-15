@@ -43,8 +43,20 @@ namespace SqlBuildManager.Console.Queue
             this.concurrencyType = concurrencyType;
             if (!unitest)
             {
+                // Legacy sync-over-async path kept for backward compatibility.
+                // Prefer QueueManager.CreateAsync for all production call sites.
                 CreateSubscriptions().Wait();
             }
+        }
+
+        /// <summary>
+        /// Preferred async factory: creates subscriptions without blocking the calling thread.
+        /// </summary>
+        public static async Task<QueueManager> CreateAsync(string topicConnectionString, string jobName, ConcurrencyType concurrencyType)
+        {
+            var qm = new QueueManager(topicConnectionString, jobName, concurrencyType, unitest: true);
+            await qm.CreateSubscriptions();
+            return qm;
         }
 
         private string EnsureQualifiedNamespace(string input)
@@ -170,7 +182,7 @@ namespace SqlBuildManager.Console.Queue
                 var activeMessages = await MonitorServiceBustopic(cType);
                 while (activeMessages < count && retry < 4)
                 {
-                    Thread.Sleep(1000);
+                    await Task.Delay(1000);
                     activeMessages = await MonitorServiceBustopic(cType);
                 }
 

@@ -127,11 +127,14 @@ namespace SqlSync.Connection.UnitTest
         }
 
         [TestMethod]
-        public void BuildConnectionString_PoolingDisabled()
+        public void BuildConnectionString_PoolingEnabledWithSafeLimits()
         {
             string connStr = factory.BuildConnectionString("mydb", "myserver", "u", "p", AuthenticationType.Password, 30, "");
 
-            Assert.IsTrue(connStr.Contains("Pooling=False"), "Should have pooling disabled");
+            var builder = new SqlConnectionStringBuilder(connStr);
+            Assert.IsTrue(builder.Pooling);
+            Assert.AreEqual(0, builder.MinPoolSize);
+            Assert.AreEqual(100, builder.MaxPoolSize);
         }
 
         [TestMethod]

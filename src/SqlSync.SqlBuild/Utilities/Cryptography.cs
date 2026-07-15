@@ -36,22 +36,17 @@ namespace SqlSync.SqlBuild.Utilities
 
         public static string EncryptText(string input, string password)
         {
-            try
-            {
-                byte[] bytesToBeEncrypted = Encoding.UTF8.GetBytes(input);
+            // Fail closed: any encryption failure is a hard error.
+            // Callers must not persist settings when this throws.
+            byte[] bytesToBeEncrypted = Encoding.UTF8.GetBytes(input);
 
-                // Preserve legacy password normalization (SHA256 of the password) so the same
-                // password works across legacy and v1 payloads.
-                byte[] passwordBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
+            // Preserve legacy password normalization (SHA256 of the password) so the same
+            // password works across legacy and v1 payloads.
+            byte[] passwordBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
 
-                byte[] bytesEncrypted = AES_Encrypt_V1(bytesToBeEncrypted, passwordBytes);
+            byte[] bytesEncrypted = AES_Encrypt_V1(bytesToBeEncrypted, passwordBytes);
 
-                return Convert.ToBase64String(bytesEncrypted);
-            }
-            catch
-            {
-                return input;
-            }
+            return Convert.ToBase64String(bytesEncrypted);
         }
 
         public static (bool, string) DecryptText(string input, string password, string description, bool suppressLog = false)

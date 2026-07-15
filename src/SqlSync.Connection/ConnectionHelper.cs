@@ -20,6 +20,10 @@ namespace SqlSync.Connection
 
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static string appName = "Sql Build Manager v{0} [{1}];";
+        internal const int MinimumPoolSize = 0;
+        internal const int MaximumPoolSize = 100;
+        private static readonly IDbConnectionFactory SqlServerFactory = new SqlServerConnectionFactory();
+        private static readonly IDbConnectionFactory PostgresFactory = new PostgresConnectionFactory();
 
         /// <summary>
         /// Process-wide opt-in for trusting (not validating) the SQL Server TLS certificate.
@@ -48,8 +52,8 @@ namespace SqlSync.Connection
         {
             return platform switch
             {
-                DatabasePlatform.PostgreSQL => new PostgresConnectionFactory(),
-                _ => new SqlServerConnectionFactory(),
+                DatabasePlatform.PostgreSQL => PostgresFactory,
+                _ => SqlServerFactory,
             };
         }
 
@@ -112,7 +116,9 @@ namespace SqlSync.Connection
             builder.DataSource = serverName;
             builder.InitialCatalog = dbName;
             builder.ConnectTimeout = scriptTimeOut;
-            builder.Pooling = false;
+            builder.Pooling = true;
+            builder.MinPoolSize = MinimumPoolSize;
+            builder.MaxPoolSize = MaximumPoolSize;
             builder.ApplicationName = appName;
             //Set transient values
             builder.ConnectRetryCount = 3;

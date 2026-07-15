@@ -36,5 +36,18 @@ namespace SqlSync.SqlBuild.Services
         {
             return "SELECT AllowScriptBlock,ScriptFileHash,CommitDate,ScriptText FROM SqlBuild_Logging WITH (NOLOCK) WHERE ScriptId = @ScriptId ORDER BY CommitDate DESC";
         }
+
+        public string GetBatchHasBlockingSqlLogQuery(int paramCount)
+        {
+            var sb = new System.Text.StringBuilder(
+                "SELECT ScriptId, AllowScriptBlock, ScriptFileHash, CommitDate, ScriptText FROM SqlBuild_Logging WITH (NOLOCK) WHERE ScriptId IN (");
+            for (int i = 0; i < paramCount; i++)
+            {
+                if (i > 0) sb.Append(',');
+                sb.Append("@p").Append(i);
+            }
+            sb.Append(") ORDER BY ScriptId, CommitDate DESC");
+            return sb.ToString();
+        }
     }
 }

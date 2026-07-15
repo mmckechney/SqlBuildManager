@@ -10,9 +10,10 @@
     
     [string] $imageTag = "dependent-test-runner",
     
-    [string] $sqlPassword = "SqlBM_Test#2026!",
+    # No defaults: caller must supply or the script generates cryptographically random values.
+    [string] $sqlPassword = "",
 
-    [string] $pgPassword = "P0stSqlAdm1n",
+    [string] $pgPassword = "",
 
     [switch] $buildImage,
     
@@ -60,13 +61,30 @@
 #>
 
 $ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
 
-# Resolve prefix: parameter > azd env AZURE_NAME_PREFIX
+# Generate cryptographically random test passwords when none are supplied.
+# In CI the workflow always passes explicit values; this covers local interactive use.
+function New-SecureTestPassword {
+    param([string] $tag)
+    $bytes = [System.Security.Cryptography.RandomNumberGenerator]::GetBytes(18)
+    $b64   = [Convert]::ToBase64String($bytes).Replace('+','P').Replace('/','Q').Replace('=','R')
+    # Guarantee complexity: tag provides upper+special+digit, b64 adds alphanumeric variety.
+    return "${tag}1!${b64}".Substring(0, 24)
+}
+if ([string]::IsNullOrWhiteSpace($sqlPassword)) { $sqlPassword = New-SecureTestPassword -tag 'Sql' }
+if ([string]::IsNullOrWhiteSpace($pgPassword))  { $pgPassword  = New-SecureTestPassword -tag 'Pg'  }
+
+# Resolve prefix: parameter > env var > azd env AZURE_NAME_PREFIX
 if ([string]::IsNullOrWhiteSpace($prefix)) {
-    $prefix = azd env get-value AZURE_NAME_PREFIX 2>$null
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($prefix)) {
+    $prefix = $env:AZURE_NAME_PREFIX
+}
+if ([string]::IsNullOrWhiteSpace($prefix)) {
+    $azd_out = azd env get-value AZURE_NAME_PREFIX 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($azd_out)) {
         $prefix = $null
     } else {
+        $prefix = $azd_out
         Write-Host "Using prefix '$prefix' from azd environment variable AZURE_NAME_PREFIX" -ForegroundColor DarkGreen
     }
 }
@@ -78,16 +96,17 @@ if ([string]::IsNullOrWhiteSpace($prefix)) {
     exit 1
 }
 
-Clear-Host 
+# Suppress Clear-Host in non-interactive (CI) environments.
+if ($Host.Name -eq 'ConsoleHost' -and [string]::IsNullOrWhiteSpace($env:CI)) { Clear-Host }
 
 # Dot-source shared ACI test helpers
 . (Join-Path $PSScriptRoot "aci_test_helpers.ps1")
 Initialize-TestSummaryState
 
-# Get the repo root
+# Get the repo root — use $PSScriptRoot for reliable portable resolution.
 $repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
-    $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
+    $repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 }
 
 #############################################
@@ -117,8 +136,11 @@ Write-Host ""
 
 # Get resource information
 $subscriptionId = az account show --query id --output tsv
+if ($LASTEXITCODE -ne 0) { throw "az account show failed (exit code $LASTEXITCODE). Ensure you are logged in." }
 $identity = az identity show --resource-group $resourceGroupName --name $identityName | ConvertFrom-Json
+if ($LASTEXITCODE -ne 0) { throw "az identity show failed for '$identityName' (exit code $LASTEXITCODE)." }
 $acrLoginServer = az acr show -g $resourceGroupName --name $containerRegistryName -o tsv --query loginServer
+if ($LASTEXITCODE -ne 0) { throw "az acr show failed for '$containerRegistryName' (exit code $LASTEXITCODE)." }
 
 Write-Host "Using Managed Identity: $identityName (ClientId: $($identity.clientId))" -ForegroundColor DarkGreen
 Write-Host "Using Container Registry: $acrLoginServer" -ForegroundColor DarkGreen
@@ -130,6 +152,7 @@ Write-Host ""
 if ($buildImage) {
     $buildScript = Join-Path $repoRoot "scripts\ContainerRegistry\build_dependent_test_image.ps1"
     & $buildScript -prefix $prefix -resourceGroupName $resourceGroupName -imageTag $imageTag
+    if ($LASTEXITCODE -ne 0) { throw "build_dependent_test_image.ps1 failed (exit code $LASTEXITCODE)." }
 }
 
 #############################################
@@ -168,6 +191,7 @@ Write-Debug "PostgreSQL: docker.io/library/postgres:16"
 Write-Debug ""
 
 $location = az group show --name $resourceGroupName --query location -o tsv
+if ($LASTEXITCODE -ne 0) { throw "az group show failed for '$resourceGroupName' (exit code $LASTEXITCODE)." }
 
 # Build environment variables for test filter
 $testFilterEnvVar = ""
@@ -302,16 +326,21 @@ $testExitCode = $monitorResult.TestExitCode
 
 # Download test results from blob storage
 az storage blob download-batch --account-name $storageAccountName --source $blobContainerName --pattern "$($timestamp)*" --destination "./testresults"  --auth-mode login --overwrite --only-show-errors
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "WARNING: Failed to download test results from storage (exit code $LASTEXITCODE)." -ForegroundColor Yellow
+}
 
 #############################################
 # Cleanup
 #############################################
 $finalExitCode = Complete-AciTestRun -containerName $testContainerName -resourceGroupName $resourceGroupName -exitCode $testExitCode -keepContainer:$keepContainer -logContainerName "test-runner" -sqlContainerName "sql-server"
 
-Write-Host "Running results analysis with GitHub Copilot CLI..." -ForegroundColor Cyan
-$promptTemplate = Get-Content -Path "$PSScriptRoot\analyze-test-results-prompt.md" -Raw
-$prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
-$analysys = copilot --yolo -p $prompt 2>&1
-Write-Host "Analysis complete." -ForegroundColor Cyan
+# Analyze test results with GitHub Copilot CLI (local developer convenience; skip in CI).
+if (Get-Command copilot -ErrorAction SilentlyContinue) {
+    $promptTemplate = Get-Content -Path (Join-Path $PSScriptRoot 'analyze-test-results-prompt.md') -Raw
+    $prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
+    $analysis = copilot --yolo -p $prompt 2>&1
+    Write-Host "Analysis complete." -ForegroundColor Cyan
+}
 
 exit $finalExitCode

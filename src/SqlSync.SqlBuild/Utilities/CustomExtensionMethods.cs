@@ -20,7 +20,9 @@ namespace SqlSync.SqlBuild.Utilities
                 throw new ArgumentException("numberOfChunks must be greater than 0.");
             }
 
-            int listCount = list.Count();
+            // PERF-010: Materialize once to avoid multiple O(n) enumerations.
+            List<T> materializedList = list as List<T> ?? list.ToList();
+            int listCount = materializedList.Count;
             double dblChunks = (double)numberOfChunks;
             double maxChunkSize = Math.Ceiling(listCount / dblChunks);
             double minChunkSize = Math.Floor(listCount / dblChunks);
@@ -41,13 +43,12 @@ namespace SqlSync.SqlBuild.Utilities
             {
                 int count = listCount - index > chunkSize ? (int)chunkSize : listCount - index;
                 //If more than half way though and there are more items left than can fit in the remaining chunks -- start spreading them out. 
-                // if(usedChunkCount > numberOfChunks/2 && index > listCount/2 && 
                 if ((listCount - (double)index) / (dblChunks - usedChunkCount) > chunkSize)
                 {
                     count++;
                 }
 
-                retVal.Add(list.ToList().GetRange(index, count).AsEnumerable());
+                retVal.Add(materializedList.GetRange(index, count).AsEnumerable());
                 usedChunkCount++;
                 index += (int)count;
             }
@@ -55,8 +56,7 @@ namespace SqlSync.SqlBuild.Utilities
             //any leftovers should go into last chunk.
             if (index < listCount)
             {
-
-                List<T> leftOvers = list.ToList().GetRange(index, listCount - index);
+                List<T> leftOvers = materializedList.GetRange(index, listCount - index);
                 List<T> lastChunk = retVal[retVal.Count - 1].ToList();
                 lastChunk.AddRange(leftOvers.AsEnumerable());
                 retVal[retVal.Count - 1] = lastChunk.AsEnumerable();

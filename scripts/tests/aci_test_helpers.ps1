@@ -11,6 +11,9 @@
         . (Join-Path $PSScriptRoot "aci_test_helpers.ps1")
 #>
 
+Set-StrictMode -Version Latest
+# Do not override ErrorActionPreference here — callers set their own preference.
+
 #############################################
 # Test Summary State & Display
 #############################################
@@ -264,7 +267,7 @@ function Deploy-AciFromYaml {
         [string]$resourceGroupName,
         [string]$yamlFilePrefix = "aci-test"
     )
-    $yamlFilePath = Join-Path $env:TEMP "$yamlFilePrefix-$(Get-Date -Format 'yyyyMMddHHmmss').yaml"
+    $yamlFilePath = Join-Path ([System.IO.Path]::GetTempPath()) "$yamlFilePrefix-$(Get-Date -Format 'yyyyMMddHHmmss').yaml"
     $yamlContent | Set-Content -Path $yamlFilePath -Encoding UTF8
     
     Write-Debug "Generated ACI YAML:" 

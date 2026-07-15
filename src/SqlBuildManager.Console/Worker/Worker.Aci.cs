@@ -184,7 +184,7 @@ namespace SqlBuildManager.Console
                     aciIsInErrorState = stat;
                 }
                 catch { }
-                System.Threading.Thread.Sleep(15000);
+                await Task.Delay(15000);
             }
         }
 
@@ -244,7 +244,7 @@ namespace SqlBuildManager.Console
         #region Container Execution Methods
         internal static async Task<int> AciWorker_RunQueueQuery(CommandLineArgs cmdLine)
         {
-            (bool success, cmdLine) = AciWorker_PrepCommandLine(cmdLine);
+            (bool success, cmdLine) = await AciWorker_PrepCommandLine(cmdLine);
             if (!success)
             {
                 return -1;
@@ -254,14 +254,14 @@ namespace SqlBuildManager.Console
 
         internal static async Task<int> AciWorker_RunQueueBuild(CommandLineArgs cmdLine)
         {
-            (bool success, cmdLine) = AciWorker_PrepCommandLine(cmdLine);
+            (bool success, cmdLine) = await AciWorker_PrepCommandLine(cmdLine);
             if (!success)
             {
                 return -1;
             }
             return await GenericContainer.GenericContainerWorker_RunQueueBuild(cmdLine);
         }
-        private static (bool, CommandLineArgs) AciWorker_PrepCommandLine(CommandLineArgs cmdLine)
+        private static async Task<(bool, CommandLineArgs)> AciWorker_PrepCommandLine(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             cmdLine.RootLoggingPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
@@ -271,11 +271,9 @@ namespace SqlBuildManager.Console
             }
             cmdLine.RunningAsContainer = true;
 
-
-
             int seconds = 5;
             log.LogInformation($"Waiting {seconds} for Managed Identity assignment");
-            System.Threading.Thread.Sleep(seconds * 1000);
+            await Task.Delay(seconds * 1000);
 
             cmdLine = ContainerShared.EnvironmentVariableHelper.ReadRuntimeEnvironmentVariables(cmdLine);
 

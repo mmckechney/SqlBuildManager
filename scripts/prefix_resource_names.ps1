@@ -12,8 +12,11 @@
 
 param 
 (
-    $prefix
+    [string] $prefix
 )
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
 
 $resourceGroupName = $prefix + "-rg"
 $batchAccountName = $prefix + "batchacct"

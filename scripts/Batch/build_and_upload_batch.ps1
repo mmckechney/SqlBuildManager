@@ -25,6 +25,9 @@ param
 )
 Write-Host "Build and Upload Batch" -ForegroundColor Cyan
 
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
 # Get the repo root
 $repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
@@ -63,14 +66,15 @@ foreach ($env in $vars) {
 
     if($action -ne "UploadOnly")
     {
-        dotnet publish (Join-Path $repoRoot "src\SqlBuildManager.Console\sbm.csproj") -r $env.BuildTarget --configuration Debug -f $frameworkTarget --self-contained
+        dotnet publish (Join-Path $repoRoot "src\SqlBuildManager.Console\sbm.csproj") -r $env.BuildTarget --configuration Release -f $frameworkTarget --self-contained
+        if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed for $($env.OSName) (exit code $LASTEXITCODE)" }
     }
     
-    if($false -eq (Test-Path (Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish")))
+    if($false -eq (Test-Path (Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Release\$frameworkTarget\$($env.BuildTarget)\publish")))
     {
-        New-Item (Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish") -ItemType Directory
+        throw "Expected Release publish output not found for $($env.OSName). Ensure dotnet publish ran with --configuration Release."
     }
-    $source= Resolve-Path (Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Debug\$frameworkTarget\$($env.BuildTarget)\publish")
+    $source= Resolve-Path (Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Release\$frameworkTarget\$($env.BuildTarget)\publish")
     if($env.OSName -eq "Windows")
     {
         $version = (Get-Item "$($source)\sbm.exe").VersionInfo.ProductVersion  #Get version for Batch application
@@ -101,15 +105,17 @@ if($action -ne "BuildOnly")
     {
         Write-Host "Creating new Azure Batch Application named $($env.ApplicationName)"  -ForegroundColor DarkGreen
         az batch application create --name "$batchAcctName" --resource-group "$resourceGroupName" --application-name "$($env.ApplicationName)" -o table
+        if ($LASTEXITCODE -ne 0) { throw "az batch application create failed (exit code $LASTEXITCODE)" }
         
         Write-Host "Uploading application package $($env.ApplicationName) [$($env.BuildOutputZip)] to Azure Batch account"  -ForegroundColor DarkGreen
 
         ##  Work around -- the Azure CLI batch upload has been giving errors, so uploading with PowerShell 
         az batch application package create --name "$batchAcctName" --resource-group "$resourceGroupName" --application-name "$($env.ApplicationName)" --version "$version" --package-file "$($env.BuildOutputZip)"  -o table
-        #New-AzBatchApplicationPackage -AccountName "$batchAcctName" -ResourceGroupName "$resourceGroupName" -ApplicationId "$($env.ApplicationName)" -ApplicationVersion "$version" -Format zip -FilePath "$($env.BuildOutputZip)"
+        if ($LASTEXITCODE -ne 0) { throw "az batch application package create failed (exit code $LASTEXITCODE)" }
         
         Write-Host "Setting default application for  $($env.ApplicationName) version to $version"  -ForegroundColor DarkGreen
         az batch application set --name "$batchAcctName" --resource-group "$resourceGroupName" --application-name "$($env.ApplicationName)" --default-version "$version" -o table
+        if ($LASTEXITCODE -ne 0) { throw "az batch application set failed (exit code $LASTEXITCODE)" }
     }
 }
 

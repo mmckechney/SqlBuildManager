@@ -257,12 +257,12 @@ namespace SqlBuildManager.Console.CommandLine
 				cmd.Add(storageaccountkeyOption);
                 cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(SettingsFileExistingOptions);
-				cmd.SetAction((parseResult) => {
+				cmd.SetAction(async (parseResult, ct) => {
 					var cmdLine = CommandLineArgsBinder.Bind(parseResult);
 					var stream = parseResult.GetValue(streamEventsOption);
 					var timeout = parseResult.GetValue(timeoutOption);
 					var startDate = parseResult.GetValue(startDateOption);
-					return Worker.GetEventHubEvents(cmdLine: cmdLine, stream: stream, timeout: timeout, startDate: startDate);
+					return await Worker.GetEventHubEvents(cmdLine: cmdLine, stream: stream, timeout: timeout, startDate: startDate);
 				});
 				return cmd;
 			}

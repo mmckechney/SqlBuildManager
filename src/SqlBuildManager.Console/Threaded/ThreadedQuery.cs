@@ -65,7 +65,7 @@ namespace SqlBuildManager.Console.Threaded
                     multiData.RunAsTrial = cmdLine.Trial;
                     multiData.BuildRevision = cmdLine.BuildRevision;
                     log.LogInformation($"Sourcing targets from target override file with Concurrency Type: {cmdLine.ConcurrencyType} and Concurency setting: {cmdLine.Concurrency}");
-                    var success = ExecuteQueryFromOverrides(cmdLine, multiData, connData, query);
+                    var success = await ExecuteQueryFromOverrides(cmdLine, multiData, connData, query);
                     return success ? 0 : 1;
                 }
             }
@@ -89,7 +89,7 @@ namespace SqlBuildManager.Console.Threaded
             var resultCode = 0;
             var listResultsTempFiles = new List<string>();
             var tmpOutput = Path.Combine(Path.GetDirectoryName(cmdLine.OutputFile.FullName)!, Guid.NewGuid().ToString());
-            qManager = new Queue.QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
+            qManager = await Queue.QueueManager.CreateAsync(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
             var collector = new QueryCollector(null!, connData);
             if(!collector.EnsureOutputPath(tmpOutput))
             {
@@ -181,7 +181,7 @@ namespace SqlBuildManager.Console.Threaded
             }
             return retVal;
         }
-        private bool ExecuteQueryFromOverrides(CommandLineArgs cmdLine, MultiDbData multiData, ConnectionData connData,string query)
+        private async Task<bool> ExecuteQueryFromOverrides(CommandLineArgs cmdLine, MultiDbData multiData, ConnectionData connData,string query)
         {
             BackgroundWorker bg = new BackgroundWorker();
             bg.WorkerReportsProgress = true;
@@ -199,8 +199,7 @@ namespace SqlBuildManager.Console.Threaded
             if (!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
             {
                 log.LogInformation("Writing log files to storage...");
-                var blobTask = StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, cmdLine.RootLoggingPath);
-                blobTask.Wait();
+                await StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, cmdLine.RootLoggingPath);
             }
 
             return success;

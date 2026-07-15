@@ -16,12 +16,19 @@ param (
     [string] $prefix
 )
 
-# Resolve prefix: parameter > azd env AZURE_NAME_PREFIX
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+# Resolve prefix: parameter > env var > azd env AZURE_NAME_PREFIX
 if ([string]::IsNullOrWhiteSpace($prefix)) {
-    $prefix = azd env get-value AZURE_NAME_PREFIX 2>$null
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($prefix)) {
+    $prefix = $env:AZURE_NAME_PREFIX
+}
+if ([string]::IsNullOrWhiteSpace($prefix)) {
+    $azd_out = azd env get-value AZURE_NAME_PREFIX 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($azd_out)) {
         $prefix = $null
     } else {
+        $prefix = $azd_out
         Write-Host "Using prefix '$prefix' from azd environment variable AZURE_NAME_PREFIX" -ForegroundColor DarkGreen
     }
 }
@@ -35,7 +42,10 @@ if ([string]::IsNullOrWhiteSpace($prefix)) {
 
 $exitCode = 0
 $timestamp = (Get-Date -Format 'yyyy-MM-dd-HHmmss')
-Clear-Host
+# Clear-Host is suppressed in non-interactive (CI) sessions.
+if ($Host.Name -eq 'ConsoleHost' -and [string]::IsNullOrWhiteSpace($env:CI)) {
+    Clear-Host
+}
 
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "SQL Server Integration Test Runners (ACI in VNet)" -ForegroundColor Cyan
@@ -105,7 +115,7 @@ function Invoke-TestIfAvailable {
         return 0
     }
 
-    .\run_filtered_external_tests_in_aci.ps1 -prefix $prefix -customName $customName -testFilter $testFilter -timeoutMinutes $timeoutMinutes -timestamp $timestamp
+    & (Join-Path $PSScriptRoot 'run_filtered_external_tests_in_aci.ps1') -prefix $prefix -customName $customName -testFilter $testFilter -timeoutMinutes $timeoutMinutes -timestamp $timestamp
     return $LASTEXITCODE
 }
 
@@ -144,11 +154,15 @@ $exitCode += Invoke-TestIfAvailable -customName "batchquery" `
     -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer
 
 # Download test results
-if ((Test-Path ./testresults) -eq $false) { mkdir testresults }
+if ((Test-Path ./testresults) -eq $false) { New-Item -ItemType Directory ./testresults | Out-Null }
 az storage blob download-batch --account-name "$($prefix)storage" --source testresults --pattern "$($timestamp)*" --destination ./testresults --auth-mode login --overwrite
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "WARNING: Failed to download test results from storage (exit code $LASTEXITCODE)." -ForegroundColor Yellow
+}
 
-# Analyze test results with GitHub Copilot
-$promptTemplate = Get-Content -Path "$PSScriptRoot\analyze-test-results-prompt.md" -Raw
-$prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
-$output = copilot --yolo -p $prompt 2>&1
-
+# Analyze test results with GitHub Copilot CLI (local developer convenience; skip in CI).
+if (Get-Command copilot -ErrorAction SilentlyContinue) {
+    $promptTemplate = Get-Content -Path (Join-Path $PSScriptRoot 'analyze-test-results-prompt.md') -Raw
+    $prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
+    $output = copilot --yolo -p $prompt 2>&1
+}

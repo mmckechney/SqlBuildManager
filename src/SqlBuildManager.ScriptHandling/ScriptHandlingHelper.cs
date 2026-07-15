@@ -5,18 +5,21 @@ namespace SqlBuildManager.ScriptHandling
 {
     public class ScriptHandlingHelper
     {
+        // PERF-006: Cached static regex instances – compilation cost is paid once.
+        private static readonly Regex _regDoubleDash = new Regex(@"(--.*\n)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regMultiLineComment = new Regex(@"(/\*.+?\*/)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+        private static readonly Regex _regLargeCommentHeader = new Regex(@"(/\*\*.*\*\*/)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+
         #region Comments by Regex Match
         public static List<Match> GetScriptCommentBlocks(string rawScript)
         {
             List<Match> commentList = new List<Match>();
 
-            Regex regDoubleDash = new Regex(@"(--.*\n)", RegexOptions.IgnoreCase);
-            MatchCollection comment = regDoubleDash.Matches(rawScript);
+            MatchCollection comment = _regDoubleDash.Matches(rawScript);
             foreach (Match c in comment)
                 commentList.Add(c);
 
-            Regex regMultiLineComment = new Regex(@"(/\*.+?\*/)", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            MatchCollection multiLineComment = regMultiLineComment.Matches(rawScript);
+            MatchCollection multiLineComment = _regMultiLineComment.Matches(rawScript);
             foreach (Match c in multiLineComment)
                 commentList.Add(c);
 
@@ -48,8 +51,7 @@ namespace SqlBuildManager.ScriptHandling
         {
             List<int> commentList = new List<int>();
 
-            Regex regDoubleDash = new Regex(@"(--.*\n)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            MatchCollection comment = regDoubleDash.Matches(rawScript);
+            MatchCollection comment = _regDoubleDash.Matches(rawScript);
             foreach (Match c in comment)
             {
                 int start = c.Index;
@@ -57,8 +59,7 @@ namespace SqlBuildManager.ScriptHandling
                     commentList.Add(i);
             }
 
-            Regex regMultiLineComment = new Regex(@"(/\*.+?\*/)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
-            MatchCollection multiLineComment = regMultiLineComment.Matches(rawScript);
+            MatchCollection multiLineComment = _regMultiLineComment.Matches(rawScript);
             foreach (Match c in multiLineComment)
             {
                 int start = c.Index;
@@ -79,8 +80,7 @@ namespace SqlBuildManager.ScriptHandling
 
         public static bool IsInLargeCommentHeader(string rawScript, int index)
         {
-            Regex regCommentHeader = new Regex(@"(/\*\*.*\*\*/)", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            Match headerMatch = regCommentHeader.Match(rawScript);
+            Match headerMatch = _regLargeCommentHeader.Match(rawScript);
             if (!headerMatch.Success)
                 return false;
 

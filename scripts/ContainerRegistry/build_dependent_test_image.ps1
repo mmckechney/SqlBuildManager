@@ -24,9 +24,13 @@ param
     Tag for the container image (default: dependent-test-runner).
 #>
 
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+# Use $PSScriptRoot for portable repo-root resolution.
 $repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
-    $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
+    $repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 }
 
 if([string]::IsNullOrWhiteSpace($resourceGroupName)) {
@@ -60,7 +64,7 @@ Write-Host "Building image using ACR Build..." -ForegroundColor DarkGreen
 Write-Host "  Context: $contextPath" -ForegroundColor DarkGray
 
 # Copy source to temp folder excluding .vs and other problematic folders
-$tempContext = Join-Path $env:TEMP "sbm-dependent-tests-$(Get-Date -Format 'yyyyMMddHHmmss')"
+$tempContext = Join-Path ([System.IO.Path]::GetTempPath()) "sbm-dependent-tests-$(Get-Date -Format 'yyyyMMddHHmmss')"
 Write-Host "Copying source to temp location (excluding .vs, bin, obj)..." -ForegroundColor DarkGray
 
 $excludeDirs = ".vs", ".vs_backup", "bin", "obj", "TestResults"

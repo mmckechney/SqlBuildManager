@@ -9,6 +9,28 @@ namespace SqlBuildManager.ScriptHandling
     public class ScriptOptimization
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+
+        // PERF-006: All regex instances compiled once as static readonly fields.
+        public static readonly Regex regNoLock = new Regex(@"(WITH \(NOLOCK\))|(WITH \(READPAST\))", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Regex _regTokens = new Regex(@"(\bINNER JOIN\b)|(\bOUTER JOIN\b) |(\bFROM\b)|(\bWHERE\b)|(\bON\b)|(WITH \(NOLOCK\))|(WITH \(READPAST\))|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bINTO\b)|(\bJOIN\b)|(\bGROUP BY\b)|(\bDELETE FROM\b)|(\bUPDATE\b)|(\bset\b)|(\bINSERT INTO\b)|(\bVALUES\b)|(\))|(\binserted\b)|(\bdeleted\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regSelects = new Regex(@"(\bINNER JOIN\b)|(\bOUTER JOIN\b) |(\bFROM\b)|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bJOIN\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regWheres = new Regex(@"(\bWHERE\b)|(\bON\b)|(\bINNER JOIN\b)|(\bOUTER JOIN\b)|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bJOIN\b)|(\))", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regJoin = new Regex(@"(\bINNER JOIN\b)|(\bOUTER JOIN\b)|(\bJOIN\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regFrom = new Regex(@"(\bFROM\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regFromWithTableName = new Regex(@"(\bFROM\b\s*.*\s*)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regEndWhiteSpace = new Regex(@"(\s*$)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regNewLine = new Regex(@"(\r)|(\n)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regInto = new Regex(@"(\bINTO\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regDelete = new Regex(@"(\bDELETE FROM\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regUpdate = new Regex(@"(\bUPDATE\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regSet = new Regex(@"(\bSET\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regInsertInto = new Regex(@"(\bINSERT INTO\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regValues = new Regex(@"(\bVALUES\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regFindFunction = new Regex(@"(\b\S+\(.*\)\s*)", RegexOptions.Compiled);
+        private static readonly Regex _regTriggerTables = new Regex(@"(\binserted\b)|(\bdeleted\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regIgnoreObjects = new Regex(@"(FROM\s+sys\.\w+)|(FROM\s+dbo\.sys\w+)|(FROM INFORMATION_SCHEMA)|(FROM sysobjects)|(FROM sysindexes)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regWords = new Regex(@"\b\w*\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         public static string ProcessNoLockOptimization(string rawScript)
         {
             return ProcessNoLockOptimization(rawScript, null!);
@@ -20,7 +42,6 @@ namespace SqlBuildManager.ScriptHandling
             return ProcessNoLockOptimization(rawScript, commentBlockMatches, out tablesMissingNoLock);
         }
 
-        public static Regex regNoLock = new Regex(@"(WITH \(NOLOCK\))|(WITH \(READPAST\))", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         /// <summary>
         /// Add WITH (NOLOCK) directive to all FROM and JOIN selects in a SQL query
         /// </summary>
@@ -43,33 +64,14 @@ namespace SqlBuildManager.ScriptHandling
                 Match current;
                 Match next;
                 Match previous = null!;
-                Regex regTokens = new Regex(@"(\bINNER JOIN\b)|(\bOUTER JOIN\b) |(\bFROM\b)|(\bWHERE\b)|(\bON\b)|(WITH \(NOLOCK\))|(WITH \(READPAST\))|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bINTO\b)|(\bJOIN\b)|(\bGROUP BY\b)|(\bDELETE FROM\b)|(\bUPDATE\b)|(\bset\b)|(\bINSERT INTO\b)|(\bVALUES\b)|(\))|(\binserted\b)|(\bdeleted\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regSelects = new Regex(@"(\bINNER JOIN\b)|(\bOUTER JOIN\b) |(\bFROM\b)|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bJOIN\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regWheres = new Regex(@"(\bWHERE\b)|(\bON\b)|(\bINNER JOIN\b)|(\bOUTER JOIN\b)|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bJOIN\b)|(\))", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regJoin = new Regex(@"(\bINNER JOIN\b)|(\bOUTER JOIN\b)|(\bJOIN\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regFrom = new Regex(@"(\bFROM\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regFromWithTableName = new Regex(@"(\bFROM\b\s*.*\s*)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regEndWhiteSpace = new Regex(@"(\s*$)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regNewLine = new Regex(@"(\r)|(\n)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                //Regex regNoLock = new Regex(@"(WITH \(NOLOCK\))|(WITH \(READPAST\))", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regInto = new Regex(@"(\bINTO\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regDelete = new Regex(@"(\bDELETE FROM\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regUpdate = new Regex(@"(\bUPDATE\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regSet = new Regex(@"(\bSET\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regInsertInto = new Regex(@"(\bINSERT INTO\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regValues = new Regex(@"(\bVALUES\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regFindFunction = new Regex(@"(\b\S+\(.*\)\s*)", RegexOptions.Compiled);
-                Regex regTriggerTables = new Regex(@"(\binserted\b)|(\bdeleted\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-                //Regex regIgnoreObjects = new Regex(@"(FROM sys\.objects)|(FROM INFORMATION_SCHEMA)|(FROM sysobjects)|(FROM sysindexes)|(FROM sys\.indexes)|(FROM sys\.triggers)|(FROM dbo\.sysusers)|(FROM syscolumns)|(FROM sys\.columns)|(FROM sys\.stats)|(FROM sys\.foreign_keys)", RegexOptions.IgnoreCase);
-                Regex regIgnoreObjects = new Regex(@"(FROM\s+sys\.\w+)|(FROM\s+dbo\.sys\w+)|(FROM INFORMATION_SCHEMA)|(FROM sysobjects)|(FROM sysindexes)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                MatchCollection coll = regTokens.Matches(rawScript);
+                // PERF-006: Use static cached regex instances defined above.
+                MatchCollection coll = _regTokens.Matches(rawScript);
                 int textIndex = 0;
                 for (int i = 0; i < coll.Count; i++)
                 {
                     current = coll[i];
 
-                    if (i == coll.Count - 1 && !regFrom.Match(current.Value).Success)
+                    if (i == coll.Count - 1 && !_regFrom.Match(current.Value).Success)
                         break;
                     else if (i == coll.Count - 1)// the last match is an unpaired FROM
                         next = current; //give it a fake value
@@ -77,23 +79,23 @@ namespace SqlBuildManager.ScriptHandling
                         next = coll[i + 1];
 
                     //Ignore DELETE FROM .. WHERE.
-                    if (regDelete.Match(current.Value).Success && regWheres.Match(next.Value).Success)
+                    if (_regDelete.Match(current.Value).Success && _regWheres.Match(next.Value).Success)
                         continue;
 
                     //Ignore UPDATE .. SET.
-                    if (regUpdate.Match(current.Value).Success && regSet.Match(next.Value).Success)
+                    if (_regUpdate.Match(current.Value).Success && _regSet.Match(next.Value).Success)
                         continue;
 
                     //Ignore INSERT INTO .. VALUES.
-                    if (regInsertInto.Match(current.Value).Success && regValues.Match(next.Value).Success)
+                    if (_regInsertInto.Match(current.Value).Success && _regValues.Match(next.Value).Success)
                         continue;
                     //Ignore select on Trigger tables "FROM inserted" and "FROM deleted"
-                    if (regFrom.Match(current.Value).Success && regTriggerTables.Match(next.Value).Success)
+                    if (_regFrom.Match(current.Value).Success && _regTriggerTables.Match(next.Value).Success)
                         continue;
 
 
 
-                    if (regSelects.Match(current.Value).Success && regWheres.Match(next.Value).Success && !regNoLock.Match(next.Value).Success) // we have found our FROM .. WHERE or INNER JOIN ... ON limits
+                    if (_regSelects.Match(current.Value).Success && _regWheres.Match(next.Value).Success && !regNoLock.Match(next.Value).Success) // we have found our FROM .. WHERE or INNER JOIN ... ON limits
                     {
                         lengthToWhere = next.Index - textIndex;
 
@@ -102,12 +104,12 @@ namespace SqlBuildManager.ScriptHandling
                         //Are we selecting from a table variable or temp table??
                         //Are we selecting from a function?
                         //Is the match in a comment?
-                        Match ignore = regIgnoreObjects.Match(rawScript, current.Index);
+                        Match ignore = _regIgnoreObjects.Match(rawScript, current.Index);
                         string strCheck = rawScript.Substring(current.Index + current.Length).Trim();
                         string strFuncCheck = rawScript.Substring(current.Index, next.Index - current.Index);
                         if (next.Value == ")") strFuncCheck += ")";
                         if ((ignore.Success && ignore.Index == current.Index) || strCheck.StartsWith("@") ||
-                            strCheck.StartsWith("#") || regFindFunction.Match(strFuncCheck).Success || ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))
+                            strCheck.StartsWith("#") || _regFindFunction.Match(strFuncCheck).Success || ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))
                         {
                             if (ignore.Success && ignore.Index == current.Index)
                                 lengthToWhere = next.Index - ignore.Index + 1;
@@ -128,11 +130,11 @@ namespace SqlBuildManager.ScriptHandling
                             continue;
 
                         subStr = rawScript.Substring(textIndex, lengthToWhere);
-                        if (regEndWhiteSpace.Match(subStr).Success &&
-                            regNewLine.Match(regEndWhiteSpace.Match(subStr).Value).Success)
+                        if (_regEndWhiteSpace.Match(subStr).Success &&
+                            _regNewLine.Match(_regEndWhiteSpace.Match(subStr).Value).Success)
                         {
                             tablesMissingNoLock.Add(GetTableName(subStr));
-                            string whiteSpace = regEndWhiteSpace.Match(subStr).Value;
+                            string whiteSpace = _regEndWhiteSpace.Match(subStr).Value;
                             sb.Append(subStr.TrimEnd() + noLock + whiteSpace + next.Value);
                         }
                         else
@@ -140,12 +142,12 @@ namespace SqlBuildManager.ScriptHandling
                             tablesMissingNoLock.Add(GetTableName(subStr));
                             sb.Append(subStr.TrimEnd() + noLock + next.Value);
                         }
-                        if (!regJoin.Match(next.Value).Success) //if the next token is a JOIN, don't skip it.
+                        if (!_regJoin.Match(next.Value).Success) //if the next token is a JOIN, don't skip it.
                             i++;
 
                         textIndex = next.Index + next.Length;
                     }
-                    else if (regFrom.Match(current.Value).Success && regInto.Match(next.Value).Success) // looks like a cursor... FROM xyx INTO
+                    else if (_regFrom.Match(current.Value).Success && _regInto.Match(next.Value).Success) // looks like a cursor... FROM xyx INTO
                     {
                         int len = next.Index - textIndex;
                         if (len < 0 || textIndex + len > rawScript.Length)
@@ -155,14 +157,11 @@ namespace SqlBuildManager.ScriptHandling
                         sb.Append(subStr + next.Value);
                         textIndex = next.Index + next.Length;
                     }
-                    else if (regFrom.Match(current.Value).Success && !regNoLock.Match(next.Value).Success) //handle the FROM that doesn't have a following WHERE or INNER or OUTER JOINS
+                    else if (_regFrom.Match(current.Value).Success && !regNoLock.Match(next.Value).Success) //handle the FROM that doesn't have a following WHERE or INNER or OUTER JOINS
                     {
                         int len;
                         if (current.Index > textIndex)
                         {
-                            //    if (ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))
-                            //        len = current.Index + current.Length - 4; //current.Index - textIndex;
-                            //    else
                             len = current.Index - textIndex + 4;
 
                             if (len < 0 || textIndex + len > rawScript.Length)
@@ -171,10 +170,7 @@ namespace SqlBuildManager.ScriptHandling
                             sb.Append(rawScript.Substring(textIndex, len));
                         }
 
-                        // if(ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))
-                        //     subStr = regFromWithTableName.Match(rawScript, current.Index).Value;
-                        // else
-                        subStr = regFromWithTableName.Match(rawScript, current.Index).Value.Substring(4);
+                        subStr = _regFromWithTableName.Match(rawScript, current.Index).Value.Substring(4);
 
                         len = next.Index - current.Index;
                         if (len < 0 || current.Index + len > rawScript.Length)
@@ -187,7 +183,7 @@ namespace SqlBuildManager.ScriptHandling
                         //selecting against a function?
                         //in a comment?
                         if (subStr.Trim().StartsWith("@") || subStr.Trim().StartsWith("#")
-                            || regFindFunction.Match(strFuncCheck).Success || ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))
+                            || _regFindFunction.Match(strFuncCheck).Success || ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))
                         {
                             sb.Append(subStr);
                         }
@@ -201,7 +197,7 @@ namespace SqlBuildManager.ScriptHandling
                         else
                         {
                             string append;
-                            if (regEndWhiteSpace.Match(subStr).Success && regNewLine.Match(regEndWhiteSpace.Match(subStr).Value).Success)
+                            if (_regEndWhiteSpace.Match(subStr).Success && _regNewLine.Match(_regEndWhiteSpace.Match(subStr).Value).Success)
                             {
                                 tablesMissingNoLock.Add(GetTableName(subStr));
                                 append = subStr.TrimEnd() + noLock + "\r\n";
@@ -219,17 +215,7 @@ namespace SqlBuildManager.ScriptHandling
                             textIndex = rawScript.Length;
                         else
                         {
-                            //        if (ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches))
-                            //        {
-                            //            textIndex = current.Index + subStr.Length + current.Length;
-                            //                ;
-                            //        }
-                            //        else
-                            //        {
                             textIndex = current.Index + subStr.Length + 4;
-                            //       }
-
-                            //this used to be "1"...changed to 4 and all unit tests still pass!?!
                         }
                     }
                     else //got nothing.. just add the text.
@@ -263,8 +249,8 @@ namespace SqlBuildManager.ScriptHandling
         private static List<string> GetTableName(string subString)
         {
             string tmpTrimmed = subString.Trim();
-            Regex regWords = new Regex(@"\b\w*\b", RegexOptions.IgnoreCase);
-            MatchCollection coll = regWords.Matches(tmpTrimmed);
+            // PERF-006: Use static cached _regWords instead of creating a new instance per call.
+            MatchCollection coll = _regWords.Matches(tmpTrimmed);
 
             //remove any blank entries...
             var t = from c in coll.Cast<Match>()

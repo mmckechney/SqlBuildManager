@@ -21,5 +21,12 @@ namespace SqlSync.SqlBuild.Services
         public SqlSyncBuildDataModel ClearScriptBlocks(ClearScriptData scrData, ConnectionData connData, IProgressReporter progressReporter, ISqlBuildRunnerProperties runnerProperties);
 
         public SqlSyncBuildDataModel ClearAllowScriptBlocks(SqlSyncBuildDataModel model, string serverName, IReadOnlyList<string> selectedScriptIds);
+
+        /// <summary>
+        /// Fetches blocking SQL log status for a batch of script IDs with a single query per target database.
+        /// Results are keyed by script GUID; missing entries mean the script has no log record (not-run).
+        /// </summary>
+        public IReadOnlyDictionary<System.Guid, SqlSync.SqlBuild.Models.SqlLogStatus> GetBatchBlockingSqlLog(
+            IReadOnlyList<System.Guid> scriptIds, ConnectionData cData, string databaseName);
     }
 }

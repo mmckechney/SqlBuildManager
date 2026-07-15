@@ -111,7 +111,7 @@ namespace SqlBuildManager.Console.ContainerShared
                     
                     //Copy file to storage with unique prefix
                     log.LogInformation($"Copying local results output file '{outputFileName}' to blob storage container '{jobName}");
-                    StorageManager.CopyFileToStorage(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, cmdLine.OutputFile.FullName, outputFileName);
+                    await StorageManager.CopyFileToStorage(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName, cmdLine.OutputFile.FullName, outputFileName);
                     log.LogInformation($"Exiting query job: '{jobName}'");
                     
                 }

@@ -91,7 +91,7 @@ namespace SqlBuildManager.Console.Arm
             while (!result.HasCompleted)
             {
                 result.UpdateStatus();
-                Thread.Sleep(1000);
+                await Task.Delay(1000);
             }
             if (result.GetRawResponse().Status >= 300)
             {
@@ -136,8 +136,8 @@ namespace SqlBuildManager.Console.Arm
                     var returnVal = await client.GetAsync(url);
                     if (returnVal.IsSuccessStatusCode)
                     {
-                        var details = returnVal.Content.ReadAsStringAsync();
-                        return details.Result;
+                        var details = await returnVal.Content.ReadAsStringAsync();
+                        return details;
                     }
                     else
                     {

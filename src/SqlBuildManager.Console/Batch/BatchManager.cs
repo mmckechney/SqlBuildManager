@@ -447,28 +447,6 @@ namespace SqlBuildManager.Console.Batch
                 }
 
 
-                // Clean up Batch resources
-                if (cmdLine.BatchArgs.DeleteBatchJob)
-                {
-
-                    log.LogInformation($"Requesting Batch Job deletion for Job ID: {jobId}");
-                    batchClient.JobOperations.DeleteJob(jobId);
-                }
-
-                if (cmdLine.BatchArgs.DeleteBatchPool)
-                {
-                    log.LogInformation($"Requesting Batch pool deletion for Pool ID: {poolId}");
-                    var stat = CleanUpBatchNodes();
-                    if (stat != 0)
-                    {
-                        log.LogError("Batch cleanup failure, but this will not fail the build.");
-                    }
-                }
-
-                SqlBuildManager.Logging.Threaded.Configure.CloseAndFlushAllLoggers();
-
-
-
                 log.LogInformation("Consolidating log files");
                 StorageManager.ConsolidateLogFiles(storageSvcClient, storageContainerName, inputFilePaths);
 
@@ -504,8 +482,39 @@ namespace SqlBuildManager.Console.Batch
                 log.LogInformation("Batch complete");
                 if (batchClient != null)
                 {
+                    if (cmdLine.BatchArgs.DeleteBatchJob)
+                    {
+                        try
+                        {
+                            log.LogInformation($"Requesting Batch Job deletion for Job ID: {jobId}");
+                            batchClient.JobOperations.DeleteJob(jobId);
+                        }
+                        catch (Exception cleanupException)
+                        {
+                            log.LogError(cleanupException, $"Unable to delete Batch job {jobId}");
+                        }
+                    }
+
+                    if (cmdLine.BatchArgs.DeleteBatchPool)
+                    {
+                        try
+                        {
+                            log.LogInformation($"Requesting Batch pool deletion for Pool ID: {poolId}");
+                            int cleanupStatus = await CleanUpBatchNodes();
+                            if (cleanupStatus != 0)
+                            {
+                                log.LogError($"Batch pool cleanup returned status {cleanupStatus}, but this will not replace the build result.");
+                            }
+                        }
+                        catch (Exception cleanupException)
+                        {
+                            log.LogError(cleanupException, $"Unable to delete Batch pool {poolId}");
+                        }
+                    }
+
                     batchClient.Dispose();
                 }
+                SqlBuildManager.Logging.Threaded.Configure.CloseAndFlushAllLoggers();
             }
 
             if (myExitCode.HasValue)
@@ -948,7 +957,7 @@ namespace SqlBuildManager.Console.Batch
             log.LogInformation("Creating Batch pool nodes ");
 
             // Get a Batch client using account creds or Managed Identity
-            var batchClient = GetBatchClient(cmdLine);
+            using var batchClient = GetBatchClient(cmdLine);
 
             // Create a Batch pool, VM configuration, Windows Server image
             // bool success = CreateBatchPoolLegacy(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount, cmdLine.BatchArgs.BatchVmSize, cmdLine.BatchArgs.BatchPoolOs);
@@ -985,7 +994,7 @@ namespace SqlBuildManager.Console.Batch
                 if (status.AllocationState != AllocationState.Steady)
                 {
                     if (cmdLine.BatchArgs.PollBatchPoolStatus) log.LogInformation($"Pool status: {status.AllocationState}");
-                    System.Threading.Thread.Sleep(10000);
+                    await Task.Delay(10000);
                 }
                 else
                 {
@@ -1029,7 +1038,7 @@ namespace SqlBuildManager.Console.Batch
                         });
                     }
 
-                    System.Threading.Thread.Sleep(15000);
+                    await Task.Delay(15000);
                 }
 
                 else
@@ -1062,7 +1071,7 @@ namespace SqlBuildManager.Console.Batch
 
         }
 
-        public int CleanUpBatchNodes()
+        public async Task<int> CleanUpBatchNodes()
         {
             string[] errorMessages;
             log.LogInformation("Validating batch cleanup command parameters");
@@ -1097,7 +1106,7 @@ namespace SqlBuildManager.Console.Batch
                     isPolling = true;
                     count = batchClient.PoolOperations.ListComputeNodes(PoolName, null, null).Count();
                     if (cmdLine.BatchArgs.PollBatchPoolStatus) log.LogInformation($"Pool delete in progress. Current node count: {count}");
-                    System.Threading.Thread.Sleep(15000);
+                    await Task.Delay(15000);
 
                 }
                 log.LogInformation($"Pool {PoolName} successfully deleted");

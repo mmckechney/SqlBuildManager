@@ -107,6 +107,98 @@ namespace SqlSync.SqlBuild.Services
                 cmd.Connection!.Close();
             }
         }
+
+        /// <summary>Maximum number of script ID parameters per batch query — safe under SQL Server's 2100-param limit.</summary>
+        private const int BatchMaxParams = 500;
+
+        /// <summary>
+        /// PERF-003: Fetches blocking SQL log status for a batch of script IDs in one query per database.
+        /// Each script GUID maps to a <see cref="SqlSync.SqlBuild.Models.SqlLogStatus"/> with the newest-row hash/date
+        /// and an any-row AllowScriptBlock flag, matching the semantics of <see cref="HasBlockingSqlLog"/>.
+        /// </summary>
+        public IReadOnlyDictionary<Guid, SqlSync.SqlBuild.Models.SqlLogStatus> GetBatchBlockingSqlLog(
+            IReadOnlyList<Guid> scriptIds, ConnectionData cData, string databaseName)
+        {
+            var result = new Dictionary<Guid, SqlSync.SqlBuild.Models.SqlLogStatus>();
+
+            if (scriptIds == null || scriptIds.Count == 0 || string.IsNullOrWhiteSpace(databaseName))
+                return result;
+
+            var targetData = new ConnectionData()
+            {
+                DatabaseName = databaseName,
+                SQLServerName = cData.SQLServerName,
+                UserId = cData.UserId,
+                Password = cData.Password,
+                AuthenticationType = cData.AuthenticationType,
+                ScriptTimeout = 2,
+                ManagedIdentityClientId = cData.ManagedIdentityClientId,
+                DatabasePlatform = cData.DatabasePlatform
+            };
+
+            for (int chunkStart = 0; chunkStart < scriptIds.Count; chunkStart += BatchMaxParams)
+            {
+                int chunkSize = Math.Min(BatchMaxParams, scriptIds.Count - chunkStart);
+                var chunk = new List<Guid>(chunkSize);
+                for (int i = chunkStart; i < chunkStart + chunkSize; i++)
+                    chunk.Add(scriptIds[i]);
+                QueryBatchChunk(chunk, targetData, result);
+            }
+
+            return result;
+        }
+
+        private void QueryBatchChunk(
+            IList<Guid> chunk, ConnectionData targetData,
+            Dictionary<Guid, SqlSync.SqlBuild.Models.SqlLogStatus> result)
+        {
+            using var conn = SqlSync.Connection.ConnectionHelper.GetDbConnection(targetData);
+            using DbCommand cmd = conn.CreateCommand();
+            cmd.CommandText = resourceProvider.GetBatchHasBlockingSqlLogQuery(chunk.Count);
+            for (int i = 0; i < chunk.Count; i++)
+            {
+                var p = cmd.CreateParameter();
+                p.ParameterName = $"@p{i}";
+                p.Value = chunk[i];
+                cmd.Parameters.Add(p);
+            }
+
+            // Per-script tracking: first row seen = newest (ORDER BY CommitDate DESC), any row can set hasBlock
+            var firstRows = new Dictionary<Guid, (string scriptHash, string scriptTextHash, DateTime commitDate)>();
+            var hasBlockSet = new HashSet<Guid>();
+
+            cmd.Connection!.Open();
+            using DbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                if (reader[0] == DBNull.Value) continue;
+                if (!Guid.TryParse(reader[0].ToString(), out Guid scriptId)) continue;
+
+                bool allowBlock = reader[1] != DBNull.Value && Convert.ToBoolean(reader[1]);
+                if (allowBlock) hasBlockSet.Add(scriptId);
+
+                if (!firstRows.ContainsKey(scriptId))
+                {
+                    string scriptHash = reader[2] == DBNull.Value ? string.Empty : reader[2].ToString() ?? string.Empty;
+                    DateTime commitDate = reader[3] == DBNull.Value
+                        ? DateTime.MinValue
+                        : DateTime.Parse(reader[3].ToString()!);
+                    string scriptTextHash = reader[4] == DBNull.Value
+                        ? string.Empty
+                        : fileHelper.GetSHA1Hash(reader[4].ToString()!);
+                    firstRows[scriptId] = (scriptHash, scriptTextHash, commitDate);
+                }
+            }
+
+            foreach (var kvp in firstRows)
+            {
+                result[kvp.Key] = new SqlSync.SqlBuild.Models.SqlLogStatus(
+                    HasBlock: hasBlockSet.Contains(kvp.Key),
+                    ScriptHash: kvp.Value.scriptHash,
+                    ScriptTextHash: kvp.Value.scriptTextHash,
+                    CommitDate: kvp.Value.commitDate);
+            }
+        }
         /// <summary>
         /// Quick check to see if the specicified script has a block against it.
         /// </summary>

@@ -1,0 +1,106 @@
+name: Dependent Tests (SQL Server + PostgreSQL)
+
+# Runs dependent unit-test suites that require a live SQL Server and PostgreSQL instance.
+# Uses the existing Dockerfile.dependent-tests image and run_dependent_tests_in_aci.ps1 script
+# to spin up sidecar containers in ACI.
+#
+# Triggers:
+#   - Weekly schedule (Saturdays 02:00 UTC) — keeps the green baseline fresh.
+#   - Manual dispatch — for on-demand validation before a release.
+#   - Pull requests labeled "run-dependent-tests" — for pre-merge validation.
+#
+# Required secrets (set at repo or environment level):
+#   AZURE_CLIENT_ID      — service-principal / managed-identity client ID (OIDC federated)
+#   AZURE_TENANT_ID      — Azure AD tenant ID
+#   AZURE_SUBSCRIPTION_ID — Azure subscription ID
+#   AZURE_NAME_PREFIX     — resource-name prefix used by azd (e.g. "sbm-ci")
+#   AZURE_RESOURCE_GROUP  — resource group containing ACR, ACI subnet, and Storage
+
+on:
+  schedule:
+    - cron: '0 2 * * 6'   # Saturdays 02:00 UTC
+  workflow_dispatch:
+    inputs:
+      prefix:
+        description: 'Resource name prefix (overrides secret AZURE_NAME_PREFIX)'
+        required: false
+      build_image:
+        description: 'Rebuild and push the dependent-test container image before running'
+        type: boolean
+        required: false
+        default: false
+  pull_request:
+    types: [labeled]
+
+permissions:
+  id-token: write   # Required for OIDC token
+  contents: read
+
+jobs:
+  dependent-tests:
+    name: Dependent Tests in ACI
+    # Skip unless this is a schedule/dispatch, or the PR just received the run-dependent-tests label.
+    if: >
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.label.name == 'run-dependent-tests')
+    runs-on: ubuntu-latest
+    environment: dependent-tests   # Optional: set up environment-level approval gate
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Log in to Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Resolve resource prefix
+        id: prefix
+        shell: pwsh
+        run: |
+          $prefix = "${{ inputs.prefix }}"
+          if ([string]::IsNullOrWhiteSpace($prefix)) {
+            $prefix = "${{ secrets.AZURE_NAME_PREFIX }}"
+          }
+          if ([string]::IsNullOrWhiteSpace($prefix)) {
+            Write-Error "Resource prefix is required. Set secret AZURE_NAME_PREFIX or pass the prefix input."
+            exit 1
+          }
+          "value=$prefix" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Run dependent tests in ACI
+        shell: pwsh
+        run: |
+          function New-CITestPassword {
+            param([string] $tag)
+            $bytes = [System.Security.Cryptography.RandomNumberGenerator]::GetBytes(18)
+            $b64 = [Convert]::ToBase64String($bytes).Replace('+','P').Replace('/','Q').Replace('=','R')
+            return "${tag}1!${b64}".Substring(0, 24)
+          }
+          $sqlPass = New-CITestPassword -tag 'Sql'
+          $pgPass = New-CITestPassword -tag 'Pg'
+          Write-Host "::add-mask::$sqlPass"
+          Write-Host "::add-mask::$pgPass"
+
+          $scriptArgs = @{
+            prefix            = "${{ steps.prefix.outputs.value }}"
+            resourceGroupName = "${{ secrets.AZURE_RESOURCE_GROUP }}"
+            sqlPassword       = $sqlPass
+            pgPassword        = $pgPass
+          }
+          # inputs.build_image is only present for workflow_dispatch; treat absent/empty as false.
+          if ('${{ inputs.build_image }}' -eq 'true') { $scriptArgs['buildImage'] = $true }
+          & "${{ github.workspace }}/scripts/tests/run_dependent_tests_in_aci.ps1" @scriptArgs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: dependent-test-results-${{ github.run_id }}
+          path: testresults/**
+          if-no-files-found: warn

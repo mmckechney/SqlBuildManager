@@ -46,7 +46,9 @@ namespace SqlSync.Connection
             builder.DataSource = serverName;
             builder.InitialCatalog = dbName;
             builder.ConnectTimeout = scriptTimeOut;
-            builder.Pooling = false;
+            builder.Pooling = true;
+            builder.MinPoolSize = ConnectionHelper.MinimumPoolSize;
+            builder.MaxPoolSize = ConnectionHelper.MaximumPoolSize;
             builder.ApplicationName = ConnectionHelper.appName;
             builder.ConnectRetryCount = 3;
             builder.ConnectRetryInterval = 10;

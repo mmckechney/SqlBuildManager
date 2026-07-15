@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,21 @@ namespace SqlSync.SqlBuild.Services
     public sealed class DefaultScriptBatcher : IScriptBatcher
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+
+        // PERF-006/009: All regex instances compiled once as static readonly fields.
+        private static readonly Regex _regDelimiter = new Regex(Properties.Resources.RegexBatchParsingDelimiter, RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled);
+        private static readonly Regex _regNonWhiteSpace = new Regex(Properties.Resources.RegexNonWhiteSpace, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regEndOfLine = new Regex(Properties.Resources.RegexEndOfLine, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regEndOfLineRtl = new Regex(Properties.Resources.RegexEndOfLine, RegexOptions.IgnoreCase | RegexOptions.RightToLeft | RegexOptions.Compiled);
+        private static readonly Regex _regUse = new Regex(Properties.Resources.RegexUseStatement, RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled);
+        private static readonly Regex _regTransaction = new Regex(Properties.Resources.RegexTransaction, RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+        private static readonly Regex _regTran = new Regex(Properties.Resources.RegexTran, RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+        private static readonly Regex _regCommit = new Regex(Properties.Resources.RegexCommit, RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+        private static readonly Regex _regTransactionLevel = new Regex(Properties.Resources.RegexTransactionLevel, RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+        private static readonly Regex _regDoubleDash = new Regex(@"(--.*\n)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regMultiLineComment = new Regex(@"(/\*.+?\*/)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+
+        private readonly record struct CommentSpan(int Start, int End, bool EndInclusive);
 
         public List<string> ReadBatchFromScriptText(string scriptContents, bool stripTransaction, bool maintainBatchDelimiter)
         {
@@ -32,12 +48,7 @@ namespace SqlSync.SqlBuild.Services
                 return list;
             }
 
-            //Needed when we are going to be removing the batch delimiter text.
-            Regex regBackwardEndOfLine = null!;
             int previousEndOfLine = 0;
-            if (!maintainBatchDelimiter)
-                regBackwardEndOfLine = new Regex(Properties.Resources.RegexEndOfLine, RegexOptions.IgnoreCase | RegexOptions.RightToLeft);
-
             int startIndex = 0;
             int modStartIndex = 0;
             string scriptSubstring = string.Empty;
@@ -60,7 +71,8 @@ namespace SqlSync.SqlBuild.Services
                 }
                 else
                 {
-                    previousEndOfLine = regBackwardEndOfLine.Match(scriptContents, m.Key.Index).Index;
+                    // PERF-006: Use static _regEndOfLineRtl instead of creating a new regex.
+                    previousEndOfLine = _regEndOfLineRtl.Match(scriptContents, m.Key.Index).Index;
                     if (previousEndOfLine > 0)
                     {
                         if (startIndex >= 2 && scriptContents.Substring(startIndex - 2, 2) == "\r\n")
@@ -88,7 +100,7 @@ namespace SqlSync.SqlBuild.Services
             }
             else
             {
-                previousEndOfLine = regBackwardEndOfLine.Match(scriptContents, startIndex).Index;
+                previousEndOfLine = _regEndOfLineRtl.Match(scriptContents, startIndex).Index;
 
                 if (previousEndOfLine > 0)
                 {
@@ -173,14 +185,9 @@ namespace SqlSync.SqlBuild.Services
 
         private List<KeyValuePair<Match, int>> FindActiveBatchDelimiters(string scriptContents)
         {
-            //Regex for delimiter
-            Regex regDelimiter = new Regex(Properties.Resources.RegexBatchParsingDelimiter, RegexOptions.IgnoreCase | RegexOptions.Multiline);
-            //Regex for seeing if delimiter is the only thing on the line
-            Regex regNonWhiteSpace = new Regex(Properties.Resources.RegexNonWhiteSpace, RegexOptions.IgnoreCase);
-            Regex regEndOfLine = new Regex(Properties.Resources.RegexEndOfLine, RegexOptions.IgnoreCase);
-
-            //First, identify all of the delimiters...
-            MatchCollection collDelimiter = regDelimiter.Matches(scriptContents);
+            // PERF-006: Use static cached regexes instead of creating new instances per call.
+            MatchCollection collDelimiter = _regDelimiter.Matches(scriptContents);
+            IReadOnlyList<CommentSpan> commentSpans = GetCommentSpans(scriptContents);
 
             List<KeyValuePair<Match, int>> activeDelimiters = new List<KeyValuePair<Match, int>>();
 
@@ -190,7 +197,7 @@ namespace SqlSync.SqlBuild.Services
             //Find the delimiters that are "real"
             foreach (Match delim in collDelimiter)
             {
-                if (!IsInComment(scriptContents, delim.Index))
+                if (!IsInComment(commentSpans, delim.Index))
                 {
                     //at the end of the string.
                     if (delim.Index + delim.Length == scriptContents.Length)
@@ -199,8 +206,8 @@ namespace SqlSync.SqlBuild.Services
                         continue;
                     }
 
-                    int nextChar = regNonWhiteSpace.Match(scriptContents, delim.Index + delim.Length).Index;
-                    int endOfLine = regEndOfLine.Match(scriptContents, delim.Index + delim.Length).Index;
+                    int nextChar = _regNonWhiteSpace.Match(scriptContents, delim.Index + delim.Length).Index;
+                    int endOfLine = _regEndOfLine.Match(scriptContents, delim.Index + delim.Length).Index;
 
                     if (endOfLine < nextChar || nextChar == 0 || endOfLine == 0)
                         activeDelimiters.Add(new KeyValuePair<Match, int>(delim, endOfLine));
@@ -212,71 +219,88 @@ namespace SqlSync.SqlBuild.Services
 
         private string RemoveUseStatement(string script)
         {
-            Regex regUse = new Regex(Properties.Resources.RegexUseStatement, RegexOptions.IgnoreCase | RegexOptions.Multiline);
-            int startAt = 0;
-            while (regUse.Match(script, startAt).Success)
-            {
-                Match m = regUse.Match(script, startAt);
-                if (!IsInComment(script, m.Index))
-                {
-                    script = regUse.Replace(script, "", 1, m.Index);
-                }
-                else
-                {
-                    startAt = m.Index + m.Length;
-                }
-            }
-            return script;
+            return RemoveMatchesNotInComments(script, new[] { _regUse });
         }
 
         public string RemoveTransactionReferences(string script)
         {
-            RegexOptions options = RegexOptions.IgnoreCase | RegexOptions.Singleline;
-            script = RegexRemoveIfNotInComments(Properties.Resources.RegexTransaction, script, options);
-            script = RegexRemoveIfNotInComments(Properties.Resources.RegexTran, script, options);
-            script = RegexRemoveIfNotInComments(Properties.Resources.RegexCommit, script, options);
-            script = RegexRemoveIfNotInComments(Properties.Resources.RegexTransactionLevel, script, options);
-            return script;
+            return RemoveMatchesNotInComments(
+                script,
+                new[] { _regTransaction, _regTran, _regCommit, _regTransactionLevel });
+        }
+
+        /// <summary>Pre-compiled regex overload — avoids per-call regex construction.</summary>
+        public string RegexRemoveIfNotInComments(Regex regRemoveTag, string script)
+        {
+            return RemoveMatchesNotInComments(script, new[] { regRemoveTag });
         }
 
         public string RegexRemoveIfNotInComments(string regexExpression, string script, RegexOptions options)
         {
             Regex regRemoveTag = new Regex(regexExpression, options);
-            int startAt = 0;
-            while (regRemoveTag.Match(script, startAt).Success)
-            {
-                Match m = regRemoveTag.Match(script, startAt);
-                if (!IsInComment(script, m.Index))
-                {
-                    script = regRemoveTag.Replace(script, "", 1, m.Index);
-                }
-                else
-                {
-                    startAt = m.Index + m.Length;
-                }
-            }
-            return script;
+            return RegexRemoveIfNotInComments(regRemoveTag, script);
         }
 
         public bool IsInComment(string rawScript, int index)
         {
-            Regex regDoubleDash = new Regex(@"(--.*\n)", RegexOptions.IgnoreCase);
-            Regex regMultiLineComment = new Regex(@"(/\*.+?\*/)", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            return IsInComment(GetCommentSpans(rawScript), index);
+        }
 
-            MatchCollection comment = regDoubleDash.Matches(rawScript);
-            for (int i = 0; i < comment.Count; i++)
+        private static IReadOnlyList<CommentSpan> GetCommentSpans(string script)
+        {
+            var spans = new List<CommentSpan>();
+            foreach (Match match in _regDoubleDash.Matches(script))
             {
-                if (index > comment[i].Index && index < comment[i].Index + comment[i].Length)
-                    return true;
+                spans.Add(new CommentSpan(match.Index, match.Index + match.Length, EndInclusive: false));
             }
-
-            comment = regMultiLineComment.Matches(rawScript);
-            for (int i = 0; i < comment.Count; i++)
+            foreach (Match match in _regMultiLineComment.Matches(script))
             {
-                if (index > comment[i].Index && index <= comment[i].Index + comment[i].Length)
+                spans.Add(new CommentSpan(match.Index, match.Index + match.Length, EndInclusive: true));
+            }
+            spans.Sort((left, right) => left.Start.CompareTo(right.Start));
+            return spans;
+        }
+
+        private static bool IsInComment(IReadOnlyList<CommentSpan> spans, int index)
+        {
+            foreach (CommentSpan span in spans)
+            {
+                if (span.Start >= index)
+                    return false;
+
+                if (index > span.Start && (span.EndInclusive ? index <= span.End : index < span.End))
                     return true;
             }
             return false;
+        }
+
+        private static string RemoveMatchesNotInComments(string script, IReadOnlyList<Regex> regexes)
+        {
+            // Overlapping matches are ordered longest-first at a shared start index so compound
+            // transaction forms (for example, COMMIT TRANSACTION) are removed as one span.
+            IReadOnlyList<CommentSpan> commentSpans = GetCommentSpans(script);
+            var matches = regexes
+                .SelectMany(regex => regex.Matches(script).Cast<Match>())
+                .Where(match => !IsInComment(commentSpans, match.Index))
+                .OrderBy(match => match.Index)
+                .ThenByDescending(match => match.Length)
+                .ToList();
+
+            if (matches.Count == 0)
+                return script;
+
+            var result = new StringBuilder(script.Length);
+            int currentIndex = 0;
+            foreach (Match match in matches)
+            {
+                if (match.Index < currentIndex)
+                    continue;
+
+                result.Append(script, currentIndex, match.Index - currentIndex);
+                currentIndex = match.Index + match.Length;
+            }
+            result.Append(script, currentIndex, script.Length - currentIndex);
+            return result.ToString();
         }
 
     }

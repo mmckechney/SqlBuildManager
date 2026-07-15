@@ -65,15 +65,16 @@
 #>
 
 $ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
 
 # Dot-source shared ACI test helpers
 . (Join-Path $PSScriptRoot "aci_test_helpers.ps1")
 Initialize-TestSummaryState
 
-# Get the repo root
+# Get the repo root — use $PSScriptRoot for portable resolution.
 $repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
-    $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
+    $repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 }
 
 #############################################

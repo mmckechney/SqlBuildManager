@@ -322,7 +322,33 @@ namespace SqlSync.SqlBuild.Services
             return p;
         }
 
+        // PERF-011: SQL Server has a hard limit of 2100 parameters per statement.
+        // With 16 parameters per log row, the safe maximum batch size is 131 rows (131 × 16 = 2096).
+        private const int SqlServerMaxParams = 2100;
+        private const int LogRowParamCount = 16;
+        private static readonly int MaxRowsPerBatch = SqlServerMaxParams / LogRowParamCount; // 131
+
         private async Task ExecuteBatchInsertAsync(
+            BuildConnectData connData,
+            List<(sqlLog.CommittedScript script, Script row)> scripts,
+            string buildFileName,
+            string userId,
+            DateTime commitDate,
+            string runWithVersion,
+            string buildProjectHash,
+            string buildRequestedBy,
+            string description)
+        {
+            // PERF-011: Chunk the script list to stay under the 2100-parameter limit.
+            for (int offset = 0; offset < scripts.Count; offset += MaxRowsPerBatch)
+            {
+                int count = Math.Min(MaxRowsPerBatch, scripts.Count - offset);
+                var chunk = scripts.GetRange(offset, count);
+                await ExecuteBatchChunkAsync(connData, chunk, buildFileName, userId, commitDate, runWithVersion, buildProjectHash, buildRequestedBy, description).ConfigureAwait(false);
+            }
+        }
+
+        private async Task ExecuteBatchChunkAsync(
             BuildConnectData connData,
             List<(sqlLog.CommittedScript script, Script row)> scripts,
             string buildFileName,

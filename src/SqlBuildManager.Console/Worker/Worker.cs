@@ -202,7 +202,7 @@ namespace SqlBuildManager.Console
             DateTime start = DateTime.Now;
             
             log.LogInformation("Sending database targets to Service Bus");
-            var qManager = new QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
+            var qManager = await QueueManager.CreateAsync(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
             int messages = await qManager.SendTargetsToQueue(multiData, cmdLine.ConcurrencyType);
 
 
@@ -248,7 +248,7 @@ namespace SqlBuildManager.Console
                 return 9839;
             }
 
-            var qManager = new QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
+            var qManager = await QueueManager.CreateAsync(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
             bool success = await qManager.DeleteSubscription();
 
             TimeSpan span = DateTime.Now - start;
@@ -309,7 +309,7 @@ namespace SqlBuildManager.Console
             }
             int targets = 0;
 
-            var qManager = new Queue.QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.JobName, cmdLine.ConcurrencyType);
+            var qManager = await Queue.QueueManager.CreateAsync(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.JobName, cmdLine.ConcurrencyType);
 
             //set up event handler
             (string jobName, string discard) = CloudStorage.StorageManager.GetJobAndStorageNames(cmdLine);
@@ -393,7 +393,7 @@ namespace SqlBuildManager.Console
                 if (unittest) firstLoop = true; //Won't have a console to change position for unit tests
                 SetCursorStatus(lines, firstLoop, stream);
 
-                System.Threading.Thread.Sleep(500);
+                await Task.Delay(500);
                 if (messageCount == 0)
                 {
                     zeroMessageCounter++;
@@ -522,7 +522,7 @@ namespace SqlBuildManager.Console
             }
            
         }
-        internal static int GetEventHubEvents(CommandLineArgs cmdLine, bool stream, int timeout, DateTime? startDate)
+        internal static async Task<int> GetEventHubEvents(CommandLineArgs cmdLine, bool stream, int timeout, DateTime? startDate)
         {
             bool junk;
             bool firstLoop = true;
@@ -548,13 +548,13 @@ namespace SqlBuildManager.Console
             System.Console.Write("Waiting for EventHub client.");
             while (ehTask.Status == TaskStatus.WaitingForActivation || ehTask.Status == TaskStatus.WaitingToRun)
             {
-                Thread.Sleep(2000);
+                await Task.Delay(2000);
                 System.Console.Write(".");
             }
             System.Console.WriteLine();
             System.Console.WriteLine($"Counting Events for job: {jobName}");
             timeoutStopWatch.Start();
-            while (true && (timeoutStopWatch.Elapsed.Seconds <= timeout || timeout == 0))
+            while (true && (timeoutStopWatch.Elapsed.TotalSeconds <= timeout || timeout == 0))
             {
 
                 (currentCommit, currentError, currentEvents, currentWorkers) = ehandler.GetCommitErrorScannedAndWorkerCompleteCounts();
@@ -586,7 +586,7 @@ namespace SqlBuildManager.Console
                     );
                 }
                 SetCursorStatus(lines, firstLoop, stream);
-                Thread.Sleep(2000);
+                await Task.Delay(2000);
                 firstLoop = false;
             }
             System.Console.WriteLine();

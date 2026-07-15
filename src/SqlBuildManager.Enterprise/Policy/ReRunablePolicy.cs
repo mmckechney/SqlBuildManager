@@ -8,6 +8,11 @@ namespace SqlBuildManager.Enterprise.Policy
     class ReRunablePolicy : shP.IScriptPolicy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+
+        // PERF-006: Static cached regexes compiled once per process.
+        private static readonly Regex _regExists = new Regex(@"(IF\s+EXISTS)|(IF\s+NOT\s+EXISTS)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regSystemObject = new Regex(@"(IF.*is null)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         #region IScriptPolicy Members
         public string PolicyId
         {
@@ -36,9 +41,7 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             try
             {
-                Regex regExists = new Regex(@"(IF\s+EXISTS)|(IF\s+NOT\s+EXISTS)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regSystemObject = new Regex(@"(IF.*is null)", RegexOptions.IgnoreCase | RegexOptions.Compiled);   //if DATABASE_PRINCIPAL_ID('Cltdb_Employee_role') is null
-                if (regExists.Match(script).Success || regSystemObject.Match(script).Success)
+                if (_regExists.Match(script).Success || _regSystemObject.Match(script).Success)
                 {
                     message = "";
                     return true;

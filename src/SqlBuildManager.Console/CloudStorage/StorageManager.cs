@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlSync.Connection;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,6 +22,58 @@ namespace SqlBuildManager.Console.CloudStorage
     public class StorageManager
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+
+        // PERF-004: Cache initialized BlobContainerClients by "{accountName}|{containerName}".
+        // CreateIfNotExistsAsync is called at most once per key per process lifetime.
+        internal static readonly ConcurrentDictionary<string, Task<BlobContainerClient>> _containerClientCache
+            = new ConcurrentDictionary<string, Task<BlobContainerClient>>(StringComparer.OrdinalIgnoreCase);
+
+        internal static string ContainerCacheKey(string storageAccountName, string containerName)
+            => $"{storageAccountName}|{containerName}";
+
+        /// <summary>
+        /// Returns a cached, fully initialized BlobContainerClient.
+        /// CreateIfNotExistsAsync is called exactly once per account/container per process.
+        /// </summary>
+        internal static async Task<BlobContainerClient> GetOrCreateBlobContainerClientAsync(
+            string storageAccountName, string storageAccountKey, string containerName)
+        {
+            var key = ContainerCacheKey(storageAccountName, containerName);
+            var initializationTask = _containerClientCache.GetOrAdd(key, _ =>
+                CreateAndEnsureContainerAsync(storageAccountName, storageAccountKey, containerName));
+
+            try
+            {
+                return await initializationTask;
+            }
+            catch
+            {
+                ((ICollection<KeyValuePair<string, Task<BlobContainerClient>>>)_containerClientCache)
+                    .Remove(new KeyValuePair<string, Task<BlobContainerClient>>(key, initializationTask));
+                throw;
+            }
+        }
+
+        private static async Task<BlobContainerClient> CreateAndEnsureContainerAsync(
+            string storageAccountName, string storageAccountKey, string containerName)
+        {
+            BlobContainerClient client;
+            if (string.IsNullOrWhiteSpace(storageAccountKey))
+            {
+                var url = $"https://{storageAccountName}.blob.core.windows.net/{containerName}";
+                log.LogDebug($"Creating container client with URL: '{url}' and Token Credential");
+                client = new BlobContainerClient(new Uri(url), Aad.AadHelper.TokenCredential);
+            }
+            else
+            {
+                var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
+                log.LogDebug($"Creating container client for '{storageAccountName}/{containerName}' with storage key");
+                client = new BlobContainerClient(connstr, containerName);
+            }
+            await client.CreateIfNotExistsAsync();
+            return client;
+        }
+
         // Unique per-process instance ID to prevent blob path collisions when multiple
         // containers in the same ACI group share the same HOSTNAME.
         private static readonly string _instanceSuffix = Guid.NewGuid().ToString("N").Substring(0, 8);
@@ -294,13 +347,15 @@ namespace SqlBuildManager.Console.CloudStorage
         {
             try
             {
+                // Evict from cache before deletion so the next caller re-creates the container
+                _containerClientCache.TryRemove(ContainerCacheKey(storageAccountName, containerName), out _);
                 var container = GetBlobContainerClient(storageAccountName, storageAccountKey, containerName);
                 var result = await container.DeleteAsync();
                 if (result.Status == 202)
                 {
-                    while (container.Exists())
+                    while (await container.ExistsAsync())
                     {
-                        System.Threading.Thread.Sleep(1000);
+                        await Task.Delay(1000);
                     }
                 }
                 return true;
@@ -316,6 +371,9 @@ namespace SqlBuildManager.Console.CloudStorage
 
             try
             {
+                // PERF-004: Obtain (and create if necessary) the container once, outside the per-file loop.
+                var container = await GetOrCreateBlobContainerClientAsync(storageAccountName, storageAccountKey, containerName);
+
                 foreach (var filePath in filePaths)
                 {
                     if (!isRetry)
@@ -324,12 +382,10 @@ namespace SqlBuildManager.Console.CloudStorage
                     }
                     string blobName = Path.GetFileName(filePath);
 
-                    var container = GetBlobContainerClient(storageAccountName, storageAccountKey, containerName);
-
-                    var blobData = GetBlockBlobClient(storageAccountName, storageAccountKey, containerName, blobName);
+                    var blobData = container.GetBlockBlobClient(blobName);
                     using (var fs = new FileStream(filePath, FileMode.Open))
                     {
-                        blobData.Upload(fs);
+                        await blobData.UploadAsync(fs);
                     }
                     log.LogInformation($"File {filePath} uploaded to container [{containerName}]");
                 }
@@ -340,8 +396,10 @@ namespace SqlBuildManager.Console.CloudStorage
                 if (rfExe.ErrorCode == "ContainerBeingDeleted")
                 {
                     log.LogInformation("Existing storage container is still being deleted. waiting...");
-                    System.Threading.Thread.Sleep(3000);
-                    return await UploadFilesToStorageContainer(storageAccountName, storageAccountKey, containerName, filePaths, true); ;
+                    // Evict stale cache entry so retry creates a fresh container
+                    _containerClientCache.TryRemove(ContainerCacheKey(storageAccountName, containerName), out _);
+                    await Task.Delay(3000);
+                    return await UploadFilesToStorageContainer(storageAccountName, storageAccountKey, containerName, filePaths, true);
                 }
                 else
                 {
@@ -528,7 +586,8 @@ namespace SqlBuildManager.Console.CloudStorage
 
         internal static async Task<bool> WriteLogsToBlobContainer(string storageAccountName, string storageAccountKey, string outputContainerName, string rootLoggingPath)
         {
-            var container = GetBlobContainerClient(storageAccountName, storageAccountKey, outputContainerName);
+            // PERF-004: Use the async cache so CreateIfNotExistsAsync is paid at most once per container per run.
+            var container = await GetOrCreateBlobContainerClientAsync(storageAccountName, storageAccountKey, outputContainerName);
             var res = await WriteLogsToBlobContainer(container, rootLoggingPath);
             return res;
         }
@@ -650,16 +709,15 @@ namespace SqlBuildManager.Console.CloudStorage
             return containerClient;
         }
 
-        internal static bool  CopyFileToStorage(string storageAccountName, string storageAccountKey, string jobName, string localName, string storageName)
+        internal static async Task<bool> CopyFileToStorage(string storageAccountName, string storageAccountKey, string jobName, string localName, string storageName)
         {
             try
             {
-                var container = GetBlobContainerClient(storageAccountName, storageAccountKey, jobName);
-
-                var blobData = GetBlockBlobClient(storageAccountName, storageAccountKey, jobName, storageName);
+                var container = await GetOrCreateBlobContainerClientAsync(storageAccountName, storageAccountKey, jobName);
+                var blobData = container.GetBlockBlobClient(storageName);
                 using (var fs = new FileStream(localName, FileMode.Open))
                 {
-                    blobData.Upload(fs);
+                    await blobData.UploadAsync(fs);
                 }
                 log.LogInformation($"File {localName} uploaded to {storageName} in container [{jobName}]");
                 return true;
@@ -673,4 +731,3 @@ namespace SqlBuildManager.Console.CloudStorage
     }
 
 }
-
