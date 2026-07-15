@@ -169,21 +169,28 @@ namespace SqlBuildManager.Console.Batch
                 //Get storage ready - use Managed Identity if no storage key provided
                 BlobServiceClient storageSvcClient;
                 StorageSharedKeyCredential storageCreds = null!;
-                string containerSasToken;
+                string outputContainerUrl;
+                ComputeNodeIdentityReference storageIdentity = null!;
 
                 if (cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity || cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault)
                 {
-                    log.LogDebug($"Generating SAS URL with Managed Identity for container '{storageContainerName}'");
+                    log.LogDebug($"Preparing Entra-authenticated container '{storageContainerName}'");
                     storageSvcClient = new BlobServiceClient(new Uri($"https://{cmdLine.ConnectionArgs.StorageAccountName}.blob.core.windows.net"), Aad.AadHelper.TokenCredential);
-                    containerSasToken = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, null!, storageContainerName, false).ConfigureAwait(false);
+                    outputContainerUrl = await StorageManager
+                        .EnsureOutputContainerAsync(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName)
+                        .ConfigureAwait(false);
+                    storageIdentity = new ComputeNodeIdentityReference
+                    {
+                        ResourceId = cmdLine.IdentityArgs.ResourceId
+                    };
                 }
                 else
                 {
                     storageSvcClient = StorageManager.CreateStorageClient(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
                     storageCreds = StorageManager.GetStorageSharedKeyCredential(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
-                    containerSasToken = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, false).ConfigureAwait(false);
+                    outputContainerUrl = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, false).ConfigureAwait(false);
                 }
-                log.LogDebug($"Generated output write SAS token for storage account '{cmdLine.ConnectionArgs.StorageAccountName}'");
+                log.LogDebug($"Prepared output container for storage account '{cmdLine.ConnectionArgs.StorageAccountName}'");
 
 
                 // Get a Batch client using account creds or Managed Identity
@@ -282,11 +289,16 @@ namespace SqlBuildManager.Console.Batch
 
                 foreach (string filePath in inputFilePaths)
                 {
-                    inputFiles.Add(await StorageManager.UploadFileToBatchContainerAsync(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName, storageCreds, filePath).ConfigureAwait(false));
+                    inputFiles.Add(await StorageManager.UploadFileToBatchContainerAsync(
+                        cmdLine.ConnectionArgs.StorageAccountName,
+                        storageContainerName,
+                        storageCreds,
+                        filePath,
+                        storageIdentity?.ResourceId ?? string.Empty).ConfigureAwait(false));
                 }
 
                 //Create the individual command lines for each node
-                IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, containerSasToken, cmdLine.BatchArgs.BatchNodeCount, jobId, cmdLine.BatchArgs.BatchPoolOs, batchType);
+                IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, outputContainerUrl, cmdLine.BatchArgs.BatchNodeCount, jobId, cmdLine.BatchArgs.BatchPoolOs, batchType);
                 foreach (var s in commandLines)
                     log.LogDebug(s);
 
@@ -339,19 +351,19 @@ namespace SqlBuildManager.Console.Batch
                         {
                             new OutputFile(
                                 filePattern: @"../std*.txt",
-                                destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
+                                destination: new OutputFileDestination(CreateOutputDestination(outputContainerUrl, storageIdentity, taskId)),
                                 uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion)),
                              new OutputFile(
                                 filePattern: @"../*.csv",
-                                destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
+                                destination: new OutputFileDestination(CreateOutputDestination(outputContainerUrl, storageIdentity, taskId)),
                                 uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion)),
                              new OutputFile(
                                 filePattern: @"../*.cfg",
-                                destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
+                                destination: new OutputFileDestination(CreateOutputDestination(outputContainerUrl, storageIdentity, taskId)),
                                 uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion)),
                              new OutputFile(
                                 filePattern: @"../*.log",
-                                destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
+                                destination: new OutputFileDestination(CreateOutputDestination(outputContainerUrl, storageIdentity, taskId)),
                                 uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))
                         };
 
@@ -436,9 +448,9 @@ namespace SqlBuildManager.Console.Batch
                 }
 
 
-                // Generate read-only SAS URL for log access - use MI if no key provided
-                log.LogDebug($"Generating SAS URL with Managed Identity for container '{storageContainerName}'");
-                readOnlySasToken = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, true).ConfigureAwait(false);
+                readOnlySasToken = string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey)
+                    ? StorageManager.GetContainerRawUrl(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName)
+                    : await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, true).ConfigureAwait(false);
                 log.LogInformation($"The consolidated log files can be found in the Azure storage account '{cmdLine.ConnectionArgs.StorageAccountName}' in blob container '{storageContainerName}'");
                 log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
                 log.LogInformation("You can also get details on your Azure Batch execution from the \"Azure Batch Explorer\" found here: https://azure.github.io/BatchExplorer/");
@@ -801,6 +813,14 @@ namespace SqlBuildManager.Console.Batch
 
         }
 
+        private static OutputFileBlobContainerDestination CreateOutputDestination(
+            string containerUrl,
+            ComputeNodeIdentityReference? identity,
+            string path) =>
+            identity == null
+                ? new OutputFileBlobContainerDestination(containerUrl, path)
+                : new OutputFileBlobContainerDestination(containerUrl, identity, path);
+
 
 
         /// <summary>
@@ -810,7 +830,7 @@ namespace SqlBuildManager.Console.Batch
         /// <param name="cmdLine"></param>
         /// <param name="poolNodeCount"></param>
         /// <returns></returns>
-        public IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles, string containerSasToken, int poolNodeCount, string jobId, OsType os, BatchType bType)
+        public IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles, string outputContainerUrl, int poolNodeCount, string jobId, OsType os, BatchType bType)
         {
             if (os != OsType.Linux)
             {
@@ -883,8 +903,7 @@ namespace SqlBuildManager.Console.Batch
                     threadCmdLine.MultiDbRunConfigFileName = target.FilePath;
                 }
 
-                //Set set the Sas URL
-                threadCmdLine.BatchArgs.OutputContainerSasUrl = containerSasToken;
+                threadCmdLine.BatchArgs.OutputContainerSasUrl = outputContainerUrl;
 
                 StringBuilder sb = new StringBuilder("/bin/sh -c '/app/sbm ");
                 sb.Append($"--loglevel {threadCmdLine.LogLevel} batch ");

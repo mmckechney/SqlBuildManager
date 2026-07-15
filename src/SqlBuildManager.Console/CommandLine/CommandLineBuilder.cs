@@ -218,6 +218,7 @@ namespace SqlBuildManager.Console.CommandLine
                 {
                     keyVaultNameOption,
                     storageaccountnameOption,
+                    blobProxyEndpointOption,
                     storageaccountkeyOption,
                     serviceBusconnectionOption,
                     eventhubconnectionOption,
@@ -240,6 +241,7 @@ namespace SqlBuildManager.Console.CommandLine
                     batchaccountkeyOption,
                     batchaccounturlOption,
                     storageaccountnameOption,
+                    blobProxyEndpointOption,
                     storageaccountkeyOption,
                     serviceBusconnectionOption,
                     eventhubconnectionOption,
@@ -252,6 +254,7 @@ namespace SqlBuildManager.Console.CommandLine
         internal static Option<string> eventhubconnectionOption = new Option<string>("--eventhubconnection", "--eh", "-eh") { Description = "Event Hub connection string for Event Hub logging. If using Managed Identity auth, use '<eventhub namespace>|<eventhub name>'" };
         internal static Option<string> serviceBusconnectionOption = new Option<string>("--servicebustopicconnection", "--sb", "-sb") { Description = "Service Bus connection string for Service Bus topic distribution. If using Managed Identity auth, just provide the Service Bus Namespace" };
         internal static Option<string> storageaccountnameOption = new Option<string>("--storageaccountname") { Description = "Name of Azure storage account associated build" };
+        internal static Option<string> blobProxyEndpointOption = new Option<string>("--blobproxyendpoint") { Description = "Azure Relay HTTPS endpoint used when direct Blob Storage access is blocked" };
         internal static Option<string> storageaccountkeyOption = new Option<string>("--storageaccountkey") { Description = "Account Key for the storage account" };
         internal static Option<string> batchaccountnameOption = new Option<string>("--batchaccountname", "--acct") { Description = "String name of the Azure Batch account" };
         internal static Option<string> batchaccountkeyOption = new Option<string>("--batchaccountkey", "-k") { Description = "Account Key for the Azure Batch account" };

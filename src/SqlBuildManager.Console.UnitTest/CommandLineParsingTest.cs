@@ -29,13 +29,17 @@ namespace SqlBuildManager.Console.UnitTest
                 string[] args = new string[] {
                     "batch", "run",
                     "--override", "XXXXX",
-                    "--settingsfile", tmpCfg
+                    "--settingsfile", tmpCfg,
+                    "--blobproxyendpoint", "https://example.servicebus.windows.net/blobupload"
 
                 };
 
                 (var cmdLine, string message) = CommandLineBuilder.ParseArgumentsWithMessage(args);
                 Assert.IsNotNull(cmdLine, $"cmdLine is null. Parse error: {message}");
                 Assert.IsNotNull(cmdLine.BatchArgs, "BatchArgs is null");
+                Assert.AreEqual(
+                    "https://example.servicebus.windows.net/blobupload",
+                    cmdLine.ConnectionArgs.BlobProxyEndpoint);
                 Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.EssentialOnly));
                 Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.ScriptErrors));
 

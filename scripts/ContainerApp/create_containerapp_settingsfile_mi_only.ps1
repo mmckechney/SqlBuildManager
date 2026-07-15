@@ -113,6 +113,7 @@ $params += @("--imagetag", $imageTag)
 $params += @("--settingsfile", $settingsContainerApp)
 $params += @("--settingsfilekey", $keyFile)
 $params += @("--storageaccountname", $storageAccountName)
+$params += @("--blobproxyendpoint", "https://$($prefix)relay.servicebus.windows.net/blobupload")
 # NO --storageaccountkey - will use Managed Identity
 $params += @("--ehrg", $resourceGroupName)
 $params += @("--ehsub", $subscriptionId)

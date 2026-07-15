@@ -3,6 +3,11 @@
 
 Write-Host "Setting up deployment environment..." -ForegroundColor Cyan
 
+az provider register --namespace Microsoft.Relay --wait
+if ($LASTEXITCODE -ne 0) {
+    throw "Unable to register the Microsoft.Relay resource provider."
+}
+
 # Get current IP address
 $currentIpAddress = (Invoke-WebRequest -Uri "https://api.ipify.org" -UseBasicParsing).Content.Trim()
 Write-Host "Current IP Address: $currentIpAddress" -ForegroundColor DarkGreen

@@ -62,6 +62,24 @@ if (-not (Test-Path $privateInitializationScript)) {
     -deploySqlServer ($sqlServerDeployed -ne "false") `
     -deployPostgreSQL ($pgDeployed -eq "true")
 
+$blobProxyDeployed = Get-AzdEnvValue "DEPLOY_BLOB_PROXY"
+if ($blobProxyDeployed -eq "true") {
+    Write-Host ""
+    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host "Post-Provision: Blob Storage Proxy" -ForegroundColor Cyan
+    Write-Host "========================================" -ForegroundColor Cyan
+
+    $blobProxyScript = Join-Path $repoRoot "scripts\ContainerRegistry\build_and_deploy_blob_proxy.ps1"
+    if (-not (Test-Path $blobProxyScript)) {
+        throw "Blob proxy deployment script not found at '$blobProxyScript'."
+    }
+
+    & $blobProxyScript `
+        -prefix $prefix `
+        -resourceGroupName $resourceGroupName `
+        -repoRoot $repoRoot
+}
+
 $aksDeployed = Get-AzdEnvValue "DEPLOY_AKS"
 if ($aksDeployed -eq "true") {
 

@@ -110,6 +110,7 @@ $baseParams += @("--batchnodecount", "2")
 $baseParams += @("--batchvmsize", "STANDARD_D1_V2")
 $baseParams += @("--rootloggingpath", "C:/temp")
 $baseParams += @("--storageaccountname", $storageAccountName)
+$baseParams += @("--blobproxyendpoint", "https://$($prefix)relay.servicebus.windows.net/blobupload")
 # NO --storageaccountkey - will use Managed Identity
 $baseParams += @("--defaultscripttimeout", "500")
 $baseParams += @("--concurrency", "5")

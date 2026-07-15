@@ -40,6 +40,9 @@ param usePrivateEndpoint bool = false
 @description('Whether to deploy Azure Database for PostgreSQL Flexible Server')
 param deployPostgreSQL bool = true
 
+@description('Whether to deploy the ACI Blob Storage upload proxy')
+param deployBlobProxy bool = true
+
 @secure()
 @description('Administrator password for PostgreSQL Flexible Server')
 param pgAdminPassword string = ''
@@ -76,6 +79,9 @@ var logAnalyticsWorkspaceVar = '${namePrefix}loganalytics'
 var containerRegistryNameVar = '${namePrefix}containerregistry'
 var identityNameVar = '${namePrefix}identity'
 var postProvisionIdentityNameVar = '${namePrefix}postprovision'
+var blobProxyIdentityNameVar = '${namePrefix}blobproxy'
+var relayNamespaceNameVar = '${namePrefix}relay'
+var relayConnectionNameVar = 'blobupload'
 var eventHubNamespaceNameVar = '${namePrefix}eventhubnamespace'
 var eventHubNameVar = '${namePrefix}eventhub'
 var serviceBusNamespaceNameVar = '${namePrefix}servicebus'
@@ -251,6 +257,27 @@ module storageAccountResource './modules/storage.bicep' = {
   }
 }
 
+module blobProxy './modules/blobproxy.bicep' = if (deployBlobProxy) {
+  name: 'blobProxy'
+  scope: rg
+  params: {
+    relayNamespaceName: relayNamespaceNameVar
+    hybridConnectionName: relayConnectionNameVar
+    identityName: blobProxyIdentityNameVar
+    storageAccountName: storageAccountResource.outputs.name
+    containerRegistryName: containerRegistry.outputs.name
+    senderPrincipalId: userIdGuid
+    runtimeSenderPrincipalId: identityResource.outputs.principalId
+    usePrivateEndpoint: usePrivateEndpoint
+    privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
+    namePrefix: namePrefix
+    location: location
+  }
+  dependsOn: [
+    eventHubNamespaceResource
+  ]
+}
+
 // Log Analytics Workspace (inline module to access from subscription scope)
 module logAnalyticsWorkspaceResource './modules/loganalytics.bicep' = {
   name: 'logAnalyticsWorkspace'
@@ -316,6 +343,7 @@ output SERVICEBUS_SKU string = serviceBusSku
 output SKU_CAPACITY int = skuCapacity
 output USE_PRIVATE_ENDPOINT bool = usePrivateEndpoint
 output DEPLOY_POSTGRESQL bool = deployPostgreSQL
+output DEPLOY_BLOB_PROXY bool = deployBlobProxy
 
 // Resource outputs
 output RESOURCE_GROUP_NAME string = resourceGroupName
@@ -340,6 +368,8 @@ output POSTPROVISION_IDENTITY_NAME string = postProvisionIdentity.outputs.name
 output POSTPROVISION_IDENTITY_ID string = postProvisionIdentity.outputs.id
 output POSTPROVISION_IDENTITY_CLIENT_ID string = postProvisionIdentity.outputs.clientId
 output POSTPROVISION_IDENTITY_PRINCIPAL_ID string = postProvisionIdentity.outputs.principalId
+
+output BLOB_PROXY_ENDPOINT string = deployBlobProxy ? blobProxy!.outputs.endpoint : ''
 
 output STORAGE_ACCOUNT_NAME string = storageAccountResource.outputs.name
 output STORAGE_ACCOUNT_ID string = storageAccountResource.outputs.id

@@ -44,6 +44,9 @@
     "deployPostgreSQL": {
       "value": "${DEPLOY_POSTGRESQL}"
     },
+    "deployBlobProxy": {
+      "value": true
+    },
     "pgAdminPassword": {
       "value": "${PG_ADMIN_PASSWORD}"
     }

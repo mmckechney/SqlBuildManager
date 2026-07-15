@@ -128,6 +128,7 @@ The deployment includes:
 - A virtual network and dedicated subnets for AKS, Container Apps, ACI, Batch, and private endpoints.
 - The SQL Build Manager runtime user-assigned managed identity.
 - A separate post-provision user-assigned managed identity.
+- A dedicated Blob Storage proxy identity, Azure Relay Hybrid Connection, and persistent ACI.
 - Azure Container Registry.
 - Storage, Event Hubs, Service Bus, and Log Analytics.
 - Selected compute platforms.
@@ -165,6 +166,25 @@ It receives:
 - `AcrPull` so ACI can pull the private bootstrap image without registry credentials.
 
 The ACR administrator account is disabled. Image pull uses this managed identity.
+
+### Blob Storage proxy identity
+
+The proxy identity is named:
+
+```text
+<prefix>blobproxy
+```
+
+It receives `Storage Blob Data Contributor` on the deployment Storage account, `AcrPull` on the
+registry, and `Azure Relay Listener` on the `blobupload` Hybrid Connection. The deploying user
+receives `Azure Relay Sender` on that connection.
+The SQL Build Manager runtime identity also receives `Azure Relay Sender`, so fallback remains
+available to Batch, ACI, AKS, and Container Apps workloads.
+
+The proxy does not use Storage account keys or create SAS tokens. Azure Relay authenticates the
+caller with Microsoft Entra ID, and the proxy performs Blob operations with its own managed
+identity. This avoids an on-behalf-of flow, which would require an application registration,
+delegated Storage scopes, and a second end-to-end token validation layer inside the proxy.
 
 ### Database networking
 
@@ -412,6 +432,33 @@ When AKS is selected, the hook:
 
 The service account is applied declaratively and can be updated on later runs.
 
+### Private Blob Storage proxy
+
+The hook runs:
+
+```text
+scripts/ContainerRegistry/build_and_deploy_blob_proxy.ps1
+```
+
+The script always builds `sqlbuildmanager-storageproxy:latest` remotely with ACR Tasks and
+recreates the persistent Linux ACI `<prefix>blobproxy` in the delegated ACI subnet. The container
+uses its dedicated identity for both the ACR pull and runtime access.
+
+The listener connects outbound to:
+
+```text
+https://<prefix>relay.servicebus.windows.net/blobupload
+```
+
+The Relay namespace remains publicly reachable for authenticated senders. Listener-side Relay and
+Blob traffic resolve through private endpoints inside the VNET. No inbound port or public IP is
+assigned to ACI.
+
+Generated managed-identity settings include `--blobproxyendpoint`. SQL Build Manager first attempts
+Blob operations directly with Entra authentication. Network and Storage authorization failures fall
+back to the Relay proxy. The proxy supports container lifecycle checks, streamed upload/download,
+and server-side log/query consolidation; it returns ordinary Blob URLs, never SAS URLs.
+
 ### Managed-identity settings files
 
 The hook runs:
@@ -502,8 +549,10 @@ At execution time SQL Build Manager:
    `STANDARD_D1_V2` VM size.
 2. Assigns `<prefix>identity` to the pool.
 3. Uses that identity's `AcrPull` role to prefetch the runtime image.
-4. Runs each task in the image with `/app/sbm`.
-5. Mounts the Batch task working directory into the container for input and output files.
+4. Uses the same identity to download input `ResourceFile` blobs and upload task output files; all
+   Batch file descriptors use ordinary Blob URLs with an identity reference rather than SAS.
+5. Runs each task in the image with `/app/sbm`.
+6. Mounts the Batch task working directory into the container for input and output files.
 
 Only Linux Batch settings are generated. If an existing pool lacks the requested container
 configuration, SQL Build Manager deletes and recreates it because the VM/container configuration is
@@ -516,6 +565,7 @@ immutable.
 | Deploying user | Runs `azd up`, receives RBAC, remains final SQL/PG administrator | SQL/PG administrator |
 | `<prefix>identity` | Runtime identity used by SQL Build Manager workloads | `db_owner` in SQL test databases and explicit PostgreSQL grants |
 | `<prefix>postprovision` | Runs the private bootstrap ACI | Temporary SQL administrator; additional PostgreSQL administrator |
+| `<prefix>blobproxy` | Runs the Relay listener and writes to private Blob Storage | None |
 
 ## Rerunning `azd up`
 
@@ -595,10 +645,13 @@ SQL administrator.
 | `infra/modules/database.bicep` | Private SQL Server resources, databases, DNS, and private endpoints |
 | `infra/modules/postgresql.bicep` | Private PostgreSQL resources, administrators, DNS, and private endpoints |
 | `infra/modules/postprovisionidentity.bicep` | Bootstrap managed identity and RBAC |
+| `infra/modules/blobproxy.bicep` | Relay, proxy identity, private endpoint, and scoped RBAC |
 | `infra/postprovision/Dockerfile` | Bootstrap container image |
 | `infra/postprovision/run-private-postprovision.ps1` | In-container entry point |
 | `infra/scripts/postprovision.ps1` | Local post-provision orchestrator |
 | `scripts/ContainerRegistry/run_private_postprovision_container.ps1` | ACR build, ACI execution, and SQL administrator restoration |
+| `scripts/ContainerRegistry/build_and_deploy_blob_proxy.ps1` | Remote proxy image build and persistent ACI deployment |
+| `src/SqlBuildManager.StorageProxy` | Managed-identity Relay listener and Blob operation handler |
 | `scripts/Database/grant_identity_permissions.ps1` | SQL contained-user creation and role assignment |
 | `scripts/Database/grant_pg_identity_permissions.ps1` | PostgreSQL principal mapping and grants |
 | `scripts/Database/create_database_override_files.ps1` | Local SQL test target generation |

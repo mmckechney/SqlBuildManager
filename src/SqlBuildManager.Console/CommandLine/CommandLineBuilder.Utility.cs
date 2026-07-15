@@ -254,6 +254,7 @@ namespace SqlBuildManager.Console.CommandLine
 				};
 				cmd.Add(eventhubconnectionOption);
                 cmd.Add(storageaccountnameOption);
+                cmd.Add(blobProxyEndpointOption);
 				cmd.Add(storageaccountkeyOption);
                 cmd.AddRange(EventHubResourceOptions);
                 cmd.AddRange(SettingsFileExistingOptions);
