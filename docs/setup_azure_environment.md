@@ -67,8 +67,8 @@ Creates the following Azure resources with the environment name as prefix:
 - Creates Kubernetes namespace and service account (if AKS deployed)
 - Generates MI-only settings files for integration testing
 - Creates database override configuration files
-- Builds and uploads Batch application packages (if `BUILD_BATCH_PACKAGES=true`)
-- Builds and pushes container images to ACR (if `BUILD_CONTAINER_IMAGES=true`)
+- Builds and pushes container images to ACR, including the Linux Batch runtime image (if
+  `BUILD_CONTAINER_IMAGES=true`)
 
 ### Configuration Parameters
 
@@ -85,7 +85,6 @@ azd env set DEPLOY_AKS true                 # Deploy AKS (default: true)
 azd env set TEST_DB_COUNT_PER_SERVER 10     # Test databases per server (default: 10)
 
 # Post-provision options
-azd env set BUILD_BATCH_PACKAGES true       # Build and upload Batch packages
 azd env set BUILD_CONTAINER_IMAGES true     # Build and push Docker images
 azd env set GENERATE_MI_SETTINGS true       # Generate settings files (default: true)
 

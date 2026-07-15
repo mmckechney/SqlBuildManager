@@ -16,11 +16,24 @@ namespace SqlBuildManager.Console.UnitTest
             var cmdLine = new CommandLineArgs();
             var manager = new BatchManager(cmdLine);
 
-            var windows = manager.CompileCommandLines(cmdLine, new List<ResourceFile>(), "sas", 1, "job", OsType.Windows, "sbm", BatchManager.BatchType.Run)[0];
-            var linux = manager.CompileCommandLines(cmdLine, new List<ResourceFile>(), "sas", 1, "job", OsType.Linux, "sbm", BatchManager.BatchType.Run)[0];
+            var linux = manager.CompileCommandLines(cmdLine, new List<ResourceFile>(), "sas", 1, "job", OsType.Linux, BatchManager.BatchType.Run)[0];
 
-            Assert.IsFalse(windows.Contains("cmd /c set"));
             Assert.IsFalse(linux.Contains("printenv"));
+            StringAssert.StartsWith(linux, "/bin/sh -c '/app/sbm ");
+            Assert.IsFalse(linux.Contains("AZ_BATCH_APP_PACKAGE_"));
+        }
+
+        [TestMethod]
+        public void BatchManager_GetBatchContainerImage_NormalizesRegistryServer()
+        {
+            var cmdLine = new CommandLineArgs();
+            cmdLine.ContainerRegistryArgs.RegistryServer = "https://example.azurecr.io/";
+            cmdLine.ContainerRegistryArgs.ImageName = "sqlbuildmanager";
+            cmdLine.ContainerRegistryArgs.ImageTag = "latest-vNext";
+
+            var image = BatchManager.GetBatchContainerImage(cmdLine);
+
+            Assert.AreEqual("example.azurecr.io/sqlbuildmanager:latest-vNext", image);
         }
 
         [TestMethod]

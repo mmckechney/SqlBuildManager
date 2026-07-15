@@ -125,6 +125,7 @@ try {
         '--acr-identity', $postProvisionIdentityId,
         '--assign-identity', $postProvisionIdentityId,
         '--subnet', $aciSubnetId,
+        '--os-type', 'Linux',
         '--restart-policy', 'Never',
         '--cpu', '1',
         '--memory', '1.5',

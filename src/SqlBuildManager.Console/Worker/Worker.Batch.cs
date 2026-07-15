@@ -19,7 +19,6 @@ namespace SqlBuildManager.Console
             cmdLine.AciArgs = null!;
             cmdLine.ContainerAppArgs = null!;
             cmdLine.KubernetesArgs = null!;
-            cmdLine.ContainerRegistryArgs = null!;
 
             return SaveAndEncryptSettings(cmdLine, clearText);
         }

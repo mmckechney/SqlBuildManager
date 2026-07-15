@@ -42,7 +42,7 @@ namespace SqlBuildManager.Console.Batch
         private CommandLineArgs cmdLine;
 
         // Batch resource settings
-        private string PoolName = "SqlBuildManagerPoolWindows";
+        private string PoolName = "SqlBuildManagerPoolLinux";
         private const string JobIdFormat = "SqlBuildManagerJob{0}_{1}";
 
         private string queryFile = string.Empty;
@@ -97,25 +97,6 @@ namespace SqlBuildManager.Console.Batch
 
         public async Task<(int retval, string readOnlySas)> StartBatch(bool stream = false, bool unittest = false)
         {
-            string applicationPackage = string.Empty;
-            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ApplicationPackage))
-            {
-                switch (cmdLine.BatchArgs.BatchPoolOs)
-                {
-                    case OsType.Linux:
-                        applicationPackage = "SqlBuildManagerLinux";
-                        break;
-                    case OsType.Windows:
-                    default:
-                        applicationPackage = "SqlBuildManagerWindows";
-                        break;
-                }
-            }
-            else
-            {
-                applicationPackage = cmdLine.BatchArgs.ApplicationPackage;
-            }
-
             int cmdValid = ValidateBatchArgs(cmdLine, batchType);
             if (cmdValid != 0)
             {
@@ -305,7 +286,7 @@ namespace SqlBuildManager.Console.Batch
                 }
 
                 //Create the individual command lines for each node
-                IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, containerSasToken, cmdLine.BatchArgs.BatchNodeCount, jobId, cmdLine.BatchArgs.BatchPoolOs, applicationPackage, batchType);
+                IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, containerSasToken, cmdLine.BatchArgs.BatchNodeCount, jobId, cmdLine.BatchArgs.BatchPoolOs, batchType);
                 foreach (var s in commandLines)
                     log.LogDebug(s);
 
@@ -351,10 +332,9 @@ namespace SqlBuildManager.Console.Batch
 
                     CloudTask task = new CloudTask(taskId, taskCommandLine);
                     task.ResourceFiles = inputFiles;
-                    task.ApplicationPackageReferences = new List<ApplicationPackageReference>
-                        {
-                            new ApplicationPackageReference { ApplicationId = applicationPackage }
-                        };
+                    task.ContainerSettings = new TaskContainerSettings(
+                        imageName: GetBatchContainerImage(cmdLine),
+                        workingDirectory: ContainerWorkingDirectory.TaskWorkingDirectory);
                     task.OutputFiles = new List<OutputFile>
                         {
                             new OutputFile(
@@ -644,22 +624,35 @@ namespace SqlBuildManager.Console.Batch
             data.Identity = new ManagedServiceIdentity("UserAssigned");
             data.Identity!.UserAssignedIdentities![new ResourceIdentifier(cmdLine.IdentityArgs!.ResourceId)] = new Azure.ResourceManager.Models.UserAssignedIdentity();
 
-            BatchImageReference imageReference;
-            BatchVmConfiguration virtualMachineConfiguration;
-            switch (os)
+            if (os != OsType.Linux)
             {
-                case OsType.Linux:
-                    imageReference = new BatchImageReference() { Publisher = "microsoft-azure-batch", Offer = "ubuntu-server-container", Sku = "20-04-lts", Version = "latest" };
-                    virtualMachineConfiguration = new BatchVmConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.ubuntu 20.04");
-                    break;
-
-                case OsType.Windows:
-                default:
-                    imageReference = new BatchImageReference { Publisher = "MicrosoftWindowsServer", Offer = "WindowsServer", Sku = "2022-datacenter", Version = "latest" };
-                    virtualMachineConfiguration = new BatchVmConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.windows amd64");
-
-                    break;
+                throw new ArgumentException("Azure Batch container execution supports Linux pools only.");
             }
+
+            var containerImage = GetBatchContainerImage(cmdLine);
+            var registryServer = NormalizeRegistryServer(cmdLine.ContainerRegistryArgs.RegistryServer);
+            var containerRegistry = new BatchVmContainerRegistry()
+            {
+                RegistryServer = registryServer,
+                IdentityResourceId = new ResourceIdentifier(userAssignedResourceId)
+            };
+            var containerConfiguration = new BatchVmContainerConfiguration("dockerCompatible");
+            containerConfiguration.ContainerImageNames.Add(containerImage);
+            containerConfiguration.ContainerRegistries.Add(containerRegistry);
+
+            var imageReference = new BatchImageReference()
+            {
+                Publisher = "almalinux",
+                Offer = "almalinux-hpc",
+                Sku = "8-hpc-gen1",
+                Version = "latest"
+            };
+            var virtualMachineConfiguration = new BatchVmConfiguration(
+                imageReference: imageReference,
+                nodeAgentSkuId: "batch.node.el 8")
+            {
+                ContainerConfiguration = containerConfiguration
+            };
             data.DeploymentConfiguration = new BatchDeploymentConfiguration() { VmConfiguration = virtualMachineConfiguration };
             data.ScaleSettings = new BatchAccountPoolScaleSettings() { FixedScale = new BatchAccountFixedScaleSettings() { TargetDedicatedNodes = nodeCount } };
             data.VmSize = vmSize;
@@ -721,12 +714,40 @@ namespace SqlBuildManager.Console.Batch
                         var requestedSubnetId = data.NetworkConfiguration?.SubnetId?.ToString();
                         bool networkMismatch = !string.Equals(existingSubnetId ?? "", requestedSubnetId ?? "", StringComparison.OrdinalIgnoreCase);
 
-                        if (networkMismatch)
+                        var existingContainerConfiguration = poolresult.Value.Data.DeploymentConfiguration?.VmConfiguration?.ContainerConfiguration;
+                        bool containerConfigurationMismatch =
+                            existingContainerConfiguration == null ||
+                            !existingContainerConfiguration.ContainerImageNames.Contains(containerImage, StringComparer.OrdinalIgnoreCase) ||
+                            !existingContainerConfiguration.ContainerRegistries.Any(registry =>
+                                string.Equals(registry.RegistryServer, registryServer, StringComparison.OrdinalIgnoreCase) &&
+                                registry.IdentityResourceId == new ResourceIdentifier(userAssignedResourceId));
+
+                        var existingVmConfiguration = poolresult.Value.Data.DeploymentConfiguration?.VmConfiguration;
+                        var existingImageReference = existingVmConfiguration?.ImageReference;
+                        bool vmConfigurationMismatch =
+                            existingImageReference == null ||
+                            !string.Equals(existingImageReference.Publisher, imageReference.Publisher, StringComparison.OrdinalIgnoreCase) ||
+                            !string.Equals(existingImageReference.Offer, imageReference.Offer, StringComparison.OrdinalIgnoreCase) ||
+                            !string.Equals(existingImageReference.Sku, imageReference.Sku, StringComparison.OrdinalIgnoreCase) ||
+                            !string.Equals(existingVmConfiguration?.NodeAgentSkuId, virtualMachineConfiguration.NodeAgentSkuId, StringComparison.OrdinalIgnoreCase);
+
+                        if (networkMismatch || containerConfigurationMismatch || vmConfigurationMismatch)
                         {
-                            log.LogWarning($"The pool {poolId} network configuration does not match. Existing subnet: '{existingSubnetId ?? "none"}', Requested subnet: '{requestedSubnetId ?? "none"}'");
-                            log.LogWarning($"Deleting pool {poolId} to recreate with correct network configuration (subnet is immutable)...");
+                            if (networkMismatch)
+                            {
+                                log.LogWarning($"The pool {poolId} network configuration does not match. Existing subnet: '{existingSubnetId ?? "none"}', Requested subnet: '{requestedSubnetId ?? "none"}'");
+                            }
+                            if (containerConfigurationMismatch)
+                            {
+                                log.LogWarning($"The pool {poolId} does not have the requested container image and managed-identity registry configuration.");
+                            }
+                            if (vmConfigurationMismatch)
+                            {
+                                log.LogWarning($"The pool {poolId} does not use the requested Batch VM image and node agent.");
+                            }
+                            log.LogWarning($"Deleting pool {poolId} to recreate with immutable pool configuration...");
                             await poolresult.Value.DeleteAsync(Azure.WaitUntil.Completed);
-                            log.LogInformation($"Pool {poolId} deleted. Recreating with correct network configuration...");
+                            log.LogInformation($"Pool {poolId} deleted. Recreating with the requested configuration...");
 
                             ArmOperation<BatchAccountPoolResource> lro = await collection.CreateOrUpdateAsync(Azure.WaitUntil.Completed, poolId, data);
                             BatchAccountPoolResource result = lro.Value;
@@ -789,8 +810,13 @@ namespace SqlBuildManager.Console.Batch
         /// <param name="cmdLine"></param>
         /// <param name="poolNodeCount"></param>
         /// <returns></returns>
-        public IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles, string containerSasToken, int poolNodeCount, string jobId, OsType os, string applicationPackage, BatchType bType)
+        public IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles, string containerSasToken, int poolNodeCount, string jobId, OsType os, BatchType bType)
         {
+            if (os != OsType.Linux)
+            {
+                throw new ArgumentException("Azure Batch container execution supports Linux pools only.", nameof(os));
+            }
+
             // var z = inputFiles.Where(x => x.FilePath.ToLower().Contains(cmdLine.PackageName.ToLower())).FirstOrDefault();
 
             List<string> commandLines = new List<string>();
@@ -860,16 +886,7 @@ namespace SqlBuildManager.Console.Batch
                 //Set set the Sas URL
                 threadCmdLine.BatchArgs.OutputContainerSasUrl = containerSasToken;
 
-                StringBuilder sb = new StringBuilder();
-                switch (os)
-                {
-                    case OsType.Windows:
-                        sb.Append($"cmd /c %AZ_BATCH_APP_PACKAGE_{applicationPackage}%\\sbm.exe ");
-                        break;
-                    case OsType.Linux:
-                        sb.Append($"/bin/sh -c '$AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/sbm ");
-                        break;
-                }
+                StringBuilder sb = new StringBuilder("/bin/sh -c '/app/sbm ");
                 sb.Append($"--loglevel {threadCmdLine.LogLevel} batch ");
 
                 switch (bType)
@@ -881,15 +898,7 @@ namespace SqlBuildManager.Console.Batch
                         sb.Append("querythreaded ");
                         break;
                 }
-                switch (os)
-                {
-                    case OsType.Windows:
-                        sb.Append(threadCmdLine.ToBatchString());
-                        break;
-                    case OsType.Linux:
-                        sb.Append(threadCmdLine.ToBatchString() + "'");
-                        break;
-                }
+                sb.Append(threadCmdLine.ToBatchString() + "'");
 
 
 
@@ -897,6 +906,20 @@ namespace SqlBuildManager.Console.Batch
             }
 
             return commandLines;
+        }
+
+        internal static string GetBatchContainerImage(CommandLineArgs cmdLine)
+        {
+            var registryServer = NormalizeRegistryServer(cmdLine.ContainerRegistryArgs.RegistryServer);
+            return $"{registryServer}/{cmdLine.ContainerRegistryArgs.ImageName}:{cmdLine.ContainerRegistryArgs.ImageTag}";
+        }
+
+        private static string NormalizeRegistryServer(string registryServer)
+        {
+            return registryServer
+                .Trim()
+                .Replace("https://", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .TrimEnd('/');
         }
 
         /// <summary>

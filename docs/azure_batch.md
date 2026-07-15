@@ -3,7 +3,7 @@
 - [Why use Azure Batch?](#why-use-azure-batch)
   - [Process Flow](massively_parallel.md#process-flow-details)
 - [Getting Started](#getting-started)
-- [Upload or Update SQL Build Manager binaries](#upload-or-update-sql-build-manager-binaries)
+- [Build or update the SQL Build Manager container](#build-or-update-the-sql-build-manager-container)
 - [Running a Batch Build](#running-a-batch-build)
 - [Alternative run options](#alternative-run-options)
 - [Examples](#examples)
@@ -20,7 +20,8 @@ To leverage Azure Batch, you will need an [Azure subscription](https://azure.mic
 ## Get Started
 
 1. Set Up you Azure resources. For this, leverage the automation script as explained [here](massively_parallel.md)
-2. [Upload SQL Build Manager binaries](#upload-or-update-sql-build-manager-binaries) to Batch - if you ran the scripts from step 1, you have already uploaded a local build!
+2. [Build the SQL Build Manager container](#build-or-update-the-sql-build-manager-container). If
+   you ran `azd up`, the image was already built remotely in ACR.
 3. [Run a Batch build](#running-a-batch-build) 
 
     - [Settings File](#settings-file) - simplify your command line by saving the most re-used arguments in an encrypted JSON file
@@ -38,27 +39,28 @@ To leverage Azure Batch, you will need an [Azure subscription](https://azure.mic
 
 ----
 
-## Upload or Update SQL Build Manager binaries
+## Build or update the SQL Build Manager container
 
-**_Note_**: If you ran `azd up` from [Setting up an Azure Environment](setup_azure_environment.md), the Batch application packages were already uploaded for you.
+Azure Batch runs SQL Build Manager in a Linux container. Application packages are not used because
+they are incompatible with the firewalled/private-only linked Storage account.
 
-But, if you want to do it manually:
+`azd up` builds the runtime image remotely with ACR Tasks:
 
-1. First, make sure you have a build of SQL Build Manager either from [GitHub Release](https://github.com/mmckechney/SqlBuildManager/releases) or built locally:
-    - Clone/pull from [Github](https://github.com/mmckechney/SqlBuildManager)
-    - Build locally either in Visual Studio or via command line:
+```text
+<registry>.azurecr.io/sqlbuildmanager:latest-vNext
+```
 
-      ```bash
-        cd ./src/SqlBuildManager.Console
-        dotnet publish sbm.csproj -r [win-x64 or linux-x64] --configuration [Debug or Release] -f net10.0 --self-contained
-      ```
+To rebuild only the runtime image:
 
-2. Zip up all of the files in the publish folder - or grab the latest release Zip file from [GitHub](https://github.com/mmckechney/SqlBuildManager/releases/latest)
-3. In the Azure Portal, navigate to your Azure Batch account and click the "Applications" blade.
-4. Click the "+ Add" link
-5. Fill in the Application Id with "SqlBuildManagerWindows" (no quotes) for Windows or "SqlBuildManagerLinux" for Linux and the version field (can be any alpha-numeric) 
-6. Use the folder icon to select your zip file that contains the compiled binaries
-7. Click the "OK" button - this will upload your zip package and it will now show up in the Application list
+```powershell
+.\scripts\ContainerRegistry\build_runtime_image_fromprefix.ps1 `
+  -prefix <prefix> `
+  -resourceGroupName <prefix>-rg `
+  -wait $true
+```
+
+The Batch pool uses its user-assigned managed identity to pull the image from ACR. No registry
+password is required.
 
 ----
 
@@ -66,7 +68,11 @@ But, if you want to do it manually:
 
 (For a full end-to-end example, see [this document](./azure_batch_example.md))
 
-Azure Batch builds are started locally via `sbm.exe`. This process communicates with the Azure Storage account and Azure Batch account to execute across the pool of Batch compute nodes. The number of nodes that are provisioned is determined by your command line arguments.
+Azure Batch builds are started locally via `sbm.exe`. This process communicates with the Azure
+Storage account and Azure Batch account to execute Linux container tasks across the pool of Batch
+compute nodes. The number of nodes that are provisioned is determined by your command line
+arguments. The initiating machine must have network access to the private Storage endpoint to stage
+input files.
 
 ### Settings File
 
@@ -96,14 +102,15 @@ Instead of using a Service Bus Topic, you can target your databases with the `--
 
 This will start the following process:
 
-1. Validate the provided command line arguments for completeness
+1. Validate the provided command line arguments and Linux container image settings
 2. The target database list is split into pieces for distribution to the compute nodes (only if using the `--override` argument and not using Service Bus)
 3. The resource files are uploaded to the Storage account
-4. The workload tasks are send to Azure Batch and distributed to each compute node
-5. The local executable polls for node status, waiting for each to complete
-6. Once complete, the aggregate return code is used as the exit code for `sbm`
-7. The log files for each of the nodes is uploaded to the Storage account associated with the Batch
-8. A SaS token URL to get read-only access to the log files is included in the console output. You can also view these files via the Azure portal or the [Azure Batch Explorer](https://azure.github.io/BatchExplorer/)
+4. A container-enabled AlmaLinux 8 Gen1 pool pulls the runtime image from ACR with managed identity
+5. The workload tasks are sent to Azure Batch and run `/app/sbm` inside the container
+6. The local executable polls for node status, waiting for each to complete
+7. Once complete, the aggregate return code is used as the exit code for `sbm`
+8. The log files for each of the nodes is uploaded to the Storage account associated with the Batch
+9. A SaS token URL to get read-only access to the log files is included in the console output. You can also view these files via the Azure portal or the [Azure Batch Explorer](https://azure.github.io/BatchExplorer/)
 
 ### 4. Inspect logs if an issue is reported
 
@@ -137,6 +144,4 @@ sbm.exe batch run --settingsfile="C:\temp\my_settings.json" --settingsfilekey="C
 ## Log Details
 
 For details on the log files that are created during a Batch run, see the [Log Details page](threaded_and_batch_logs.md). There is also a section on [troubleshooting tips](threaded_and_batch_logs.md#troubleshooting-tips)
-
-
 

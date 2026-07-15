@@ -13,6 +13,11 @@
     "BatchPoolOs": "Linux",
     "JobMonitorTimeout": 30
   },
+  "ContainerRegistryArgs": {
+    "RegistryServer": "sbmXXXXXcontainerregistry.azurecr.io",
+    "ImageName": "sqlbuildmanager",
+    "ImageTag": "latest-vNext"
+  },
   "ConnectionArgs": {
     "EventHubConnectionString": "sbmXXXeventhubnamespace|sbmXXXeventhub",
     "StorageAccountName": "sbmXXXstorage",

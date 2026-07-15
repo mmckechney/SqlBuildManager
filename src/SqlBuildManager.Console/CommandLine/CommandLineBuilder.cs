@@ -175,7 +175,7 @@ namespace SqlBuildManager.Console.CommandLine
         internal static Option<bool> pollbatchpoolstatusOption = new Option<bool>("--pollbatchpoolstatus", "--poll") { Description = "Whether or not you want to get updated status (true) or fire and forget (false)" };
 
         /// <summary>
-        /// Batch Compute Options including: --batchresourcegroup, --batchpoolos, --batchpoolname, --batchnodecount, --batchvmsize, --applicationpackage, --deletebatchpool
+        /// Batch Compute Options including pool, VM, network, and container image settings.
         /// </summary>
         private static List<Option> BatchComputeOptions
         {
@@ -188,20 +188,21 @@ namespace SqlBuildManager.Console.CommandLine
                     batchpoolnameOption,
                     batchnodecountOption,
                     batchvmsizeOption,
-                    batchApplicationOption,
+                    imageTagOption,
+                    imageNameOption,
+                    imageRepositoryOption,
                     deletebatchpoolOption
                 };
                 list.AddRange(VnetOptions);
                 return list;
             }
         }
-        internal static Option<OsType> batchpoolOsOption = new Option<OsType>("--batchpoolos", "--os", "-os") { Description = "Operating system for the Azure Batch nodes. Windows is default" };
+        internal static Option<OsType> batchpoolOsOption = new Option<OsType>("--batchpoolos", "--os", "-os") { Description = "Operating system for Azure Batch container nodes. Linux is required" };
         internal static Option<int> batchnodecountOption = new Option<int>("--batchnodecount", "--nodecount") { Description = "Number of nodes to provision to run the batch job" };
         internal static Option<string> batchvmsizeOption = new Option<string>("--batchvmsize", "--vmsize") { Description = "Size key for VM size required (see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general) " };
         internal static Option<string> batchResourceGroupOption = new Option<string>("--batchresourcegroup", "--batchrg") { Description = "The Resource Group name for the Batch Account" };
         internal static Option<string> batchpoolnameOption = new Option<string>("--poolname", "--batchpoolname") { Description = "Override for the default pool name of \"SqlBuildManagerPool\"" };
         internal static Option<bool> deletebatchpoolOption = new Option<bool>("--deletebatchpool") { Description = "Whether or not to delete the batch pool servers after an execution" };
-        internal static Option<string> batchApplicationOption = new Option<string>("--applicationpackage", "--apppackage") { Description = "The Azure Batch application package name. (Default is 'SqlBuildManagerWindows' for Windows and 'SqlBuildManagerLinux' for Linux" };
         internal static Option<string> outputcontainersasurlOption = new Option<string>("--outputcontainersasurl") { Description = "[Internal only] Runtime storage SAS url (auto-generated from `sbm batch run` command" , Hidden = true };
         internal static Option<int> batchJobMonitorTimeoutMin = new Option<int>("--batchjobmonitortimeout", "--monitortimeout") { Description = "Timeout (in minutes) for the batch job monitor to wait for the job to complete. Default is 30 minutes" };
 

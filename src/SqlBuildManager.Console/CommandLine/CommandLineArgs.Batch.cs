@@ -96,15 +96,6 @@ namespace SqlBuildManager.Console.CommandLine
             }
         }
         [JsonIgnore]
-        public virtual string ApplicationPackage
-        {
-            set
-            {
-                BatchArgs.ApplicationPackage = value;
-                this.DirectPropertyChangeTracker.Add("Batch.ApplicationPackage");
-            }
-        }
-        [JsonIgnore]
         public virtual string BatchResourceGroup
         {
             set
@@ -145,8 +136,7 @@ namespace SqlBuildManager.Console.CommandLine
             public bool PollBatchPoolStatus { get; set; } = true;
             public string BatchPoolName { get; set; } = null!;
             [JsonConverter(typeof(JsonStringEnumConverter))]
-            public OsType BatchPoolOs { get; set; }
-            public string ApplicationPackage { get; set; } = string.Empty;
+            public OsType BatchPoolOs { get; set; } = OsType.Linux;
             public int JobMonitorTimeout { get; set; } = 30;
             
         }

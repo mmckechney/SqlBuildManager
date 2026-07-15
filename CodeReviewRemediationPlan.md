@@ -480,6 +480,11 @@ The repository lacks a contributor/local-dependent-test setup guide. Numeric exi
 
 **Measurement/acceptance:** Compare a fixed representative workload before and after; production packages must identify and contain Release output.
 
+**Implementation update (2026-07-15):** Azure Batch application packages were replaced by the
+Release-built `sqlbuildmanager:latest-vNext` Linux container image in ACR. Batch pools now use
+managed identity for ACR pulls and run `/app/sbm` in Linux container tasks. Azure accepted the
+AlmaLinux 8 Gen1 container pool with the default `STANDARD_D1_V2` VM size.
+
 ### PERF-002 - Connection pooling is disabled for both database platforms
 
 **Impact:** High  
@@ -693,7 +698,7 @@ No BenchmarkDotNet project, representative load test, connection/round-trip budg
 - Several Azure operations already use Polly exponential backoff.
 - SMO default initialization fields are configured to avoid property-fetch round trips.
 - Event Hub producers and batches are reused.
-- Batch application packages are staged on pool nodes rather than downloaded for each task.
+- Batch runtime container images are prefetched from ACR onto pool nodes with managed identity.
 - AKS autoscaling/workload identity and explicit ACI resource requests are configured.
 
 ## Consolidated Remediation Roadmap

@@ -98,14 +98,13 @@ when no application compute platform was selected.
 The hook currently also sets these values to `true` on every run:
 
 ```text
-BUILD_BATCH_PACKAGES
 BUILD_CONTAINER_IMAGES
 GENERATE_MI_SETTINGS
 ```
 
-Consequently, selected Batch packages and the runtime/test container images are rebuilt during each
-`azd up`. Setting these values to `false` before `azd up` is not persistent because the pre-provision
-hook writes them back to `true`.
+Consequently, the runtime/test container images are rebuilt during each `azd up`. Setting these
+values to `false` before `azd up` is not persistent because the pre-provision hook writes them back
+to `true`.
 
 ### Generate the PostgreSQL local administrator password
 
@@ -317,6 +316,7 @@ The hook creates:
 
 with:
 
+- Linux as the explicit container-group operating system.
 - The post-provision user-assigned managed identity.
 - Identity-based ACR pull.
 - The delegated ACI subnet.
@@ -474,20 +474,40 @@ pg-pw.txt
 These files support local and integration-test configuration. `src/TestConfig` is excluded by
 `.gitignore`; do not copy these files into source control or logs.
 
-### Batch application packages
-
-When Batch is selected and `BUILD_BATCH_PACKAGES=true`, the hook builds and uploads the Batch
-application packages required by distributed execution.
-
 ### Application and test container images
 
 When `BUILD_CONTAINER_IMAGES=true`, the hook remotely builds:
 
-- The SQL Build Manager runtime image.
+- The SQL Build Manager runtime image, used by Linux Azure Batch container tasks and other compute
+  targets.
 - The external-test image.
 - The dependent-test image.
 
 These are separate from the always-built private bootstrap image.
+
+### Azure Batch container execution
+
+Batch application packages are not used. Azure Batch does not support application packages when its
+linked Storage account is protected by firewall rules or private-only networking.
+
+Generated Batch settings reference:
+
+```text
+<prefix>containerregistry.azurecr.io/sqlbuildmanager:latest-vNext
+```
+
+At execution time SQL Build Manager:
+
+1. Creates a Linux AlmaLinux 8 Gen1 container-enabled Batch pool compatible with the default
+   `STANDARD_D1_V2` VM size.
+2. Assigns `<prefix>identity` to the pool.
+3. Uses that identity's `AcrPull` role to prefetch the runtime image.
+4. Runs each task in the image with `/app/sbm`.
+5. Mounts the Batch task working directory into the container for input and output files.
+
+Only Linux Batch settings are generated. If an existing pool lacks the requested container
+configuration, SQL Build Manager deletes and recreates it because the VM/container configuration is
+immutable.
 
 ## Identity summary
 
@@ -509,7 +529,7 @@ The deployment is designed to be rerunnable:
 - Generated local configuration files are refreshed.
 - The deploying user is restored as SQL administrator after every bootstrap run.
 
-Because package and image build flags are reset to `true` by the pre-provision hook, reruns can take
+Because the image build flag is reset to `true` by the pre-provision hook, reruns can take
 significantly longer than a Bicep-only update.
 
 ## Troubleshooting

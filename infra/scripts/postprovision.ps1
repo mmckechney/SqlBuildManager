@@ -168,33 +168,6 @@ if ($pgDeployedForConfig -eq "true") {
     }
 }
 
-
-# Build and upload Batch application packages (only if Batch is deployed)
-$buildBatch = Get-AzdEnvValue "BUILD_BATCH_PACKAGES"
-$batchDeployed = Get-AzdEnvValue "DEPLOY_BATCH"
-if ($buildBatch -eq "true" -and $batchDeployed -ne "false") {
-    Write-Host ""
-    Write-Host "====================================================" -ForegroundColor Cyan
-    Write-Host "Post-Provision: Building Batch Application Packages" -ForegroundColor Cyan
-    Write-Host "====================================================" -ForegroundColor Cyan
-    
-    $batchScriptPath = Join-Path $repoRoot "scripts\Batch\build_and_upload_batch_fromprefix.ps1"
-    $outputPath = Join-Path $repoRoot "src\TestConfig"
-    
-    if (Test-Path $batchScriptPath) {
-        & $batchScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -action "BuildAndUpload"
-    } else {
-        Write-Host "Batch build script not found at: $batchScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\Batch\build_and_upload_batch_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
-    }
-} else {
-    Write-Host ""
-    Write-Host "Tip: Set BUILD_BATCH_PACKAGES=true to build and upload Batch application packages" -ForegroundColor DarkGray
-    Write-Host "  azd env set BUILD_BATCH_PACKAGES true" -ForegroundColor DarkGray
-}
-
-
-
 # Build and push Docker container images (only if Container Registry is deployed)
 $buildContainers = Get-AzdEnvValue "BUILD_CONTAINER_IMAGES"
 $crDeployed = "true"
@@ -276,6 +249,5 @@ Write-Host ""
 Write-Host "Application code should use DefaultAzureCredential for authentication." -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Environment variables to enable optional post-provision steps:" -ForegroundColor Cyan
-Write-Host "  BUILD_BATCH_PACKAGES=true   - Build and upload Batch application packages" -ForegroundColor DarkGray
 Write-Host "  BUILD_CONTAINER_IMAGES=true - Build and push Docker container images to ACR" -ForegroundColor DarkGray
 Write-Host "  GENERATE_MI_SETTINGS=true   - Generate MI-only settings files for testing" -ForegroundColor DarkGray

@@ -69,6 +69,7 @@ Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 
 # Get resource information
 $batchAcctEndpoint = az batch account show --name $batchAccountName --resource-group $resourceGroupName -o tsv --query "accountEndpoint"
+$registryServer = az acr show --name $containerRegistryName --resource-group $resourceGroupName -o tsv --query "loginServer"
 $identity = az identity show --resource-group $resourceGroupName --name $identityName | ConvertFrom-Json
 $subscriptionId = az account show -o tsv --query id
 $tenantId = az account show -o tsv --query tenantId
@@ -78,12 +79,16 @@ Write-Host "Using Storage Account: $storageAccountName" -ForegroundColor DarkGre
 Write-Host "Using Event Hub Namespace: $eventHubNamespaceName" -ForegroundColor DarkGreen
 Write-Host "Using Service Bus Namespace: $serviceBusNamespaceName" -ForegroundColor DarkGreen
 Write-Host "Using Managed Identity: $identityName (ClientId: $($identity.clientId))" -ForegroundColor DarkGreen
+Write-Host "Using Batch Container Image: $registryServer/sqlbuildmanager:latest-vNext" -ForegroundColor DarkGreen
 
 # Output file paths
 $settingsJsonLinuxMiOnly = Join-Path $path "settingsfile-batch-linux-mi-only.json"
-$settingsJsonWindowsMiOnly = Join-Path $path "settingsfile-batch-windows-mi-only.json"
 $settingsJsonLinuxQueueMiOnly = Join-Path $path "settingsfile-batch-linux-queue-mi-only.json"
-$settingsJsonWindowsQueueMiOnly = Join-Path $path "settingsfile-batch-windows-queue-mi-only.json"
+$staleWindowsSettings = @(
+    (Join-Path $path "settingsfile-batch-windows-mi-only.json"),
+    (Join-Path $path "settingsfile-batch-windows-queue-mi-only.json")
+)
+$staleWindowsSettings | Where-Object { Test-Path $_ } | Remove-Item -Force
 
 # Settings file key
 $keyFile = Join-Path $path "settingsfilekey.txt"
@@ -115,6 +120,9 @@ $baseParams += @("--tenantid", $tenantId)
 $baseParams += @("--subscriptionid", $subscriptionId)
 $baseParams += @("--clientid", $identity.clientId)
 $baseParams += @("--principalid", $identity.principalId)
+$baseParams += @("--registryserver", $registryServer)
+$baseParams += @("--imagename", "sqlbuildmanager")
+$baseParams += @("--imagetag", "latest-vNext")
 
 $baseParams += @("--authtype", "AzureADDefault") #use this for local testing, will be overridden to ManagedIdentity in ACI
 $baseParams += @("--silent")
@@ -129,8 +137,7 @@ if ($vnet -ne "" -and $batchSubnet -ne "") {
     $baseParams += @("--vnetrg", $resourceGroupName)
 }
 
-# OS-specific parameters
-$winParams = @("--batchpoolname", "SqlBuildManagerPoolWindows", "-os", "Windows")
+# Linux container pool parameters
 $linuxParams = @("--batchpoolname", "SqlBuildManagerPoolLinux", "-os", "Linux")
 
 # Event Hub (namespace only, no connection string)
@@ -152,25 +159,11 @@ $tmpPath = @("--settingsfile", $settingsJsonLinuxMiOnly)
 $allArgs = $baseParams + $linuxParams + $tmpPath + $ehNameParam
 & $sbmExe $allArgs
 
-# Windows with Event Hub logging only
-if (Test-Path $settingsJsonWindowsMiOnly) { Remove-Item $settingsJsonWindowsMiOnly }
-Write-Host "Saving MI-only settings file to $settingsJsonWindowsMiOnly" -ForegroundColor DarkGreen
-$tmpPath = @("--settingsfile", $settingsJsonWindowsMiOnly)
-$allArgs = $baseParams + $winParams + $tmpPath + $ehNameParam
-& $sbmExe $allArgs
-
 # Linux with Service Bus Queue
 if (Test-Path $settingsJsonLinuxQueueMiOnly) { Remove-Item $settingsJsonLinuxQueueMiOnly }
 Write-Host "Saving MI-only settings file to $settingsJsonLinuxQueueMiOnly" -ForegroundColor DarkGreen
 $tmpPath = @("--settingsfile", $settingsJsonLinuxQueueMiOnly)
 $allArgs = $baseParams + $linuxParams + $tmpPath + $sbNamespaceParam + $ehNameParam
-& $sbmExe $allArgs
-
-# Windows with Service Bus Queue
-if (Test-Path $settingsJsonWindowsQueueMiOnly) { Remove-Item $settingsJsonWindowsQueueMiOnly }
-Write-Host "Saving MI-only settings file to $settingsJsonWindowsQueueMiOnly" -ForegroundColor DarkGreen
-$tmpPath = @("--settingsfile", $settingsJsonWindowsQueueMiOnly)
-$allArgs = $baseParams + $winParams + $tmpPath + $sbNamespaceParam + $ehNameParam
 & $sbmExe $allArgs
 
 Write-Host ""
@@ -185,6 +178,4 @@ Write-Host "  Client ID: $($identity.clientId)" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Files created:" -ForegroundColor Yellow
 Write-Host "  - $settingsJsonLinuxMiOnly" -ForegroundColor Yellow
-Write-Host "  - $settingsJsonWindowsMiOnly" -ForegroundColor Yellow
 Write-Host "  - $settingsJsonLinuxQueueMiOnly" -ForegroundColor Yellow
-Write-Host "  - $settingsJsonWindowsQueueMiOnly" -ForegroundColor Yellow

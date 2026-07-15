@@ -250,7 +250,6 @@ namespace SqlBuildManager.Console.CommandLine
             _registry.Register(CommandLineBuilder.batchvmsizeOption, (args, v) => args.BatchVmSize = v);
             _registry.Register(CommandLineBuilder.batchResourceGroupOption, (args, v) => args.BatchResourceGroup = v);
             _registry.Register(CommandLineBuilder.batchpoolnameOption, (args, v) => args.BatchPoolName = v);
-            _registry.Register(CommandLineBuilder.batchApplicationOption, (args, v) => args.ApplicationPackage = v);
             _registry.Register(CommandLineBuilder.outputcontainersasurlOption, (args, v) => args.OutputContainerSasUrl = v);
             _registry.Register(CommandLineBuilder.batchJobMonitorTimeoutMin, (args, v) => args.BatchJobMonitorTimeout = v);
         }
