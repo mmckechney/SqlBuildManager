@@ -70,14 +70,20 @@ try {
     Copy-Item (Join-Path $repoRoot 'scripts/Database/grant_pg_identity_permissions.ps1') (Join-Path $tempBuildContext 'scripts/Database/grant_pg_identity_permissions.ps1')
 
     Write-Host "Building private post-provision image remotely in ACR..." -ForegroundColor Cyan
-    Invoke-Az -Arguments @(
-        'acr', 'build',
-        '--registry', $containerRegistryName,
-        '--resource-group', $resourceGroupName,
-        '--image', $imageName,
-        '--file', 'Dockerfile',
-        $tempBuildContext
-    ) -FailureMessage 'The ACR build for the private post-provision image failed.'
+    Push-Location $tempBuildContext
+    try {
+        Invoke-Az -Arguments @(
+            'acr', 'build',
+            '--registry', $containerRegistryName,
+            '--resource-group', $resourceGroupName,
+            '--image', $imageName,
+            '--file', 'Dockerfile',
+            '.'
+        ) -FailureMessage 'The ACR build for the private post-provision image failed.'
+    }
+    finally {
+        Pop-Location
+    }
 
     if ($deploySqlServer) {
         $sqlServers = @(az sql server list --resource-group $resourceGroupName --query '[].name' -o tsv)
