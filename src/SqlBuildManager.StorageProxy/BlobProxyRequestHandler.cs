@@ -76,6 +76,38 @@ internal sealed class BlobProxyRequestHandler
                 return;
             }
 
+            if (context.Request.HttpMethod == "GET" &&
+                segments.Length == 3 &&
+                segments[2] == "blobs")
+            {
+                var prefix = GetQueryValue(context.Request.Url, "prefix");
+                if (prefix?.Length > 1024)
+                {
+                    await WriteErrorAsync(context, HttpStatusCode.BadRequest, "Blob prefix cannot exceed 1024 characters.");
+                    return;
+                }
+
+                var blobs = new List<object>();
+                await foreach (var blob in container.GetBlobsAsync(
+                    BlobTraits.None,
+                    BlobStates.None,
+                    prefix,
+                    CancellationToken.None))
+                {
+                    blobs.Add(new
+                    {
+                        name = blob.Name,
+                        contentLength = blob.Properties.ContentLength ?? 0,
+                        contentType = blob.Properties.ContentType,
+                        lastModified = blob.Properties.LastModified,
+                        blobType = blob.Properties.BlobType?.ToString()
+                    });
+                }
+
+                await WriteJsonAsync(context, HttpStatusCode.OK, new { blobs });
+                return;
+            }
+
             if (context.Request.HttpMethod == "DELETE" && segments.Length == 2)
             {
                 var deleted = await container.DeleteIfExistsAsync();
@@ -313,8 +345,13 @@ internal sealed class BlobProxyRequestHandler
     private static bool IsValidBlobName(string blobName) =>
         !string.IsNullOrWhiteSpace(blobName) &&
         blobName.Length <= 1024 &&
-        !blobName.Contains('/') &&
-        !blobName.Contains('\\');
+        !blobName.Contains('\\') &&
+        !blobName.StartsWith('/') &&
+        !blobName.EndsWith('/') &&
+        blobName.Split('/').All(segment =>
+            !string.IsNullOrEmpty(segment) &&
+            segment != "." &&
+            segment != "..");
 
     private static string? GetQueryValue(Uri uri, string key)
     {

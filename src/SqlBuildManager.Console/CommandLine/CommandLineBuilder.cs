@@ -501,6 +501,7 @@ namespace SqlBuildManager.Console.CommandLine
             rootCommand.Add(KubernetesCommand);
             rootCommand.Add(AciCommand);
             rootCommand.Add(BatchCommand);
+            rootCommand.Add(StorageCommand);
             rootCommand.Add(UtilityCommand);
             rootCommand.Add(CreateCommand);
             rootCommand.Add(AddScriptsCommand);

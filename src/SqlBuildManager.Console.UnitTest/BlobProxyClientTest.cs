@@ -2,7 +2,10 @@ using Azure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CloudStorage;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console.UnitTest
 {
@@ -56,6 +59,49 @@ namespace SqlBuildManager.Console.UnitTest
         public void IsFallbackEligible_NetworkFailure_ReturnsTrue()
         {
             Assert.IsTrue(BlobProxyClient.IsFallbackEligible(new HttpRequestException("Network unavailable.")));
+        }
+
+        [TestMethod]
+        public void GetSafeDownloadPath_NestedBlob_PreservesRelativePath()
+        {
+            var root = Path.Combine(Path.GetTempPath(), "blob-download");
+
+            var result = BlobProxyClient.GetSafeDownloadPath(root, "worker-1/logs/results.csv");
+
+            Assert.AreEqual(
+                Path.Combine(Path.GetFullPath(root), "worker-1", "logs", "results.csv"),
+                result);
+        }
+
+        [TestMethod]
+        [DataRow("../secret.txt")]
+        [DataRow("worker/../../secret.txt")]
+        [DataRow("/rooted.txt")]
+        [DataRow("worker\\secret.txt")]
+        [DataRow("worker/file?.txt")]
+        public void GetSafeDownloadPath_UnsafeBlobName_ThrowsArgumentException(string blobName)
+        {
+            Assert.ThrowsExactly<ArgumentException>(
+                () => BlobProxyClient.GetSafeDownloadPath(Path.GetTempPath(), blobName));
+        }
+
+        [TestMethod]
+        public async Task DownloadBlobsAsync_NoBlobNames_ThrowsArgumentException()
+        {
+            var client = new BlobProxyClient("https://example.servicebus.windows.net/blobupload");
+
+            await Assert.ThrowsExactlyAsync<ArgumentException>(
+                () => client.DownloadBlobsAsync("container", [], Path.GetTempPath()));
+        }
+
+        [TestMethod]
+        public async Task DownloadBlobsAsync_UnsafeSelection_ValidatesBeforeSending()
+        {
+            var client = new BlobProxyClient("https://example.servicebus.windows.net/blobupload");
+            var blobNames = new List<string> { "safe.txt", "../unsafe.txt" };
+
+            await Assert.ThrowsExactlyAsync<ArgumentException>(
+                () => client.DownloadBlobsAsync("container", blobNames, Path.GetTempPath()));
         }
     }
 }

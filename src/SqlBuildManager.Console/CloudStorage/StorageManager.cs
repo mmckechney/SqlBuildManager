@@ -580,7 +580,34 @@ namespace SqlBuildManager.Console.CloudStorage
             !string.IsNullOrWhiteSpace(BlobProxyEndpoint) &&
             BlobProxyClient.IsFallbackEligible(exception);
 
-        private static BlobProxyClient CreateBlobProxyClient() => new(BlobProxyEndpoint);
+        private static BlobProxyClient CreateBlobProxyClient() =>
+            string.IsNullOrWhiteSpace(BlobProxyEndpoint)
+                ? throw new InvalidOperationException("A Blob proxy endpoint is required to use Azure Relay.")
+                : new BlobProxyClient(BlobProxyEndpoint);
+
+        /// <summary>
+        /// Lists blobs through the configured Azure Relay proxy, optionally restricted by prefix.
+        /// </summary>
+        public static Task<IReadOnlyList<BlobProxyFile>> EnumerateBlobFilesThroughRelayAsync(
+            string containerName,
+            string prefix = "",
+            CancellationToken cancellationToken = default) =>
+            CreateBlobProxyClient().ListBlobsAsync(containerName, prefix, cancellationToken);
+
+        /// <summary>
+        /// Downloads the selected blobs through the configured Azure Relay proxy.
+        /// Nested blob paths are preserved beneath <paramref name="destinationDirectory"/>.
+        /// </summary>
+        public static Task<IReadOnlyList<string>> DownloadBlobFilesThroughRelayAsync(
+            string containerName,
+            IEnumerable<string> blobNames,
+            string destinationDirectory,
+            CancellationToken cancellationToken = default) =>
+            CreateBlobProxyClient().DownloadBlobsAsync(
+                containerName,
+                blobNames,
+                destinationDirectory,
+                cancellationToken);
 
         private static ResourceFile CreateBatchResourceFile(
             string blobUrl,

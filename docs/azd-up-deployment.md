@@ -457,8 +457,44 @@ assigned to ACI.
 
 Generated managed-identity settings include `--blobproxyendpoint`. SQL Build Manager first attempts
 Blob operations directly with Entra authentication. Network and Storage authorization failures fall
-back to the Relay proxy. The proxy supports container lifecycle checks, streamed upload/download,
-and server-side log/query consolidation; it returns ordinary Blob URLs, never SAS URLs.
+back to the Relay proxy. The proxy supports container lifecycle checks, blob enumeration with an
+optional prefix, streamed upload/download, and server-side log/query consolidation; it returns
+ordinary Blob URLs, never SAS URLs.
+
+Code that explicitly needs Relay can enumerate a container and download any selected subset:
+
+```csharp
+var files = await StorageManager.EnumerateBlobFilesThroughRelayAsync(
+    "batch-output",
+    prefix: "worker-1/");
+
+var downloaded = await StorageManager.DownloadBlobFilesThroughRelayAsync(
+    "batch-output",
+    files.Where(file => file.Name.EndsWith(".log")).Select(file => file.Name),
+    @"C:\temp\batch-output");
+```
+
+Nested blob paths are preserved beneath the destination directory. Unsafe names that could escape
+that directory are rejected before any download begins.
+
+The same operations are available from the local CLI. The settings file supplies the Relay
+endpoint and identity configuration:
+
+```powershell
+sbm storage list `
+  --settingsfile .\src\TestConfig\settingsfile-aci-mi-only.json `
+  --container batch-output `
+  --prefix worker-1/
+
+sbm storage download `
+  --settingsfile .\src\TestConfig\settingsfile-aci-mi-only.json `
+  --container batch-output `
+  --blob worker-1/commits.log worker-2/commits.log `
+  --outputpath C:\temp\batch-output
+```
+
+Blob names use `/` separators even on Windows. The download command prints each local file path
+after it is saved.
 
 ### Managed-identity settings files
 

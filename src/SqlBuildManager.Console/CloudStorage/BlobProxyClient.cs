@@ -2,7 +2,9 @@ using Azure;
 using Azure.Core;
 using SqlBuildManager.Console.Aad;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -143,6 +145,64 @@ namespace SqlBuildManager.Console.CloudStorage
             await source.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task<IReadOnlyList<BlobProxyFile>> ListBlobsAsync(
+            string containerName,
+            string prefix = "",
+            CancellationToken cancellationToken = default)
+        {
+            var path = $"containers/{Escape(containerName)}/blobs";
+            if (!string.IsNullOrEmpty(prefix))
+            {
+                path += $"?prefix={Escape(prefix)}";
+            }
+
+            using var response = await SendAsync(
+                HttpMethod.Get,
+                path,
+                null,
+                cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            var result = await JsonSerializer.DeserializeAsync<ListBlobsResponse>(
+                stream,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+            return result?.Blobs ?? [];
+        }
+
+        public async Task<IReadOnlyList<string>> DownloadBlobsAsync(
+            string containerName,
+            IEnumerable<string> blobNames,
+            string destinationDirectory,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(blobNames);
+            var names = blobNames.Distinct(StringComparer.Ordinal).ToArray();
+            if (names.Length == 0)
+            {
+                throw new ArgumentException("At least one blob name is required.", nameof(blobNames));
+            }
+
+            var downloads = names
+                .Select(blobName => new
+                {
+                    BlobName = blobName,
+                    DestinationPath = GetSafeDownloadPath(destinationDirectory, blobName)
+                })
+                .ToArray();
+            var downloadedFiles = new List<string>(downloads.Length);
+            foreach (var download in downloads)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(download.DestinationPath)!);
+                await DownloadBlobAsync(
+                    containerName,
+                    download.BlobName,
+                    download.DestinationPath,
+                    cancellationToken).ConfigureAwait(false);
+                downloadedFiles.Add(download.DestinationPath);
+            }
+
+            return downloadedFiles;
+        }
+
         public static bool IsFallbackEligible(Exception exception) =>
             exception is HttpRequestException or TaskCanceledException ||
             exception is RequestFailedException requestFailed &&
@@ -201,6 +261,37 @@ namespace SqlBuildManager.Console.CloudStorage
 
         private static string Escape(string value) => Uri.EscapeDataString(value);
 
+        internal static string GetSafeDownloadPath(string destinationDirectory, string blobName)
+        {
+            if (string.IsNullOrWhiteSpace(destinationDirectory))
+            {
+                throw new ArgumentException("A destination directory is required.", nameof(destinationDirectory));
+            }
+            if (string.IsNullOrWhiteSpace(blobName) ||
+                blobName.Contains('\\') ||
+                blobName.StartsWith('/') ||
+                blobName.EndsWith('/') ||
+                blobName.Split('/').Any(segment =>
+                    string.IsNullOrEmpty(segment) ||
+                    segment == "." ||
+                    segment == ".." ||
+                    segment.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0))
+            {
+                throw new ArgumentException("Blob name contains an unsafe local path.", nameof(blobName));
+            }
+
+            var root = Path.GetFullPath(destinationDirectory);
+            var relativePath = blobName.Replace('/', Path.DirectorySeparatorChar);
+            var destinationPath = Path.GetFullPath(Path.Combine(root, relativePath));
+            var rootPrefix = root.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            if (!destinationPath.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Blob name resolves outside the destination directory.", nameof(blobName));
+            }
+
+            return destinationPath;
+        }
+
         private sealed class UrlResponse
         {
             [JsonPropertyName("blobUrl")]
@@ -214,6 +305,12 @@ namespace SqlBuildManager.Console.CloudStorage
         {
             [JsonPropertyName("hasBlobs")]
             public bool HasBlobs { get; set; }
+        }
+
+        private sealed class ListBlobsResponse
+        {
+            [JsonPropertyName("blobs")]
+            public List<BlobProxyFile> Blobs { get; set; } = [];
         }
     }
 }
