@@ -42,6 +42,9 @@ namespace SqlBuildManager.Console.Events
         private int databaseErrorMessages = 0;
         private int eventsScanned = 0;
         private int workersCompleted = 0;
+        private readonly object eventStateLock = new();
+        private bool customConsumerGroupCreated = false;
+        private bool consumerGroupInitialized = false;
         private List<string> committedDbs = new();
         private List<string> errorDbs = new();
  
@@ -92,6 +95,7 @@ namespace SqlBuildManager.Console.Events
         }
 
         private EventProcessorClient _eventClient = null!;
+        private EventHubConsumerClient _eventConsumerClient = null!;
         private EventProcessorClient EventClient
         {
             get
@@ -104,6 +108,7 @@ namespace SqlBuildManager.Console.Events
                     this.eventHub = hubName;
 
                     this.consumerGroup = CreateCustomConsumerGroup(eventHubSubscription, eventHubResourceGroup, namespaceName, hubName, this.jobName);
+                    consumerGroupInitialized = true;
                     if (this.consumerGroup != EventHubConsumerClient.DefaultConsumerGroupName) this.eventHubCheckpointContainer = this.consumerGroup.ToLower().Trim();
 
                     if (ConnectionStringValidator.IsEventHubConnectionString(eventHubconnectionString))
@@ -209,11 +214,15 @@ namespace SqlBuildManager.Console.Events
 
         private Task ProcessEventHandler(ProcessEventArgs eventArgs)
         {
+            return ProcessEventData(eventArgs.Data);
+        }
+
+        private Task ProcessEventData(EventData eventData)
+        {
             string dbName;
             try
             {
-                
-                var msg = JsonSerializer.Deserialize<EventHubMessageFormat>(Encoding.UTF8.GetString(eventArgs.Data.Body.ToArray()));
+                var msg = JsonSerializer.Deserialize<EventHubMessageFormat>(Encoding.UTF8.GetString(eventData.Body.ToArray()));
                 if ((!string.IsNullOrWhiteSpace(msg!.Properties.LogMsg.JobName) && msg.Properties.LogMsg.JobName.ToLower() == jobName.ToLower()) || (this.jobName.ToLower() == "all"))
                 {
                     IncrementEventsScanned(); //only count events that are relevant to this job
@@ -243,19 +252,25 @@ namespace SqlBuildManager.Console.Events
                             case LogType.Commit:
                                 if (StreamEvents) log.LogInformation($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(31)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
                                 dbName = $"{msg.Properties.LogMsg.ServerName.ToLower().Trim()}:{msg.Properties.LogMsg.DatabaseName.ToLower().Trim()}";
-                                if (!committedDbs.Contains(dbName))
+                                lock (eventStateLock)
                                 {
-                                    committedDbs.Add(dbName);
-                                    IncrementDatabaseCommitMessages();
+                                    if (!committedDbs.Contains(dbName))
+                                    {
+                                        committedDbs.Add(dbName);
+                                        IncrementDatabaseCommitMessages();
+                                    }
                                 }
                                 break;
                             case LogType.Error:
                                 if (StreamEvents) log.LogError($"{msg.Properties.LogMsg.LogType.ToString().PadRight(10)}{msg.Properties.LogMsg.Message.PadRight(31)}{msg.Properties.LogMsg.ServerName.ToString().PadRight(20)}\t{msg.Properties.LogMsg.DatabaseName}");
                                 dbName = $"{msg.Properties.LogMsg.ServerName.ToLower().Trim()}:{msg.Properties.LogMsg.DatabaseName.ToLower().Trim()}";
-                                if (!errorDbs.Contains(dbName))
+                                lock (eventStateLock)
                                 {
-                                    errorDbs.Add(dbName);
-                                    IncrementDatabaseErrorsMessages();
+                                    if (!errorDbs.Contains(dbName))
+                                    {
+                                        errorDbs.Add(dbName);
+                                        IncrementDatabaseErrorsMessages();
+                                    }
                                 }
                                 break;
                             case LogType.WorkerCompleted:
@@ -273,7 +288,7 @@ namespace SqlBuildManager.Console.Events
                 }
                 else
                 {
-                    skippedEvents++;
+                    Interlocked.Increment(ref skippedEvents);
                 } 
                     
 
@@ -285,7 +300,7 @@ namespace SqlBuildManager.Console.Events
             return Task.CompletedTask;
         }
 
-        public Task MonitorEventHub(bool stream, DateTime? monitorUtcStart, CancellationToken cancellationToken)
+        public async Task MonitorEventHub(bool stream, DateTime? monitorUtcStart, CancellationToken cancellationToken)
         {
             try
             {
@@ -299,15 +314,117 @@ namespace SqlBuildManager.Console.Events
                 }
                 StreamEvents = stream;
                 // Start the processing
-                return EventClient.StartProcessingAsync(cancellationToken);
+                await EventClient.StartProcessingAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception exe) when (
+                ShouldUseCheckpointFreeConsumer(storageAccountKey, ccS.StorageManager.BlobProxyEndpoint) &&
+                ccS.BlobProxyClient.IsFallbackEligible(exe))
+            {
+                log.LogWarning("Direct Blob checkpoint access failed. Monitoring Event Hub without persistent checkpoints from enqueue time.");
+                await StopEventProcessorAfterStartupFailureAsync().ConfigureAwait(false);
+                await MonitorEventHubWithoutCheckpointsAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception exe)
             {
                 log.LogError($"Error starting Event Processor monitoring: {exe.ToString()}");
                 HasEventMonitorClientError = true;
-                return Task.CompletedTask;
             }
 
+        }
+
+        internal static bool ShouldUseCheckpointFreeConsumer(string storageKey, string blobProxyEndpoint) =>
+            string.IsNullOrWhiteSpace(storageKey) && !string.IsNullOrWhiteSpace(blobProxyEndpoint);
+
+        private async Task MonitorEventHubWithoutCheckpointsAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                (string namespaceName, string hubName) = GetEventHubNamespaceAndName(eventHubconnectionString);
+                this.eventhubNamespace = namespaceName;
+                this.eventHub = hubName;
+                if (!consumerGroupInitialized)
+                {
+                    this.consumerGroup = CreateCustomConsumerGroup(
+                        eventHubSubscription,
+                        eventHubResourceGroup,
+                        namespaceName,
+                        hubName,
+                        this.jobName);
+                    consumerGroupInitialized = true;
+                }
+
+                _eventConsumerClient = ConnectionStringValidator.IsEventHubConnectionString(eventHubconnectionString)
+                    ? new EventHubConsumerClient(this.consumerGroup, eventHubconnectionString)
+                    : new EventHubConsumerClient(
+                        this.consumerGroup,
+                        $"{namespaceName}.servicebus.windows.net",
+                        hubName,
+                        Aad.AadHelper.TokenCredential);
+
+                var partitionIds = await _eventConsumerClient
+                    .GetPartitionIdsAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                using var monitorCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                var partitionTasks = new List<Task>(partitionIds.Length);
+                foreach (var partitionId in partitionIds)
+                {
+                    partitionTasks.Add(ReadPartitionWithoutCheckpointsAsync(partitionId, monitorCancellation));
+                }
+                await Task.WhenAll(partitionTasks).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception exe)
+            {
+                log.LogError($"Error monitoring Event Hub without Blob checkpoints: {exe}");
+                HasEventMonitorClientError = true;
+            }
+        }
+
+        private async Task StopEventProcessorAfterStartupFailureAsync()
+        {
+            if (_eventClient == null)
+            {
+                return;
+            }
+
+            try
+            {
+                await _eventClient.StopProcessingAsync().ConfigureAwait(false);
+            }
+            catch (Exception exe)
+            {
+                log.LogDebug($"Event Processor cleanup after startup failure returned: {exe.Message}");
+            }
+            _eventClient.ProcessEventAsync -= ProcessEventHandler;
+            _eventClient.ProcessErrorAsync -= ProcessErrorHandler;
+            _eventClient = null!;
+        }
+
+        private async Task ReadPartitionWithoutCheckpointsAsync(
+            string partitionId,
+            CancellationTokenSource monitorCancellation)
+        {
+            try
+            {
+                log.LogDebug($"Initialize EventHub partition: {partitionId} from EnqueueTime {utcMonitorStart}");
+                await foreach (var partitionEvent in _eventConsumerClient.ReadEventsFromPartitionAsync(
+                    partitionId,
+                    EventPosition.FromEnqueuedTime(utcMonitorStart),
+                    monitorCancellation.Token))
+                {
+                    await ProcessEventData(partitionEvent.Data).ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException) when (monitorCancellation.IsCancellationRequested)
+            {
+            }
+            catch
+            {
+                await monitorCancellation.CancelAsync().ConfigureAwait(false);
+                throw;
+            }
         }
         
         public string CreateCustomConsumerGroup(string subscriptionId, string resourceGroup, string namespaceName, string hubName, string jobName)
@@ -323,6 +440,7 @@ namespace SqlBuildManager.Console.Events
                     var result = consumerGroups.CreateOrUpdate(Azure.WaitUntil.Completed,groupName, new EventHubsConsumerGroupData());
 
                     log.LogInformation($"Created custom Event Hub Consumer Group: {groupName}");
+                    customConsumerGroupCreated = true;
                     return groupName;
                     
                 }
@@ -362,6 +480,7 @@ namespace SqlBuildManager.Console.Events
 
         public void Dispose()
         {
+            var hadEventClient = _eventClient != null || _eventConsumerClient != null || customConsumerGroupCreated;
             if (skippedEvents > 0)
             {
                 log.LogDebug($"Skipped {skippedEvents} irrelevant events during monitoring");
@@ -372,7 +491,14 @@ namespace SqlBuildManager.Console.Events
                 _eventClient.ProcessEventAsync -= ProcessEventHandler;
                 _eventClient.ProcessErrorAsync -= ProcessErrorHandler;
                 _eventClient = null!;
-
+            }
+            if (_eventConsumerClient != null)
+            {
+                _eventConsumerClient.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                _eventConsumerClient = null!;
+            }
+            if (hadEventClient)
+            {
                 RemoveCustomConsumerGroup();
             }
             if (_blobClient != null)

@@ -67,6 +67,8 @@ To use Managed Identity to connect to Azure Service Bus, use the Service Bus nam
 
 To use Managed Identity to connect to Azure Event Hub, use the Event Hub namespace and Event Hub name as a pipe delimited value (<name>.servicebus.windows.net) for `--eventhubconnection`. For example "\<ehnamespace>.servicebus.windows.net|\<eh name>"
 
+Event monitoring normally uses Blob Storage for Event Processor checkpoints. When private Storage networking prevents the local orchestrator from reaching the Blob endpoint and `--blobproxyendpoint` is configured, monitoring uses the same enqueue-time position without persistent checkpoints. The remote ACI workers continue to use their assigned user-managed identity and private endpoints; shared-key and directly reachable Storage deployments retain Blob-backed checkpoints.
+
 ### Azure Container Registry
 
 Only Kubernetes is able to natively connect to the container registry without an admin username and password. This is assigned at creation or update of the cluster using the [`--assign-acr`](https://docs.microsoft.com/en-us/azure/aks/cluster-container-registry-integration?tabs=azure-cli) flag
