@@ -177,8 +177,9 @@ The proxy identity is named:
 
 It receives `Storage Blob Data Contributor` on the deployment Storage account, `AcrPull` on the
 registry, and `Azure Relay Listener` on the `blobupload` Hybrid Connection. The deploying user
-receives `Azure Relay Sender` on that connection.
-The SQL Build Manager runtime identity also receives `Azure Relay Sender`, so fallback remains
+receives `Azure Relay Sender` on the Relay namespace. Relay's HTTP sender authorization is evaluated
+at namespace scope even when the request targets a specific Hybrid Connection. The SQL Build
+Manager runtime identity also receives `Azure Relay Sender` at namespace scope, so fallback remains
 available to Batch, ACI, AKS, and Container Apps workloads.
 
 The proxy does not use Storage account keys or create SAS tokens. Azure Relay authenticates the

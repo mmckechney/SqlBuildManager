@@ -104,8 +104,8 @@ resource relayListener 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 }
 
 resource relaySender 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(senderPrincipalId)) {
-  scope: hybridConnection
-  name: guid(hybridConnection.id, senderPrincipalId, 'Azure Relay Sender')
+  scope: relayNamespace
+  name: guid(relayNamespace.id, senderPrincipalId, 'Azure Relay Sender')
   properties: {
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
@@ -116,8 +116,8 @@ resource relaySender 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (
 }
 
 resource runtimeRelaySender 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: hybridConnection
-  name: guid(hybridConnection.id, runtimeSenderPrincipalId, 'Azure Relay Sender')
+  scope: relayNamespace
+  name: guid(relayNamespace.id, runtimeSenderPrincipalId, 'Azure Relay Sender')
   properties: {
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
