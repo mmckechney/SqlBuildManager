@@ -1,7 +1,7 @@
 @description('Globally unique Azure Relay namespace name')
 param relayNamespaceName string
 
-@description('Hybrid Connection name used by the blob proxy')
+@description('Hybrid Connection name used by the Relay proxy')
 param hybridConnectionName string
 
 @description('User-assigned managed identity name for the proxy ACI')
@@ -61,7 +61,7 @@ resource hybridConnection 'Microsoft.Relay/namespaces/hybridConnections@2024-01-
   name: hybridConnectionName
   properties: {
     requiresClientAuthorization: true
-    userMetadata: 'SqlBuildManager private Blob Storage upload proxy'
+    userMetadata: 'SqlBuildManager private service Relay proxy'
   }
 }
 

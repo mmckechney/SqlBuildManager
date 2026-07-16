@@ -74,7 +74,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.SqlBuild.Dependent.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.ScriptHandling.UnitTest", "SqlBuildManager.ScriptHandling.UnitTest\SqlBuildManager.ScriptHandling.UnitTest.csproj", "{9A20DC27-236E-BED6-8477-82FF331E0435}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.StorageProxy", "SqlBuildManager.StorageProxy\SqlBuildManager.StorageProxy.csproj", "{01D17E49-51D5-458D-8A85-1E254DCD1473}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.RelayProxy", "SqlBuildManager.RelayProxy\SqlBuildManager.RelayProxy.csproj", "{01D17E49-51D5-458D-8A85-1E254DCD1473}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

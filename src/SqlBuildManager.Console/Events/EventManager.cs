@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ccS = SqlBuildManager.Console.CloudStorage;
+using ccR = SqlBuildManager.Console.Relay;
 using Azure.ResourceManager.EventHubs;
 using Azure.ResourceManager.EventHubs.Models;
 using Azure.ResourceManager.Resources;
@@ -97,7 +98,7 @@ namespace SqlBuildManager.Console.Events
 
         private EventProcessorClient _eventClient = null!;
         private EventHubConsumerClient _eventConsumerClient = null!;
-        private ccS.BlobProxyClient _eventRelayClient = null!;
+        private ccR.RelayProxyClient _eventRelayClient = null!;
         private string _eventRelaySessionId = string.Empty;
         private EventProcessorClient EventClient
         {
@@ -321,15 +322,15 @@ namespace SqlBuildManager.Console.Events
             }
             catch (Exception exe) when (ShouldUseRelayEventMonitor(
                 exe,
-                ccS.StorageManager.BlobProxyEndpoint))
+                ccR.RelayProxyManager.Endpoint))
             {
                 log.LogWarning("Direct Event Hub access is blocked. Monitoring through the Azure Relay proxy.");
                 await StopEventProcessorAfterStartupFailureAsync().ConfigureAwait(false);
                 await MonitorEventHubThroughRelayAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception exe) when (
-                ShouldUseCheckpointFreeConsumer(storageAccountKey, ccS.StorageManager.BlobProxyEndpoint) &&
-                ccS.BlobProxyClient.IsFallbackEligible(exe))
+                ShouldUseCheckpointFreeConsumer(storageAccountKey, ccR.RelayProxyManager.Endpoint) &&
+                ccR.RelayProxyClient.IsFallbackEligible(exe))
             {
                 log.LogWarning("Direct Blob checkpoint access failed. Monitoring Event Hub without persistent checkpoints from enqueue time.");
                 await StopEventProcessorAfterStartupFailureAsync().ConfigureAwait(false);
@@ -343,8 +344,8 @@ namespace SqlBuildManager.Console.Events
 
         }
 
-        internal static bool ShouldUseCheckpointFreeConsumer(string storageKey, string blobProxyEndpoint) =>
-            string.IsNullOrWhiteSpace(storageKey) && !string.IsNullOrWhiteSpace(blobProxyEndpoint);
+        internal static bool ShouldUseCheckpointFreeConsumer(string storageKey, string relayProxyEndpoint) =>
+            string.IsNullOrWhiteSpace(storageKey) && !string.IsNullOrWhiteSpace(relayProxyEndpoint);
 
         private async Task MonitorEventHubWithoutCheckpointsAsync(CancellationToken cancellationToken)
         {
@@ -388,7 +389,7 @@ namespace SqlBuildManager.Console.Events
             }
             catch (Exception exe) when (ShouldUseRelayEventMonitor(
                 exe,
-                ccS.StorageManager.BlobProxyEndpoint))
+                ccR.RelayProxyManager.Endpoint))
             {
                 log.LogWarning("Direct Event Hub access is blocked. Monitoring through the Azure Relay proxy.");
                 if (_eventConsumerClient != null)
@@ -405,9 +406,9 @@ namespace SqlBuildManager.Console.Events
             }
         }
 
-        internal static bool ShouldUseRelayEventMonitor(Exception exception, string blobProxyEndpoint) =>
-            !string.IsNullOrWhiteSpace(blobProxyEndpoint) &&
-            ccS.BlobProxyClient.GetExceptions(exception).Any(candidate =>
+        internal static bool ShouldUseRelayEventMonitor(Exception exception, string relayProxyEndpoint) =>
+            !string.IsNullOrWhiteSpace(relayProxyEndpoint) &&
+            ccR.RelayProxyClient.GetExceptions(exception).Any(candidate =>
                 candidate is UnauthorizedAccessException &&
                 candidate.Message.Contains(
                     "Ip has been prevented to connect to the endpoint",
@@ -417,7 +418,7 @@ namespace SqlBuildManager.Console.Events
         {
             try
             {
-                _eventRelayClient = new ccS.BlobProxyClient(ccS.StorageManager.BlobProxyEndpoint);
+                _eventRelayClient = new ccR.RelayProxyClient(ccR.RelayProxyManager.Endpoint);
                 _eventRelaySessionId = await _eventRelayClient.StartEventMonitorAsync(
                     eventhubNamespace,
                     eventHub,

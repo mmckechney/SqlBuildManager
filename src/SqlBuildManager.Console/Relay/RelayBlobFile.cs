@@ -1,9 +1,9 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace SqlBuildManager.Console.CloudStorage
+namespace SqlBuildManager.Console.Relay
 {
-    public sealed class BlobProxyFile
+    public sealed class RelayBlobFile
     {
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;

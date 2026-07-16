@@ -128,7 +128,7 @@ The deployment includes:
 - A virtual network and dedicated subnets for AKS, Container Apps, ACI, Batch, and private endpoints.
 - The SQL Build Manager runtime user-assigned managed identity.
 - A separate post-provision user-assigned managed identity.
-- A dedicated Blob Storage proxy identity, Azure Relay Hybrid Connection, and persistent ACI.
+- A dedicated Relay proxy identity, Azure Relay Hybrid Connection, and persistent ACI.
 - Azure Container Registry.
 - Storage, Event Hubs, Service Bus, and Log Analytics.
 - Selected compute platforms.
@@ -167,17 +167,17 @@ It receives:
 
 The ACR administrator account is disabled. Image pull uses this managed identity.
 
-### Blob Storage proxy identity
+### Relay proxy identity
 
 The proxy identity is named:
 
 ```text
-<prefix>blobproxy
+<prefix>relayproxy
 ```
 
 It receives `Storage Blob Data Contributor` on the deployment Storage account, `Azure Event Hubs
 Data Receiver` on the deployment Event Hubs namespace, `AcrPull` on the registry, and `Azure Relay
-Listener` on the `blobupload` Hybrid Connection. The deploying user
+Listener` on the `relayproxy` Hybrid Connection. The deploying user
 receives `Azure Relay Sender` on the Relay namespace through an idempotent post-provision check that
 reuses existing assignments regardless of their resource GUID. Relay's HTTP sender authorization is evaluated
 at namespace scope even when the request targets a specific Hybrid Connection. VNET runtime
@@ -185,9 +185,10 @@ identities do not receive Relay Sender because their data-plane operations use p
 directly.
 
 The proxy does not use Storage account keys or create SAS tokens. Azure Relay authenticates the
-caller with Microsoft Entra ID, and the proxy performs Blob operations with its own managed
-identity. This avoids an on-behalf-of flow, which would require an application registration,
-delegated Storage scopes, and a second end-to-end token validation layer inside the proxy.
+caller with Microsoft Entra ID. The proxy uses its dedicated identity for Blob and Event Hub
+operations and the attached runtime identity for restricted SQL test operations. This avoids an
+on-behalf-of flow, which would require an application registration, delegated service scopes, and
+a second end-to-end token validation layer inside the proxy.
 
 ### Database networking
 
@@ -437,33 +438,37 @@ When AKS is selected, the hook:
 
 The service account is applied declaratively and can be updated on later runs.
 
-### Private Blob Storage proxy
+### Private service Relay proxy
 
 The hook runs:
 
 ```text
-scripts/ContainerRegistry/build_and_deploy_blob_proxy.ps1
+scripts/ContainerRegistry/build_and_deploy_relay_proxy.ps1
 ```
 
-The script always builds `sqlbuildmanager-storageproxy:latest` remotely with ACR Tasks and
-recreates the persistent Linux ACI `<prefix>blobproxy` in the delegated ACI subnet. The container
+The script always builds `sqlbuildmanager-relayproxy:latest` remotely with ACR Tasks and
+recreates the persistent Linux ACI `<prefix>relayproxy` in the delegated ACI subnet. The container
 uses its dedicated identity for both the ACR pull and runtime access.
 
 The listener connects outbound to:
 
 ```text
-https://<prefix>relay.servicebus.windows.net/blobupload
+https://<prefix>relay.servicebus.windows.net/relayproxy
 ```
 
 The Relay namespace remains publicly reachable for authenticated senders. Listener-side Relay and
 Blob traffic resolve through private endpoints inside the VNET. No inbound port or public IP is
 assigned to ACI.
 
-Generated managed-identity settings include `--blobproxyendpoint`. SQL Build Manager first attempts
+Generated managed-identity settings include `--relayproxyendpoint`. SQL Build Manager first attempts
 Blob operations directly with Entra authentication. Network and Storage authorization failures fall
 back to the Relay proxy. The proxy supports container lifecycle checks, blob enumeration with an
 optional prefix, streamed upload/download, and server-side log/query consolidation; it returns
 ordinary Blob URLs, never SAS URLs.
+
+Local SQL external-test setup is also direct-first. Azure SQL error `47073` activates restricted
+Relay operations that create generated test tables and extract DACPACs inside the VNET. The proxy
+accepts only SQL server FQDNs provisioned in the resource group and does not expose arbitrary SQL.
 
 Event monitoring is also direct-first. It uses Blob-backed Event Processor checkpoints when those
 private endpoints are reachable, then tries direct checkpointless Event Hub readers if only Storage
@@ -611,7 +616,7 @@ immutable.
 | Deploying user | Runs `azd up`, receives RBAC, remains final SQL/PG administrator | SQL/PG administrator |
 | `<prefix>identity` | Runtime identity used by SQL Build Manager workloads | `db_owner` in SQL test databases and explicit PostgreSQL grants |
 | `<prefix>postprovision` | Runs the private bootstrap ACI | Temporary SQL administrator; additional PostgreSQL administrator |
-| `<prefix>blobproxy` | Runs the Relay listener and writes to private Blob Storage | None |
+| `<prefix>relayproxy` | Runs the Relay listener for private Blob, Event Hub, and test SQL operations | None; restricted SQL uses the runtime identity |
 
 ## Rerunning `azd up`
 
@@ -691,13 +696,13 @@ SQL administrator.
 | `infra/modules/database.bicep` | Private SQL Server resources, databases, DNS, and private endpoints |
 | `infra/modules/postgresql.bicep` | Private PostgreSQL resources, administrators, DNS, and private endpoints |
 | `infra/modules/postprovisionidentity.bicep` | Bootstrap managed identity and RBAC |
-| `infra/modules/blobproxy.bicep` | Relay, proxy identity, private endpoint, and scoped RBAC |
+| `infra/modules/relayproxy.bicep` | Relay, proxy identity, private endpoint, and scoped RBAC |
 | `infra/postprovision/Dockerfile` | Bootstrap container image |
 | `infra/postprovision/run-private-postprovision.ps1` | In-container entry point |
 | `infra/scripts/postprovision.ps1` | Local post-provision orchestrator |
 | `scripts/ContainerRegistry/run_private_postprovision_container.ps1` | ACR build, ACI execution, and SQL administrator restoration |
-| `scripts/ContainerRegistry/build_and_deploy_blob_proxy.ps1` | Remote proxy image build and persistent ACI deployment |
-| `src/SqlBuildManager.StorageProxy` | Managed-identity Relay listener and Blob operation handler |
+| `scripts/ContainerRegistry/build_and_deploy_relay_proxy.ps1` | Remote proxy image build and persistent ACI deployment |
+| `src/SqlBuildManager.RelayProxy` | Managed-identity Relay listener and restricted private-service operation handler |
 | `scripts/Database/grant_identity_permissions.ps1` | SQL contained-user creation and role assignment |
 | `scripts/Database/grant_pg_identity_permissions.ps1` | PostgreSQL principal mapping and grants |
 | `scripts/Database/create_database_override_files.ps1` | Local SQL test target generation |

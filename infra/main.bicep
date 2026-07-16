@@ -40,8 +40,8 @@ param usePrivateEndpoint bool = false
 @description('Whether to deploy Azure Database for PostgreSQL Flexible Server')
 param deployPostgreSQL bool = true
 
-@description('Whether to deploy the ACI Blob Storage upload proxy')
-param deployBlobProxy bool = true
+@description('Whether to deploy the ACI Relay proxy for private service access')
+param deployRelayProxy bool = true
 
 @secure()
 @description('Administrator password for PostgreSQL Flexible Server')
@@ -79,9 +79,9 @@ var logAnalyticsWorkspaceVar = '${namePrefix}loganalytics'
 var containerRegistryNameVar = '${namePrefix}containerregistry'
 var identityNameVar = '${namePrefix}identity'
 var postProvisionIdentityNameVar = '${namePrefix}postprovision'
-var blobProxyIdentityNameVar = '${namePrefix}blobproxy'
+var relayProxyIdentityNameVar = '${namePrefix}relayproxy'
 var relayNamespaceNameVar = '${namePrefix}relay'
-var relayConnectionNameVar = 'blobupload'
+var relayConnectionNameVar = 'relayproxy'
 var eventHubNamespaceNameVar = '${namePrefix}eventhubnamespace'
 var eventHubNameVar = '${namePrefix}eventhub'
 var serviceBusNamespaceNameVar = '${namePrefix}servicebus'
@@ -257,13 +257,13 @@ module storageAccountResource './modules/storage.bicep' = {
   }
 }
 
-module blobProxy './modules/blobproxy.bicep' = if (deployBlobProxy) {
-  name: 'blobProxy'
+module relayProxy './modules/relayproxy.bicep' = if (deployRelayProxy) {
+  name: 'relayProxy'
   scope: rg
   params: {
     relayNamespaceName: relayNamespaceNameVar
     hybridConnectionName: relayConnectionNameVar
-    identityName: blobProxyIdentityNameVar
+    identityName: relayProxyIdentityNameVar
     storageAccountName: storageAccountResource.outputs.name
     eventHubNamespaceName: eventHubNamespaceResource.outputs.namespaceName
     containerRegistryName: containerRegistry.outputs.name
@@ -339,7 +339,7 @@ output SERVICEBUS_SKU string = serviceBusSku
 output SKU_CAPACITY int = skuCapacity
 output USE_PRIVATE_ENDPOINT bool = usePrivateEndpoint
 output DEPLOY_POSTGRESQL bool = deployPostgreSQL
-output DEPLOY_BLOB_PROXY bool = deployBlobProxy
+output DEPLOY_RELAY_PROXY bool = deployRelayProxy
 
 // Resource outputs
 output RESOURCE_GROUP_NAME string = resourceGroupName
@@ -365,7 +365,7 @@ output POSTPROVISION_IDENTITY_ID string = postProvisionIdentity.outputs.id
 output POSTPROVISION_IDENTITY_CLIENT_ID string = postProvisionIdentity.outputs.clientId
 output POSTPROVISION_IDENTITY_PRINCIPAL_ID string = postProvisionIdentity.outputs.principalId
 
-output BLOB_PROXY_ENDPOINT string = deployBlobProxy ? blobProxy!.outputs.endpoint : ''
+output RELAY_PROXY_ENDPOINT string = deployRelayProxy ? relayProxy!.outputs.endpoint : ''
 
 output STORAGE_ACCOUNT_NAME string = storageAccountResource.outputs.name
 output STORAGE_ACCOUNT_ID string = storageAccountResource.outputs.id

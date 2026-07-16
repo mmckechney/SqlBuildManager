@@ -12,7 +12,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             Assert.IsTrue(EventManager.ShouldUseCheckpointFreeConsumer(
                 string.Empty,
-                "https://example.servicebus.windows.net/blobupload"));
+                "https://example.servicebus.windows.net/relayproxy"));
         }
 
         [TestMethod]
@@ -20,7 +20,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             Assert.IsFalse(EventManager.ShouldUseCheckpointFreeConsumer(
                 "storage-key",
-                "https://example.servicebus.windows.net/blobupload"));
+                "https://example.servicebus.windows.net/relayproxy"));
         }
 
         [TestMethod]
@@ -34,7 +34,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             Assert.IsTrue(EventManager.ShouldUseRelayEventMonitor(
                 new UnauthorizedAccessException("Ip has been prevented to connect to the endpoint."),
-                "https://example.servicebus.windows.net/blobupload"));
+                "https://example.servicebus.windows.net/relayproxy"));
         }
 
         [TestMethod]
@@ -50,7 +50,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             Assert.IsFalse(EventManager.ShouldUseRelayEventMonitor(
                 new UnauthorizedAccessException("The identity is not authorized."),
-                "https://example.servicebus.windows.net/blobupload"));
+                "https://example.servicebus.windows.net/relayproxy"));
         }
 
         [TestMethod]
@@ -62,7 +62,7 @@ namespace SqlBuildManager.Console.UnitTest
                         "Event Hub startup failed.",
                         new UnauthorizedAccessException(
                             "Ip has been prevented to connect to the endpoint."))),
-                "https://example.servicebus.windows.net/blobupload"));
+                "https://example.servicebus.windows.net/relayproxy"));
         }
     }
 }

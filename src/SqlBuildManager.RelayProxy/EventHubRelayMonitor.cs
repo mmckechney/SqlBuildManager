@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
 using System.Threading.Channels;
 
-namespace SqlBuildManager.StorageProxy;
+namespace SqlBuildManager.RelayProxy;
 
 internal sealed class EventHubRelayMonitor : IAsyncDisposable
 {

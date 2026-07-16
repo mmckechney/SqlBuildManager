@@ -30,7 +30,7 @@ namespace SqlBuildManager.Console.CommandLine
                     sectionPlaceholderOption,
                     keyVaultNameOption,
                     storageaccountnameOption,
-                    blobProxyEndpointOption,
+                    relayProxyEndpointOption,
                     storageaccountkeyOption,
                     eventhubconnectionOption,
                     defaultscripttimeoutOption,
@@ -101,7 +101,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.Add(keyVaultNameOption);
                 cmd.Add(storageaccountnameOption);
-                cmd.Add(blobProxyEndpointOption);
+                cmd.Add(relayProxyEndpointOption);
                 cmd.Add(storageaccountkeyOption);
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.Add(clientIdOption);
@@ -163,7 +163,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.Add(keyVaultNameOption);
                 cmd.Add(storageaccountnameOption);
-                cmd.Add(blobProxyEndpointOption);
+                cmd.Add(relayProxyEndpointOption);
                 cmd.Add(storageaccountkeyOption);
                 cmd.Add(authtypeOption);
                 cmd.Add(platformOption);
@@ -211,7 +211,7 @@ namespace SqlBuildManager.Console.CommandLine
                 {
                     jobnameRequiredOption,
                     storageaccountnameOption,
-                    blobProxyEndpointOption,
+                    relayProxyEndpointOption,
                     storageaccountkeyOption,
                     packagenameAsFileToUploadOption,
                     platinumdacpacFileInfoOption,
@@ -289,7 +289,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.Add(keyVaultNameOption);
                 cmd.Add(storageaccountnameOption);
-                cmd.Add(blobProxyEndpointOption);
+                cmd.Add(relayProxyEndpointOption);
                 cmd.Add(storageaccountkeyOption);
                 cmd.Add(authtypeOption);
                 cmd.Add(platformOption);

@@ -6,6 +6,7 @@ using Azure.Storage.Sas;
 using Microsoft.Azure.Batch;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Relay;
 using SqlSync.Connection;
 using System;
 using System.Collections.Concurrent;
@@ -27,17 +28,6 @@ namespace SqlBuildManager.Console.CloudStorage
         // CreateIfNotExistsAsync is called at most once per key per process lifetime.
         internal static readonly ConcurrentDictionary<string, Task<BlobContainerClient>> _containerClientCache
             = new ConcurrentDictionary<string, Task<BlobContainerClient>>(StringComparer.OrdinalIgnoreCase);
-        internal static string BlobProxyEndpoint { get; set; } = string.Empty;
-
-        public static void ConfigureBlobProxyEndpoint(string endpoint) =>
-            BlobProxyEndpoint = endpoint ?? string.Empty;
-
-        public static bool IsBlobProxyFallbackEligible(Exception exception) =>
-            CanUseBlobProxy(exception);
-
-        public static bool IsSqlPrivateNetworkDenial(Exception exception) =>
-            BlobProxyClient.IsSqlPrivateNetworkDenial(exception);
-
         internal static string ContainerCacheKey(string storageAccountName, string containerName)
             => $"{storageAccountName}|{containerName}";
 
@@ -120,10 +110,10 @@ namespace SqlBuildManager.Console.CloudStorage
                 var client = CreateStorageClient(storageAccountName, storageAccountKey);
                 return ConsolidateLogFilesCore(client, outputContainerName, workerFiles);
             }
-            catch (Exception ex) when (CanUseBlobProxy(ex))
+            catch (Exception ex) when (CanUseRelayProxy(ex))
             {
-                log.LogWarning($"Direct Blob Storage access failed while consolidating '{outputContainerName}'. Retrying through the blob proxy.");
-                CreateBlobProxyClient().ConsolidateLogsAsync(outputContainerName).GetAwaiter().GetResult();
+                log.LogWarning($"Direct Blob Storage access failed while consolidating '{outputContainerName}'. Retrying through the Relay proxy.");
+                CreateRelayProxyClient().ConsolidateLogsAsync(outputContainerName).GetAwaiter().GetResult();
                 return true;
             }
         }
@@ -133,10 +123,10 @@ namespace SqlBuildManager.Console.CloudStorage
             {
                 return ConsolidateLogFilesCore(storageSvcClient, outputContainerName, workerFiles);
             }
-            catch (Exception ex) when (CanUseBlobProxy(ex))
+            catch (Exception ex) when (CanUseRelayProxy(ex))
             {
-                log.LogWarning($"Direct Blob Storage access failed while consolidating '{outputContainerName}'. Retrying through the blob proxy.");
-                CreateBlobProxyClient().ConsolidateLogsAsync(outputContainerName).GetAwaiter().GetResult();
+                log.LogWarning($"Direct Blob Storage access failed while consolidating '{outputContainerName}'. Retrying through the Relay proxy.");
+                CreateRelayProxyClient().ConsolidateLogsAsync(outputContainerName).GetAwaiter().GetResult();
                 return true;
             }
         }
@@ -278,10 +268,10 @@ namespace SqlBuildManager.Console.CloudStorage
                     .ConfigureAwait(false);
                 return GetContainerRawUrl(storageAccountName, outputContainerName);
             }
-            catch (Exception ex) when (CanUseBlobProxy(ex))
+            catch (Exception ex) when (CanUseRelayProxy(ex))
             {
-                log.LogWarning($"Direct Blob Storage access failed for container '{outputContainerName}'. Retrying through the blob proxy.");
-                return await CreateBlobProxyClient()
+                log.LogWarning($"Direct Blob Storage access failed for container '{outputContainerName}'. Retrying through the Relay proxy.");
+                return await CreateRelayProxyClient()
                     .EnsureContainerAsync(outputContainerName, cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -361,10 +351,10 @@ namespace SqlBuildManager.Console.CloudStorage
                 var container = GetBlobContainerClient(storageAccountName, storageAccountKey, containerName);
                 return container.GetBlobs().Any();
             }
-            catch (Exception ex) when (CanUseBlobProxy(ex))
+            catch (Exception ex) when (CanUseRelayProxy(ex))
             {
-                log.LogWarning($"Direct Blob Storage access failed while checking container '{containerName}'. Retrying through the blob proxy.");
-                return CreateBlobProxyClient().HasBlobsAsync(containerName).GetAwaiter().GetResult();
+                log.LogWarning($"Direct Blob Storage access failed while checking container '{containerName}'. Retrying through the Relay proxy.");
+                return CreateRelayProxyClient().HasBlobsAsync(containerName).GetAwaiter().GetResult();
             }
         }
         internal static async Task<bool> DeleteStorageContainer(string storageAccountName, string storageAccountKey, string containerName)
@@ -386,10 +376,10 @@ namespace SqlBuildManager.Console.CloudStorage
             }
             catch (Exception ex)
             {
-                if (CanUseBlobProxy(ex))
+                if (CanUseRelayProxy(ex))
                 {
-                    log.LogWarning($"Direct Blob Storage access failed while deleting container '{containerName}'. Retrying through the blob proxy.");
-                    await CreateBlobProxyClient().DeleteContainerAsync(containerName).ConfigureAwait(false);
+                    log.LogWarning($"Direct Blob Storage access failed while deleting container '{containerName}'. Retrying through the Relay proxy.");
+                    await CreateRelayProxyClient().DeleteContainerAsync(containerName).ConfigureAwait(false);
                     _containerClientCache.TryRemove(ContainerCacheKey(storageAccountName, containerName), out _);
                     return true;
                 }
@@ -414,7 +404,7 @@ namespace SqlBuildManager.Console.CloudStorage
                     await Task.Delay(3000);
                     return await UploadFilesToStorageContainer(storageAccountName, storageAccountKey, containerName, filePaths, true);
                 }
-                if (CanUseBlobProxy(rfExe))
+                if (CanUseRelayProxy(rfExe))
                 {
                     return await UploadFilesThroughProxyAsync(containerName, filePaths).ConfigureAwait(false);
                 }
@@ -423,7 +413,7 @@ namespace SqlBuildManager.Console.CloudStorage
             }
             catch (Exception ex)
             {
-                if (CanUseBlobProxy(ex))
+                if (CanUseRelayProxy(ex))
                 {
                     return await UploadFilesThroughProxyAsync(containerName, filePaths).ConfigureAwait(false);
                 }
@@ -444,10 +434,10 @@ namespace SqlBuildManager.Console.CloudStorage
                     using var fs = new FileStream(filePath, FileMode.Open);
                     await blobData.UploadAsync(fs);
                 }
-                catch (Exception ex) when (CanUseBlobProxy(ex))
+                catch (Exception ex) when (CanUseRelayProxy(ex))
                 {
-                    log.LogWarning($"Direct upload failed for '{filePath}'. Retrying through the blob proxy.");
-                    await CreateBlobProxyClient().UploadFileAsync(containerName, filePath).ConfigureAwait(false);
+                    log.LogWarning($"Direct upload failed for '{filePath}'. Retrying through the Relay proxy.");
+                    await CreateRelayProxyClient().UploadFileAsync(containerName, filePath).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -477,10 +467,10 @@ namespace SqlBuildManager.Console.CloudStorage
                     return false;
                 }
             }
-            catch (Exception ex) when (CanUseBlobProxy(ex))
+            catch (Exception ex) when (CanUseRelayProxy(ex))
             {
-                log.LogWarning($"Direct Blob Storage access failed while downloading '{localFileName}'. Retrying through the blob proxy.");
-                await CreateBlobProxyClient()
+                log.LogWarning($"Direct Blob Storage access failed while downloading '{localFileName}'. Retrying through the Relay proxy.");
+                await CreateRelayProxyClient()
                     .DownloadBlobAsync(containerName, Path.GetFileName(localFileName), localFileName)
                     .ConfigureAwait(false);
                 return true;
@@ -510,10 +500,10 @@ namespace SqlBuildManager.Console.CloudStorage
                     return false;
                 }
             }
-            catch (Exception ex) when (CanUseBlobProxy(ex))
+            catch (Exception ex) when (CanUseRelayProxy(ex))
             {
-                log.LogWarning($"Direct Blob Storage access failed while downloading '{localFileName}'. Retrying through the blob proxy.");
-                await CreateBlobProxyClient()
+                log.LogWarning($"Direct Blob Storage access failed while downloading '{localFileName}'. Retrying through the Relay proxy.");
+                await CreateRelayProxyClient()
                     .DownloadBlobAsync(containerName, Path.GetFileName(localFileName), localFileName)
                     .ConfigureAwait(false);
                 return true;
@@ -554,10 +544,10 @@ namespace SqlBuildManager.Console.CloudStorage
                 using var fs = new FileStream(filePath, FileMode.Open);
                 await blobData.UploadAsync(fs, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex) when (CanUseBlobProxy(ex))
+            catch (Exception ex) when (CanUseRelayProxy(ex))
             {
-                log.LogWarning($"Direct upload failed for '{filePath}'. Retrying through the blob proxy.");
-                var proxiedBlobUrl = await CreateBlobProxyClient().UploadFileAsync(
+                log.LogWarning($"Direct upload failed for '{filePath}'. Retrying through the Relay proxy.");
+                var proxiedBlobUrl = await CreateRelayProxyClient().UploadFileAsync(
                     containerName,
                     filePath,
                     cancellationToken).ConfigureAwait(false);
@@ -585,23 +575,20 @@ namespace SqlBuildManager.Console.CloudStorage
                 "A Batch managed identity resource ID is required when Storage shared-key authentication is disabled.");
         }
 
-        private static bool CanUseBlobProxy(Exception exception) =>
-            !string.IsNullOrWhiteSpace(BlobProxyEndpoint) &&
-            BlobProxyClient.IsFallbackEligible(exception);
+        private static bool CanUseRelayProxy(Exception exception) =>
+            RelayProxyManager.IsFallbackEligible(exception);
 
-        private static BlobProxyClient CreateBlobProxyClient() =>
-            string.IsNullOrWhiteSpace(BlobProxyEndpoint)
-                ? throw new InvalidOperationException("A Blob proxy endpoint is required to use Azure Relay.")
-                : new BlobProxyClient(BlobProxyEndpoint);
+        private static RelayProxyClient CreateRelayProxyClient() =>
+            RelayProxyManager.CreateClient();
 
         /// <summary>
         /// Lists blobs through the configured Azure Relay proxy, optionally restricted by prefix.
         /// </summary>
-        public static Task<IReadOnlyList<BlobProxyFile>> EnumerateBlobFilesThroughRelayAsync(
+        public static Task<IReadOnlyList<RelayBlobFile>> EnumerateBlobFilesThroughRelayAsync(
             string containerName,
             string prefix = "",
             CancellationToken cancellationToken = default) =>
-            CreateBlobProxyClient().ListBlobsAsync(containerName, prefix, cancellationToken);
+            CreateRelayProxyClient().ListBlobsAsync(containerName, prefix, cancellationToken);
 
         /// <summary>
         /// Downloads the selected blobs through the configured Azure Relay proxy.
@@ -612,36 +599,10 @@ namespace SqlBuildManager.Console.CloudStorage
             IEnumerable<string> blobNames,
             string destinationDirectory,
             CancellationToken cancellationToken = default) =>
-            CreateBlobProxyClient().DownloadBlobsAsync(
+            CreateRelayProxyClient().DownloadBlobsAsync(
                 containerName,
                 blobNames,
                 destinationDirectory,
-                cancellationToken);
-
-        public static Task CreateSqlTestTableThroughRelayAsync(
-            string endpoint,
-            string server,
-            string database,
-            string tableName,
-            string columnName,
-            CancellationToken cancellationToken = default) =>
-            new BlobProxyClient(endpoint).CreateSqlTestTableAsync(
-                server,
-                database,
-                tableName,
-                columnName,
-                cancellationToken);
-
-        public static Task ExtractSqlTestDacpacThroughRelayAsync(
-            string endpoint,
-            string server,
-            string database,
-            string destinationPath,
-            CancellationToken cancellationToken = default) =>
-            new BlobProxyClient(endpoint).ExtractSqlTestDacpacAsync(
-                server,
-                database,
-                destinationPath,
                 cancellationToken);
 
         private static ResourceFile CreateBatchResourceFile(
@@ -656,12 +617,12 @@ namespace SqlBuildManager.Console.CloudStorage
 
         private static async Task<bool> UploadFilesThroughProxyAsync(string containerName, IEnumerable<string> filePaths)
         {
-            log.LogWarning($"Direct Blob Storage access failed for container '{containerName}'. Retrying uploads through the blob proxy.");
-            var proxy = CreateBlobProxyClient();
+            log.LogWarning($"Direct Blob Storage access failed for container '{containerName}'. Retrying uploads through the Relay proxy.");
+            var proxy = CreateRelayProxyClient();
             foreach (var filePath in filePaths)
             {
                 await proxy.UploadFileAsync(containerName, filePath).ConfigureAwait(false);
-                log.LogInformation($"File {filePath} uploaded to container [{containerName}] through the blob proxy");
+                log.LogInformation($"File {filePath} uploaded to container [{containerName}] through the Relay proxy");
             }
             return true;
         }
@@ -672,10 +633,10 @@ namespace SqlBuildManager.Console.CloudStorage
             {
                 return CombineQueryOutputfilesCore(storageSvcClient, storageContainerName, outputFile);
             }
-            catch (Exception ex) when (CanUseBlobProxy(ex))
+            catch (Exception ex) when (CanUseRelayProxy(ex))
             {
-                log.LogWarning($"Direct Blob Storage access failed while combining query output in '{storageContainerName}'. Retrying through the blob proxy.");
-                CreateBlobProxyClient()
+                log.LogWarning($"Direct Blob Storage access failed while combining query output in '{storageContainerName}'. Retrying through the Relay proxy.");
+                CreateRelayProxyClient()
                     .CombineQueryOutputAsync(storageContainerName, Path.GetFileName(outputFile))
                     .GetAwaiter()
                     .GetResult();

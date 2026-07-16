@@ -60,12 +60,12 @@ namespace SqlBuildManager.Console.CommandLine
             }
         }
         [JsonIgnore]
-        public virtual string BlobProxyEndpoint
+        public virtual string RelayProxyEndpoint
         {
             set
             {
-                ConnectionArgs.BlobProxyEndpoint = value;
-                this.DirectPropertyChangeTracker.Add("Connections.BlobProxyEndpoint");
+                ConnectionArgs.RelayProxyEndpoint = value;
+                this.DirectPropertyChangeTracker.Add("Connections.RelayProxyEndpoint");
             }
         }
         [JsonIgnore]
@@ -107,7 +107,7 @@ namespace SqlBuildManager.Console.CommandLine
             public string EventHubResourceGroup{ get; set; } = string.Empty;
             public string StorageAccountName { get; set; } = string.Empty;
             public string StorageAccountKey { get; set; } = string.Empty;
-            public string BlobProxyEndpoint { get; set; } = string.Empty;
+            public string RelayProxyEndpoint { get; set; } = string.Empty;
             public string BatchAccountName { get; set; } = string.Empty;
             public string BatchAccountKey { get; set; } = string.Empty;
             public string BatchAccountUrl { get; set; } = string.Empty;

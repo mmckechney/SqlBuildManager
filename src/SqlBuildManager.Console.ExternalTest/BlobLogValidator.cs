@@ -4,6 +4,7 @@ using Azure.Storage.Blobs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Relay;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -55,7 +56,7 @@ namespace SqlBuildManager.Console.ExternalTest
             {
                 await LoadLogsDirectAsync();
             }
-            catch (Exception ex) when (StorageManager.IsBlobProxyFallbackEligible(ex))
+            catch (Exception ex) when (RelayProxyManager.IsFallbackEligible(ex))
             {
                 await LoadLogsThroughRelayAsync();
             }
@@ -307,7 +308,7 @@ namespace SqlBuildManager.Console.ExternalTest
             cmdLine.FileInfoSettingsFile = new FileInfo(settingsFilePath);
             cmdLine.SettingsFileKey = settingsFileKeyPath;
             var (_, decrypted) = Cryptography.DecryptSensitiveFields(cmdLine);
-            StorageManager.ConfigureBlobProxyEndpoint(decrypted.ConnectionArgs.BlobProxyEndpoint);
+            RelayProxyManager.ConfigureEndpoint(decrypted.ConnectionArgs.RelayProxyEndpoint);
             return (decrypted.ConnectionArgs.StorageAccountName, decrypted.ConnectionArgs.StorageAccountKey);
         }
 

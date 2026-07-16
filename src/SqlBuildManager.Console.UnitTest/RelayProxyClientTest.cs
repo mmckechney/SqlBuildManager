@@ -1,6 +1,6 @@
 using Azure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlBuildManager.Console.CloudStorage;
+using SqlBuildManager.Console.Relay;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,33 +10,33 @@ using System.Threading.Tasks;
 namespace SqlBuildManager.Console.UnitTest
 {
     [TestClass]
-    public class BlobProxyClientTest
+    public class RelayProxyClientTest
     {
         [TestMethod]
         public void Constructor_AzureRelayEndpoint_DoesNotThrow()
         {
-            _ = new BlobProxyClient("https://example.servicebus.windows.net/blobupload");
+            _ = new RelayProxyClient("https://example.servicebus.windows.net/relayproxy");
         }
 
         [TestMethod]
         public void Constructor_NonHttpsEndpoint_ThrowsArgumentException()
         {
             Assert.ThrowsExactly<ArgumentException>(
-                () => new BlobProxyClient("http://proxy.example.test/blobupload"));
+                () => new RelayProxyClient("http://proxy.example.test/relayproxy"));
         }
 
         [TestMethod]
         public void Constructor_NonRelayHost_ThrowsArgumentException()
         {
             Assert.ThrowsExactly<ArgumentException>(
-                () => new BlobProxyClient("https://proxy.example.test/blobupload"));
+                () => new RelayProxyClient("https://proxy.example.test/relayproxy"));
         }
 
         [TestMethod]
         public void Constructor_NestedPath_ThrowsArgumentException()
         {
             Assert.ThrowsExactly<ArgumentException>(
-                () => new BlobProxyClient("https://example.servicebus.windows.net/blobupload/extra"));
+                () => new RelayProxyClient("https://example.servicebus.windows.net/relayproxy/extra"));
         }
 
         [TestMethod]
@@ -44,7 +44,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             var exception = new RequestFailedException(403, "Storage public access is disabled.");
 
-            Assert.IsTrue(BlobProxyClient.IsFallbackEligible(exception));
+            Assert.IsTrue(RelayProxyClient.IsFallbackEligible(exception));
         }
 
         [TestMethod]
@@ -52,13 +52,13 @@ namespace SqlBuildManager.Console.UnitTest
         {
             var exception = new RequestFailedException(404, "Blob not found.");
 
-            Assert.IsFalse(BlobProxyClient.IsFallbackEligible(exception));
+            Assert.IsFalse(RelayProxyClient.IsFallbackEligible(exception));
         }
 
         [TestMethod]
         public void IsFallbackEligible_NetworkFailure_ReturnsTrue()
         {
-            Assert.IsTrue(BlobProxyClient.IsFallbackEligible(new HttpRequestException("Network unavailable.")));
+            Assert.IsTrue(RelayProxyClient.IsFallbackEligible(new HttpRequestException("Network unavailable.")));
         }
 
         [TestMethod]
@@ -72,32 +72,32 @@ namespace SqlBuildManager.Console.UnitTest
         {
             Assert.AreEqual(
                 expected,
-                BlobProxyClient.IsSqlPrivateNetworkDenial(number, message));
+                RelayProxyClient.IsSqlPrivateNetworkDenial(number, message));
         }
 
         [TestMethod]
-        public void IsBlobProxyFallbackEligible_ConfiguredProxyAndStorageForbidden_ReturnsTrue()
+        public void IsRelayProxyFallbackEligible_ConfiguredProxyAndStorageForbidden_ReturnsTrue()
         {
             try
             {
-                StorageManager.ConfigureBlobProxyEndpoint(
-                    "https://example.servicebus.windows.net/blobupload");
+                RelayProxyManager.ConfigureEndpoint(
+                    "https://example.servicebus.windows.net/relayproxy");
 
-                Assert.IsTrue(StorageManager.IsBlobProxyFallbackEligible(
+                Assert.IsTrue(RelayProxyManager.IsFallbackEligible(
                     new RequestFailedException(403, "Storage public access is disabled.")));
             }
             finally
             {
-                StorageManager.ConfigureBlobProxyEndpoint(string.Empty);
+                RelayProxyManager.ConfigureEndpoint(string.Empty);
             }
         }
 
         [TestMethod]
-        public void IsBlobProxyFallbackEligible_NoConfiguredProxy_ReturnsFalse()
+        public void IsRelayProxyFallbackEligible_NoConfiguredProxy_ReturnsFalse()
         {
-            StorageManager.ConfigureBlobProxyEndpoint(string.Empty);
+            RelayProxyManager.ConfigureEndpoint(string.Empty);
 
-            Assert.IsFalse(StorageManager.IsBlobProxyFallbackEligible(
+            Assert.IsFalse(RelayProxyManager.IsFallbackEligible(
                 new RequestFailedException(403, "Storage public access is disabled.")));
         }
 
@@ -106,7 +106,7 @@ namespace SqlBuildManager.Console.UnitTest
         {
             var root = Path.Combine(Path.GetTempPath(), "blob-download");
 
-            var result = BlobProxyClient.GetSafeDownloadPath(root, "worker-1/logs/results.csv");
+            var result = RelayProxyClient.GetSafeDownloadPath(root, "worker-1/logs/results.csv");
 
             Assert.AreEqual(
                 Path.Combine(Path.GetFullPath(root), "worker-1", "logs", "results.csv"),
@@ -122,13 +122,13 @@ namespace SqlBuildManager.Console.UnitTest
         public void GetSafeDownloadPath_UnsafeBlobName_ThrowsArgumentException(string blobName)
         {
             Assert.ThrowsExactly<ArgumentException>(
-                () => BlobProxyClient.GetSafeDownloadPath(Path.GetTempPath(), blobName));
+                () => RelayProxyClient.GetSafeDownloadPath(Path.GetTempPath(), blobName));
         }
 
         [TestMethod]
         public async Task DownloadBlobsAsync_NoBlobNames_ThrowsArgumentException()
         {
-            var client = new BlobProxyClient("https://example.servicebus.windows.net/blobupload");
+            var client = new RelayProxyClient("https://example.servicebus.windows.net/relayproxy");
 
             await Assert.ThrowsExactlyAsync<ArgumentException>(
                 () => client.DownloadBlobsAsync("container", [], Path.GetTempPath()));
@@ -137,7 +137,7 @@ namespace SqlBuildManager.Console.UnitTest
         [TestMethod]
         public async Task DownloadBlobsAsync_UnsafeSelection_ValidatesBeforeSending()
         {
-            var client = new BlobProxyClient("https://example.servicebus.windows.net/blobupload");
+            var client = new RelayProxyClient("https://example.servicebus.windows.net/relayproxy");
             var blobNames = new List<string> { "safe.txt", "../unsafe.txt" };
 
             await Assert.ThrowsExactlyAsync<ArgumentException>(

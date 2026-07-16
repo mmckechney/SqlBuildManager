@@ -30,7 +30,7 @@ namespace SqlBuildManager.Console.UnitTest
                     "batch", "run",
                     "--override", "XXXXX",
                     "--settingsfile", tmpCfg,
-                    "--blobproxyendpoint", "https://example.servicebus.windows.net/blobupload"
+                    "--relayproxyendpoint", "https://example.servicebus.windows.net/relayproxy"
 
                 };
 
@@ -38,8 +38,8 @@ namespace SqlBuildManager.Console.UnitTest
                 Assert.IsNotNull(cmdLine, $"cmdLine is null. Parse error: {message}");
                 Assert.IsNotNull(cmdLine.BatchArgs, "BatchArgs is null");
                 Assert.AreEqual(
-                    "https://example.servicebus.windows.net/blobupload",
-                    cmdLine.ConnectionArgs.BlobProxyEndpoint);
+                    "https://example.servicebus.windows.net/relayproxy",
+                    cmdLine.ConnectionArgs.RelayProxyEndpoint);
                 Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.EssentialOnly));
                 Assert.IsTrue(cmdLine.EventHubArgs.Logging.Contains(EventHubLogging.ScriptErrors));
 

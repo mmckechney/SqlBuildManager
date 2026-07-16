@@ -114,7 +114,7 @@ $params += @("--idrg", $resourceGroupName)
 $params += @("--acirg", $resourceGroupName)
 $params += @("--tenantid", $tenantId)
 $params += @("--storageaccountname", $storageAccountName)
-$params += @("--blobproxyendpoint", "https://$($prefix)relay.servicebus.windows.net/blobupload")
+$params += @("--relayproxyendpoint", "https://$($prefix)relay.servicebus.windows.net/relayproxy")
 # NO --storageaccountkey - will use Managed Identity
 $params += @("--defaultscripttimeout", "500")
 $params += @("--subscriptionid", $subscriptionId)

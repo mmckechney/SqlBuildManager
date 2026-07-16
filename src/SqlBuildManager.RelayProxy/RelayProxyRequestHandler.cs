@@ -9,9 +9,9 @@ using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace SqlBuildManager.StorageProxy;
+namespace SqlBuildManager.RelayProxy;
 
-internal sealed class BlobProxyRequestHandler : IAsyncDisposable
+internal sealed class RelayProxyRequestHandler : IAsyncDisposable
 {
     private static readonly string[] AppendLogFiles =
         ["commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg"];
@@ -34,7 +34,7 @@ internal sealed class BlobProxyRequestHandler : IAsyncDisposable
     private readonly TokenCredential sqlCredential;
     private readonly string sqlManagedIdentityClientId;
 
-    public BlobProxyRequestHandler(
+    public RelayProxyRequestHandler(
         string storageAccountName,
         string hybridConnectionName,
         BlobServiceClient storageClient,
@@ -236,7 +236,7 @@ internal sealed class BlobProxyRequestHandler : IAsyncDisposable
         catch (Exception ex)
         {
             Console.Error.WriteLine(ex);
-            await WriteErrorAsync(context, HttpStatusCode.InternalServerError, "Blob proxy request failed.");
+            await WriteErrorAsync(context, HttpStatusCode.InternalServerError, "Relay proxy request failed.");
         }
         finally
         {
@@ -400,7 +400,7 @@ internal sealed class BlobProxyRequestHandler : IAsyncDisposable
                 tempFile,
                 database,
                 "Sql Build Manager",
-                typeof(BlobProxyRequestHandler).Assembly.GetName().Version!,
+                typeof(RelayProxyRequestHandler).Assembly.GetName().Version!,
                 "Sql Build Manager",
                 null,
                 options);

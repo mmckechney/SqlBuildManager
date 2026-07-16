@@ -38,7 +38,7 @@ namespace SqlBuildManager.Console.CommandLine
                 {
                     storageContainerOption,
                     storagePrefixOption,
-                    blobProxyEndpointOption
+                    relayProxyEndpointOption
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
                 cmd.AddRange(IdentityArgumentsForBatch);
@@ -64,7 +64,7 @@ namespace SqlBuildManager.Console.CommandLine
                     storageContainerOption,
                     storageBlobOption,
                     storageOutputPathOption,
-                    blobProxyEndpointOption
+                    relayProxyEndpointOption
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
                 cmd.AddRange(IdentityArgumentsForBatch);

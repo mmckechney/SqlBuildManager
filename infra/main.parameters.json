@@ -44,7 +44,7 @@
     "deployPostgreSQL": {
       "value": "${DEPLOY_POSTGRESQL}"
     },
-    "deployBlobProxy": {
+    "deployRelayProxy": {
       "value": true
     },
     "pgAdminPassword": {

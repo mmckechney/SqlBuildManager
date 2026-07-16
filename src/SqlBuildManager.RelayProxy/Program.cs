@@ -2,7 +2,7 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using Microsoft.Azure.Relay;
 
-namespace SqlBuildManager.StorageProxy;
+namespace SqlBuildManager.RelayProxy;
 
 internal static class Program
 {
@@ -31,7 +31,7 @@ internal static class Program
         var storageClient = new BlobServiceClient(
             new Uri($"https://{storageAccountName}.blob.core.windows.net"),
             credential);
-        var proxy = new BlobProxyRequestHandler(
+        var proxy = new RelayProxyRequestHandler(
             storageAccountName,
             hybridConnectionName,
             storageClient,
@@ -56,7 +56,7 @@ internal static class Program
         AppDomain.CurrentDomain.ProcessExit += (_, _) => shutdown.Cancel();
 
         await listener.OpenAsync(shutdown.Token);
-        Console.WriteLine($"Blob upload proxy listening at https://{relayHost}/{hybridConnectionName}.");
+        Console.WriteLine($"Relay proxy listening at https://{relayHost}/{hybridConnectionName}.");
 
         try
         {

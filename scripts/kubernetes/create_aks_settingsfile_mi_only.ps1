@@ -115,7 +115,7 @@ $params += @("--ehsub", $subscriptionId)
 
 # Storage (namespace only, no key)
 $params += @("--storageaccountname", $storageAccountName)
-$params += @("--blobproxyendpoint", "https://$($prefix)relay.servicebus.windows.net/blobupload")
+$params += @("--relayproxyendpoint", "https://$($prefix)relay.servicebus.windows.net/relayproxy")
 # NO --storageaccountkey - will use Managed Identity
 
 # Event Hub (namespace only, no connection string)

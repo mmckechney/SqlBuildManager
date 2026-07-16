@@ -15,9 +15,9 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqlBuildManager.Console.CloudStorage
+namespace SqlBuildManager.Console.Relay
 {
-    internal sealed class BlobProxyClient
+    public sealed class RelayProxyClient
     {
         private static readonly HttpClient HttpClient = new(new HttpClientHandler
         {
@@ -29,7 +29,7 @@ namespace SqlBuildManager.Console.CloudStorage
 
         private readonly Uri endpoint;
 
-        public BlobProxyClient(string endpoint)
+        public RelayProxyClient(string endpoint)
         {
             if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var parsed) ||
                 parsed.Scheme != Uri.UriSchemeHttps ||
@@ -41,7 +41,7 @@ namespace SqlBuildManager.Console.CloudStorage
                 parsed.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries).Length != 1)
             {
                 throw new ArgumentException(
-                    "Blob proxy endpoint must be an Azure Relay HTTPS URI with one Hybrid Connection path segment.",
+                    "Relay proxy endpoint must be an Azure Relay HTTPS URI with one Hybrid Connection path segment.",
                     nameof(endpoint));
             }
 
@@ -147,7 +147,7 @@ namespace SqlBuildManager.Console.CloudStorage
             await source.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<IReadOnlyList<BlobProxyFile>> ListBlobsAsync(
+        public async Task<IReadOnlyList<RelayBlobFile>> ListBlobsAsync(
             string containerName,
             string prefix = "",
             CancellationToken cancellationToken = default)
@@ -380,7 +380,7 @@ namespace SqlBuildManager.Console.CloudStorage
                 var reasonPhrase = response.ReasonPhrase;
                 response.Dispose();
                 throw new HttpRequestException(
-                    $"Blob proxy returned {(int)statusCode} ({reasonPhrase}): {error}",
+                    $"Relay proxy returned {(int)statusCode} ({reasonPhrase}): {error}",
                     null,
                     statusCode);
             }
@@ -398,7 +398,7 @@ namespace SqlBuildManager.Console.CloudStorage
                 cancellationToken: cancellationToken).ConfigureAwait(false);
             var url = propertyName == "blobUrl" ? result?.BlobUrl : result?.ContainerUrl;
             return string.IsNullOrWhiteSpace(url)
-                ? throw new InvalidDataException($"Blob proxy response did not include '{propertyName}'.")
+                ? throw new InvalidDataException($"Relay proxy response did not include '{propertyName}'.")
                 : url;
         }
 
@@ -459,7 +459,7 @@ namespace SqlBuildManager.Console.CloudStorage
         private sealed class ListBlobsResponse
         {
             [JsonPropertyName("blobs")]
-            public List<BlobProxyFile> Blobs { get; set; } = [];
+            public List<RelayBlobFile> Blobs { get; set; } = [];
         }
 
         private sealed class EventMonitorStartResponse

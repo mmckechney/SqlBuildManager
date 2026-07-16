@@ -45,13 +45,13 @@ $runtimeIdentityId = Get-AzdValue 'MANAGED_IDENTITY_ID'
 $runtimeIdentityClientId = Get-AzdValue 'MANAGED_IDENTITY_CLIENT_ID'
 $senderPrincipalId = Get-AzdValue 'AZURE_PRINCIPAL_ID'
 $relayNamespaceName = "${prefix}relay"
-$hybridConnectionName = 'blobupload'
-$identityName = "${prefix}blobproxy"
-$containerName = "${prefix}blobproxy"
-$imageName = 'sqlbuildmanager-storageproxy:latest'
+$hybridConnectionName = 'relayproxy'
+$identityName = "${prefix}relayproxy"
+$containerName = "${prefix}relayproxy"
+$imageName = 'sqlbuildmanager-relayproxy:latest'
 $image = "${containerRegistryLoginServer}/${imageName}"
 $sourceContext = Join-Path $repoRoot 'src'
-$dockerfile = 'SqlBuildManager.StorageProxy/Dockerfile'
+$dockerfile = 'SqlBuildManager.RelayProxy/Dockerfile'
 $endpoint = "https://${relayNamespaceName}.servicebus.windows.net/${hybridConnectionName}"
 $relayNamespaceId = az relay namespace show `
     --resource-group $resourceGroupName `
@@ -87,7 +87,7 @@ $identity = az identity show `
     --name $identityName `
     --output json | ConvertFrom-Json
 if ($LASTEXITCODE -ne 0 -or $null -eq $identity) {
-    throw "Unable to read blob proxy identity '$identityName'."
+    throw "Unable to read Relay proxy identity '$identityName'."
 }
 
 $sqlServerFqdns = @(az sql server list `
@@ -101,7 +101,7 @@ $allowedSqlServers = ($sqlServerFqdns |
     Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
     ForEach-Object { $_.Trim() }) -join ','
 
-Write-Host "Building blob proxy image remotely in ACR..." -ForegroundColor Cyan
+Write-Host "Building Relay proxy image remotely in ACR..." -ForegroundColor Cyan
 Push-Location $sourceContext
 try {
     Invoke-Az -Arguments @(
@@ -113,7 +113,7 @@ try {
         '--no-logs',
         '--output', 'none',
         '.'
-    ) -FailureMessage 'The ACR build for the Blob Storage proxy failed.'
+    ) -FailureMessage 'The ACR build for the Relay proxy failed.'
 }
 finally {
     Pop-Location
@@ -127,7 +127,7 @@ if ($LASTEXITCODE -eq 0) {
         '--name', $containerName,
         '--yes',
         '--output', 'none'
-    ) -FailureMessage "Unable to replace existing blob proxy container '$containerName'."
+    ) -FailureMessage "Unable to replace existing Relay proxy container '$containerName'."
 }
 
 $createArguments = @(
@@ -164,12 +164,12 @@ for ($attempt = 1; $attempt -le 5 -and -not $created; $attempt++) {
     }
 
     if ($attempt -lt 5) {
-        Write-Host "Blob proxy creation attempt $attempt failed while role assignments propagate; retrying..." -ForegroundColor Yellow
+        Write-Host "Relay proxy creation attempt $attempt failed while role assignments propagate; retrying..." -ForegroundColor Yellow
         Start-Sleep -Seconds 20
     }
 }
 if (-not $created) {
-    throw "Unable to create blob proxy container '$containerName'."
+    throw "Unable to create Relay proxy container '$containerName'."
 }
 
 $deadline = [DateTime]::UtcNow.AddMinutes(10)
@@ -180,7 +180,7 @@ do {
 
     if ($provisioningState -eq 'Failed' -or $containerState -eq 'Terminated') {
         az container logs --resource-group $resourceGroupName --name $containerName
-        throw "Blob proxy container '$containerName' failed to start."
+        throw "Relay proxy container '$containerName' failed to start."
     }
     if ($provisioningState -eq 'Succeeded' -and $containerState -eq 'Running') {
         break
@@ -188,7 +188,7 @@ do {
 } while ([DateTime]::UtcNow -lt $deadline)
 
 if ($containerState -ne 'Running') {
-    throw "Timed out waiting for blob proxy container '$containerName'."
+    throw "Timed out waiting for Relay proxy container '$containerName'."
 }
 
-Write-Host "Blob proxy is running at $endpoint" -ForegroundColor Green
+Write-Host "Relay proxy is running at $endpoint" -ForegroundColor Green

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Relay;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -80,18 +81,18 @@ namespace SqlBuildManager.Console
                 return false;
             }
 
-            StorageManager.BlobProxyEndpoint = initializedArgs.ConnectionArgs.BlobProxyEndpoint;
-            if (string.IsNullOrWhiteSpace(StorageManager.BlobProxyEndpoint))
+            RelayProxyManager.ConfigureEndpoint(initializedArgs.ConnectionArgs.RelayProxyEndpoint);
+            if (string.IsNullOrWhiteSpace(RelayProxyManager.Endpoint))
             {
                 log.LogError(
-                    "A Blob proxy endpoint is required. Provide --blobproxyendpoint or a settings file containing Connections.BlobProxyEndpoint.");
+                    "A Relay proxy endpoint is required. Provide --relayproxyendpoint or a settings file containing Connections.RelayProxyEndpoint.");
                 return false;
             }
 
             return true;
         }
 
-        private static void WriteBlobFileTable(IReadOnlyList<BlobProxyFile> files)
+        private static void WriteBlobFileTable(IReadOnlyList<RelayBlobFile> files)
         {
             var table = new Table()
                 .AddColumn("Name")
