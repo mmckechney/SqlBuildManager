@@ -1,5 +1,6 @@
 using Azure;
 using Azure.Core;
+using Microsoft.Data.SqlClient;
 using SqlBuildManager.Console.Aad;
 using System;
 using System.Collections.Generic;
@@ -264,6 +265,54 @@ namespace SqlBuildManager.Console.CloudStorage
                 cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task CreateSqlTestTableAsync(
+            string server,
+            string database,
+            string tableName,
+            string columnName,
+            CancellationToken cancellationToken = default)
+        {
+            using var content = CreateJsonContent(new
+            {
+                server,
+                database,
+                tableName,
+                columnName
+            });
+            using var response = await SendAsync(
+                HttpMethod.Post,
+                "sql-test/tables",
+                content,
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task ExtractSqlTestDacpacAsync(
+            string server,
+            string database,
+            string destinationPath,
+            CancellationToken cancellationToken = default)
+        {
+            using var content = CreateJsonContent(new
+            {
+                server,
+                database
+            });
+            using var response = await SendAsync(
+                HttpMethod.Post,
+                "sql-test/dacpac",
+                content,
+                cancellationToken).ConfigureAwait(false);
+            await using var source = await response.Content
+                .ReadAsStreamAsync(cancellationToken)
+                .ConfigureAwait(false);
+            await using var destination = new FileStream(
+                destinationPath,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None);
+            await source.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
+        }
+
         public static bool IsFallbackEligible(Exception exception) =>
             GetExceptions(exception).Any(candidate =>
                 candidate is HttpRequestException or TaskCanceledException ||
@@ -271,6 +320,14 @@ namespace SqlBuildManager.Console.CloudStorage
                     (requestFailed.Status == 0 ||
                      requestFailed.Status == (int)HttpStatusCode.Forbidden ||
                      requestFailed.ErrorCode == "AuthorizationFailure"));
+
+        public static bool IsSqlPrivateNetworkDenial(Exception exception) =>
+            GetExceptions(exception)
+                .OfType<SqlException>()
+                .Any(candidate => IsSqlPrivateNetworkDenial(candidate.Number, candidate.Message));
+
+        internal static bool IsSqlPrivateNetworkDenial(int number, string message) =>
+            number == 47073;
 
         internal static IEnumerable<Exception> GetExceptions(Exception exception)
         {
@@ -346,6 +403,12 @@ namespace SqlBuildManager.Console.CloudStorage
         }
 
         private static string Escape(string value) => Uri.EscapeDataString(value);
+
+        private static StringContent CreateJsonContent(object value) =>
+            new(
+                JsonSerializer.Serialize(value),
+                Encoding.UTF8,
+                "application/json");
 
         internal static string GetSafeDownloadPath(string destinationDirectory, string blobName)
         {

@@ -3,6 +3,8 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Azure.Core;
 using Microsoft.Azure.Relay;
+using Microsoft.Data.SqlClient;
+using Microsoft.SqlServer.Dac;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -17,11 +19,20 @@ internal sealed class BlobProxyRequestHandler : IAsyncDisposable
     private static readonly Regex ContainerNamePattern = new(
         "^[a-z0-9](?:[a-z0-9-]{1,61}[a-z0-9])?$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex DatabaseNamePattern = new(
+        "^[A-Za-z][A-Za-z0-9_]{0,127}$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex RandomIdentifierPattern = new(
+        "^R[0-9A-Fa-f]{10}$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     private readonly string storageAccountName;
     private readonly string hybridConnectionName;
     private readonly BlobServiceClient storageClient;
     private readonly EventHubRelayMonitor eventHubMonitor;
+    private readonly HashSet<string> allowedSqlServers;
+    private readonly TokenCredential sqlCredential;
+    private readonly string sqlManagedIdentityClientId;
 
     public BlobProxyRequestHandler(
         string storageAccountName,
@@ -29,12 +40,20 @@ internal sealed class BlobProxyRequestHandler : IAsyncDisposable
         BlobServiceClient storageClient,
         string eventHubNamespaceName,
         string eventHubName,
-        TokenCredential credential)
+        TokenCredential credential,
+        IEnumerable<string> allowedSqlServers,
+        TokenCredential sqlCredential,
+        string sqlManagedIdentityClientId)
     {
         this.storageAccountName = storageAccountName;
         this.hybridConnectionName = hybridConnectionName;
         this.storageClient = storageClient;
         eventHubMonitor = new EventHubRelayMonitor(eventHubNamespaceName, eventHubName, credential);
+        this.allowedSqlServers = new HashSet<string>(
+            allowedSqlServers,
+            StringComparer.OrdinalIgnoreCase);
+        this.sqlCredential = sqlCredential;
+        this.sqlManagedIdentityClientId = sqlManagedIdentityClientId;
     }
 
     public async Task HandleAsync(RelayedHttpListenerContext context)
@@ -43,6 +62,10 @@ internal sealed class BlobProxyRequestHandler : IAsyncDisposable
         {
             var segments = GetRouteSegments(context.Request.Url);
             if (await TryHandleEventMonitorAsync(context, segments))
+            {
+                return;
+            }
+            if (await TryHandleSqlTestAsync(context, segments))
             {
                 return;
             }
@@ -195,6 +218,16 @@ internal sealed class BlobProxyRequestHandler : IAsyncDisposable
 
             await WriteErrorAsync(context, HttpStatusCode.NotFound, "Unknown proxy route.");
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            Console.Error.WriteLine(ex.Message);
+            await WriteErrorAsync(context, HttpStatusCode.Forbidden, ex.Message);
+        }
+        catch (InvalidDataException ex)
+        {
+            Console.Error.WriteLine(ex.Message);
+            await WriteErrorAsync(context, HttpStatusCode.BadRequest, ex.Message);
+        }
         catch (Azure.RequestFailedException ex)
         {
             Console.Error.WriteLine($"Storage request failed: {ex.ErrorCode} {ex.Message}");
@@ -255,6 +288,136 @@ internal sealed class BlobProxyRequestHandler : IAsyncDisposable
         await WriteErrorAsync(context, HttpStatusCode.MethodNotAllowed, "Unsupported Event Hub monitor operation.");
         return true;
     }
+
+    private async Task<bool> TryHandleSqlTestAsync(
+        RelayedHttpListenerContext context,
+        string[] segments)
+    {
+        if (segments.Length != 2 || segments[0] != "sql-test")
+        {
+            return false;
+        }
+        if (context.Request.HttpMethod != "POST")
+        {
+            await WriteErrorAsync(context, HttpStatusCode.MethodNotAllowed, "Unsupported SQL test operation.");
+            return true;
+        }
+
+        if (segments[1] == "tables")
+        {
+            var request = await JsonSerializer.DeserializeAsync<SqlTestTableRequest>(
+                context.Request.InputStream)
+                ?? throw new InvalidDataException("SQL test table request body is required.");
+            ValidateSqlTarget(request.Server, request.Database);
+            if (!RandomIdentifierPattern.IsMatch(request.TableName) ||
+                !RandomIdentifierPattern.IsMatch(request.ColumnName))
+            {
+                throw new InvalidDataException("SQL test table and column names must be random test identifiers.");
+            }
+
+            await using var connection = await OpenSqlConnectionAsync(request.Server, request.Database);
+            await using var command = connection.CreateCommand();
+            command.CommandText =
+                $"CREATE TABLE {QuoteIdentifier(request.TableName)} " +
+                $"({QuoteIdentifier(request.ColumnName)} VARCHAR(10))";
+            await command.ExecuteNonQueryAsync();
+            await WriteJsonAsync(context, HttpStatusCode.Created, new { created = true });
+            return true;
+        }
+
+        if (segments[1] == "dacpac")
+        {
+            var request = await JsonSerializer.DeserializeAsync<SqlTestDacpacRequest>(
+                context.Request.InputStream)
+                ?? throw new InvalidDataException("SQL test DACPAC request body is required.");
+            ValidateSqlTarget(request.Server, request.Database);
+            await WriteDacpacAsync(context, request.Server, request.Database);
+            return true;
+        }
+
+        await WriteErrorAsync(context, HttpStatusCode.NotFound, "Unknown SQL test route.");
+        return true;
+    }
+
+    private void ValidateSqlTarget(string server, string database)
+    {
+        if (!allowedSqlServers.Contains(server))
+        {
+            throw new UnauthorizedAccessException("SQL server is not allowed by this Relay listener.");
+        }
+        if (!DatabaseNamePattern.IsMatch(database))
+        {
+            throw new InvalidDataException("Invalid SQL database name.");
+        }
+    }
+
+    private async Task<SqlConnection> OpenSqlConnectionAsync(string server, string database)
+    {
+        var connection = new SqlConnection(new SqlConnectionStringBuilder
+        {
+            DataSource = server,
+            InitialCatalog = database,
+            Encrypt = true,
+            TrustServerCertificate = false,
+            ConnectTimeout = 30
+        }.ConnectionString);
+        var token = await sqlCredential.GetTokenAsync(
+            new TokenRequestContext(["https://database.windows.net/.default"]),
+            CancellationToken.None);
+        connection.AccessToken = token.Token;
+        await connection.OpenAsync();
+        return connection;
+    }
+
+    private async Task WriteDacpacAsync(
+        RelayedHttpListenerContext context,
+        string server,
+        string database)
+    {
+        var connectionString = new SqlConnectionStringBuilder
+        {
+            DataSource = server,
+            InitialCatalog = database,
+            Encrypt = true,
+            TrustServerCertificate = false,
+            ConnectTimeout = 30,
+            Authentication = SqlAuthenticationMethod.ActiveDirectoryManagedIdentity,
+            UserID = sqlManagedIdentityClientId
+        }.ConnectionString;
+        var tempFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.dacpac");
+        try
+        {
+            var options = new DacExtractOptions
+            {
+                IgnoreExtendedProperties = true,
+                IgnoreUserLoginMappings = true,
+                LongRunningCommandTimeout = 300,
+                CommandTimeout = 300,
+                DatabaseLockTimeout = 300
+            };
+            var service = new DacServices(connectionString);
+            service.Extract(
+                tempFile,
+                database,
+                "Sql Build Manager",
+                typeof(BlobProxyRequestHandler).Assembly.GetName().Version!,
+                "Sql Build Manager",
+                null,
+                options);
+
+            context.Response.StatusCode = HttpStatusCode.OK;
+            context.Response.Headers[HttpResponseHeader.ContentType] = "application/octet-stream";
+            await using var source = File.OpenRead(tempFile);
+            await source.CopyToAsync(context.Response.OutputStream);
+        }
+        finally
+        {
+            File.Delete(tempFile);
+        }
+    }
+
+    private static string QuoteIdentifier(string identifier) =>
+        $"[{identifier.Replace("]", "]]", StringComparison.Ordinal)}]";
 
     private string GetContainerUrl(string containerName) =>
         $"https://{storageAccountName}.blob.core.windows.net/{containerName}";
@@ -442,5 +605,29 @@ internal sealed class BlobProxyRequestHandler : IAsyncDisposable
         context.Response.StatusCode = statusCode;
         context.Response.Headers[HttpResponseHeader.ContentType] = "application/json";
         await JsonSerializer.SerializeAsync(context.Response.OutputStream, value);
+    }
+
+    private sealed class SqlTestTableRequest
+    {
+        [System.Text.Json.Serialization.JsonPropertyName("server")]
+        public string Server { get; set; } = string.Empty;
+
+        [System.Text.Json.Serialization.JsonPropertyName("database")]
+        public string Database { get; set; } = string.Empty;
+
+        [System.Text.Json.Serialization.JsonPropertyName("tableName")]
+        public string TableName { get; set; } = string.Empty;
+
+        [System.Text.Json.Serialization.JsonPropertyName("columnName")]
+        public string ColumnName { get; set; } = string.Empty;
+    }
+
+    private sealed class SqlTestDacpacRequest
+    {
+        [System.Text.Json.Serialization.JsonPropertyName("server")]
+        public string Server { get; set; } = string.Empty;
+
+        [System.Text.Json.Serialization.JsonPropertyName("database")]
+        public string Database { get; set; } = string.Empty;
     }
 }

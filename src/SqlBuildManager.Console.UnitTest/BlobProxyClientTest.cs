@@ -62,6 +62,20 @@ namespace SqlBuildManager.Console.UnitTest
         }
 
         [TestMethod]
+        [DataRow(47073, "Connection was denied because Deny Public Network Access is set to Yes.", true)]
+        [DataRow(47073, "Localized Azure SQL network denial.", true)]
+        [DataRow(18456, "Deny Public Network Access is set to Yes.", false)]
+        public void IsSqlPrivateNetworkDenial_ClassifiesExactSqlFailure(
+            int number,
+            string message,
+            bool expected)
+        {
+            Assert.AreEqual(
+                expected,
+                BlobProxyClient.IsSqlPrivateNetworkDenial(number, message));
+        }
+
+        [TestMethod]
         public void IsBlobProxyFallbackEligible_ConfiguredProxyAndStorageForbidden_ReturnsTrue()
         {
             try

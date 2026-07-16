@@ -17,9 +17,14 @@ internal static class Program
         var eventHubNamespaceName = GetRequiredSetting("EVENTHUB_NAMESPACE_NAME");
         var eventHubName = GetRequiredSetting("EVENTHUB_NAME");
         var managedIdentityClientId = GetRequiredSetting("MANAGED_IDENTITY_CLIENT_ID");
+        var sqlManagedIdentityClientId = GetRequiredSetting("SQL_MANAGED_IDENTITY_CLIENT_ID");
+        var allowedSqlServers = (Environment.GetEnvironmentVariable("SQL_SERVER_FQDNS") ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         var credential = new ManagedIdentityCredential(
             ManagedIdentityId.FromUserAssignedClientId(managedIdentityClientId));
+        var sqlCredential = new ManagedIdentityCredential(
+            ManagedIdentityId.FromUserAssignedClientId(sqlManagedIdentityClientId));
         var tokenProvider = TokenProvider.CreateManagedIdentityTokenProvider(credential);
         var relayUri = new Uri($"sb://{relayHost}/{hybridConnectionName}");
         var listener = new HybridConnectionListener(relayUri, tokenProvider);
@@ -32,7 +37,10 @@ internal static class Program
             storageClient,
             eventHubNamespaceName,
             eventHubName,
-            credential);
+            credential,
+            allowedSqlServers,
+            sqlCredential,
+            sqlManagedIdentityClientId);
 
         listener.Connecting += (_, _) => Console.WriteLine("Azure Relay listener connecting.");
         listener.Offline += (_, _) => Console.WriteLine("Azure Relay listener offline.");

@@ -41,6 +41,8 @@ $storageAccountName = Get-AzdValue 'STORAGE_ACCOUNT_NAME'
 $eventHubNamespaceName = Get-AzdValue 'EVENTHUB_NAMESPACE_NAME'
 $eventHubName = Get-AzdValue 'EVENTHUB_NAME'
 $aciSubnetId = Get-AzdValue 'ACI_SUBNET_ID'
+$runtimeIdentityId = Get-AzdValue 'MANAGED_IDENTITY_ID'
+$runtimeIdentityClientId = Get-AzdValue 'MANAGED_IDENTITY_CLIENT_ID'
 $senderPrincipalId = Get-AzdValue 'AZURE_PRINCIPAL_ID'
 $relayNamespaceName = "${prefix}relay"
 $hybridConnectionName = 'blobupload'
@@ -88,6 +90,17 @@ if ($LASTEXITCODE -ne 0 -or $null -eq $identity) {
     throw "Unable to read blob proxy identity '$identityName'."
 }
 
+$sqlServerFqdns = @(az sql server list `
+    --resource-group $resourceGroupName `
+    --query '[].fullyQualifiedDomainName' `
+    --output tsv)
+if ($LASTEXITCODE -ne 0) {
+    throw "Unable to enumerate SQL servers in resource group '$resourceGroupName'."
+}
+$allowedSqlServers = ($sqlServerFqdns |
+    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+    ForEach-Object { $_.Trim() }) -join ','
+
 Write-Host "Building blob proxy image remotely in ACR..." -ForegroundColor Cyan
 Push-Location $sourceContext
 try {
@@ -124,7 +137,7 @@ $createArguments = @(
     '--image', $image,
     '--registry-login-server', $containerRegistryLoginServer,
     '--acr-identity', $identity.id,
-    '--assign-identity', $identity.id,
+    '--assign-identity', $identity.id, $runtimeIdentityId,
     '--subnet', $aciSubnetId,
     '--os-type', 'Linux',
     '--restart-policy', 'Always',
@@ -137,6 +150,8 @@ $createArguments = @(
     "EVENTHUB_NAMESPACE_NAME=$eventHubNamespaceName",
     "EVENTHUB_NAME=$eventHubName",
     "MANAGED_IDENTITY_CLIENT_ID=$($identity.clientId)",
+    "SQL_MANAGED_IDENTITY_CLIENT_ID=$runtimeIdentityClientId",
+    "SQL_SERVER_FQDNS=$allowedSqlServers",
     '--output', 'none'
 )
 

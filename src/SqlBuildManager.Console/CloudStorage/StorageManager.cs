@@ -35,6 +35,9 @@ namespace SqlBuildManager.Console.CloudStorage
         public static bool IsBlobProxyFallbackEligible(Exception exception) =>
             CanUseBlobProxy(exception);
 
+        public static bool IsSqlPrivateNetworkDenial(Exception exception) =>
+            BlobProxyClient.IsSqlPrivateNetworkDenial(exception);
+
         internal static string ContainerCacheKey(string storageAccountName, string containerName)
             => $"{storageAccountName}|{containerName}";
 
@@ -613,6 +616,32 @@ namespace SqlBuildManager.Console.CloudStorage
                 containerName,
                 blobNames,
                 destinationDirectory,
+                cancellationToken);
+
+        public static Task CreateSqlTestTableThroughRelayAsync(
+            string endpoint,
+            string server,
+            string database,
+            string tableName,
+            string columnName,
+            CancellationToken cancellationToken = default) =>
+            new BlobProxyClient(endpoint).CreateSqlTestTableAsync(
+                server,
+                database,
+                tableName,
+                columnName,
+                cancellationToken);
+
+        public static Task ExtractSqlTestDacpacThroughRelayAsync(
+            string endpoint,
+            string server,
+            string database,
+            string destinationPath,
+            CancellationToken cancellationToken = default) =>
+            new BlobProxyClient(endpoint).ExtractSqlTestDacpacAsync(
+                server,
+                database,
+                destinationPath,
                 cancellationToken);
 
         private static ResourceFile CreateBatchResourceFile(

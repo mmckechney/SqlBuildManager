@@ -404,6 +404,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
 
                 var cmdLine = new CommandLineArgs() { UserName = un, Password = pw };
+                DatabaseHelper.ConfigureRelayEndpoint(cmdLine, settingsFile, settingsFileKeyPath);
                 DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
                 string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
 
@@ -512,6 +513,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 var pw = File.ReadAllText(pwFile).Trim();
 
                 var cmdLine = new CommandLineArgs() { UserName = un, Password = pw };
+                DatabaseHelper.ConfigureRelayEndpoint(cmdLine, settingsFile, settingsFileKeyPath);
                 DatabaseHelper.CreateRandomTable(cmdLine, new List<string>() { firstOverride, thirdOverride });
                 string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
 

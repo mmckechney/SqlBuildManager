@@ -69,6 +69,8 @@ To use Managed Identity to connect to Azure Event Hub, use the Event Hub namespa
 
 Event monitoring is direct-first. It normally uses Blob Storage for Event Processor checkpoints. If private Storage networking blocks checkpoint access, it next tries direct checkpointless Event Hub partition readers from the same enqueue-time position. It uses the authenticated Azure Relay proxy only when Event Hubs explicitly rejects that direct connection because the caller's IP is outside the allowed VNET. VNET-connected workloads, shared-key deployments, and directly reachable Storage deployments do not use Relay monitoring.
 
+Local SQL Server external tests also remain direct-first. When Azure SQL explicitly rejects the local connection because public network access is disabled, the test helper uses the authenticated Relay listener to create its random test table and extract the test DACPAC inside the VNET. The listener accepts only provisioned SQL server FQDNs and the fixed test operations; it does not expose arbitrary SQL execution. VNET-hosted application workers continue connecting to Azure SQL directly.
+
 ### Azure Container Registry
 
 Only Kubernetes is able to natively connect to the container registry without an admin username and password. This is assigned at creation or update of the cluster using the [`--assign-acr`](https://docs.microsoft.com/en-us/azure/aks/cluster-container-registry-integration?tabs=azure-cli) flag
