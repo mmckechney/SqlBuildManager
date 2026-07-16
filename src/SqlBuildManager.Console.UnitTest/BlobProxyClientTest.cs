@@ -62,6 +62,32 @@ namespace SqlBuildManager.Console.UnitTest
         }
 
         [TestMethod]
+        public void IsBlobProxyFallbackEligible_ConfiguredProxyAndStorageForbidden_ReturnsTrue()
+        {
+            try
+            {
+                StorageManager.ConfigureBlobProxyEndpoint(
+                    "https://example.servicebus.windows.net/blobupload");
+
+                Assert.IsTrue(StorageManager.IsBlobProxyFallbackEligible(
+                    new RequestFailedException(403, "Storage public access is disabled.")));
+            }
+            finally
+            {
+                StorageManager.ConfigureBlobProxyEndpoint(string.Empty);
+            }
+        }
+
+        [TestMethod]
+        public void IsBlobProxyFallbackEligible_NoConfiguredProxy_ReturnsFalse()
+        {
+            StorageManager.ConfigureBlobProxyEndpoint(string.Empty);
+
+            Assert.IsFalse(StorageManager.IsBlobProxyFallbackEligible(
+                new RequestFailedException(403, "Storage public access is disabled.")));
+        }
+
+        [TestMethod]
         public void GetSafeDownloadPath_NestedBlob_PreservesRelativePath()
         {
             var root = Path.Combine(Path.GetTempPath(), "blob-download");

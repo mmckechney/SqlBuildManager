@@ -29,6 +29,12 @@ namespace SqlBuildManager.Console.CloudStorage
             = new ConcurrentDictionary<string, Task<BlobContainerClient>>(StringComparer.OrdinalIgnoreCase);
         internal static string BlobProxyEndpoint { get; set; } = string.Empty;
 
+        public static void ConfigureBlobProxyEndpoint(string endpoint) =>
+            BlobProxyEndpoint = endpoint ?? string.Empty;
+
+        public static bool IsBlobProxyFallbackEligible(Exception exception) =>
+            CanUseBlobProxy(exception);
+
         internal static string ContainerCacheKey(string storageAccountName, string containerName)
             => $"{storageAccountName}|{containerName}";
 

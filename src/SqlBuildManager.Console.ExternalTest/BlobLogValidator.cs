@@ -2,6 +2,7 @@ using Azure.Identity;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
@@ -50,6 +51,18 @@ namespace SqlBuildManager.Console.ExternalTest
         /// </summary>
         public async Task LoadLogsAsync()
         {
+            try
+            {
+                await LoadLogsDirectAsync();
+            }
+            catch (Exception ex) when (StorageManager.IsBlobProxyFallbackEligible(ex))
+            {
+                await LoadLogsThroughRelayAsync();
+            }
+        }
+
+        private async Task LoadLogsDirectAsync()
+        {
             BlobNames = new List<string>();
             await foreach (var blob in _containerClient.GetBlobsAsync())
             {
@@ -69,6 +82,63 @@ namespace SqlBuildManager.Console.ExternalTest
                     TaskExecutionLogs[blobName] = await DownloadBlobTextAsync(blobName);
                 }
             }
+        }
+
+        private async Task LoadLogsThroughRelayAsync()
+        {
+            var blobs = await StorageManager.EnumerateBlobFilesThroughRelayAsync(_containerClient.Name);
+            BlobNames = blobs.Select(blob => blob.Name).ToList();
+            var logBlobNames = BlobNames
+                .Where(IsValidationLog)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+            var downloadDirectory = Path.Combine(
+                Path.GetTempPath(),
+                $"sbm-blob-validation-{Guid.NewGuid():N}");
+
+            try
+            {
+                if (logBlobNames.Length > 0)
+                {
+                    await StorageManager.DownloadBlobFilesThroughRelayAsync(
+                        _containerClient.Name,
+                        logBlobNames,
+                        downloadDirectory);
+                }
+
+                CommitsLog = ReadDownloadedText(downloadDirectory, "commits.log");
+                ErrorsLog = ReadDownloadedText(downloadDirectory, "errors.log");
+                SuccessDatabases = ReadDownloadedText(downloadDirectory, "successdatabases.cfg");
+                FailureDatabases = ReadDownloadedText(downloadDirectory, "failuredatabases.cfg");
+                TaskExecutionLogs = logBlobNames
+                    .Where(IsTaskExecutionLog)
+                    .ToDictionary(
+                        blobName => blobName,
+                        blobName => ReadDownloadedText(downloadDirectory, blobName));
+            }
+            finally
+            {
+                if (Directory.Exists(downloadDirectory))
+                {
+                    Directory.Delete(downloadDirectory, recursive: true);
+                }
+            }
+        }
+
+        private static bool IsValidationLog(string blobName) =>
+            blobName is "commits.log" or "errors.log" or "successdatabases.cfg" or "failuredatabases.cfg" ||
+            IsTaskExecutionLog(blobName);
+
+        private static bool IsTaskExecutionLog(string blobName) =>
+            blobName.Contains("sqlbuildmanager.console", StringComparison.OrdinalIgnoreCase) &&
+            blobName.EndsWith(".log", StringComparison.OrdinalIgnoreCase);
+
+        private static string ReadDownloadedText(string downloadDirectory, string blobName)
+        {
+            var filePath = Path.Combine(
+                downloadDirectory,
+                blobName.Replace('/', Path.DirectorySeparatorChar));
+            return File.Exists(filePath) ? File.ReadAllText(filePath) : string.Empty;
         }
 
         private async Task<string> DownloadBlobTextAsync(string blobName)
@@ -237,6 +307,7 @@ namespace SqlBuildManager.Console.ExternalTest
             cmdLine.FileInfoSettingsFile = new FileInfo(settingsFilePath);
             cmdLine.SettingsFileKey = settingsFileKeyPath;
             var (_, decrypted) = Cryptography.DecryptSensitiveFields(cmdLine);
+            StorageManager.ConfigureBlobProxyEndpoint(decrypted.ConnectionArgs.BlobProxyEndpoint);
             return (decrypted.ConnectionArgs.StorageAccountName, decrypted.ConnectionArgs.StorageAccountKey);
         }
 
