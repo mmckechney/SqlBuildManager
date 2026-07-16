@@ -41,6 +41,7 @@ $storageAccountName = Get-AzdValue 'STORAGE_ACCOUNT_NAME'
 $eventHubNamespaceName = Get-AzdValue 'EVENTHUB_NAMESPACE_NAME'
 $eventHubName = Get-AzdValue 'EVENTHUB_NAME'
 $aciSubnetId = Get-AzdValue 'ACI_SUBNET_ID'
+$senderPrincipalId = Get-AzdValue 'AZURE_PRINCIPAL_ID'
 $relayNamespaceName = "${prefix}relay"
 $hybridConnectionName = 'blobupload'
 $identityName = "${prefix}blobproxy"
@@ -50,6 +51,34 @@ $image = "${containerRegistryLoginServer}/${imageName}"
 $sourceContext = Join-Path $repoRoot 'src'
 $dockerfile = 'SqlBuildManager.StorageProxy/Dockerfile'
 $endpoint = "https://${relayNamespaceName}.servicebus.windows.net/${hybridConnectionName}"
+$relayNamespaceId = az relay namespace show `
+    --resource-group $resourceGroupName `
+    --name $relayNamespaceName `
+    --query id `
+    --output tsv
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($relayNamespaceId)) {
+    throw "Unable to read Relay namespace '$relayNamespaceName'."
+}
+
+$existingSenderAssignment = az role assignment list `
+    --scope $relayNamespaceId `
+    --assignee $senderPrincipalId `
+    --role 'Azure Relay Sender' `
+    --query '[0].id' `
+    --output tsv
+if ($LASTEXITCODE -ne 0) {
+    throw "Unable to inspect Azure Relay Sender assignments for '$senderPrincipalId'."
+}
+if ([string]::IsNullOrWhiteSpace($existingSenderAssignment)) {
+    Invoke-Az -Arguments @(
+        'role', 'assignment', 'create',
+        '--assignee-object-id', $senderPrincipalId,
+        '--assignee-principal-type', 'User',
+        '--role', 'Azure Relay Sender',
+        '--scope', $relayNamespaceId,
+        '--output', 'none'
+    ) -FailureMessage "Unable to grant Azure Relay Sender to '$senderPrincipalId'."
+}
 
 $identity = az identity show `
     --resource-group $resourceGroupName `
@@ -68,6 +97,8 @@ try {
         '--resource-group', $resourceGroupName,
         '--image', $imageName,
         '--file', $dockerfile,
+        '--no-logs',
+        '--output', 'none',
         '.'
     ) -FailureMessage 'The ACR build for the Blob Storage proxy failed.'
 }

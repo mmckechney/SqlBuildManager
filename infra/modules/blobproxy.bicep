@@ -16,9 +16,6 @@ param eventHubNamespaceName string
 @description('Container Registry name containing the proxy image')
 param containerRegistryName string
 
-@description('Object ID of the deployment principal that sends through Relay')
-param senderPrincipalId string = ''
-
 @description('Whether to create a Relay private endpoint for the ACI listener')
 param usePrivateEndpoint bool = true
 
@@ -117,18 +114,6 @@ resource relayListener 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
     )
     principalId: proxyIdentity.properties.principalId
     principalType: 'ServicePrincipal'
-  }
-}
-
-resource relaySender 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(senderPrincipalId)) {
-  scope: relayNamespace
-  name: guid(relayNamespace.id, senderPrincipalId, 'Azure Relay Sender')
-  properties: {
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      '26baccc8-eea7-41f1-98f4-1762cc7f685d'
-    )
-    principalId: senderPrincipalId
   }
 }
 

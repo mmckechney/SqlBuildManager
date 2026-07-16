@@ -99,6 +99,7 @@ try {
         --image "${testImageName}:${imageTag}" `
         --file "$tempContext\$dockerfileName" `
         --no-logs `
+        --output none `
         $tempContext
     
     if ($LASTEXITCODE -ne 0) {

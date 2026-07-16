@@ -78,6 +78,8 @@ try {
             '--resource-group', $resourceGroupName,
             '--image', $imageName,
             '--file', 'Dockerfile',
+            '--no-logs',
+            '--output', 'none',
             '.'
         ) -FailureMessage 'The ACR build for the private post-provision image failed.'
     }
@@ -158,25 +160,45 @@ try {
         throw "Unable to create private post-provision container '$containerName'."
     }
 
-    $deadline = [DateTime]::UtcNow.AddMinutes(30)
+    $deadline = [DateTime]::UtcNow.AddMinutes(10)
     do {
-        Start-Sleep -Seconds 10
+        Start-Sleep -Seconds 5
         $provisioningState = az container show --resource-group $resourceGroupName --name $containerName --query provisioningState -o tsv
         $containerState = az container show --resource-group $resourceGroupName --name $containerName --query 'containers[0].instanceView.currentState.state' -o tsv
 
         if ($provisioningState -eq 'Failed') {
             throw "Container group '$containerName' failed to provision."
         }
-        if ($containerState -eq 'Terminated') {
+        if ($containerState -in @('Running', 'Terminated')) {
             break
         }
     } while ([DateTime]::UtcNow -lt $deadline)
 
-    if ($containerState -ne 'Terminated') {
-        throw "Timed out waiting for private post-provision container '$containerName'."
+    if ($containerState -notin @('Running', 'Terminated')) {
+        throw "Timed out waiting for private post-provision container '$containerName' to start."
     }
 
-    az container logs --resource-group $resourceGroupName --name $containerName
+    if ($containerState -eq 'Running') {
+        Write-Host "Streaming private initialization container output..." -ForegroundColor Cyan
+        az container attach --resource-group $resourceGroupName --name $containerName
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Live container log attachment ended unexpectedly; retrieving the available logs."
+            az container logs --resource-group $resourceGroupName --name $containerName
+        }
+    }
+    else {
+        az container logs --resource-group $resourceGroupName --name $containerName
+    }
+
+    $completionDeadline = [DateTime]::UtcNow.AddMinutes(30)
+    while ($containerState -ne 'Terminated' -and [DateTime]::UtcNow -lt $completionDeadline) {
+        Start-Sleep -Seconds 5
+        $containerState = az container show --resource-group $resourceGroupName --name $containerName --query 'containers[0].instanceView.currentState.state' -o tsv
+    }
+    if ($containerState -ne 'Terminated') {
+        throw "Timed out waiting for private post-provision container '$containerName' to complete."
+    }
+
     $exitCode = az container show --resource-group $resourceGroupName --name $containerName --query 'containers[0].instanceView.currentState.exitCode' -o tsv
     if ($LASTEXITCODE -ne 0 -or $exitCode -ne '0') {
         throw "Private post-provision container failed with exit code '$exitCode'."

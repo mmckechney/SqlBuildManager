@@ -267,7 +267,6 @@ module blobProxy './modules/blobproxy.bicep' = if (deployBlobProxy) {
     storageAccountName: storageAccountResource.outputs.name
     eventHubNamespaceName: eventHubNamespaceResource.outputs.namespaceName
     containerRegistryName: containerRegistry.outputs.name
-    senderPrincipalId: userIdGuid
     usePrivateEndpoint: usePrivateEndpoint
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
     namePrefix: namePrefix

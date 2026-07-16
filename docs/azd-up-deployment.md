@@ -178,7 +178,8 @@ The proxy identity is named:
 It receives `Storage Blob Data Contributor` on the deployment Storage account, `Azure Event Hubs
 Data Receiver` on the deployment Event Hubs namespace, `AcrPull` on the registry, and `Azure Relay
 Listener` on the `blobupload` Hybrid Connection. The deploying user
-receives `Azure Relay Sender` on the Relay namespace. Relay's HTTP sender authorization is evaluated
+receives `Azure Relay Sender` on the Relay namespace through an idempotent post-provision check that
+reuses existing assignments regardless of their resource GUID. Relay's HTTP sender authorization is evaluated
 at namespace scope even when the request targets a specific Hybrid Connection. VNET runtime
 identities do not receive Relay Sender because their data-plane operations use private endpoints
 directly.
@@ -297,7 +298,9 @@ az acr build
 ```
 
 The build executes remotely through ACR Tasks. Docker does not need to be installed or running on the
-developer workstation.
+developer workstation. Post-provision suppresses successful ACR build logs and reports only command
+failures. Once the private initialization ACI starts, its stdout and stderr are attached to the
+`azd up` console so database permission changes remain visible as they run.
 
 The image is published as:
 
