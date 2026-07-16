@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.Console;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -96,6 +97,8 @@ namespace SqlBuildManager.Console.Events
 
         private EventProcessorClient _eventClient = null!;
         private EventHubConsumerClient _eventConsumerClient = null!;
+        private ccS.BlobProxyClient _eventRelayClient = null!;
+        private string _eventRelaySessionId = string.Empty;
         private EventProcessorClient EventClient
         {
             get
@@ -316,6 +319,14 @@ namespace SqlBuildManager.Console.Events
                 // Start the processing
                 await EventClient.StartProcessingAsync(cancellationToken).ConfigureAwait(false);
             }
+            catch (Exception exe) when (ShouldUseRelayEventMonitor(
+                exe,
+                ccS.StorageManager.BlobProxyEndpoint))
+            {
+                log.LogWarning("Direct Event Hub access is blocked. Monitoring through the Azure Relay proxy.");
+                await StopEventProcessorAfterStartupFailureAsync().ConfigureAwait(false);
+                await MonitorEventHubThroughRelayAsync(cancellationToken).ConfigureAwait(false);
+            }
             catch (Exception exe) when (
                 ShouldUseCheckpointFreeConsumer(storageAccountKey, ccS.StorageManager.BlobProxyEndpoint) &&
                 ccS.BlobProxyClient.IsFallbackEligible(exe))
@@ -375,10 +386,89 @@ namespace SqlBuildManager.Console.Events
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
             }
+            catch (Exception exe) when (ShouldUseRelayEventMonitor(
+                exe,
+                ccS.StorageManager.BlobProxyEndpoint))
+            {
+                log.LogWarning("Direct Event Hub access is blocked. Monitoring through the Azure Relay proxy.");
+                if (_eventConsumerClient != null)
+                {
+                    await _eventConsumerClient.DisposeAsync().ConfigureAwait(false);
+                    _eventConsumerClient = null!;
+                }
+                await MonitorEventHubThroughRelayAsync(cancellationToken).ConfigureAwait(false);
+            }
             catch (Exception exe)
             {
                 log.LogError($"Error monitoring Event Hub without Blob checkpoints: {exe}");
                 HasEventMonitorClientError = true;
+            }
+        }
+
+        internal static bool ShouldUseRelayEventMonitor(Exception exception, string blobProxyEndpoint) =>
+            !string.IsNullOrWhiteSpace(blobProxyEndpoint) &&
+            ccS.BlobProxyClient.GetExceptions(exception).Any(candidate =>
+                candidate is UnauthorizedAccessException &&
+                candidate.Message.Contains(
+                    "Ip has been prevented to connect to the endpoint",
+                    StringComparison.OrdinalIgnoreCase));
+
+        private async Task MonitorEventHubThroughRelayAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                _eventRelayClient = new ccS.BlobProxyClient(ccS.StorageManager.BlobProxyEndpoint);
+                _eventRelaySessionId = await _eventRelayClient.StartEventMonitorAsync(
+                    eventhubNamespace,
+                    eventHub,
+                    consumerGroup,
+                    utcMonitorStart,
+                    cancellationToken).ConfigureAwait(false);
+
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    var eventBodies = await _eventRelayClient.PollEventMonitorAsync(
+                        _eventRelaySessionId,
+                        cancellationToken).ConfigureAwait(false);
+                    foreach (var eventBody in eventBodies)
+                    {
+                        await ProcessEventData(new EventData(new BinaryData(eventBody))).ConfigureAwait(false);
+                    }
+                }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception exe)
+            {
+                log.LogError($"Error monitoring Event Hub through Azure Relay: {exe}");
+                HasEventMonitorClientError = true;
+            }
+            finally
+            {
+                await StopRelayMonitorSessionAsync().ConfigureAwait(false);
+            }
+        }
+
+        private async Task StopRelayMonitorSessionAsync()
+        {
+            if (_eventRelayClient == null || string.IsNullOrWhiteSpace(_eventRelaySessionId))
+            {
+                return;
+            }
+
+            var client = _eventRelayClient;
+            var sessionId = _eventRelaySessionId;
+            _eventRelayClient = null!;
+            _eventRelaySessionId = string.Empty;
+            using var cleanupTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            try
+            {
+                await client.StopEventMonitorAsync(sessionId, cleanupTimeout.Token).ConfigureAwait(false);
+            }
+            catch (Exception exe)
+            {
+                log.LogDebug($"Event Hub Relay monitor cleanup returned: {exe.Message}");
             }
         }
 
@@ -496,6 +586,10 @@ namespace SqlBuildManager.Console.Events
             {
                 _eventConsumerClient.DisposeAsync().AsTask().GetAwaiter().GetResult();
                 _eventConsumerClient = null!;
+            }
+            if (_eventRelayClient != null && !string.IsNullOrWhiteSpace(_eventRelaySessionId))
+            {
+                StopRelayMonitorSessionAsync().GetAwaiter().GetResult();
             }
             if (hadEventClient)
             {

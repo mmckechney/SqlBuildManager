@@ -67,7 +67,7 @@ To use Managed Identity to connect to Azure Service Bus, use the Service Bus nam
 
 To use Managed Identity to connect to Azure Event Hub, use the Event Hub namespace and Event Hub name as a pipe delimited value (<name>.servicebus.windows.net) for `--eventhubconnection`. For example "\<ehnamespace>.servicebus.windows.net|\<eh name>"
 
-Event monitoring normally uses Blob Storage for Event Processor checkpoints. When private Storage networking prevents the local orchestrator from reaching the Blob endpoint and `--blobproxyendpoint` is configured, monitoring uses the same enqueue-time position without persistent checkpoints. The remote ACI workers continue to use their assigned user-managed identity and private endpoints; shared-key and directly reachable Storage deployments retain Blob-backed checkpoints.
+Event monitoring is direct-first. It normally uses Blob Storage for Event Processor checkpoints. If private Storage networking blocks checkpoint access, it next tries direct checkpointless Event Hub partition readers from the same enqueue-time position. It uses the authenticated Azure Relay proxy only when Event Hubs explicitly rejects that direct connection because the caller's IP is outside the allowed VNET. VNET-connected workloads, shared-key deployments, and directly reachable Storage deployments do not use Relay monitoring.
 
 ### Azure Container Registry
 

@@ -1,6 +1,7 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using Azure.Core;
 using Microsoft.Azure.Relay;
 using System.Net;
 using System.Text.Json;
@@ -8,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace SqlBuildManager.StorageProxy;
 
-internal sealed class BlobProxyRequestHandler
+internal sealed class BlobProxyRequestHandler : IAsyncDisposable
 {
     private static readonly string[] AppendLogFiles =
         ["commits.log", "errors.log", "successdatabases.cfg", "failuredatabases.cfg"];
@@ -20,15 +21,20 @@ internal sealed class BlobProxyRequestHandler
     private readonly string storageAccountName;
     private readonly string hybridConnectionName;
     private readonly BlobServiceClient storageClient;
+    private readonly EventHubRelayMonitor eventHubMonitor;
 
     public BlobProxyRequestHandler(
         string storageAccountName,
         string hybridConnectionName,
-        BlobServiceClient storageClient)
+        BlobServiceClient storageClient,
+        string eventHubNamespaceName,
+        string eventHubName,
+        TokenCredential credential)
     {
         this.storageAccountName = storageAccountName;
         this.hybridConnectionName = hybridConnectionName;
         this.storageClient = storageClient;
+        eventHubMonitor = new EventHubRelayMonitor(eventHubNamespaceName, eventHubName, credential);
     }
 
     public async Task HandleAsync(RelayedHttpListenerContext context)
@@ -36,6 +42,10 @@ internal sealed class BlobProxyRequestHandler
         try
         {
             var segments = GetRouteSegments(context.Request.Url);
+            if (await TryHandleEventMonitorAsync(context, segments))
+            {
+                return;
+            }
             if (context.Request.HttpMethod == "GET" && segments.SequenceEqual(["health"]))
             {
                 await WriteJsonAsync(context, HttpStatusCode.OK, new { status = "healthy" });
@@ -201,8 +211,55 @@ internal sealed class BlobProxyRequestHandler
         }
     }
 
+    private async Task<bool> TryHandleEventMonitorAsync(
+        RelayedHttpListenerContext context,
+        string[] segments)
+    {
+        if (segments.Length < 2 || segments[0] != "event-monitor" || segments[1] != "sessions")
+        {
+            return false;
+        }
+
+        if (context.Request.HttpMethod == "POST" && segments.Length == 2)
+        {
+            var request = await JsonSerializer.DeserializeAsync<EventMonitorStartRequest>(
+                context.Request.InputStream)
+                ?? throw new InvalidDataException("Event monitor request body is required.");
+            var createdSessionId = await eventHubMonitor.StartAsync(request, CancellationToken.None);
+            await WriteJsonAsync(context, HttpStatusCode.Created, new { sessionId = createdSessionId });
+            return true;
+        }
+
+        if (segments.Length != 4 ||
+            !Guid.TryParse(segments[2], out var sessionId) ||
+            segments[3] != "events")
+        {
+            await WriteErrorAsync(context, HttpStatusCode.NotFound, "Unknown Event Hub monitor route.");
+            return true;
+        }
+
+        if (context.Request.HttpMethod == "GET")
+        {
+            var events = await eventHubMonitor.PollAsync(sessionId, CancellationToken.None);
+            await WriteJsonAsync(context, HttpStatusCode.OK, new { events });
+            return true;
+        }
+
+        if (context.Request.HttpMethod == "DELETE")
+        {
+            var stopped = await eventHubMonitor.StopAsync(sessionId);
+            await WriteJsonAsync(context, HttpStatusCode.OK, new { stopped });
+            return true;
+        }
+
+        await WriteErrorAsync(context, HttpStatusCode.MethodNotAllowed, "Unsupported Event Hub monitor operation.");
+        return true;
+    }
+
     private string GetContainerUrl(string containerName) =>
         $"https://{storageAccountName}.blob.core.windows.net/{containerName}";
+
+    public ValueTask DisposeAsync() => eventHubMonitor.DisposeAsync();
 
     private string GetBlobUrl(string containerName, string blobName) =>
         $"{GetContainerUrl(containerName)}/{Uri.EscapeDataString(blobName)}";

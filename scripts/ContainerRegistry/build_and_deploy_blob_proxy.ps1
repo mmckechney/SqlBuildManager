@@ -38,6 +38,8 @@ function Invoke-Az {
 $containerRegistryName = Get-AzdValue 'CONTAINER_REGISTRY_NAME'
 $containerRegistryLoginServer = Get-AzdValue 'CONTAINER_REGISTRY_LOGIN_SERVER'
 $storageAccountName = Get-AzdValue 'STORAGE_ACCOUNT_NAME'
+$eventHubNamespaceName = Get-AzdValue 'EVENTHUB_NAMESPACE_NAME'
+$eventHubName = Get-AzdValue 'EVENTHUB_NAME'
 $aciSubnetId = Get-AzdValue 'ACI_SUBNET_ID'
 $relayNamespaceName = "${prefix}relay"
 $hybridConnectionName = 'blobupload'
@@ -101,6 +103,8 @@ $createArguments = @(
     "RELAY_NAMESPACE=$($relayNamespaceName).servicebus.windows.net",
     "RELAY_CONNECTION_NAME=$hybridConnectionName",
     "STORAGE_ACCOUNT_NAME=$storageAccountName",
+    "EVENTHUB_NAMESPACE_NAME=$eventHubNamespaceName",
+    "EVENTHUB_NAME=$eventHubName",
     "MANAGED_IDENTITY_CLIENT_ID=$($identity.clientId)",
     '--output', 'none'
 )

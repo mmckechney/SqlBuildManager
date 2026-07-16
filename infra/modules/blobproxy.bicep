@@ -10,14 +10,14 @@ param identityName string
 @description('Storage account name the proxy is allowed to access')
 param storageAccountName string
 
+@description('Event Hub namespace the proxy may monitor')
+param eventHubNamespaceName string
+
 @description('Container Registry name containing the proxy image')
 param containerRegistryName string
 
 @description('Object ID of the deployment principal that sends through Relay')
 param senderPrincipalId string = ''
-
-@description('Object ID of the runtime managed identity that sends through Relay')
-param runtimeSenderPrincipalId string
 
 @description('Whether to create a Relay private endpoint for the ACI listener')
 param usePrivateEndpoint bool = true
@@ -41,6 +41,10 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' existing 
 
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
   name: containerRegistryName
+}
+
+resource eventHubNamespace 'Microsoft.EventHub/namespaces@2022-10-01-preview' existing = {
+  name: eventHubNamespaceName
 }
 
 resource relayNamespace 'Microsoft.Relay/namespaces@2024-01-01' = {
@@ -71,6 +75,19 @@ resource storageBlobDataContributor 'Microsoft.Authorization/roleAssignments@202
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
       'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+    )
+    principalId: proxyIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource eventHubsDataReceiver 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: eventHubNamespace
+  name: guid(eventHubNamespace.id, proxyIdentity.id, 'Azure Event Hubs Data Receiver')
+  properties: {
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      'a638d3c7-ab3a-418d-83e6-5f17a39d4fde'
     )
     principalId: proxyIdentity.properties.principalId
     principalType: 'ServicePrincipal'
@@ -112,19 +129,6 @@ resource relaySender 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (
       '26baccc8-eea7-41f1-98f4-1762cc7f685d'
     )
     principalId: senderPrincipalId
-  }
-}
-
-resource runtimeRelaySender 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: relayNamespace
-  name: guid(relayNamespace.id, runtimeSenderPrincipalId, 'Azure Relay Sender')
-  properties: {
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      '26baccc8-eea7-41f1-98f4-1762cc7f685d'
-    )
-    principalId: runtimeSenderPrincipalId
-    principalType: 'ServicePrincipal'
   }
 }
 

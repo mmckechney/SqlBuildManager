@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -203,12 +204,97 @@ namespace SqlBuildManager.Console.CloudStorage
             return downloadedFiles;
         }
 
+        public async Task<string> StartEventMonitorAsync(
+            string namespaceName,
+            string eventHubName,
+            string consumerGroup,
+            DateTimeOffset startTimeUtc,
+            CancellationToken cancellationToken = default)
+        {
+            using var content = new StringContent(
+                JsonSerializer.Serialize(new
+                {
+                    namespaceName,
+                    eventHubName,
+                    consumerGroup,
+                    startTimeUtc
+                }),
+                Encoding.UTF8,
+                "application/json");
+            using var response = await SendAsync(
+                HttpMethod.Post,
+                "event-monitor/sessions",
+                content,
+                cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            var result = await JsonSerializer.DeserializeAsync<EventMonitorStartResponse>(
+                stream,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+            return string.IsNullOrWhiteSpace(result?.SessionId)
+                ? throw new InvalidDataException("Relay response did not include an Event Hub monitor session ID.")
+                : result.SessionId;
+        }
+
+        public async Task<IReadOnlyList<byte[]>> PollEventMonitorAsync(
+            string sessionId,
+            CancellationToken cancellationToken = default)
+        {
+            using var response = await SendAsync(
+                HttpMethod.Get,
+                $"event-monitor/sessions/{Escape(sessionId)}/events",
+                null,
+                cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            var result = await JsonSerializer.DeserializeAsync<EventMonitorPollResponse>(
+                stream,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+            return result?.Events
+                .Select(item => Convert.FromBase64String(item.Body))
+                .ToArray() ?? [];
+        }
+
+        public async Task StopEventMonitorAsync(
+            string sessionId,
+            CancellationToken cancellationToken = default)
+        {
+            using var response = await SendAsync(
+                HttpMethod.Delete,
+                $"event-monitor/sessions/{Escape(sessionId)}/events",
+                null,
+                cancellationToken).ConfigureAwait(false);
+        }
+
         public static bool IsFallbackEligible(Exception exception) =>
-            exception is HttpRequestException or TaskCanceledException ||
-            exception is RequestFailedException requestFailed &&
-                (requestFailed.Status == 0 ||
-                 requestFailed.Status == (int)HttpStatusCode.Forbidden ||
-                 requestFailed.ErrorCode == "AuthorizationFailure");
+            GetExceptions(exception).Any(candidate =>
+                candidate is HttpRequestException or TaskCanceledException ||
+                candidate is RequestFailedException requestFailed &&
+                    (requestFailed.Status == 0 ||
+                     requestFailed.Status == (int)HttpStatusCode.Forbidden ||
+                     requestFailed.ErrorCode == "AuthorizationFailure"));
+
+        internal static IEnumerable<Exception> GetExceptions(Exception exception)
+        {
+            if (exception is AggregateException aggregate)
+            {
+                foreach (var innerException in aggregate.Flatten().InnerExceptions)
+                {
+                    foreach (var candidate in GetExceptions(innerException))
+                    {
+                        yield return candidate;
+                    }
+                }
+                yield break;
+            }
+
+            yield return exception;
+            if (exception.InnerException != null)
+            {
+                foreach (var candidate in GetExceptions(exception.InnerException))
+                {
+                    yield return candidate;
+                }
+            }
+        }
 
         private async Task<HttpResponseMessage> SendAsync(
             HttpMethod method,
@@ -311,6 +397,24 @@ namespace SqlBuildManager.Console.CloudStorage
         {
             [JsonPropertyName("blobs")]
             public List<BlobProxyFile> Blobs { get; set; } = [];
+        }
+
+        private sealed class EventMonitorStartResponse
+        {
+            [JsonPropertyName("sessionId")]
+            public string SessionId { get; set; } = string.Empty;
+        }
+
+        private sealed class EventMonitorPollResponse
+        {
+            [JsonPropertyName("events")]
+            public List<EventMonitorItem> Events { get; set; } = [];
+        }
+
+        private sealed class EventMonitorItem
+        {
+            [JsonPropertyName("body")]
+            public string Body { get; set; } = string.Empty;
         }
     }
 }

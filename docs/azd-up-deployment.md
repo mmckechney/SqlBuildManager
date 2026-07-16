@@ -175,12 +175,13 @@ The proxy identity is named:
 <prefix>blobproxy
 ```
 
-It receives `Storage Blob Data Contributor` on the deployment Storage account, `AcrPull` on the
-registry, and `Azure Relay Listener` on the `blobupload` Hybrid Connection. The deploying user
+It receives `Storage Blob Data Contributor` on the deployment Storage account, `Azure Event Hubs
+Data Receiver` on the deployment Event Hubs namespace, `AcrPull` on the registry, and `Azure Relay
+Listener` on the `blobupload` Hybrid Connection. The deploying user
 receives `Azure Relay Sender` on the Relay namespace. Relay's HTTP sender authorization is evaluated
-at namespace scope even when the request targets a specific Hybrid Connection. The SQL Build
-Manager runtime identity also receives `Azure Relay Sender` at namespace scope, so fallback remains
-available to Batch, ACI, AKS, and Container Apps workloads.
+at namespace scope even when the request targets a specific Hybrid Connection. VNET runtime
+identities do not receive Relay Sender because their data-plane operations use private endpoints
+directly.
 
 The proxy does not use Storage account keys or create SAS tokens. Azure Relay authenticates the
 caller with Microsoft Entra ID, and the proxy performs Blob operations with its own managed
@@ -460,6 +461,11 @@ Blob operations directly with Entra authentication. Network and Storage authoriz
 back to the Relay proxy. The proxy supports container lifecycle checks, blob enumeration with an
 optional prefix, streamed upload/download, and server-side log/query consolidation; it returns
 ordinary Blob URLs, never SAS URLs.
+
+Event monitoring is also direct-first. It uses Blob-backed Event Processor checkpoints when those
+private endpoints are reachable, then tries direct checkpointless Event Hub readers if only Storage
+is blocked. Relay monitoring starts only when Event Hubs explicitly rejects the direct reader because
+the caller IP is outside the allowed VNET. Workloads already running in the VNET do not relay events.
 
 Code that explicitly needs Relay can enumerate a container and download any selected subset:
 

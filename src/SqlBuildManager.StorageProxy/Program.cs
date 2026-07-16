@@ -14,6 +14,8 @@ internal static class Program
             : $"{relayNamespace}.servicebus.windows.net";
         var hybridConnectionName = GetRequiredSetting("RELAY_CONNECTION_NAME");
         var storageAccountName = GetRequiredSetting("STORAGE_ACCOUNT_NAME");
+        var eventHubNamespaceName = GetRequiredSetting("EVENTHUB_NAMESPACE_NAME");
+        var eventHubName = GetRequiredSetting("EVENTHUB_NAME");
         var managedIdentityClientId = GetRequiredSetting("MANAGED_IDENTITY_CLIENT_ID");
 
         var credential = new ManagedIdentityCredential(
@@ -24,7 +26,13 @@ internal static class Program
         var storageClient = new BlobServiceClient(
             new Uri($"https://{storageAccountName}.blob.core.windows.net"),
             credential);
-        var proxy = new BlobProxyRequestHandler(storageAccountName, hybridConnectionName, storageClient);
+        var proxy = new BlobProxyRequestHandler(
+            storageAccountName,
+            hybridConnectionName,
+            storageClient,
+            eventHubNamespaceName,
+            eventHubName,
+            credential);
 
         listener.Connecting += (_, _) => Console.WriteLine("Azure Relay listener connecting.");
         listener.Offline += (_, _) => Console.WriteLine("Azure Relay listener offline.");
@@ -52,6 +60,7 @@ internal static class Program
         finally
         {
             await listener.CloseAsync(CancellationToken.None);
+            await proxy.DisposeAsync();
         }
     }
 

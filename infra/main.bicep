@@ -265,17 +265,14 @@ module blobProxy './modules/blobproxy.bicep' = if (deployBlobProxy) {
     hybridConnectionName: relayConnectionNameVar
     identityName: blobProxyIdentityNameVar
     storageAccountName: storageAccountResource.outputs.name
+    eventHubNamespaceName: eventHubNamespaceResource.outputs.namespaceName
     containerRegistryName: containerRegistry.outputs.name
     senderPrincipalId: userIdGuid
-    runtimeSenderPrincipalId: identityResource.outputs.principalId
     usePrivateEndpoint: usePrivateEndpoint
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
     namePrefix: namePrefix
     location: location
   }
-  dependsOn: [
-    eventHubNamespaceResource
-  ]
 }
 
 // Log Analytics Workspace (inline module to access from subscription scope)
