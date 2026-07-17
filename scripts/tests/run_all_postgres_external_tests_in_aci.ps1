@@ -7,31 +7,33 @@
     all available compute platforms, launches the filtered PostgreSQL external test
     runner in ACI. After all tests complete, downloads results from Azure Storage
     and invokes GitHub Copilot CLI to analyze the test output.
-.PARAMETER prefix
-    Environment name prefix. Can also be set via azd env AZURE_NAME_PREFIX.
+.PARAMETER envName
+    Azure Developer CLI environment name. Defaults to the selected azd environment.
 #>
 [CmdletBinding()]
 param (
     [Parameter()]
-    [string] $prefix
+    [string] $envName
 )
 
-# Resolve prefix: parameter > azd env AZURE_NAME_PREFIX
-if ([string]::IsNullOrWhiteSpace($prefix)) {
-    $prefix = azd env get-value AZURE_NAME_PREFIX 2>$null
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($prefix)) {
-        $prefix = $null
+# Resolve environment name: parameter > azd environment
+if ([string]::IsNullOrWhiteSpace($envName)) {
+    $envName = azd env get-value AZURE_ENV_NAME 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($envName)) {
+        $envName = $null
     } else {
-        Write-Host "Using prefix '$prefix' from azd environment variable AZURE_NAME_PREFIX" -ForegroundColor DarkGreen
+        Write-Host "Using environment '$envName' from AZURE_ENV_NAME" -ForegroundColor DarkGreen
     }
 }
 
-if ([string]::IsNullOrWhiteSpace($prefix)) {
-    Write-Host "ERROR: The -prefix parameter is required." -ForegroundColor Red
-    Write-Host "  Provide it as a parameter:  .\run_all_postgres_external_tests_in_aci.ps1 -prefix <your-prefix>" -ForegroundColor Yellow
-    Write-Host "  Or set it in your azd environment:  azd env set AZURE_NAME_PREFIX <your-prefix>" -ForegroundColor Yellow
+if ([string]::IsNullOrWhiteSpace($envName)) {
+    Write-Host "ERROR: The -envName parameter is required." -ForegroundColor Red
+    Write-Host "  Provide it as a parameter:  .\run_all_postgres_external_tests_in_aci.ps1 -envName <your-env>" -ForegroundColor Yellow
+    Write-Host "  Or select an azd environment with 'azd env select'." -ForegroundColor Yellow
     exit 1
 }
+
+. (Join-Path (Split-Path $PSScriptRoot -Parent) "prefix_resource_names.ps1") -envName $envName
 
 $exitCode = 0
 $timestamp = (Get-Date -Format 'yyyy-MM-dd-HHmmss')
@@ -123,7 +125,7 @@ if (-not $hasPostgreSQL) {
 
     if ($pgFilters.Count -gt 0) {
         $pgTestFilter = $pgFilters -join '|'
-        .\run_filtered_external_tests_in_aci.ps1 -prefix $prefix -customName pg -testFilter $pgTestFilter -timeoutMinutes 300 -timestamp $timestamp
+        .\run_filtered_external_tests_in_aci.ps1 -envName $envName -customName pg -testFilter $pgTestFilter -timeoutMinutes 300 -timestamp $timestamp
         $exitCode += $LASTEXITCODE
     } else {
         Write-Host "SKIPPING [pg]: No compute platforms available for PostgreSQL tests" -ForegroundColor Yellow
@@ -132,10 +134,9 @@ if (-not $hasPostgreSQL) {
 
 # Download test results
 if ((Test-Path ./testresults) -eq $false) { mkdir testresults }
-az storage blob download-batch --account-name "$($prefix)storage" --source testresults --pattern "$($timestamp)*" --destination ./testresults --auth-mode login --overwrite
+az storage blob download-batch --account-name $storageAccountName --source testresults --pattern "$($timestamp)*" --destination ./testresults --auth-mode login --overwrite
 
 # Analyze test results with GitHub Copilot
 $promptTemplate = Get-Content -Path "$PSScriptRoot\analyze-test-results-prompt.md" -Raw
 $prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
 $output = copilot --yolo -p $prompt 2>&1
-

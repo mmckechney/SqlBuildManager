@@ -11,7 +11,7 @@ spec:
   serviceAccountName: <<prefix>>serviceaccount
   containers:
   - name:  sbm-runner
-    image: <<prefix>>containerregistry.azurecr.io/sqlbuildmanager:latest-vNext
+    image: acr<<envName>>.azurecr.io/sqlbuildmanager:latest-vNext
     imagePullPolicy: Always
     resources:
       limits:

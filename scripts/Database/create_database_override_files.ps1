@@ -8,13 +8,13 @@
     used by ExternalTest projects to target the correct databases during integration tests.
 .PARAMETER path
     Output directory for config files. Defaults to src\TestConfig.
-.PARAMETER prefix
-    Environment name prefix used to derive resource names.
+.PARAMETER envName
+    Azure Developer CLI environment name used to derive resource names.
 #>
 param
 (
     [string] $path,
-    [string] $prefix
+    [string] $envName
 )
 
 # Get the repo root
@@ -28,10 +28,10 @@ if ([string]::IsNullOrWhiteSpace($path)) {
 }
 
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
-. $prefixScript -prefix $prefix
+. $prefixScript -envName $envName
 
 $keyFileScript = Join-Path $repoRoot "scripts\key_file_names.ps1"
-. $keyFileScript -prefix $prefix -path $path
+. $keyFileScript -envName $envName -path $path
 
 Write-Host "Create Database override files for sql servers in resource group '$resourceGroupName'"  -ForegroundColor Cyan
 $path = Resolve-Path $path
@@ -110,4 +110,3 @@ $taggedDbConfig | Set-Content -Path $taggedDbConfigFile
 
 Write-Host "Creating server.txt file for SQL Query override config tests" -ForegroundColor DarkGreen
 $sqlServers[0].fullyQualifiedDomainName.trim()   | Set-Content -Path $serverTextFile
-

@@ -6,10 +6,10 @@
     services: Batch jobs, Service Bus topic subscriptions, storage containers,
     Container Apps, Kubernetes resources (jobs, config maps, secrets), YAML files,
     and ACI JSON files.
-.PARAMETER prefix
-    Environment name prefix used to derive resource names.
+.PARAMETER envName
+    Azure Developer CLI environment name used to derive resource names.
 .PARAMETER resourceGroupName
-    Azure resource group. Defaults to {prefix}-rg.
+    Azure resource group. Defaults to rg-{envName}.
 .PARAMETER includeActiveBatchJobs
     When true, deletes active Batch jobs too. Default: true.
 .PARAMETER removeAllContainerApps
@@ -17,36 +17,37 @@
 #>
 param
 (
-    [string] $prefix,
+    [string] $envName,
     [string] $resourceGroupName,
     [bool] $includeActiveBatchJobs = $true,
     [bool] $removeAllContainerApps = $true
 )
-if("" -eq $resourceGroupName)
-{
-    $resourceGroupName = "$prefix-rg"
+$resourceGroupNameOverride = $resourceGroupName
+. (Join-Path (Split-Path $PSScriptRoot -Parent) "prefix_resource_names.ps1") -envName $envName
+if (-not [string]::IsNullOrWhiteSpace($resourceGroupNameOverride)) {
+    $resourceGroupName = $resourceGroupNameOverride
 }
 
 # Run cleanup scripts in parallel
 $jobs = @()
 
 $jobs += Start-Job -ScriptBlock {
-    param($prefix, $includeActiveBatchJobs)
+    param($envName, $includeActiveBatchJobs)
     Set-Location $using:PWD
-    .\Clear_UnitTest_Batch_Jobs.ps1 -prefix $prefix -includeActive $includeActiveBatchJobs
-} -ArgumentList $prefix, $includeActiveBatchJobs -Name "BatchJobs"
+    .\Clear_UnitTest_Batch_Jobs.ps1 -envName $envName -includeActive $includeActiveBatchJobs
+} -ArgumentList $envName, $includeActiveBatchJobs -Name "BatchJobs"
 
 $jobs += Start-Job -ScriptBlock {
-    param($prefix)
+    param($envName)
     Set-Location $using:PWD
-    .\Clear_UnitTest_ServiceBus_Topics.ps1 -prefix $prefix
-} -ArgumentList $prefix -Name "ServiceBus"
+    .\Clear_UnitTest_ServiceBus_Topics.ps1 -envName $envName
+} -ArgumentList $envName -Name "ServiceBus"
 
 $jobs += Start-Job -ScriptBlock {
-    param($prefix)
+    param($envName)
     Set-Location $using:PWD
-    .\Clear_UnitTest_StorageAcct_Containers.ps1 -prefix $prefix
-} -ArgumentList $prefix -Name "Storage"
+    .\Clear_UnitTest_StorageAcct_Containers.ps1 -envName $envName
+} -ArgumentList $envName -Name "Storage"
 
 if($removeAllContainerApps)
 {

@@ -6,8 +6,8 @@
     directory and uses ACR Build to build the Dockerfile.tests image. The resulting
     image contains the test runner, Azure CLI, and kubectl for running integration
     tests in Azure Container Instances.
-.PARAMETER prefix
-    Environment name prefix used to derive the ACR name.
+.PARAMETER envName
+    Azure Developer CLI environment name used to derive the ACR name.
 .PARAMETER resourceGroupName
     Azure resource group containing the container registry.
 .PARAMETER wait
@@ -17,7 +17,7 @@
 #>
 param
 (
-    [string] $prefix,
+    [string] $envName,
     [string] $resourceGroupName,
     [bool] $wait = $true,
     [string] $imageTag = "test-runner"
@@ -33,10 +33,10 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 $testImageName = "sqlbuildmanager-tests"
 
 #############################################
-# Get set resource name variables from prefix
+# Get resource name variables from the environment name
 #############################################
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
-. $prefixScript -prefix $prefix
+. $prefixScript -envName $envName
 
 #############################################
 # Build and push test image if requested

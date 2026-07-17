@@ -1,5 +1,9 @@
-@description('Prefix to prepend to account names')
-param namePrefix string
+@description('Azure Developer CLI environment name used in child resource names')
+param envName string
+
+param pgServerNameA string
+param pgServerNameB string
+param pgAdminUser string
 
 @description('Number of test databases to create per server')
 param testDbCountPerServer int = 10
@@ -9,9 +13,6 @@ param location string = resourceGroup().location
 
 @description('Current machine IP address to allow access to the PostgreSQL server.')
 param currentIpAddress string
-
-@description('Array of subnet resource ids to allow access via VNet rules.')
-param subnetNames string
 
 @description('Object ID (GUID) of the Entra ID user or group to set as PG AAD admin')
 param pgAdminObjectId string
@@ -32,18 +33,7 @@ param vnetId string = ''
 @description('Private endpoint subnet ID (required when usePrivateEndpoint is true)')
 param privateEndpointSubnetId string = ''
 
-var pgServerNameA = '${namePrefix}pgserver-a'
-var pgServerNameB = '${namePrefix}pgserver-b'
-var pgAdminUser = '${namePrefix}pgadmin'
-var subnetNamesArray = split(subnetNames, ',')
-
-module networkResource 'network.bicep' = {
-  name: 'pgNetworkResource'
-  params: {
-    namePrefix: namePrefix
-    location: location
-  }
-}
+var prefixes = loadJsonContent('../resourcetypes.json')
 
 // ============================================================
 // PostgreSQL Server 'A'
@@ -94,7 +84,7 @@ resource pgAadAdminA 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2
 
 resource pgFirewallRuleA 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2024-08-01' = if (currentIpAddress != '') {
   parent: pgFlexServerA
-  name: '${namePrefix}_AllowCurrentIpA'
+  name: '${prefixes.databaseFirewallRule}${envName}-current-ip-a'
   dependsOn: [
     pgFirewallAzureServicesA
   ]
@@ -175,7 +165,7 @@ resource pgAadAdminB 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2
 
 resource pgFirewallRuleB 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2024-08-01' = if (currentIpAddress != '') {
   parent: pgFlexServerB
-  name: '${namePrefix}_AllowCurrentIpB'
+  name: '${prefixes.databaseFirewallRule}${envName}-current-ip-b'
   dependsOn: [
     pgFirewallAzureServicesB
   ]
@@ -219,7 +209,7 @@ resource pgPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (u
 
 resource pgPrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if (usePrivateEndpoint) {
   parent: pgPrivateDnsZone
-  name: '${namePrefix}-pg-vnet-link'
+  name: '${prefixes.privateDnsZoneVirtualNetworkLink}${envName}-psql'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -231,7 +221,7 @@ resource pgPrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkL
 
 // Private Endpoint for PostgreSQL Server A
 resource pgPrivateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = if (usePrivateEndpoint) {
-  name: '${namePrefix}pg-a-pe'
+  name: '${prefixes.privateEndpoint}${envName}-psql-a'
   location: location
   properties: {
     subnet: {
@@ -239,7 +229,7 @@ resource pgPrivateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = if
     }
     privateLinkServiceConnections: [
       {
-        name: '${namePrefix}pg-a-plsc'
+        name: '${prefixes.privateLink}${envName}-psql-a'
         properties: {
           privateLinkServiceId: pgFlexServerA.id
           groupIds: [
@@ -268,7 +258,7 @@ resource pgPrivateEndpointADnsGroup 'Microsoft.Network/privateEndpoints/privateD
 
 // Private Endpoint for PostgreSQL Server B
 resource pgPrivateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = if (usePrivateEndpoint) {
-  name: '${namePrefix}pg-b-pe'
+  name: '${prefixes.privateEndpoint}${envName}-psql-b'
   location: location
   properties: {
     subnet: {
@@ -276,7 +266,7 @@ resource pgPrivateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = if
     }
     privateLinkServiceConnections: [
       {
-        name: '${namePrefix}pg-b-plsc'
+        name: '${prefixes.privateLink}${envName}-psql-b'
         properties: {
           privateLinkServiceId: pgFlexServerB.id
           groupIds: [

@@ -1,7 +1,7 @@
 
 param
 (
-    [string] $prefix,
+    [string] $envName,
     [string] $resourceGroupName,
     [string] $imageTag = "dependent-test-runner"
 )
@@ -14,11 +14,11 @@ param
     Copies the src/ folder (excluding build artifacts) to a temp directory and uses
     ACR Build to build the Dockerfile.dependent-tests image.
 
-.PARAMETER prefix
-    The resource name prefix used when deploying resources.
+.PARAMETER envName
+    The Azure Developer CLI environment name used when deploying resources.
 
 .PARAMETER resourceGroupName
-    Optional resource group name override (defaults to "$prefix-rg").
+    Optional resource group name override. Defaults to the resource-group prefix from infra/resourcetypes.json plus envName.
 
 .PARAMETER imageTag
     Tag for the container image (default: dependent-test-runner).
@@ -29,20 +29,16 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
 }
 
-if([string]::IsNullOrWhiteSpace($resourceGroupName)) {
-    $resourceGroupName = "$prefix-rg"
-}
-
 $testImageName = "sqlbuildmanager-dependent-tests"
 
 #############################################
-# Get set resource name variables from prefix
+# Get resource name variables from the environment name
 #############################################
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
-. $prefixScript -prefix $prefix
-
-if ([string]::IsNullOrWhiteSpace($resourceGroupName)) {
-    $resourceGroupName = "$prefix-rg"
+$resourceGroupNameOverride = $resourceGroupName
+. $prefixScript -envName $envName
+if (-not [string]::IsNullOrWhiteSpace($resourceGroupNameOverride)) {
+    $resourceGroupName = $resourceGroupNameOverride
 }
 
 #############################################

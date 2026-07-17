@@ -1,7 +1,7 @@
 param
 (
     [string] $path,
-    [string] $prefix
+    [string] $envName
 )
 
 <#
@@ -13,8 +13,8 @@ param
     config files in the same format as create_database_override_files.ps1 but
     targeting PostgreSQL databases (sbm_pg_test1..N).
 
-.PARAMETER prefix
-    The resource name prefix used when deploying resources.
+.PARAMETER envName
+    The Azure Developer CLI environment name used when deploying resources.
 
 .PARAMETER path
     Output path for the generated config files.
@@ -31,10 +31,10 @@ if ([string]::IsNullOrWhiteSpace($path)) {
 }
 
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
-. $prefixScript -prefix $prefix
+. $prefixScript -envName $envName
 
 $keyFileScript = Join-Path $repoRoot "scripts\key_file_names.ps1"
-. $keyFileScript -prefix $prefix -path $path
+. $keyFileScript -envName $envName -path $path
 
 Write-Host "Create PostgreSQL database override files for servers '$pgServerNameA' and '$pgServerNameB' in resource group '$resourceGroupName'" -ForegroundColor Cyan
 $path = Resolve-Path $path
@@ -113,7 +113,6 @@ if (-not [string]::IsNullOrWhiteSpace($pgAdminPassword) -and $pgAdminPassword -n
 
 # Save PG admin username
 $pgUnFile = Join-Path $path "pg-un.txt"
-$pgAdminUser = "${prefix}pgadmin"
 $pgAdminUser | Set-Content -Path $pgUnFile
 Write-Host "Writing PostgreSQL admin username to $pgUnFile" -ForegroundColor DarkGreen
 

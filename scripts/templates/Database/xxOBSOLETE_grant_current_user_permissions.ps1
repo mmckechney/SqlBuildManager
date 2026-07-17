@@ -1,7 +1,7 @@
 param
 (
     [Parameter(Mandatory=$true)]
-    [string] $prefix,
+    [string] $envName,
 
     [Parameter(Mandatory=$true)]
     [string] $resourceGroupName,
@@ -25,8 +25,8 @@ param
     - Az CLI must be installed and logged in
     - SqlServer PowerShell module must be installed (Install-Module -Name SqlServer)
 
-.PARAMETER prefix
-    The resource name prefix used when deploying resources.
+.PARAMETER envName
+    The Azure Developer CLI environment name used when deploying resources.
 
 .PARAMETER resourceGroupName
     The Azure resource group containing the SQL servers.
@@ -36,13 +36,13 @@ param
     Options: db_owner, db_datareader, db_datawriter
 
 .EXAMPLE
-    .\grant_current_user_permissions.ps1 -prefix "myprefix" -resourceGroupName "myprefix-rg"
+    .\grant_current_user_permissions.ps1 -envName "myenv" -resourceGroupName "rg-myenv"
 #>
 
 #############################################
 # Get set resource name variables from prefix
 #############################################
-. ./../prefix_resource_names.ps1 -prefix $prefix
+. ./../prefix_resource_names.ps1 -envName $envName
 
 # Check if SqlServer module is installed
 if (-not (Get-Module -ListAvailable -Name SqlServer)) {

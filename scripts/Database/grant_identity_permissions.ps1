@@ -1,7 +1,7 @@
 param
 (
     [Parameter(Mandatory=$true)]
-    [string] $prefix,
+    [string] $envName,
 
     [Parameter(Mandatory=$true)]
     [string] $resourceGroupName,
@@ -25,8 +25,8 @@ param
     - Az CLI must be installed and logged in
     - SqlServer PowerShell module must be installed (Install-Module -Name SqlServer)
 
-.PARAMETER prefix
-    The resource name prefix used when deploying resources.
+.PARAMETER envName
+    The Azure Developer CLI environment name used when deploying resources.
 
 .PARAMETER resourceGroupName
     The Azure resource group containing the SQL servers.
@@ -36,7 +36,7 @@ param
     Options: db_owner, db_datareader, db_datawriter
 
 .EXAMPLE
-    .\grant_identity_permissions.ps1 -prefix "myprefix" -resourceGroupName "myprefix-rg"
+    .\grant_identity_permissions.ps1 -envName "myenv" -resourceGroupName "rg-myenv"
 #>
 
 # Get the repo root
@@ -50,10 +50,10 @@ if ([string]::IsNullOrWhiteSpace($path)) {
 }
 
 #############################################
-# Get set resource name variables from prefix
+# Get resource name variables from the environment name
 #############################################
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
-. $prefixScript -prefix $prefix
+. $prefixScript -envName $envName
 
 Write-Host "Granting Managed Identity '$identityName' access to SQL databases" -ForegroundColor Cyan
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen

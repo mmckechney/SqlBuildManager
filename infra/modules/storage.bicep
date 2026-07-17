@@ -22,9 +22,10 @@ param vnetId string = ''
 @description('Private endpoint subnet ID (required when usePrivateEndpoint is true)')
 param privateEndpointSubnetId string = ''
 
-@description('Name prefix for private endpoint resources')
-param namePrefix string = ''
+@description('Azure Developer CLI environment name used in private endpoint resource names')
+param envName string
 
+var prefixes = loadJsonContent('../resourcetypes.json')
 var subnetNamesArray = empty(subnetNames) ? [] : split(subnetNames, ',')
 
 // Build virtual network rules array from subnet names
@@ -103,7 +104,7 @@ resource privateDnsZoneBlob 'Microsoft.Network/privateDnsZones@2020-06-01' = if(
 // Link private DNS zone to VNet (blob)
 resource privateDnsZoneLinkBlob 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if(usePrivateEndpoint) {
   parent: privateDnsZoneBlob
-  name: '${namePrefix}-storage-blob-vnet-link'
+  name: '${prefixes.privateDnsZoneVirtualNetworkLink}${envName}-st-blob'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -115,7 +116,7 @@ resource privateDnsZoneLinkBlob 'Microsoft.Network/privateDnsZones/virtualNetwor
 
 // Private Endpoint for Storage (blob)
 resource privateEndpointBlob 'Microsoft.Network/privateEndpoints@2023-05-01' = if(usePrivateEndpoint) {
-  name: '${namePrefix}storage-blob-pe'
+  name: '${prefixes.privateEndpoint}${envName}-st-blob'
   location: location
   properties: {
     subnet: {
@@ -123,7 +124,7 @@ resource privateEndpointBlob 'Microsoft.Network/privateEndpoints@2023-05-01' = i
     }
     privateLinkServiceConnections: [
       {
-        name: '${namePrefix}storage-blob-plsc'
+        name: '${prefixes.privateLink}${envName}-st-blob'
         properties: {
           privateLinkServiceId: storageAccount.id
           groupIds: [
@@ -160,7 +161,7 @@ resource privateDnsZoneQueue 'Microsoft.Network/privateDnsZones@2020-06-01' = if
 // Link private DNS zone to VNet (queue)
 resource privateDnsZoneLinkQueue 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if(usePrivateEndpoint) {
   parent: privateDnsZoneQueue
-  name: '${namePrefix}-storage-queue-vnet-link'
+  name: '${prefixes.privateDnsZoneVirtualNetworkLink}${envName}-st-queue'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -172,7 +173,7 @@ resource privateDnsZoneLinkQueue 'Microsoft.Network/privateDnsZones/virtualNetwo
 
 // Private Endpoint for Storage (queue)
 resource privateEndpointQueue 'Microsoft.Network/privateEndpoints@2023-05-01' = if(usePrivateEndpoint) {
-  name: '${namePrefix}storage-queue-pe'
+  name: '${prefixes.privateEndpoint}${envName}-st-queue'
   location: location
   properties: {
     subnet: {
@@ -180,7 +181,7 @@ resource privateEndpointQueue 'Microsoft.Network/privateEndpoints@2023-05-01' = 
     }
     privateLinkServiceConnections: [
       {
-        name: '${namePrefix}storage-queue-plsc'
+        name: '${prefixes.privateLink}${envName}-st-queue'
         properties: {
           privateLinkServiceId: storageAccount.id
           groupIds: [

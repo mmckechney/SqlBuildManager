@@ -8,7 +8,7 @@
 #>
 param
 (
-    [string] $prefix,
+    [string] $envName,
     [string] $resourceGroupName,
     [string] $path = "..\..\..\src\TestConfig",
     [bool] $includeContainerRegistry
@@ -18,8 +18,8 @@ param
 #############################################
 # Get set resource name variables from prefix
 #############################################
-. ./../prefix_resource_names.ps1 -prefix $prefix
-. ./../key_file_names.ps1 -prefix $prefix -path $path
+. ./../prefix_resource_names.ps1 -envName $envName
+. ./../key_file_names.ps1 -envName $envName -path $path
 
 $exists = az aks show --name $aksClusterName --resource-group $resourceGroupName --query name -o tsv
 

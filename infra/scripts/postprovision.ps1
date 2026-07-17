@@ -19,11 +19,11 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Post-Provision: Granting SQL Permissions" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
-# Get the environment name (used as prefix)
-$prefix = Get-AzdEnvValue "AZURE_ENV_NAME"
+# Get the environment and deployed resource names from azd outputs.
+$envName = Get-AzdEnvValue "AZURE_ENV_NAME"
 $resourceGroupName = Get-AzdEnvValue "RESOURCE_GROUP_NAME"
 
-Write-Host "Environment: $prefix" -ForegroundColor DarkGreen
+Write-Host "Environment: $envName" -ForegroundColor DarkGreen
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 
 # NOTE: Public network access remains enabled on all resources.
@@ -58,11 +58,11 @@ if ($sqlServerDeployed -ne "false") {
     # Run the grant identity permissions script
     $scriptPath = Join-Path $repoRoot "scripts\Database\grant_identity_permissions.ps1"
     if (Test-Path $scriptPath) {
-        & $scriptPath -prefix $prefix -resourceGroupName $resourceGroupName
+        & $scriptPath -envName $envName -resourceGroupName $resourceGroupName
     } else {
         Write-Host "Script not found at: $scriptPath" -ForegroundColor Yellow
         Write-Host "Skipping SQL permissions grant. Run manually after deployment:" -ForegroundColor Yellow
-        Write-Host "  .\scripts\Database\grant_identity_permissions.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
+        Write-Host "  .\scripts\Database\grant_identity_permissions.ps1 -envName $envName -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
     }
 } else {
     Write-Host "SQL Server not deployed — skipping SQL permissions grant" -ForegroundColor DarkGray
@@ -78,7 +78,7 @@ if ($pgDeployed -eq "true") {
 
     $pgScriptPath = Join-Path $repoRoot "scripts\Database\grant_pg_identity_permissions.ps1"
     if (Test-Path $pgScriptPath) {
-        & $pgScriptPath -prefix $prefix -resourceGroupName $resourceGroupName
+        & $pgScriptPath -envName $envName -resourceGroupName $resourceGroupName
     } else {
         Write-Host "Script not found at: $pgScriptPath" -ForegroundColor Yellow
     }
@@ -137,10 +137,10 @@ metadata:
     }
     
     if (Test-Path $settingsScriptPath) {
-        & $settingsScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -sbmExe $sbmExe
+        & $settingsScriptPath -envName $envName -resourceGroupName $resourceGroupName -path $outputPath -sbmExe $sbmExe
     } else {
         Write-Host "Settings script not found at: $settingsScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\create_all_settingsfiles_mi_only.ps1 -prefix $prefix" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\create_all_settingsfiles_mi_only.ps1 -envName $envName" -ForegroundColor Yellow
     }
 # } else {
 #     Write-Host ""
@@ -165,10 +165,10 @@ if ($sqlServerDeployedForConfig -ne "false") {
     }
 
     if (Test-Path $dbConfigScriptPath) {
-        & $dbConfigScriptPath -prefix $prefix -path $outputPath
+        & $dbConfigScriptPath -envName $envName -path $outputPath
     } else {
         Write-Host "Database config script not found at: $dbConfigScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\Database\create_database_override_files.ps1 -prefix $prefix -path $outputPath" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\Database\create_database_override_files.ps1 -envName $envName -path $outputPath" -ForegroundColor Yellow
     }
 } else {
     Write-Host "SQL Server not deployed — skipping database config generation" -ForegroundColor DarkGray
@@ -184,7 +184,7 @@ if ($pgDeployedForConfig -eq "true") {
 
     $pgDbConfigScriptPath = Join-Path $repoRoot "scripts\Database\create_pg_database_override_files.ps1"
     if (Test-Path $pgDbConfigScriptPath) {
-        & $pgDbConfigScriptPath -prefix $prefix -path $outputPath
+        & $pgDbConfigScriptPath -envName $envName -path $outputPath
     } else {
         Write-Host "PostgreSQL config script not found at: $pgDbConfigScriptPath" -ForegroundColor Yellow
     }
@@ -200,14 +200,14 @@ if ($buildBatch -eq "true" -and $batchDeployed -ne "false") {
     Write-Host "Post-Provision: Building Batch Application Packages" -ForegroundColor Cyan
     Write-Host "====================================================" -ForegroundColor Cyan
     
-    $batchScriptPath = Join-Path $repoRoot "scripts\Batch\build_and_upload_batch_fromprefix.ps1"
+    $batchScriptPath = Join-Path $repoRoot "scripts\Batch\build_and_upload_batch_fromenv.ps1"
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $batchScriptPath) {
-        & $batchScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -action "BuildAndUpload"
+        & $batchScriptPath -envName $envName -resourceGroupName $resourceGroupName -path $outputPath -action "BuildAndUpload"
     } else {
         Write-Host "Batch build script not found at: $batchScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\Batch\build_and_upload_batch_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\Batch\build_and_upload_batch_fromenv.ps1 -envName $envName" -ForegroundColor Yellow
     }
 } else {
     Write-Host ""
@@ -226,14 +226,14 @@ if ($buildContainers -eq "true" -and $crDeployed -ne "false") {
     Write-Host "Post-Provision: Building Container Images" -ForegroundColor Cyan
     Write-Host "=========================================" -ForegroundColor Cyan
     
-    $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_runtime_image_fromprefix.ps1"
+    $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_runtime_image_fromenv.ps1"
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $containerScriptPath) {
-        & $containerScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -wait $true
+        & $containerScriptPath -envName $envName -resourceGroupName $resourceGroupName -path $outputPath -wait $true
     } else {
         Write-Host "Container build script not found at: $containerScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\ContainerRegistry\build_runtime_image_fromprefix.ps1 -prefix $prefix" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_runtime_image_fromenv.ps1 -envName $envName" -ForegroundColor Yellow
     }
 } else {
     Write-Host ""
@@ -254,10 +254,10 @@ if ($buildContainers -eq "true" -and $crDeployed -ne "false") {
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $containerScriptPath) {
-        & $containerScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -wait $true
+        & $containerScriptPath -envName $envName -resourceGroupName $resourceGroupName -wait $true
     } else {
         Write-Host "Container build script not found at: $containerScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\ContainerRegistry\build_external_test_image.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_external_test_image.ps1 -envName $envName -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
     }
 } else {
     Write-Host ""
@@ -276,10 +276,10 @@ if ($buildContainers -eq "true" -and $crDeployed -ne "false") {
     $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_dependent_test_image.ps1"
     
     if (Test-Path $containerScriptPath) {
-        & $containerScriptPath -prefix $prefix -resourceGroupName $resourceGroupName -wait $true
+        & $containerScriptPath -envName $envName -resourceGroupName $resourceGroupName -wait $true
     } else {
         Write-Host "Container build script not found at: $containerScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\ContainerRegistry\build_dependent_test_image.ps1 -prefix $prefix -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_dependent_test_image.ps1 -envName $envName -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
     }
 } 
 
