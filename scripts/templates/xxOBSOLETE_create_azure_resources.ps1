@@ -10,7 +10,7 @@
 param(
 [Parameter(Mandatory=$True)]
 [string]
-$prefix,
+$envName,
 
  [Parameter(Mandatory=$True)]
  [string]
@@ -99,10 +99,10 @@ if(-Not $settingsFile.Contains("None"))
     }
 }
 #############################################
-# Get set resource name variables from prefix
+# Get resource name variables from the environment name
 #############################################
-. ./prefix_resource_names.ps1 -prefix $prefix
-. ./key_file_names.ps1 -prefix $prefix -path $outputPath
+. ../prefix_resource_names.ps1 -envName $envName
+. ../key_file_names.ps1 -envName $envName -path $outputPath
 
 $targetFramework = .\get_targetframework.ps1
 
@@ -145,7 +145,7 @@ if($shouldDeploy)
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
     $deployStatus = az deployment sub create --location $location --template-file "$scriptDir/../../infra/main.bicep" `
         --parameters `
-            namePrefix="$prefix" `
+            envName="$envName" `
             location="$location" `
             currentIpAddress=$ipAddress `
             userIdGuid=$userIdGuid `
@@ -172,7 +172,7 @@ else {
 if($deployContainerRegistry)
 {
      $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/ContainerRegistry/build_runtime_image_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -wait $false -path $outputPath
+    .$scriptDir/../ContainerRegistry/build_runtime_image_fromenv.ps1 -resourceGroupName $resourceGroupName -envName $envName -wait $false -path $outputPath
 }
 else 
 {
@@ -184,7 +184,7 @@ else
 if($deployAks)
 {
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/Kubernetes/create_aks_cluster.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -includeContainerRegistry $deployContainerRegistry -path $outputPath
+    .$scriptDir/Kubernetes/xxOBSOLETE_create_aks_cluster.ps1 -envName $envName -resourceGroupName $resourceGroupName -includeContainerRegistry $deployContainerRegistry -path $outputPath
 }
 else 
 {
@@ -198,7 +198,7 @@ else
 if($build -and $deployBatch)
 {
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/Batch/build_and_upload_batch_fromprefix.ps1 -resourceGroupName $resourceGroupName -prefix $prefix -path $outputPath -action BuildAndUpload
+    .$scriptDir/../Batch/build_and_upload_batch_fromenv.ps1 -resourceGroupName $resourceGroupName -envName $envName -path $outputPath -action BuildAndUpload
 }
 else 
 {
@@ -216,13 +216,13 @@ $sbmExe = (Resolve-Path "..\..\src\SqlBuildManager.Console\bin\Debug\$targetFram
 if($testDatabaseCount -gt 0)
 {
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/Database/create_database_override_files.ps1 -prefix $prefix -path $outputPath -resourceGroupName $resourceGroupName
+    .$scriptDir/../Database/create_database_override_files.ps1 -envName $envName -path $outputPath
 
     ######################################################
     # Grant Managed Identity permissions to SQL databases
     ######################################################
     Write-Host "Granting Managed Identity permissions to SQL databases..." -ForegroundColor Cyan
-    .$scriptDir/Database/grant_identity_permissions.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath
+    .$scriptDir/../Database/grant_identity_permissions.ps1 -envName $envName -resourceGroupName $resourceGroupName -path $outputPath
 }
 
 
@@ -232,7 +232,7 @@ if($settingsFileAks)
     # Create AKS Settings files
     ##############################
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/kubernetes/create_aks_settingsfile_fromprefix.ps1 -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+    .$scriptDir/kubernetes/xxOBSOLETE_create_aks_settingsfile_fromenv.ps1 -path $outputPath -resourceGroupName $resourceGroupName -envName $envName
  }
  else 
 {
@@ -246,7 +246,7 @@ if($settingsFileContainerApp)
 {
     # Create test file referencing the 
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/ContainerApp/create_containerapp_settingsfile_fromprefix_all.ps1 -prefix $prefix
+    .$scriptDir/ContainerApp/xxOBSOLETE_create_containerapp_settingsfile_fromenv_all.ps1 -envName $envName
    
 }
 else 
@@ -260,7 +260,7 @@ else
 if($settingsFileBatch)
 {
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/Batch/create_batch_settingsfiles_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix
+    .$scriptDir/Batch/xxOBSOLETE_create_batch_settingsfiles_fromenv.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -envName $envName
 }
 else 
 {
@@ -272,7 +272,7 @@ else
 if($settingsFileAci)
 {
     $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-    .$scriptDir/aci/create_aci_settingsfile_fromprefix.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -prefix $prefix 
+    .$scriptDir/aci/xxOBSOLETE_create_aci_settingsfile_fromenv.ps1 -sbmExe $sbmExe -path $outputPath -resourceGroupName $resourceGroupName -envName $envName
 }
 else 
 {
@@ -285,18 +285,18 @@ else
 ###########################################
 if(-Not $settingsFile.Contains("None")) 
 {
-    $prefixFolder = Join-Path $outputPath $prefix 
+    $envFolder = Join-Path $outputPath $envName
 
-    if($false -eq (Test-Path  $prefixFolder))
+    if($false -eq (Test-Path  $envFolder))
     {
-        New-Item -Path $prefixFolder -ItemType Directory
+        New-Item -Path $envFolder -ItemType Directory
     }
-    $prefixFolder = Resolve-Path $prefixFolder
+    $envFolder = Resolve-Path $envFolder
 
-    Write-Host "Copying settings and config files to $prefixFolder" -ForegroundColor DarkCyan
-    Copy-Item -Path "$outputPath\*.json" -Destination $prefixFolder -Force
-    Copy-Item -Path "$outputPath\*.cfg" -Destination $prefixFolder -Force
-    Copy-Item -Path "$outputPath\*.txt" -Destination $prefixFolder -Force
+    Write-Host "Copying settings and config files to $envFolder" -ForegroundColor DarkCyan
+    Copy-Item -Path "$outputPath\*.json" -Destination $envFolder -Force
+    Copy-Item -Path "$outputPath\*.cfg" -Destination $envFolder -Force
+    Copy-Item -Path "$outputPath\*.txt" -Destination $envFolder -Force
     
 }
 Write-Host "COMPLETED! - Azure resources have been created." -ForegroundColor DarkCyan

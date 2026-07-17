@@ -1,7 +1,7 @@
 param
 (
     [Parameter(Mandatory=$true)]
-    [string] $prefix,
+    [string] $envName,
 
     [Parameter(Mandatory=$true)]
     [string] $resourceGroupName,
@@ -52,7 +52,8 @@ if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($subscriptionId)) {
     throw 'Unable to determine the active Azure subscription.'
 }
 
-$containerName = "${prefix}postprovision"
+. (Join-Path $repoRoot 'scripts/prefix_resource_names.ps1') -envName $envName
+$containerName = $postProvisionContainerName
 $imageName = 'sqlbuildmanager-postprovision:latest'
 $image = "${containerRegistryLoginServer}/${imageName}"
 $tempBuildContext = Join-Path ([IO.Path]::GetTempPath()) "sbm-postprovision-$(Get-Random)"
@@ -65,6 +66,8 @@ try {
     New-Item -Path (Join-Path $tempBuildContext 'scripts/Database') -ItemType Directory -Force | Out-Null
     Copy-Item (Join-Path $repoRoot 'infra/postprovision/Dockerfile') (Join-Path $tempBuildContext 'Dockerfile')
     Copy-Item (Join-Path $repoRoot 'infra/postprovision/run-private-postprovision.ps1') (Join-Path $tempBuildContext 'run-private-postprovision.ps1')
+    New-Item -Path (Join-Path $tempBuildContext 'infra') -ItemType Directory -Force | Out-Null
+    Copy-Item (Join-Path $repoRoot 'infra/resourcetypes.json') (Join-Path $tempBuildContext 'infra/resourcetypes.json')
     Copy-Item (Join-Path $repoRoot 'scripts/prefix_resource_names.ps1') (Join-Path $tempBuildContext 'scripts/prefix_resource_names.ps1')
     Copy-Item (Join-Path $repoRoot 'scripts/Database/grant_identity_permissions.ps1') (Join-Path $tempBuildContext 'scripts/Database/grant_identity_permissions.ps1')
     Copy-Item (Join-Path $repoRoot 'scripts/Database/grant_pg_identity_permissions.ps1') (Join-Path $tempBuildContext 'scripts/Database/grant_pg_identity_permissions.ps1')
@@ -132,7 +135,7 @@ try {
         '--cpu', '1',
         '--memory', '1.5',
         '--environment-variables',
-        "PREFIX=$prefix",
+        "ENV_NAME=$envName",
         "RESOURCE_GROUP_NAME=$resourceGroupName",
         "SUBSCRIPTION_ID=$subscriptionId",
         "POSTPROVISION_CLIENT_ID=$postProvisionClientId",

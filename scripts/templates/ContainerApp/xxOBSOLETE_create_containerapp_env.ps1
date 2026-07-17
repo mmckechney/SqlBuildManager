@@ -7,7 +7,7 @@
 #>
 param
 (
-    [string] $prefix,
+    [string] $envName,
     [string] $resourceGroupName,
     [string] $containerAppEnvName,
     [string] $logAnalyticsWorkspace,
@@ -17,10 +17,10 @@ param
     [string] $path = "..\..\..\src\TestConfig"
 )
 
-if("" -ne $prefix)
+if("" -ne $envName)
 {
-    . ./../prefix_resource_names.ps1 -prefix $prefix
-    . ./../key_file_names.ps1 -prefix $prefix -path $path
+    . ./../prefix_resource_names.ps1 -envName $envName
+    . ./../key_file_names.ps1 -envName $envName -path $path
 }
 Write-Host "Creating Container App Environment: $containerAppEnvName" -ForegroundColor DarkGreen
 if("" -eq $subnetId)

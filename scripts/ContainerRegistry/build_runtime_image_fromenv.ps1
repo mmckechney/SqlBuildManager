@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-    Resolves resource names from a prefix and delegates to build_runtime_image.ps1.
+    Resolves resource names from an environment name and delegates to build_runtime_image.ps1.
 .DESCRIPTION
-    Wrapper script that loads standard resource names from a deployment prefix,
+    Wrapper script that loads standard resource names from an azd environment name,
     then calls build_runtime_image.ps1 to build and push the production runtime
     container image to Azure Container Registry.
-.PARAMETER prefix
-    Environment name prefix used to derive resource names.
+.PARAMETER envName
+    Azure Developer CLI environment name used to derive resource names.
 .PARAMETER resourceGroupName
     Azure resource group containing the container registry.
 .PARAMETER path
@@ -16,7 +16,7 @@
 #>
 param
 (
-    [string] $prefix,
+    [string] $envName,
     [string] $resourceGroupName,
     [string] $path,
     [bool] $wait = $true
@@ -33,16 +33,16 @@ if ([string]::IsNullOrWhiteSpace($path)) {
 }
 
 #############################################
-# Get set resource name variables from prefix
+# Get resource name variables from the environment name
 #############################################
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
 $keyFileScript = Join-Path $repoRoot "scripts\key_file_names.ps1"
 
-. $prefixScript -prefix $prefix
-. $keyFileScript -prefix $prefix -path $path
+. $prefixScript -envName $envName
+. $keyFileScript -envName $envName -path $path
 
-Write-Host "Upload and build Docker image in Container Registry from prefix: $prefix" -ForegroundColor Cyan
-Write-Host "Retrieving resource names from resources in $resourceGroupName with prefix $prefix" -ForegroundColor DarkGreen
+Write-Host "Upload and build Docker image in Container Registry for environment: $envName" -ForegroundColor Cyan
+Write-Host "Retrieving resource names from resources in $resourceGroupName for environment $envName" -ForegroundColor DarkGreen
 Write-Host "Using Azure Container Registry Name: $containerRegistryName  " -ForegroundColor DarkGreen
 
 $buildScript = Join-Path $repoRoot "scripts\ContainerRegistry\build_runtime_image.ps1"

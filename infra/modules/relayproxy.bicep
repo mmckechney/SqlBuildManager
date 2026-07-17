@@ -22,8 +22,11 @@ param usePrivateEndpoint bool = true
 @description('Subnet resource ID for Relay private endpoint')
 param privateEndpointSubnetId string = ''
 
-@description('Resource name prefix')
-param namePrefix string
+@description('Private endpoint resource name')
+param privateEndpointName string
+
+@description('Private link service connection name')
+param privateLinkServiceConnectionName string
 
 param location string = resourceGroup().location
 
@@ -122,7 +125,7 @@ resource relayPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' exis
 }
 
 resource relayPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = if (usePrivateEndpoint) {
-  name: '${namePrefix}relay-pe'
+  name: privateEndpointName
   location: location
   properties: {
     subnet: {
@@ -130,7 +133,7 @@ resource relayPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = 
     }
     privateLinkServiceConnections: [
       {
-        name: '${namePrefix}relay-plsc'
+        name: privateLinkServiceConnectionName
         properties: {
           privateLinkServiceId: relayNamespace.id
           groupIds: [

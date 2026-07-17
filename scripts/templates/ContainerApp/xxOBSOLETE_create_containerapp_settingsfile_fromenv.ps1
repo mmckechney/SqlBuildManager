@@ -12,7 +12,7 @@ param
     [string] $path = "..\..\..\src\TestConfig",
     [string] $resourceGroupName,
     [Parameter(Mandatory=$true)]
-    [string] $prefix,
+    [string] $envName,
     [string] $sqlUserName,
     [string] $sqlPassword,
     [string] $imageTag,
@@ -23,15 +23,15 @@ param
 #############################################
 # Get set resource name variables from prefix
 #############################################
-. ./../prefix_resource_names.ps1 -prefix $prefix
-. ./../key_file_names.ps1 -prefix $prefix -path $path
+. ./../prefix_resource_names.ps1 -envName $envName
+. ./../key_file_names.ps1 -envName $envName -path $path
 
-Write-Host "Create Container App Settings file from prefix: $prefix"  -ForegroundColor Cyan
+Write-Host "Create Container App Settings file for environment: $envName"  -ForegroundColor Cyan
 
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 $path = Resolve-Path (Join-Path $scriptDir $path)
 
-Write-Host "Retrieving resource names from resources in $resourceGroupName with prefix $prefix" -ForegroundColor DarkGreen
+Write-Host "Retrieving resource names from resources in $resourceGroupName for environment $envName" -ForegroundColor DarkGreen
 if([string]::IsNullOrWhiteSpace($sqlUserName))
 {
     $sqlUserName = (Get-Content -Path (Join-Path $path "un.txt")).Trim()

@@ -23,6 +23,7 @@ RUN pwsh -NoLogo -NoProfile -Command \
 
 WORKDIR /bootstrap
 COPY scripts ./scripts
+COPY infra ./infra
 COPY run-private-postprovision.ps1 .
 
 ENTRYPOINT ["pwsh", "-NoLogo", "-NoProfile", "-File", "/bootstrap/run-private-postprovision.ps1"]

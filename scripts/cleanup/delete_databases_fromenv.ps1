@@ -1,16 +1,16 @@
 <#
 .SYNOPSIS
-    Deletes all SQL Server instances in the resource group for a given deployment prefix.
+    Deletes all SQL Server instances in the resource group for a given azd environment.
 .DESCRIPTION
-    Lists all SQL servers in the prefix resource group and deletes each one,
+    Lists all SQL servers in the environment resource group and deletes each one,
     including their elastic pools and databases. Used to tear down test databases.
-.PARAMETER prefix
-    Environment name prefix used to derive resource names.
+.PARAMETER envName
+    Azure Developer CLI environment name used to derive resource names.
 #>
 param
 (
     [Parameter(Mandatory=$true)]
-    [string] $prefix
+    [string] $envName
 )
 
 # Get the repo root
@@ -20,9 +20,9 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 }
 
 #############################################
-# Get set resource name variables from prefix
+# Get resource name variables from the environment name
 #############################################
-. "$repoRoot\scripts\prefix_resource_names.ps1" -prefix $prefix
+. "$repoRoot\scripts\prefix_resource_names.ps1" -envName $envName
 
 $servers = (az sql server list --resource-group $resourceGroupName  --query [].name ) | ConvertFrom-Json
 
@@ -31,4 +31,3 @@ foreach($server in $servers)
     Write-Host "Deleting database server $server in resource group $resourceGroupName, its elastic pools and databases" -ForegroundColor DarkGreen
     az sql server delete --name $server --resource-group $resourceGroupName --yes 
 }
-

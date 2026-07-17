@@ -87,7 +87,7 @@ jobs:
           Write-Host "::add-mask::$pgPass"
 
           $scriptArgs = @{
-            prefix            = "${{ steps.prefix.outputs.value }}"
+            envName           = "${{ steps.prefix.outputs.value }}"
             resourceGroupName = "${{ secrets.AZURE_RESOURCE_GROUP }}"
             sqlPassword       = $sqlPass
             pgPassword        = $pgPass

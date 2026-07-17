@@ -1,29 +1,11 @@
-@description('Prefix to prepend to resource names.  Should be 3-6 characters long.  Should not contain any special characters.  Should be unique across all deployments.')
-param namePrefix string = ''
-
-@description('Name of the NSG to create. Default is <namePrefix>nsg')
-param nsgName string ='${namePrefix}nsg'
-
-@description('Name of the Batch NSG to create. Default is <namePrefix>Batchnsg')
-param nsgBatchName string ='${namePrefix}Batchnsg'
-
-@description('Name of the VNet to create. Default is <namePrefix>vnet')
-param vnetName string  = '${namePrefix}vnet'
-
-@description('Name of the AKS subnet to create. Default is <namePrefix>akssubnet')
-param aksSubnetName string = '${namePrefix}akssubnet'
-
-@description('Name of the container app subnet to create. Default is <namePrefix>containerappsubnet')
-param containerAppSubnetName string = '${namePrefix}containerappsubnet'
-
-@description('Name of the ACI subnet to create. Default is <namePrefix>acisubnet')
-param aciSubnetName string = '${namePrefix}acisubnet'
-
-@description('Name of the Batch subnet to create. Default is <namePrefix>batchsubnet')
-param batchSubnetName string = '${namePrefix}batchsubnet'
-
-@description('Name of the private endpoint subnet to create. Default is <namePrefix>privateendpointsubnet')
-param privateEndpointSubnetName string = '${namePrefix}pesubnet'
+param nsgName string
+param nsgBatchName string
+param vnetName string
+param aksSubnetName string
+param containerAppSubnetName string
+param aciSubnetName string
+param batchSubnetName string
+param privateEndpointSubnetName string
 
 @description('Name of the location. Default is the resource group location')
 param location string = resourceGroup().location
@@ -244,6 +226,5 @@ output privateEndpointSubnetId string = virtualNetworkResource.properties.subnet
 
 output nsgId string = nsg_resource.id
 output vnetId string = virtualNetworkResource.id
-
 
 

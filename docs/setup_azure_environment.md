@@ -31,7 +31,7 @@ The simplest way to provision all Azure resources is using the [Azure Developer 
    azd init
    ```
    You will be prompted for:
-   - **Environment name** - This becomes the resource prefix (3-10 characters, lowercase)
+   - **Environment name** - This becomes the environment component in each resource name (3-10 characters, lowercase)
    - **Azure subscription** - Select your target subscription
    - **Azure location** - Select the region for deployment
 
@@ -48,19 +48,20 @@ The simplest way to provision all Azure resources is using the [Azure Developer 
 - Sets default environment variables for post-provision steps
 
 #### Infrastructure Deployment (`infra/main.bicep`)
-Creates the following Azure resources with the environment name as prefix:
-- **Resource Group** (`{prefix}-rg`)
+Creates the following Azure resources using the prefixes defined in `infra/resourcetypes.json`:
+- **Resource Group** (`rg-{env}`)
 - **Virtual Network** with subnets for AKS, Container Apps, ACI, Batch, and Private Endpoints
-- **Managed Identity** (`{prefix}identity`) - Used for all service-to-service authentication
-- **Storage Account** (`{prefix}storage`) - For runtime logs and Kubernetes package staging
-- **Service Bus Namespace** (`{prefix}servicebus`) - Topic-based message queue for database targets
-- **Event Hub** (`{prefix}eventhubnamespace` / `{prefix}eventhub`) - Progress event tracking
-- **Log Analytics Workspace** (`{prefix}loganalytics`)
-- **Container Registry** (`{prefix}containerregistry`) - Private registry for SQL Build Manager images
-- **Batch Account** (`{prefix}batchacct`) - Pre-configured with Linux/Windows application slots
-- **AKS Cluster** (`{prefix}aks`) - Kubernetes cluster with workload identity federation
-- **Container App Environment** (`{prefix}containerappenv`)
-- **Azure SQL Servers** (`{prefix}sql-a` and `{prefix}sql-b`) - Each with test databases
+- **Managed Identity** (`id-{env}`) - Used for all service-to-service authentication
+- **Storage Account** (`st{env}`; hyphens removed) - For runtime logs and Kubernetes package staging
+- **Service Bus Namespace** (`sbns-{env}`) - Topic-based message queue for database targets
+- **Event Hub** (`evhns-{env}` / `evh-{env}`) - Progress event tracking
+- **Log Analytics Workspace** (`log-{env}`)
+- **Container Registry** (`cr{env}`; hyphens removed) - Private registry for SQL Build Manager images
+- **Batch Account** (`ba{env}`; hyphens removed) - Pre-configured with Linux/Windows application slots
+- **AKS Cluster** (`aks-{env}`) - Kubernetes cluster with workload identity federation
+- **Container App Environment** (`cae-{env}`)
+- **Azure SQL Servers** (`sql-{env}-a` and `sql-{env}-b`) - Each with test databases
+- **PostgreSQL Flexible Servers** (`psql-{env}-a` and `psql-{env}-b`) - Each with test databases
 
 #### Post-provision Hook (`infra/scripts/postprovision.ps1`)
 - Grants managed identity SQL permissions on all test databases

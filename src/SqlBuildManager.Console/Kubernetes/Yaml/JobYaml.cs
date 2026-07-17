@@ -239,7 +239,7 @@ spec:
     spec:
       containers:
       - name: sqlbuildmanager
-        image: sbm003containerregistry.azurecr.io/sqlbuildmanager:latest-vNext
+        image: acrsbm003.azurecr.io/sqlbuildmanager:latest-vNext
         imagePullPolicy: Always
         resources: 
           limits:

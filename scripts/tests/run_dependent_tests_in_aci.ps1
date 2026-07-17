@@ -1,7 +1,7 @@
  param
 (
     [Parameter()]
-    [string] $prefix,
+    [string] $envName,
 
     [string] $resourceGroupName,
     [string] $customName = "dependent",
@@ -39,8 +39,8 @@
     Environment variables SBM_TEST_SQL_SERVER, SBM_TEST_SQL_USER, and SBM_TEST_SQL_PASSWORD
     are set automatically to connect to the sidecar SQL Server instance.
 
-.PARAMETER prefix
-    The resource name prefix used when deploying resources.
+.PARAMETER envName
+    The Azure Developer CLI environment name used when deploying resources.
 
 .PARAMETER sqlPassword
     SA password for the SQL Server sidecar (must meet SQL Server complexity requirements).
@@ -53,11 +53,11 @@
 
 .EXAMPLE
     # Build image and run all dependent tests
-    .\run_dependent_tests_in_aci.ps1 -prefix mwm025 -buildImage
+    .\run_dependent_tests_in_aci.ps1 -envName mwm025 -buildImage
 
 .EXAMPLE
     # Run with custom SQL password
-    .\run_dependent_tests_in_aci.ps1 -prefix mwm025 -sqlPassword "MyStr0ng!Pass"
+    .\run_dependent_tests_in_aci.ps1 -envName mwm025 -sqlPassword "MyStr0ng!Pass"
 #>
 
 $ErrorActionPreference = "Stop"
@@ -75,24 +75,20 @@ function New-SecureTestPassword {
 if ([string]::IsNullOrWhiteSpace($sqlPassword)) { $sqlPassword = New-SecureTestPassword -tag 'Sql' }
 if ([string]::IsNullOrWhiteSpace($pgPassword))  { $pgPassword  = New-SecureTestPassword -tag 'Pg'  }
 
-# Resolve prefix: parameter > env var > azd env AZURE_NAME_PREFIX
-if ([string]::IsNullOrWhiteSpace($prefix)) {
-    $prefix = $env:AZURE_NAME_PREFIX
-}
-if ([string]::IsNullOrWhiteSpace($prefix)) {
-    $azd_out = azd env get-value AZURE_NAME_PREFIX 2>$null
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($azd_out)) {
-        $prefix = $null
+# Resolve environment name: parameter > azd environment
+if ([string]::IsNullOrWhiteSpace($envName)) {
+    $envName = azd env get-value AZURE_ENV_NAME 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($envName)) {
+        $envName = $null
     } else {
-        $prefix = $azd_out
-        Write-Host "Using prefix '$prefix' from azd environment variable AZURE_NAME_PREFIX" -ForegroundColor DarkGreen
+        Write-Host "Using environment '$envName' from AZURE_ENV_NAME" -ForegroundColor DarkGreen
     }
 }
 
-if ([string]::IsNullOrWhiteSpace($prefix)) {
-    Write-Host "ERROR: The -prefix parameter is required." -ForegroundColor Red
-    Write-Host "  Provide it as a parameter:  .\run_dependent_tests_in_aci.ps1 -prefix <your-prefix>" -ForegroundColor Yellow
-    Write-Host "  Or set it in your azd environment:  azd env set AZURE_NAME_PREFIX <your-prefix>" -ForegroundColor Yellow
+if ([string]::IsNullOrWhiteSpace($envName)) {
+    Write-Host "ERROR: The -envName parameter is required." -ForegroundColor Red
+    Write-Host "  Provide it as a parameter:  .\run_dependent_tests_in_aci.ps1 -envName <your-env>" -ForegroundColor Yellow
+    Write-Host "  Or select an azd environment with 'azd env select'." -ForegroundColor Yellow
     exit 1
 }
 
@@ -110,16 +106,16 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 }
 
 #############################################
-# Get resource name variables from prefix
+# Get resource name variables from the environment name
 #############################################
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
-. $prefixScript -prefix $prefix
-
-if ([string]::IsNullOrWhiteSpace($resourceGroupName)) {
-    $resourceGroupName = "$prefix-rg"
+$resourceGroupNameOverride = $resourceGroupName
+. $prefixScript -envName $envName
+if (-not [string]::IsNullOrWhiteSpace($resourceGroupNameOverride)) {
+    $resourceGroupName = $resourceGroupNameOverride
 }
 
-$testContainerName = "$prefix-test-runner-$customName"
+$testContainerName = "$aciName-test-runner-$customName"
 $testImageName = "sqlbuildmanager-dependent-tests"
 
 Write-Host ""
@@ -151,7 +147,7 @@ Write-Host ""
 #############################################
 if ($buildImage) {
     $buildScript = Join-Path $repoRoot "scripts\ContainerRegistry\build_dependent_test_image.ps1"
-    & $buildScript -prefix $prefix -resourceGroupName $resourceGroupName -imageTag $imageTag
+    & $buildScript -envName $envName -resourceGroupName $resourceGroupName -imageTag $imageTag
     if ($LASTEXITCODE -ne 0) { throw "build_dependent_test_image.ps1 failed (exit code $LASTEXITCODE)." }
 }
 

@@ -1,7 +1,7 @@
 param
 (
     [Parameter(Mandatory=$true)]
-    [string] $prefix,
+    [string] $envName,
 
     [Parameter(Mandatory=$true)]
     [string] $resourceGroupName,
@@ -44,10 +44,10 @@ $aciSubnetId = Get-AzdValue 'ACI_SUBNET_ID'
 $runtimeIdentityId = Get-AzdValue 'MANAGED_IDENTITY_ID'
 $runtimeIdentityClientId = Get-AzdValue 'MANAGED_IDENTITY_CLIENT_ID'
 $senderPrincipalId = Get-AzdValue 'AZURE_PRINCIPAL_ID'
-$relayNamespaceName = "${prefix}relay"
+. (Join-Path $repoRoot 'scripts/prefix_resource_names.ps1') -envName $envName
 $hybridConnectionName = 'relayproxy'
-$identityName = "${prefix}relayproxy"
-$containerName = "${prefix}relayproxy"
+$identityName = $relayProxyIdentityName
+$containerName = $relayProxyContainerName
 $imageName = 'sqlbuildmanager-relayproxy:latest'
 $image = "${containerRegistryLoginServer}/${imageName}"
 $sourceContext = Join-Path $repoRoot 'src'

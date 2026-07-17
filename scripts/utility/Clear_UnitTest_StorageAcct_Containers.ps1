@@ -2,24 +2,24 @@
 .SYNOPSIS
     Deletes non-system storage containers from the test storage account.
 .DESCRIPTION
-    Lists all blob containers in the prefix storage account and deletes those that
+    Lists all blob containers in the environment storage account and deletes those that
     do not start with "app-" or "eventhubcheckpoint". These are test-generated
     containers that can be safely removed after integration tests.
-.PARAMETER prefix
-    Environment name prefix used to derive the storage account name.
+.PARAMETER envName
+    Azure Developer CLI environment name used to derive the storage account name.
 .PARAMETER resourceGroupName
-    Azure resource group. Defaults to {prefix}-rg.
+    Azure resource group. Defaults to rg-{envName}.
 #>
 param
 (
-    [string] $prefix,
+    [string] $envName,
     [string] $resourceGroupName
 )
 
-$storageAccountName = $prefix + "storage"
-if("" -eq $resourceGroupName)
-{
-    $resourceGroupName = "$prefix-rg"
+$resourceGroupNameOverride = $resourceGroupName
+. (Join-Path (Split-Path $PSScriptRoot -Parent) "prefix_resource_names.ps1") -envName $envName
+if (-not [string]::IsNullOrWhiteSpace($resourceGroupNameOverride)) {
+    $resourceGroupName = $resourceGroupNameOverride
 }
 
 Write-Host "Deleting storage containers from $storageAccountName" -ForegroundColor Green
@@ -41,5 +41,3 @@ foreach($container in $containers)
     }
 }
 Write-Host "Complete!"
-
-

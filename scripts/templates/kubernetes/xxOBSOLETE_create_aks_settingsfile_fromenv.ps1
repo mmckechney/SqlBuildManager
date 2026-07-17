@@ -9,7 +9,7 @@
 param
 (
     [Parameter(Mandatory=$true)]
-    [string] $prefix,
+    [string] $envName,
     [string] $sbmExe = "sbm.exe",
     [string] $path = "..\..\..\src\TestConfig",
     [string] $resourceGroupName,
@@ -20,11 +20,11 @@ param
 #############################################
 # Get set resource name variables from prefix
 #############################################
-. ./../prefix_resource_names.ps1 -prefix $prefix
-. ./../key_file_names.ps1 -prefix $prefix -path $path
+. ./../prefix_resource_names.ps1 -envName $envName
+. ./../key_file_names.ps1 -envName $envName -path $path
 
-Write-Host "Create AKS settings file from prefix: $prefix"  -ForegroundColor Cyan
-Write-Host "Retrieving resource names from resources in $resourceGroupName with prefix $prefix" -ForegroundColor DarkGreen
+Write-Host "Create AKS settings file for environment: $envName"  -ForegroundColor Cyan
+Write-Host "Retrieving resource names from resources in $resourceGroupName for environment $envName" -ForegroundColor DarkGreen
 
 $path = Resolve-Path $path
 if([string]::IsNullOrWhiteSpace($sqlUserName))
@@ -60,6 +60,4 @@ $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 
 $yaml = Join-Path -Path $scriptDir -ChildPath "runnerpod.yaml"
 $destYaml = Join-Path -Path $path -ChildPath "runnerpod.yaml"
-(Get-Content $yaml) | foreach-object { $_ -replace "<<prefix>>", $prefix } | Set-Content $destYaml
-
-
+(Get-Content $yaml) | foreach-object { $_ -replace "<<envName>>", $envName.Replace("-", "").ToLowerInvariant() } | Set-Content $destYaml

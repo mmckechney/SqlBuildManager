@@ -1,5 +1,9 @@
-@description('Prefix to prepend to account names')
-param namePrefix string = 'eztmwm'
+@description('Azure Developer CLI environment name used in child resource names')
+param envName string
+
+param sqlServerBaseName string
+param sqlElasticPoolBaseName string
+param identityName string
 
 @description('Number of test databases to create per server')
 param testDbCountPerServer int = 10
@@ -19,12 +23,11 @@ param vnetId string
 @description('Private endpoint subnet ID')
 param privateEndpointSubnetId string
 
-var sqlserverNameVar = '${namePrefix}sql'
-var sqlpoolNameVar = '${namePrefix}pool'
-var identityNameVar = '${namePrefix}identity'
+var prefixes = loadJsonContent('../resourcetypes.json')
+
 // SQL Server 'A' resources - Entra ID Only Authentication
 resource sqlserverAResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
-  name: '${sqlserverNameVar}-a'
+  name: '${sqlServerBaseName}-a'
   location: location
   
   properties: {
@@ -43,11 +46,11 @@ resource sqlserverAResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
 }
 
 // Output managed identity name for reference (used by grant_identity_permissions.ps1)
-output identityName string = identityNameVar
+output identityName string = identityName
 
 resource sqlserverAResource_Pool 'Microsoft.Sql/servers/elasticPools@2021-11-01' = {
   parent: sqlserverAResource
-  name: '${sqlpoolNameVar}-a'  
+  name: '${sqlElasticPoolBaseName}-a'
   location: location
   sku: {
     name: 'BasicPool'
@@ -80,7 +83,7 @@ resource sqlserverAResourceDatabase 'Microsoft.Sql/servers/databases@2021-11-01'
     catalogCollation: 'SQL_Latin1_General_CP1_CI_AS'
     zoneRedundant: false
     readScale: 'Disabled'
-    requestedBackupStorageRedundancy: 'Geo'
+    requestedBackupStorageRedundancy: 'Local'
     isLedgerOn: false
   }
 }]
@@ -88,7 +91,7 @@ resource sqlserverAResourceDatabase 'Microsoft.Sql/servers/databases@2021-11-01'
 
 // SQL Server 'B' resources - Entra ID Only Authentication
 resource sqlserverBResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
-  name: '${sqlserverNameVar}-b'
+  name: '${sqlServerBaseName}-b'
   location: location  
   properties: {
     publicNetworkAccess: 'Disabled'
@@ -106,7 +109,7 @@ resource sqlserverBResource 'Microsoft.Sql/servers@2023-05-01-preview' = {
 }
 resource sqlserverBResource_Pool 'Microsoft.Sql/servers/elasticPools@2021-11-01' = {
   parent: sqlserverBResource
-  name: '${sqlpoolNameVar}-b'  
+  name: '${sqlElasticPoolBaseName}-b'
   location: location
   sku: {
     name: 'BasicPool'
@@ -139,7 +142,7 @@ resource sqlserverBResource_Database 'Microsoft.Sql/servers/databases@2021-11-01
     catalogCollation: 'SQL_Latin1_General_CP1_CI_AS'
     zoneRedundant: false
     readScale: 'Disabled'
-    requestedBackupStorageRedundancy: 'Geo'
+    requestedBackupStorageRedundancy: 'Local'
     isLedgerOn: false
   }
 }]
@@ -156,7 +159,7 @@ resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
 // Link private DNS zone to VNet
 resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   parent: privateDnsZone
-  name: '${namePrefix}-sql-vnet-link'
+  name: '${prefixes.privateDnsZoneVirtualNetworkLink}${envName}-sql'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -168,7 +171,7 @@ resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
 
 // Private Endpoint for SQL Server A
 resource privateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = {
-  name: '${namePrefix}sql-a-pe'
+  name: '${prefixes.privateEndpoint}${envName}-sql-a'
   location: location
   properties: {
     subnet: {
@@ -176,7 +179,7 @@ resource privateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = {
     }
     privateLinkServiceConnections: [
       {
-        name: '${namePrefix}sql-a-plsc'
+        name: '${prefixes.privateLink}${envName}-sql-a'
         properties: {
           privateLinkServiceId: sqlserverAResource.id
           groupIds: [
@@ -206,7 +209,7 @@ resource privateEndpointADnsGroup 'Microsoft.Network/privateEndpoints/privateDns
 
 // Private Endpoint for SQL Server B
 resource privateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = {
-  name: '${namePrefix}sql-b-pe'
+  name: '${prefixes.privateEndpoint}${envName}-sql-b'
   location: location
   properties: {
     subnet: {
@@ -214,7 +217,7 @@ resource privateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = {
     }
     privateLinkServiceConnections: [
       {
-        name: '${namePrefix}sql-b-plsc'
+        name: '${prefixes.privateLink}${envName}-sql-b'
         properties: {
           privateLinkServiceId: sqlserverBResource.id
           groupIds: [
@@ -241,3 +244,7 @@ resource privateEndpointBDnsGroup 'Microsoft.Network/privateEndpoints/privateDns
     ]
   }
 }
+output sqlServerNameA string = sqlserverAResource.name
+output sqlServerNameB string = sqlserverBResource.name
+output sqlElasticPoolNameA string = sqlserverAResource_Pool.name
+output sqlElasticPoolNameB string = sqlserverBResource_Pool.name

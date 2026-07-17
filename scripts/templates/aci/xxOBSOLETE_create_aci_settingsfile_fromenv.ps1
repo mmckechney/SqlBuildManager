@@ -11,21 +11,21 @@ param
     [string] $sbmExe = "sbm.exe",
     [string] $path = "..\..\..\src\TestConfig",
     [string] $resourceGroupName,
-    [string] $prefix,
+    [string] $envName,
     [string] $imageTag,
     [string] $sqlUserName,
     [string] $sqlPassword
 )
-Write-Host "Create ACI settings file from prefix: $prefix"  -ForegroundColor Cyan
+Write-Host "Create ACI settings file for environment: $envName"  -ForegroundColor Cyan
 $path = Resolve-Path $path
 
 #############################################
 # Get set resource name variables from prefix
 #############################################
-. ./../prefix_resource_names.ps1 -prefix $prefix
-. ./../key_file_names.ps1 -prefix $prefix -path $path
+. ./../prefix_resource_names.ps1 -envName $envName
+. ./../key_file_names.ps1 -envName $envName -path $path
 
-Write-Host "Retrieving resource names from resources in $resourceGroupName with prefix $prefix" -ForegroundColor DarkGreen
+Write-Host "Retrieving resource names from resources in $resourceGroupName for environment $envName" -ForegroundColor DarkGreen
 if([string]::IsNullOrWhiteSpace($sqlUserName))
 {
     $sqlUserName = (Get-Content -Path (Join-Path $path "un.txt")).Trim()

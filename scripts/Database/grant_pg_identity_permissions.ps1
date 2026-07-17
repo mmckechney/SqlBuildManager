@@ -1,7 +1,7 @@
 param
 (
     [Parameter(Mandatory=$true)]
-    [string] $prefix,
+    [string] $envName,
 
     [Parameter(Mandatory=$true)]
     [string] $resourceGroupName,
@@ -23,8 +23,8 @@ param
     - psql must be installed
     - The managed identity must exist in the resource group
 
-.PARAMETER prefix
-    The resource name prefix used when deploying resources.
+.PARAMETER envName
+    The Azure Developer CLI environment name used when deploying resources.
 
 .PARAMETER resourceGroupName
     The Azure resource group containing the PostgreSQL server.
@@ -43,9 +43,9 @@ if ([string]::IsNullOrWhiteSpace($path)) {
     $path = Join-Path $repoRoot 'src' 'TestConfig'
 }
 
-# Get set resource name variables from prefix
-$prefixScript = Join-Path $repoRoot 'scripts' 'prefix_resource_names.ps1'
-. $prefixScript -prefix $prefix
+# Get resource name variables from the environment name
+$prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
+. $prefixScript -envName $envName
 
 Write-Host "Granting Managed Identity '$identityName' access to PostgreSQL databases" -ForegroundColor Cyan
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen

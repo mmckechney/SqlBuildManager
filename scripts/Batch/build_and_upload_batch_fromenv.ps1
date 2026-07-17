@@ -1,14 +1,14 @@
 <#
 .SYNOPSIS
-    Resolves resource names from a prefix and delegates to build_and_upload_batch.ps1.
+    Resolves resource names from an environment name and delegates to build_and_upload_batch.ps1.
 .DESCRIPTION
-    Wrapper script that loads standard resource names from a deployment prefix,
+    Wrapper script that loads standard resource names from an azd environment name,
     then calls build_and_upload_batch.ps1 to publish, package, and upload the
     SQL Build Manager console application as Azure Batch application packages.
-.PARAMETER prefix
-    Environment name prefix used to derive resource names.
+.PARAMETER envName
+    Azure Developer CLI environment name used to derive resource names.
 .PARAMETER resourceGroupName
-    Azure resource group name. Derived from prefix if not specified.
+    Azure resource group name. Derived from envName if not specified.
 .PARAMETER action
     BuildOnly, UploadOnly, or BuildAndUpload (default).
 .PARAMETER path
@@ -17,7 +17,7 @@
 param
 (
     [Parameter(Mandatory=$true)]
-    [string] $prefix,
+    [string] $envName,
     [string] $resourceGroupName,
     [ValidateSet("BuildOnly", "UploadOnly", "BuildAndUpload")]
     [string] $action = "BuildAndUpload",
@@ -35,16 +35,16 @@ if ([string]::IsNullOrWhiteSpace($path)) {
 }
 
 #############################################
-# Get set resource name variables from prefix
+# Get resource name variables from the environment name
 #############################################
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
 $keyFileScript = Join-Path $repoRoot "scripts\key_file_names.ps1"
 
-. $prefixScript -prefix $prefix
-. $keyFileScript -prefix $prefix -path $path
+. $prefixScript -envName $envName
+. $keyFileScript -envName $envName -path $path
 
-Write-Host "Build and Upload Batch from prefix: $prefix" -ForegroundColor Cyan
-Write-Host "Retrieving resource names from resources in $resourceGroupName with prefix $prefix" -ForegroundColor DarkGreen
+Write-Host "Build and Upload Batch for environment: $envName" -ForegroundColor Cyan
+Write-Host "Retrieving resource names from resources in $resourceGroupName for environment $envName" -ForegroundColor DarkGreen
 Write-Host "Using batch account name: $batchAccountName"  -ForegroundColor DarkGreen
 
 $batchScript = Join-Path $repoRoot "scripts\Batch\build_and_upload_batch.ps1"

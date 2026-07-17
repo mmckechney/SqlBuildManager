@@ -11,7 +11,7 @@ function Get-RequiredEnvironmentVariable {
     return $value
 }
 
-$prefix = Get-RequiredEnvironmentVariable 'PREFIX'
+$envName = Get-RequiredEnvironmentVariable 'ENV_NAME'
 $resourceGroupName = Get-RequiredEnvironmentVariable 'RESOURCE_GROUP_NAME'
 $subscriptionId = Get-RequiredEnvironmentVariable 'SUBSCRIPTION_ID'
 $postProvisionClientId = Get-RequiredEnvironmentVariable 'POSTPROVISION_CLIENT_ID'
@@ -33,7 +33,7 @@ $failed = $false
 if ($env:DEPLOY_SQLSERVER -eq 'true') {
     Write-Host "Running SQL Server private initialization..." -ForegroundColor Cyan
     & pwsh -NoLogo -NoProfile -File '/bootstrap/scripts/Database/grant_identity_permissions.ps1' `
-        -prefix $prefix `
+        -envName $envName `
         -resourceGroupName $resourceGroupName
     if ($LASTEXITCODE -ne 0) {
         $failed = $true
@@ -43,7 +43,7 @@ if ($env:DEPLOY_SQLSERVER -eq 'true') {
 if ($env:DEPLOY_POSTGRESQL -eq 'true') {
     Write-Host "Running PostgreSQL private initialization..." -ForegroundColor Cyan
     & pwsh -NoLogo -NoProfile -File '/bootstrap/scripts/Database/grant_pg_identity_permissions.ps1' `
-        -prefix $prefix `
+        -envName $envName `
         -resourceGroupName $resourceGroupName
     if ($LASTEXITCODE -ne 0) {
         $failed = $true

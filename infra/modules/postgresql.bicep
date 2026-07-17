@@ -1,5 +1,9 @@
-@description('Prefix to prepend to account names')
-param namePrefix string
+@description('Azure Developer CLI environment name used in child resource names')
+param envName string
+
+param pgServerNameA string
+param pgServerNameB string
+param pgAdminUser string
 
 @description('Number of test databases to create per server')
 param testDbCountPerServer int = 10
@@ -29,9 +33,8 @@ param vnetId string
 @description('Private endpoint subnet ID')
 param privateEndpointSubnetId string
 
-var pgServerNameA = '${namePrefix}pgserver-a'
-var pgServerNameB = '${namePrefix}pgserver-b'
-var pgAdminUser = '${namePrefix}pgadmin'
+var prefixes = loadJsonContent('../resourcetypes.json')
+
 // ============================================================
 // PostgreSQL Server 'A'
 // ============================================================
@@ -188,7 +191,7 @@ resource pgPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
 
 resource pgPrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   parent: pgPrivateDnsZone
-  name: '${namePrefix}-pg-vnet-link'
+  name: '${prefixes.privateDnsZoneVirtualNetworkLink}${envName}-psql'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -200,7 +203,7 @@ resource pgPrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkL
 
 // Private Endpoint for PostgreSQL Server A
 resource pgPrivateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = {
-  name: '${namePrefix}pg-a-pe'
+  name: '${prefixes.privateEndpoint}${envName}-psql-a'
   location: location
   properties: {
     subnet: {
@@ -208,7 +211,7 @@ resource pgPrivateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = {
     }
     privateLinkServiceConnections: [
       {
-        name: '${namePrefix}pg-a-plsc'
+        name: '${prefixes.privateLink}${envName}-psql-a'
         properties: {
           privateLinkServiceId: pgFlexServerA.id
           groupIds: [
@@ -237,7 +240,7 @@ resource pgPrivateEndpointADnsGroup 'Microsoft.Network/privateEndpoints/privateD
 
 // Private Endpoint for PostgreSQL Server B
 resource pgPrivateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = {
-  name: '${namePrefix}pg-b-pe'
+  name: '${prefixes.privateEndpoint}${envName}-psql-b'
   location: location
   properties: {
     subnet: {
@@ -245,7 +248,7 @@ resource pgPrivateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = {
     }
     privateLinkServiceConnections: [
       {
-        name: '${namePrefix}pg-b-plsc'
+        name: '${prefixes.privateLink}${envName}-psql-b'
         properties: {
           privateLinkServiceId: pgFlexServerB.id
           groupIds: [

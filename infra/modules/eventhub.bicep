@@ -31,8 +31,8 @@ param vnetId string = ''
 @description('Private endpoint subnet ID (required when usePrivateEndpoint is true)')
 param privateEndpointSubnetId string = ''
 
-@description('Name prefix for private endpoint resources')
-param namePrefix string = ''
+@description('Azure Developer CLI environment name used in private endpoint resource names')
+param envName string
 
 @description('Current machine IP address to allow access')
 param currentIpAddress string = ''
@@ -43,6 +43,7 @@ param subnetNames string = ''
 @description('VNet name for subnet references')
 param vnetName string = ''
 
+var prefixes = loadJsonContent('../resourcetypes.json')
 var subnetNamesArray = empty(subnetNames) ? [] : split(subnetNames, ',')
 
 // Build virtual network rules array from subnet names
@@ -114,7 +115,7 @@ resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if(useP
 // Link private DNS zone to VNet
 resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if(usePrivateEndpoint) {
   parent: privateDnsZone
-  name: '${namePrefix}-eventhub-vnet-link'
+  name: '${prefixes.privateDnsZoneVirtualNetworkLink}${envName}-evh'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -126,7 +127,7 @@ resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
 
 // Private Endpoint for Event Hub
 resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = if(usePrivateEndpoint) {
-  name: '${namePrefix}eventhub-pe'
+  name: '${prefixes.privateEndpoint}${envName}-evh'
   location: location
   properties: {
     subnet: {
@@ -134,7 +135,7 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = if(us
     }
     privateLinkServiceConnections: [
       {
-        name: '${namePrefix}eventhub-plsc'
+        name: '${prefixes.privateLink}${envName}-evh'
         properties: {
           privateLinkServiceId: eventHubNamespace.id
           groupIds: [

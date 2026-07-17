@@ -2,10 +2,10 @@
 
 targetScope = 'subscription'
 
-@description('Name prefix for all resources. Must be unique.')
+@description('Azure Developer CLI environment name used to derive resource names. Must be globally unique.')
 @minLength(3)
 @maxLength(10)
-param namePrefix string
+param envName string
 
 @description('Primary location for all resources.')
 param location string
@@ -70,33 +70,43 @@ param serviceBusSku string = 'Standard'
 @description('MessagingUnits for premium namespace')
 param skuCapacity int = 1
 
-// Resource naming variables
-var resourceGroupName = '${namePrefix}-rg'
-var batchAccountNameVar = '${namePrefix}batchacct'
-var storageAccountNameVar = '${namePrefix}storage'
-var containerAppEnvNameVar = '${namePrefix}containerappenv'
-var logAnalyticsWorkspaceVar = '${namePrefix}loganalytics'
-var containerRegistryNameVar = '${namePrefix}containerregistry'
-var identityNameVar = '${namePrefix}identity'
-var postProvisionIdentityNameVar = '${namePrefix}postprovision'
-var relayProxyIdentityNameVar = '${namePrefix}relayproxy'
-var relayNamespaceNameVar = '${namePrefix}relay'
-var relayConnectionNameVar = 'relayproxy'
-var eventHubNamespaceNameVar = '${namePrefix}eventhubnamespace'
-var eventHubNameVar = '${namePrefix}eventhub'
-var serviceBusNamespaceNameVar = '${namePrefix}servicebus'
-var vnetVar = '${namePrefix}vnet'
-var aksSubnetVar = '${namePrefix}akssubnet'
-var nsgNameVar = '${namePrefix}nsg'
-var containerAppSubnetVar = '${namePrefix}containerappsubnet'
-var aciSubnetVar = '${namePrefix}acisubnet'
-var batchSubnetVar = '${namePrefix}batchsubnet'
-var privateEndpointSubnetVar = '${namePrefix}pesubnet'
+module resourceNames './modules/resourcenames.bicep' = {
+  name: '${prefixes.deployment}${resourceEnvName}-${location}'
+  params: {
+    envName: resourceEnvName
+  }
+}
 
-// Used with Kubernetes Workload Identity
-var aksClusterNameVar = '${namePrefix}aks'
-var serviceAccountNameVar = '${namePrefix}serviceaccount'
-var federatedIdNameVar = '${namePrefix}federatedidname'
+var prefixes = loadJsonContent('resourcetypes.json')
+var resourceEnvName = toLower(envName)
+// Resource group names must be known before module outputs are evaluated.
+var resourceGroupName = '${prefixes.resourceGroup}${resourceEnvName}'
+var batchAccountNameVar = resourceNames.outputs.batchAccountName
+var storageAccountNameVar = resourceNames.outputs.storageAccountName
+var containerAppEnvNameVar = resourceNames.outputs.containerAppEnvName
+var logAnalyticsWorkspaceVar = resourceNames.outputs.logAnalyticsWorkspace
+var containerRegistryNameVar = resourceNames.outputs.containerRegistryName
+var identityNameVar = resourceNames.outputs.identityName
+var postProvisionIdentityNameVar = resourceNames.outputs.postProvisionIdentityName
+var relayProxyIdentityNameVar = resourceNames.outputs.relayProxyIdentityName
+var relayNamespaceNameVar = resourceNames.outputs.relayNamespaceName
+var relayPrivateEndpointNameVar = resourceNames.outputs.relayPrivateEndpointName
+var relayPrivateLinkNameVar = resourceNames.outputs.relayPrivateLinkName
+var relayConnectionNameVar = 'relayproxy'
+var eventHubNamespaceNameVar = resourceNames.outputs.eventHubNamespaceName
+var eventHubNameVar = resourceNames.outputs.eventHubName
+var serviceBusNamespaceNameVar = resourceNames.outputs.serviceBusNamespaceName
+var vnetVar = resourceNames.outputs.vnet
+var aksSubnetVar = resourceNames.outputs.aksSubnet
+var nsgNameVar = resourceNames.outputs.nsgName
+var nsgBatchNameVar = resourceNames.outputs.nsgBatchName
+var containerAppSubnetVar = resourceNames.outputs.containerAppSubnet
+var aciSubnetVar = resourceNames.outputs.aciSubnet
+var batchSubnetVar = resourceNames.outputs.batchSubnet
+var privateEndpointSubnetVar = resourceNames.outputs.privateEndpointSubnet
+var aksClusterNameVar = resourceNames.outputs.aksClusterName
+var serviceAccountNameVar = resourceNames.outputs.serviceAccountName
+var federatedIdNameVar = resourceNames.outputs.federatedIdName
 
 // Resource Group
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -111,6 +121,7 @@ module networkResource './modules/network.bicep' = {
   params: {
     vnetName: vnetVar
     nsgName: nsgNameVar
+    nsgBatchName: nsgBatchNameVar
     location: location
     aciSubnetName: aciSubnetVar
     batchSubnetName: batchSubnetVar
@@ -181,7 +192,10 @@ module databases './modules/database.bicep' = if(deploySqlServer && testDbCountP
   ]
   params: { 
     location: location
-    namePrefix: namePrefix
+    sqlServerBaseName: resourceNames.outputs.sqlServerBaseName
+    sqlElasticPoolBaseName: resourceNames.outputs.sqlElasticPoolBaseName
+    identityName: identityNameVar
+    envName: resourceEnvName
     testDbCountPerServer: testDbCountPerServer
     sqlAdminObjectId: userIdGuid
     sqlAdminLogin: userLoginName
@@ -195,7 +209,10 @@ module postgresql './modules/postgresql.bicep' = if(deployPostgreSQL && userIdGu
   name: 'postgresql'
   scope: rg
   params: {
-    namePrefix: namePrefix
+    pgServerNameA: resourceNames.outputs.postgresqlServerNameA
+    pgServerNameB: resourceNames.outputs.postgresqlServerNameB
+    pgAdminUser: resourceNames.outputs.postgresqlAdminUser
+    envName: resourceEnvName
     testDbCountPerServer: testDbCountPerServer
     location: location
     pgAdminObjectId: userIdGuid
@@ -215,7 +232,6 @@ module batchAccount './modules/batch.bicep' = if(deployBatchAccount){
   params: { 
     batchAccountName: batchAccountNameVar
     location: location
-    namePrefix: namePrefix
     identityName: identityResource.outputs.name
     storageAccountName: storageAccountResource.outputs.name
   }
@@ -253,7 +269,7 @@ module storageAccountResource './modules/storage.bicep' = {
     usePrivateEndpoint: usePrivateEndpoint
     vnetId: networkResource.outputs.vnetId
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
-    namePrefix: namePrefix
+    envName: resourceEnvName
   }
 }
 
@@ -269,7 +285,8 @@ module relayProxy './modules/relayproxy.bicep' = if (deployRelayProxy) {
     containerRegistryName: containerRegistry.outputs.name
     usePrivateEndpoint: usePrivateEndpoint
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
-    namePrefix: namePrefix
+    privateEndpointName: relayPrivateEndpointNameVar
+    privateLinkServiceConnectionName: relayPrivateLinkNameVar
     location: location
   }
 }
@@ -297,7 +314,7 @@ module eventHubNamespaceResource './modules/eventhub.bicep' = {
     usePrivateEndpoint: usePrivateEndpoint
     vnetId: networkResource.outputs.vnetId
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
-    namePrefix: namePrefix
+    envName: resourceEnvName
     currentIpAddress: currentIpAddress
     subnetNames: join(networkResource.outputs.subnetNames, ',')
     vnetName: networkResource.outputs.vnetName
@@ -315,7 +332,7 @@ module serviceBusResource './modules/servicebus.bicep' = {
     usePrivateEndpoint: usePrivateEndpoint
     vnetId: networkResource.outputs.vnetId
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
-    namePrefix: namePrefix
+    envName: resourceEnvName
     currentIpAddress: currentIpAddress
     subnetNames: join(networkResource.outputs.subnetNames, ',')
     vnetName: networkResource.outputs.vnetName
@@ -325,7 +342,7 @@ module serviceBusResource './modules/servicebus.bicep' = {
 // Outputs for azd
 output AZURE_LOCATION string = location
 output AZURE_RESOURCE_GROUP string = resourceGroupName
-output AZURE_NAME_PREFIX string = namePrefix
+output ENVIRONMENT_NAME string = envName
 
 // Deployment parameter outputs
 output DEPLOY_BATCH_ACCOUNT bool = deployBatchAccount
@@ -343,10 +360,8 @@ output DEPLOY_RELAY_PROXY bool = deployRelayProxy
 
 // Resource outputs
 output RESOURCE_GROUP_NAME string = resourceGroupName
-output RESOURCE_GROUP_ID string = rg.id
 
 output VNET_NAME string = networkResource.outputs.vnetName
-output VNET_ID string = networkResource.outputs.vnetId
 output NSG_NAME string = networkResource.outputs.nsgName
 output ACI_SUBNET_NAME string = networkResource.outputs.aciSubnetName
 output ACI_SUBNET_ID string = networkResource.outputs.aciSubnetId
@@ -395,6 +410,11 @@ output AKS_CLUSTER_NAME string = deployAks ? aks!.outputs.clusterName : ''
 output AKS_CLUSTER_ID string = deployAks ? aks!.outputs.clusterId : ''
 output AKS_FEDERATED_IDENTITY_NAME string = deployAks ? aks!.outputs.federatedIdName : ''
 output AKS_SERVICE_ACCOUNT_NAME string = deployAks ? aks!.outputs.serviceAccountName : ''
+
+output SQL_SERVER_NAME_A string = deploySqlServer && testDbCountPerServer > 0 && userIdGuid != '' && userLoginName != '' ? databases!.outputs.sqlServerNameA : ''
+output SQL_SERVER_NAME_B string = deploySqlServer && testDbCountPerServer > 0 && userIdGuid != '' && userLoginName != '' ? databases!.outputs.sqlServerNameB : ''
+output SQL_ELASTIC_POOL_NAME_A string = deploySqlServer && testDbCountPerServer > 0 && userIdGuid != '' && userLoginName != '' ? databases!.outputs.sqlElasticPoolNameA : ''
+output SQL_ELASTIC_POOL_NAME_B string = deploySqlServer && testDbCountPerServer > 0 && userIdGuid != '' && userLoginName != '' ? databases!.outputs.sqlElasticPoolNameB : ''
 
 output PG_SERVER_NAME_A string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerNameA : ''
 output PG_SERVER_FQDN_A string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerFqdnA : ''

@@ -5,24 +5,24 @@
     Lists Batch jobs in the specified account and deletes those whose names start
     with "SqlBuild", "batch-", or "bat-". Optionally includes active (non-completed)
     jobs when includeActive is true.
-.PARAMETER prefix
-    Environment name prefix used to derive the Batch account name.
+.PARAMETER envName
+    Azure Developer CLI environment name used to derive the Batch account name.
 .PARAMETER resourceGroupName
-    Azure resource group. Defaults to {prefix}-rg.
+    Azure resource group. Defaults to rg-{envName}.
 .PARAMETER includeActive
     When true, deletes active jobs in addition to completed jobs. Default: false.
 #>
 param
 (
-    [string] $prefix,
+    [string] $envName,
     [string] $resourceGroupName,
     [bool] $includeActive = $false
 )
 
-$batchAccountName = $prefix + "batchacct"
-if("" -eq $resourceGroupName)
-{
-    $resourceGroupName = "$prefix-rg"
+$resourceGroupNameOverride = $resourceGroupName
+. (Join-Path (Split-Path $PSScriptRoot -Parent) "prefix_resource_names.ps1") -envName $envName
+if (-not [string]::IsNullOrWhiteSpace($resourceGroupNameOverride)) {
+    $resourceGroupName = $resourceGroupNameOverride
 }
 
 $batchAcctKey  = az batch account keys list --name $batchAccountName --resource-group $resourceGroupName -o tsv --query 'primary'

@@ -89,7 +89,7 @@ jobs:
         shell: pwsh
         run: |
           & "${{ github.workspace }}/scripts/tests/run_all_sqlserver_external_tests_in_aci.ps1" `
-            -prefix "${{ steps.prefix.outputs.value }}"
+            -envName "${{ steps.prefix.outputs.value }}"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Upload SQL Server test results
@@ -147,7 +147,7 @@ jobs:
         shell: pwsh
         run: |
           & "${{ github.workspace }}/scripts/tests/run_all_postgres_external_tests_in_aci.ps1" `
-            -prefix "${{ steps.prefix.outputs.value }}"
+            -envName "${{ steps.prefix.outputs.value }}"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Upload PostgreSQL test results

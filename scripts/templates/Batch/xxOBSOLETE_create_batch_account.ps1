@@ -8,7 +8,7 @@
 #>
 param
 (
-    [string] $prefix,
+    [string] $envName,
     [string] $resourceGroupName,
     [string] $batchAccountName,
     [string] $storageAccountName,
@@ -17,13 +17,13 @@ param
     [string] $path = "..\..\..\src\TestConfig"
 )
 Write-Host "Create Batch Account: $batchAccountName"  -ForegroundColor Cyan
-if("" -ne $prefix)
+if("" -ne $envName)
 {
-    . ./../prefix_resource_names.ps1 -prefix $prefix
-    . ./../key_file_names.ps1 -prefix $prefix -path $path
+    . ./../prefix_resource_names.ps1 -envName $envName
+    . ./../key_file_names.ps1 -envName $envName -path $path
 }
 
-$params = "{ ""namePrefix"":{""value"":""$prefix""},"
+$params = "{ ""envName"":{""value"":""$envName""},"
 if("" -ne $batchAccountName) { $params += """batchAccountName"":{""value"":""$batchAccountName""}," }
 if("" -ne $storageAccountName) { $params += """storageAccountName"":{""value"":""$storageAccountName""}," }
 if("" -ne $userAssignedIdentity) { $params += """identityName"":{""value"":""$userAssignedIdentity""}," }

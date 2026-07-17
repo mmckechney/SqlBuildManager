@@ -52,7 +52,7 @@ if([string]::IsNullOrWhiteSpace($sqlUserName) -or [string]::IsNullOrWhiteSpace($
 $tenantId = az account show -o tsv --query tenantId
 $storageAcctKey = (az storage account keys list --account-name $storageAccountName -o tsv --query '[].value')[0]
 
-$eventHubName = az eventhubs eventhub list  --resource-group $resourceGroupName --namespace-name $eventhubNamespaceName -o tsv --query "[?contains(@.name '$prefix')].name"
+$eventHubName = az eventhubs eventhub list --resource-group $resourceGroupName --namespace-name $eventhubNamespaceName -o tsv --query "[0].name"
 $eventHubAuthRuleName = az eventhubs eventhub authorization-rule list  --resource-group $resourceGroupName --namespace-name $eventhubNamespaceName --eventhub-name $eventHubName -o tsv --query [].name
 $eventHubConnectionString = az eventhubs eventhub authorization-rule keys list --resource-group $resourceGroupName --namespace-name $eventHubNamespaceName --eventhub-name $eventHubName --name $eventHubAuthRuleName -o tsv --query "primaryConnectionString"
 
@@ -155,5 +155,4 @@ foreach($auth in $authTypes)
     Write-Host $params $sbAndEhArgs -ForegroundColor DarkYellow
     Start-Process $sbmExe -ArgumentList ($params + $sbAndEhArgs) -Wait -NoNewWindow
 }
-
 
