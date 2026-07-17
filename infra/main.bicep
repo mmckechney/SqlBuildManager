@@ -71,7 +71,7 @@ param serviceBusSku string = 'Standard'
 param skuCapacity int = 1
 
 module resourceNames './modules/resourcenames.bicep' = {
-  name: 'resourceNames'
+  name: '${prefixes.deployment}${resourceEnvName}-resource-names'
   params: {
     envName: resourceEnvName
   }

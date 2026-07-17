@@ -52,6 +52,7 @@
   "dataExplorerClusterDatabase": "dedb",
   "dataFactory": "adf-",
   "dataLakeStoreAccount": "dls",
+  "deployment": "deploy-",
   "digitalTwin": "dt-",
   "diskEncryptionSet": "des",
   "dnsPrivateResolver": "dnspr-",
