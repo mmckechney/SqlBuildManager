@@ -217,7 +217,13 @@ namespace SqlSync.Connection
         }
         public static bool TestDatabaseConnection(ConnectionData connData)
         {
+            return TryTestDatabaseConnection(connData, out _);
+        }
+
+        public static bool TryTestDatabaseConnection(ConnectionData connData, out Exception connectionException)
+        {
             DbConnection conn = null!;
+            connectionException = null!;
             try
             {
                 if (connData.ScriptTimeout <= 0)
@@ -236,6 +242,7 @@ namespace SqlSync.Connection
                 //    return TestDatabaseConnection(connData);
                 //}
                 log.LogWarning(exe, "TestConnection failed");
+                connectionException = exe;
                 return false;
             }
             finally

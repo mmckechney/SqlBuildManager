@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Relay;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild.Models;
@@ -581,7 +582,12 @@ namespace SqlBuildManager.Console
                    cmd.AuthenticationArgs.Password,
                    cmd.BuildRevision,
                    cmd.DefaultScriptTimeout,
-                   multiDb, batchScripts, cmd.AllowObjectDelete, cmd.IdentityArgs.ClientId);
+                   multiDb,
+                   batchScripts,
+                   cmd.AllowObjectDelete,
+                   cmd.IdentityArgs.ClientId,
+                   fallbackEligibility: RelayProxyManager.IsSqlFallbackEligible,
+                   fallbackExtractor: RelayProxyManager.ExtractSqlTestDacpac);
 
             }
             else
@@ -596,7 +602,12 @@ namespace SqlBuildManager.Console
                     cmd.AuthenticationArgs.Password,
                     cmd.BuildRevision,
                     cmd.DefaultScriptTimeout,
-                    multiDb, batchScripts, cmd.AllowObjectDelete, cmd.IdentityArgs.ClientId);
+                    multiDb,
+                    batchScripts,
+                    cmd.AllowObjectDelete,
+                    cmd.IdentityArgs.ClientId,
+                    fallbackEligibility: RelayProxyManager.IsSqlFallbackEligible,
+                    fallbackExtractor: RelayProxyManager.ExtractSqlTestDacpac);
             }
         }
 

@@ -13,6 +13,22 @@ namespace SqlBuildManager.Console.Relay
             !string.IsNullOrWhiteSpace(Endpoint) &&
             RelayProxyClient.IsFallbackEligible(exception);
 
+        internal static bool IsSqlFallbackEligible(Exception exception) =>
+            !string.IsNullOrWhiteSpace(Endpoint) &&
+            RelayProxyClient.IsSqlPrivateNetworkDenial(exception);
+
+        internal static bool ExtractSqlTestDacpac(
+            string server,
+            string database,
+            string destinationPath)
+        {
+            CreateClient()
+                .ExtractSqlTestDacpacAsync(server, database, destinationPath)
+                .GetAwaiter()
+                .GetResult();
+            return true;
+        }
+
         internal static RelayProxyClient CreateClient() =>
             string.IsNullOrWhiteSpace(Endpoint)
                 ? throw new InvalidOperationException("A Relay proxy endpoint is required to use Azure Relay.")

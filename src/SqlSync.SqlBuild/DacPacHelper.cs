@@ -19,7 +19,17 @@ namespace SqlSync.SqlBuild
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private static IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
 
-        public static bool ExtractDacPac(string sourceDatabase, string sourceServer, AuthenticationType authType, string userName, string password, string dacPacFileName, int timeouts, string managedIdentityClientId)
+        public static bool ExtractDacPac(
+            string sourceDatabase,
+            string sourceServer,
+            AuthenticationType authType,
+            string userName,
+            string password,
+            string dacPacFileName,
+            int timeouts,
+            string managedIdentityClientId,
+            Func<Exception, bool> fallbackEligibility = null!,
+            Func<string, string, string, bool> fallbackExtractor = null!)
         {
 
             try
@@ -41,8 +51,18 @@ namespace SqlSync.SqlBuild
 
                 //Pre-test the connection. the DacServices can hang for a long time if the connection is bad
                 log.LogInformation($"Testing connection to {sourceServer}/{sourceDatabase} using authentication type {authType}");
-                if (!ConnectionHelper.TestDatabaseConnection(sourceDatabase, sourceServer, userName, password,authType, timeouts, managedIdentityClientId))
+                if (!ConnectionHelper.TryTestDatabaseConnection(connData, out var connectionException))
                 {
+                    if (TryExtractWithFallback(
+                        connectionException,
+                        sourceServer,
+                        sourceDatabase,
+                        dacPacFileName,
+                        fallbackEligibility,
+                        fallbackExtractor))
+                    {
+                        return true;
+                    }
                     log.LogError($"Unable to create Dacpac for {sourceServer}/{sourceDatabase}. Database connection test failed.");
                     return false;
                 }
@@ -59,11 +79,41 @@ namespace SqlSync.SqlBuild
             }
             catch (Exception exe)
             {
+                if (TryExtractWithFallback(
+                    exe,
+                    sourceServer,
+                    sourceDatabase,
+                    dacPacFileName,
+                    fallbackEligibility,
+                    fallbackExtractor))
+                {
+                    return true;
+                }
                 log.LogError($"Problem creating DACPAC from {sourceServer}.{sourceDatabase}: {exe.ToString()}");
                 return false;
             }
 
 
+        }
+
+        private static bool TryExtractWithFallback(
+            Exception exception,
+            string server,
+            string database,
+            string destinationPath,
+            Func<Exception, bool> fallbackEligibility,
+            Func<string, string, string, bool> fallbackExtractor)
+        {
+            if (fallbackEligibility == null ||
+                fallbackExtractor == null ||
+                !fallbackEligibility(exception))
+            {
+                return false;
+            }
+
+            log.LogInformation(
+                $"Direct SQL access to {server}/{database} is blocked; extracting the DACPAC through Azure Relay.");
+            return fallbackExtractor(server, database, destinationPath);
         }
 
         internal static string ScriptDacPacDeltas(string platinumDacPacFileName, string targetDacPacFileName, string path, bool allowObjectDelete, bool ignoreCompatError)
@@ -339,7 +389,24 @@ namespace SqlSync.SqlBuild
             return (DacpacDeltasStatus.Success, runDataModel);
         }
 
-        public static async System.Threading.Tasks.Task<(DacpacDeltasStatus status, string sbmName)> GetSbmFromDacPacAsync(string rootLoggingPath, string platinumDacPac, string targetDacpac, string database, string server, AuthenticationType authType, string username, string password, string buildRevision, int defaultScriptTimeout, MultiDbData multiDb, bool batchScripts, bool allowObjectDelete, string managedIdentityClientId, System.Threading.CancellationToken cancellationToken = default)
+        public static async System.Threading.Tasks.Task<(DacpacDeltasStatus status, string sbmName)> GetSbmFromDacPacAsync(
+            string rootLoggingPath,
+            string platinumDacPac,
+            string targetDacpac,
+            string database,
+            string server,
+            AuthenticationType authType,
+            string username,
+            string password,
+            string buildRevision,
+            int defaultScriptTimeout,
+            MultiDbData multiDb,
+            bool batchScripts,
+            bool allowObjectDelete,
+            string managedIdentityClientId,
+            System.Threading.CancellationToken cancellationToken = default,
+            Func<Exception, bool> fallbackEligibility = null!,
+            Func<string, string, string, bool> fallbackExtractor = null!)
         {
             string workingFolder = (!string.IsNullOrEmpty(rootLoggingPath) ? rootLoggingPath : Path.GetTempPath());
 
@@ -360,7 +427,17 @@ namespace SqlSync.SqlBuild
             else if (!string.IsNullOrEmpty(database) && !string.IsNullOrEmpty(server))
             {
                 string targetDacPac = Path.Combine(workingFolder, database + ".dacpac");
-                if (!DacPacHelper.ExtractDacPac(database, server, authType, username, password, targetDacPac, defaultScriptTimeout, managedIdentityClientId))
+                if (!DacPacHelper.ExtractDacPac(
+                    database,
+                    server,
+                    authType,
+                    username,
+                    password,
+                    targetDacPac,
+                    defaultScriptTimeout,
+                    managedIdentityClientId,
+                    fallbackEligibility,
+                    fallbackExtractor))
                 {
                     log.LogError($"Error extracting dacpac from {database} : {server}");
                     return (DacpacDeltasStatus.ExtractionFailure, sbmName);
@@ -380,7 +457,17 @@ namespace SqlSync.SqlBuild
                         database = serv.Overrides.ElementAt(i).OverrideDbTarget;
 
                         string targetDacPac = Path.Combine(workingFolder, database + ".dacpac");
-                        if (!DacPacHelper.ExtractDacPac(database, server, authType, username, password, targetDacPac, defaultScriptTimeout, managedIdentityClientId))
+                        if (!DacPacHelper.ExtractDacPac(
+                            database,
+                            server,
+                            authType,
+                            username,
+                            password,
+                            targetDacPac,
+                            defaultScriptTimeout,
+                            managedIdentityClientId,
+                            fallbackEligibility,
+                            fallbackExtractor))
                         {
                             log.LogError($"Error extracting dacpac from {server} : {database}");
                             return (DacpacDeltasStatus.ExtractionFailure, sbmName);
