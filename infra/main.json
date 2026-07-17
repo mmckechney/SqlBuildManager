@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "4075527597409165666"
+      "templateHash": "12446782308388125814"
     }
   },
   "parameters": {
@@ -354,7 +354,7 @@
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
-      "name": "[format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))]",
+      "name": "[format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))]",
       "location": "[deployment().location]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -750,31 +750,31 @@
         "mode": "Incremental",
         "parameters": {
           "vnetName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.vnet.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.vnet.value]"
           },
           "nsgName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.nsgName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.nsgName.value]"
           },
           "nsgBatchName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.nsgBatchName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.nsgBatchName.value]"
           },
           "location": {
             "value": "[parameters('location')]"
           },
           "aciSubnetName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.aciSubnet.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.aciSubnet.value]"
           },
           "batchSubnetName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.batchSubnet.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.batchSubnet.value]"
           },
           "containerAppSubnetName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.containerAppSubnet.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.containerAppSubnet.value]"
           },
           "aksSubnetName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.aksSubnet.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.aksSubnet.value]"
           },
           "privateEndpointSubnetName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.privateEndpointSubnet.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.privateEndpointSubnet.value]"
           }
         },
         "template": {
@@ -1115,7 +1115,7 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName')))]",
+        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location')))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     },
@@ -1131,7 +1131,7 @@
         "mode": "Incremental",
         "parameters": {
           "identityName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.identityName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.identityName.value]"
           },
           "location": {
             "value": "[parameters('location')]"
@@ -1310,7 +1310,7 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName')))]",
+        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location')))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     },
@@ -1460,7 +1460,7 @@
         "mode": "Incremental",
         "parameters": {
           "containerRegistryName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.containerRegistryName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.containerRegistryName.value]"
           },
           "location": {
             "value": "[parameters('location')]"
@@ -1517,7 +1517,7 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName')))]",
+        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location')))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     },
@@ -1534,13 +1534,13 @@
         "mode": "Incremental",
         "parameters": {
           "containerAppEnvName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.containerAppEnvName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.containerAppEnvName.value]"
           },
           "logAnalyticsClientId": {
             "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'logAnalyticsWorkspace'), '2025-04-01').outputs.customerId.value]"
           },
           "logAnalyticsWorkspaceName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.logAnalyticsWorkspace.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.logAnalyticsWorkspace.value]"
           },
           "subnetId": {
             "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.containerAppSubnetId.value]"
@@ -1642,7 +1642,7 @@
       "dependsOn": [
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'logAnalyticsWorkspace')]",
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource')]",
-        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName')))]",
+        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location')))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     },
@@ -1668,16 +1668,16 @@
             "value": "[join(reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource'), '2025-04-01').outputs.subnetNames.value, ',')]"
           },
           "sqlServerBaseName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.sqlServerBaseName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.sqlServerBaseName.value]"
           },
           "sqlElasticPoolBaseName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.sqlElasticPoolBaseName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.sqlElasticPoolBaseName.value]"
           },
           "identityName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.identityName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.identityName.value]"
           },
           "vnetName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.vnet.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.vnet.value]"
           },
           "envName": {
             "value": "[variables('resourceEnvName')]"
@@ -1708,7 +1708,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.41.2.15936",
-              "templateHash": "13829708054770204707"
+              "templateHash": "8230232688634398531"
             }
           },
           "parameters": {
@@ -2083,7 +2083,7 @@
                 "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
                 "zoneRedundant": false,
                 "readScale": "Disabled",
-                "requestedBackupStorageRedundancy": "Geo",
+                "requestedBackupStorageRedundancy": "Local",
                 "isLedgerOn": false
               },
               "dependsOn": [
@@ -2182,7 +2182,7 @@
                 "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
                 "zoneRedundant": false,
                 "readScale": "Disabled",
-                "requestedBackupStorageRedundancy": "Geo",
+                "requestedBackupStorageRedundancy": "Local",
                 "isLedgerOn": false
               },
               "dependsOn": [
@@ -2333,7 +2333,7 @@
       "dependsOn": [
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'identityResource')]",
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource')]",
-        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName')))]",
+        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location')))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     },
@@ -2350,13 +2350,13 @@
         "mode": "Incremental",
         "parameters": {
           "pgServerNameA": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.postgresqlServerNameA.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.postgresqlServerNameA.value]"
           },
           "pgServerNameB": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.postgresqlServerNameB.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.postgresqlServerNameB.value]"
           },
           "pgAdminUser": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.postgresqlAdminUser.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.postgresqlAdminUser.value]"
           },
           "envName": {
             "value": "[variables('resourceEnvName')]"
@@ -3004,7 +3004,7 @@
       },
       "dependsOn": [
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource')]",
-        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName')))]",
+        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location')))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     },
@@ -3021,7 +3021,7 @@
         "mode": "Incremental",
         "parameters": {
           "batchAccountName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.batchAccountName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.batchAccountName.value]"
           },
           "location": {
             "value": "[parameters('location')]"
@@ -3111,7 +3111,7 @@
       },
       "dependsOn": [
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'identityResource')]",
-        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName')))]",
+        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location')))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]",
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'storageAccount')]"
       ]
@@ -3129,28 +3129,28 @@
         "mode": "Incremental",
         "parameters": {
           "aksClusterName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.aksClusterName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.aksClusterName.value]"
           },
           "location": {
             "value": "[parameters('location')]"
           },
           "federatedIdName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.federatedIdName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.federatedIdName.value]"
           },
           "identityName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.identityName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.identityName.value]"
           },
           "logAnalyticsWorkspaceName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.logAnalyticsWorkspace.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.logAnalyticsWorkspace.value]"
           },
           "serviceAccountName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.serviceAccountName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.serviceAccountName.value]"
           },
           "subnetName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.aksSubnet.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.aksSubnet.value]"
           },
           "vnetName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.vnet.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.vnet.value]"
           }
         },
         "template": {
@@ -3320,7 +3320,7 @@
       },
       "dependsOn": [
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource')]",
-        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName')))]",
+        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location')))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     },
@@ -3336,7 +3336,7 @@
         "mode": "Incremental",
         "parameters": {
           "storageAccountName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.storageAccountName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.storageAccountName.value]"
           },
           "location": {
             "value": "[parameters('location')]"
@@ -3855,7 +3855,7 @@
       },
       "dependsOn": [
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource')]",
-        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName')))]",
+        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location')))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     },
@@ -3871,7 +3871,7 @@
         "mode": "Incremental",
         "parameters": {
           "logAnalyticsWorkspaceName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.logAnalyticsWorkspace.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.logAnalyticsWorkspace.value]"
           },
           "location": {
             "value": "[parameters('location')]"
@@ -3933,7 +3933,7 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName')))]",
+        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location')))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     },
@@ -3949,10 +3949,10 @@
         "mode": "Incremental",
         "parameters": {
           "eventHubNamespaceName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.eventHubNamespaceName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.eventHubNamespaceName.value]"
           },
           "eventHubName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.eventHubName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.eventHubName.value]"
           },
           "eventhubSku": {
             "value": "[parameters('eventhubSku')]"
@@ -4437,7 +4437,7 @@
       },
       "dependsOn": [
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource')]",
-        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName')))]",
+        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location')))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     },
@@ -4453,7 +4453,7 @@
         "mode": "Incremental",
         "parameters": {
           "serviceBusNamespaceName": {
-            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName'))), '2025-04-01').outputs.serviceBusNamespaceName.value]"
+            "value": "[reference(subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location'))), '2025-04-01').outputs.serviceBusNamespaceName.value]"
           },
           "location": {
             "value": "[parameters('location')]"
@@ -4923,7 +4923,7 @@
       },
       "dependsOn": [
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('resourceGroupName')), 'Microsoft.Resources/deployments', 'networkResource')]",
-        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-resource-names', variables('prefixes').deployment, variables('resourceEnvName')))]",
+        "[subscriptionResourceId('Microsoft.Resources/deployments', format('{0}{1}-{2}', variables('prefixes').deployment, variables('resourceEnvName'), parameters('location')))]",
         "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('resourceGroupName'))]"
       ]
     }

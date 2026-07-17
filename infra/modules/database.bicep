@@ -119,7 +119,7 @@ resource sqlserverAResourceDatabase 'Microsoft.Sql/servers/databases@2021-11-01'
     catalogCollation: 'SQL_Latin1_General_CP1_CI_AS'
     zoneRedundant: false
     readScale: 'Disabled'
-    requestedBackupStorageRedundancy: 'Geo'
+    requestedBackupStorageRedundancy: 'Local'
     isLedgerOn: false
   }
 }]
@@ -198,7 +198,7 @@ resource sqlserverBResource_Database 'Microsoft.Sql/servers/databases@2021-11-01
     catalogCollation: 'SQL_Latin1_General_CP1_CI_AS'
     zoneRedundant: false
     readScale: 'Disabled'
-    requestedBackupStorageRedundancy: 'Geo'
+    requestedBackupStorageRedundancy: 'Local'
     isLedgerOn: false
   }
 }]
