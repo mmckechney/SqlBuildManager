@@ -21,6 +21,7 @@
     <PackageReference Include="System.CommandLine" Version="2.0.8" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SqlBuildManager.Console.ExternalTest\AciTestResourceTracker.cs" Link="AciTestResourceTracker.cs" />
     <Compile Include="..\SqlBuildManager.Console.ExternalTest\BlobLogValidator.cs" Link="BlobLogValidator.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -21,3 +21,5 @@ using System.Runtime.InteropServices;
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.Console.UnitTest")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.Console.Dependent.UnitTest")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.Console.ExternalTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.Console.PostgreSQL.ExternalTest")]

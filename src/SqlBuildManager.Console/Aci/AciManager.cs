@@ -290,6 +290,48 @@ namespace SqlBuildManager.Console.Aci
             }
         }
 
+        internal static async Task<bool> DeleteAciResources(
+            string subscriptionId,
+            string resourceGroupName,
+            string aciName)
+        {
+            var containerDeleted = await DeleteAciInstance(subscriptionId, resourceGroupName, aciName);
+            var networkProfileDeleted = await DeleteNetworkProfileIfExists(
+                subscriptionId,
+                resourceGroupName,
+                $"{aciName}profile");
+            return containerDeleted && networkProfileDeleted;
+        }
+
+        private static async Task<bool> DeleteNetworkProfileIfExists(
+            string subscriptionId,
+            string resourceGroupName,
+            string networkProfileName)
+        {
+            var resourceId =
+                $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}" +
+                $"/providers/Microsoft.Network/networkProfiles/{networkProfileName}";
+            try
+            {
+                await ArmHelper.DeleteResource(resourceId);
+                log.LogInformation("ACI network profile '{NetworkProfileName}' removed", networkProfileName);
+                return true;
+            }
+            catch (RequestFailedException exception) when (exception.Status == 404)
+            {
+                log.LogDebug("ACI network profile '{NetworkProfileName}' does not exist", networkProfileName);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                log.LogError(
+                    exception,
+                    "Unable to remove ACI network profile '{NetworkProfileName}'",
+                    networkProfileName);
+                return false;
+            }
+        }
+
         internal static async Task<bool> AciIsInErrorState(string subscriptionId, string resourceGroupName, string aciName)
         {
 

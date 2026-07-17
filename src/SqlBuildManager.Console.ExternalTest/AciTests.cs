@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
@@ -22,6 +22,7 @@ namespace SqlBuildManager.Console.ExternalTest
         public TestContext TestContext { get; set; }
 
         private string settingsFileKeyPath = string.Empty;
+        private AciTestResourceTracker aciResources = null!;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
 
         [TestInitialize]
@@ -30,6 +31,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<AciTests>("SqlBuildManager.Console.log", Path.GetTempPath());
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
+            aciResources = new AciTestResourceTracker(settingsFileKeyPath);
 
             System.Console.SetOut(new StringWriter(ConsoleOutput));    // Associate StringBuilder with StdOut
             ConsoleOutput.Clear();    // Clear text from any previous text runs
@@ -37,9 +39,9 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
         [TestCleanup]
-        public void CleanUp()
+        public async Task CleanUp()
         {
-
+            await aciResources.CleanupAsync();
         }
 
         // Old settings files - commented out as we now use MI-only authentication
@@ -66,7 +68,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 int startingLine = TestHelper.LogFileCurrentLineCount();
 
                 var rootCommand = CommandLineBuilder.SetUp();
-                string jobName = TestHelper.GetUniqueJobName("aci");
+                string jobName = aciResources.Track(TestHelper.GetUniqueJobName("aci"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 //Prep the build
@@ -132,7 +134,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 int startingLine = TestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = TestHelper.GetUniqueJobName("aci");
+                string jobName = aciResources.Track(TestHelper.GetUniqueJobName("aci"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 //Prep the build
@@ -219,7 +221,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 int startingLine = TestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = TestHelper.GetUniqueJobName("aci");
+                string jobName = aciResources.Track(TestHelper.GetUniqueJobName("aci"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 //Prep the build
@@ -307,7 +309,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 int startingLine = TestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = TestHelper.GetUniqueJobName("aci");
+                string jobName = aciResources.Track(TestHelper.GetUniqueJobName("aci"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 //Prep the build
@@ -412,7 +414,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 int startingLine = TestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = TestHelper.GetUniqueJobName("aci");
+                string jobName = aciResources.Track(TestHelper.GetUniqueJobName("aci"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 //Prep the build
@@ -521,7 +523,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 int startingLine = TestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = TestHelper.GetUniqueJobName("aci");
+                string jobName = aciResources.Track(TestHelper.GetUniqueJobName("aci"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 //Prep the build
@@ -631,7 +633,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 int startingLine = TestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = TestHelper.GetUniqueJobName("aci");
+                string jobName = aciResources.Track(TestHelper.GetUniqueJobName("aci"), settingsFile);
 
                 //Prep the build
                 var args = new string[]{
@@ -705,7 +707,7 @@ namespace SqlBuildManager.Console.ExternalTest
                 int startingLine = TestHelper.LogFileCurrentLineCount();
 
                 var parser = CommandLineBuilder.GetRootCommand();
-                string jobName = TestHelper.GetUniqueJobName("aci");
+                string jobName = aciResources.Track(TestHelper.GetUniqueJobName("aci"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 //Prep the build

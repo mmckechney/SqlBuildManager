@@ -21,6 +21,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
         public TestContext TestContext { get; set; }
 
         private string settingsFileKeyPath = string.Empty;
+        private AciTestResourceTracker aciResources = null!;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
 
         [TestInitialize]
@@ -28,14 +29,16 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
         {
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<AciTests>("SqlBuildManager.Console.log", Path.GetTempPath());
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
+            aciResources = new AciTestResourceTracker(settingsFileKeyPath);
 
             System.Console.SetOut(new StringWriter(ConsoleOutput));
             ConsoleOutput.Clear();
         }
 
         [TestCleanup]
-        public void CleanUp()
+        public async Task CleanUp()
         {
+            await aciResources.CleanupAsync();
         }
 
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
@@ -55,7 +58,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 int startingLine = PgTestHelper.LogFileCurrentLineCount();
 
                 var rootCommand = CommandLineBuilder.SetUp();
-                string jobName = PgTestHelper.GetUniqueJobName("aci-pg");
+                string jobName = aciResources.Track(PgTestHelper.GetUniqueJobName("aci-pg"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 var args = new string[]{
@@ -115,7 +118,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 int startingLine = PgTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = PgTestHelper.GetUniqueJobName("aci-pg");
+                string jobName = aciResources.Track(PgTestHelper.GetUniqueJobName("aci-pg"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 // Prep
@@ -203,7 +206,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 int startingLine = PgTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = PgTestHelper.GetUniqueJobName("aci-pg");
+                string jobName = aciResources.Track(PgTestHelper.GetUniqueJobName("aci-pg"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 // Prep
@@ -291,7 +294,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 int startingLine = PgTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = PgTestHelper.GetUniqueJobName("aci-pg");
+                string jobName = aciResources.Track(PgTestHelper.GetUniqueJobName("aci-pg"), settingsFile);
 
                 var args = new string[]{
                     "--loglevel", "debug",
