@@ -4,7 +4,6 @@ using Azure.Storage.Blobs.Specialized;
 using Azure.Core;
 using Microsoft.Azure.Relay;
 using Microsoft.Data.SqlClient;
-using Microsoft.SqlServer.Dac;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -32,7 +31,7 @@ internal sealed class RelayProxyRequestHandler : IAsyncDisposable
     private readonly EventHubRelayMonitor eventHubMonitor;
     private readonly HashSet<string> allowedSqlServers;
     private readonly TokenCredential sqlCredential;
-    private readonly string sqlManagedIdentityClientId;
+    private readonly DacpacRelayExtractor dacpacExtractor;
 
     public RelayProxyRequestHandler(
         string storageAccountName,
@@ -53,7 +52,7 @@ internal sealed class RelayProxyRequestHandler : IAsyncDisposable
             allowedSqlServers,
             StringComparer.OrdinalIgnoreCase);
         this.sqlCredential = sqlCredential;
-        this.sqlManagedIdentityClientId = sqlManagedIdentityClientId;
+        dacpacExtractor = new DacpacRelayExtractor(sqlManagedIdentityClientId);
     }
 
     public async Task HandleAsync(RelayedHttpListenerContext context)
@@ -293,17 +292,14 @@ internal sealed class RelayProxyRequestHandler : IAsyncDisposable
         RelayedHttpListenerContext context,
         string[] segments)
     {
-        if (segments.Length != 2 || segments[0] != "sql-test")
+        if (segments.Length < 2 || segments[0] != "sql-test")
         {
             return false;
         }
-        if (context.Request.HttpMethod != "POST")
-        {
-            await WriteErrorAsync(context, HttpStatusCode.MethodNotAllowed, "Unsupported SQL test operation.");
-            return true;
-        }
 
-        if (segments[1] == "tables")
+        if (segments.Length == 2 &&
+            segments[1] == "tables" &&
+            context.Request.HttpMethod == "POST")
         {
             var request = await JsonSerializer.DeserializeAsync<SqlTestTableRequest>(
                 context.Request.InputStream)
@@ -325,17 +321,42 @@ internal sealed class RelayProxyRequestHandler : IAsyncDisposable
             return true;
         }
 
-        if (segments[1] == "dacpac")
+        if (segments[1] == "dacpac-jobs")
         {
-            var request = await JsonSerializer.DeserializeAsync<SqlTestDacpacRequest>(
-                context.Request.InputStream)
-                ?? throw new InvalidDataException("SQL test DACPAC request body is required.");
-            ValidateSqlTarget(request.Server, request.Database);
-            await WriteDacpacAsync(context, request.Server, request.Database);
-            return true;
+            if (segments.Length == 2 && context.Request.HttpMethod == "POST")
+            {
+                var request = await JsonSerializer.DeserializeAsync<SqlTestDacpacRequest>(
+                    context.Request.InputStream)
+                    ?? throw new InvalidDataException("SQL test DACPAC request body is required.");
+                ValidateSqlTarget(request.Server, request.Database);
+                var createdJobId = dacpacExtractor.Start(request.Server, request.Database);
+                await WriteJsonAsync(context, HttpStatusCode.Created, new { jobId = createdJobId });
+                return true;
+            }
+
+            if (segments.Length == 3 &&
+                context.Request.HttpMethod == "GET" &&
+                Guid.TryParse(segments[2], out var requestedJobId))
+            {
+                if (!dacpacExtractor.IsReady(requestedJobId))
+                {
+                    await WriteJsonAsync(
+                        context,
+                        HttpStatusCode.Accepted,
+                        new { status = "running" });
+                    return true;
+                }
+
+                context.Response.StatusCode = HttpStatusCode.OK;
+                context.Response.Headers[HttpResponseHeader.ContentType] = "application/octet-stream";
+                await dacpacExtractor.CopyResultAndRemoveAsync(
+                    requestedJobId,
+                    context.Response.OutputStream);
+                return true;
+            }
         }
 
-        await WriteErrorAsync(context, HttpStatusCode.NotFound, "Unknown SQL test route.");
+        await WriteErrorAsync(context, HttpStatusCode.MethodNotAllowed, "Unsupported SQL test operation.");
         return true;
     }
 
@@ -369,60 +390,17 @@ internal sealed class RelayProxyRequestHandler : IAsyncDisposable
         return connection;
     }
 
-    private async Task WriteDacpacAsync(
-        RelayedHttpListenerContext context,
-        string server,
-        string database)
-    {
-        var connectionString = new SqlConnectionStringBuilder
-        {
-            DataSource = server,
-            InitialCatalog = database,
-            Encrypt = true,
-            TrustServerCertificate = false,
-            ConnectTimeout = 30,
-            Authentication = SqlAuthenticationMethod.ActiveDirectoryManagedIdentity,
-            UserID = sqlManagedIdentityClientId
-        }.ConnectionString;
-        var tempFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.dacpac");
-        try
-        {
-            var options = new DacExtractOptions
-            {
-                IgnoreExtendedProperties = true,
-                IgnoreUserLoginMappings = true,
-                LongRunningCommandTimeout = 300,
-                CommandTimeout = 300,
-                DatabaseLockTimeout = 300
-            };
-            var service = new DacServices(connectionString);
-            service.Extract(
-                tempFile,
-                database,
-                "Sql Build Manager",
-                typeof(RelayProxyRequestHandler).Assembly.GetName().Version!,
-                "Sql Build Manager",
-                null,
-                options);
-
-            context.Response.StatusCode = HttpStatusCode.OK;
-            context.Response.Headers[HttpResponseHeader.ContentType] = "application/octet-stream";
-            await using var source = File.OpenRead(tempFile);
-            await source.CopyToAsync(context.Response.OutputStream);
-        }
-        finally
-        {
-            File.Delete(tempFile);
-        }
-    }
-
     private static string QuoteIdentifier(string identifier) =>
         $"[{identifier.Replace("]", "]]", StringComparison.Ordinal)}]";
 
     private string GetContainerUrl(string containerName) =>
         $"https://{storageAccountName}.blob.core.windows.net/{containerName}";
 
-    public ValueTask DisposeAsync() => eventHubMonitor.DisposeAsync();
+    public async ValueTask DisposeAsync()
+    {
+        await eventHubMonitor.DisposeAsync();
+        await dacpacExtractor.DisposeAsync();
+    }
 
     private string GetBlobUrl(string containerName, string blobName) =>
         $"{GetContainerUrl(containerName)}/{Uri.EscapeDataString(blobName)}";

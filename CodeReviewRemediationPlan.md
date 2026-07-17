@@ -757,6 +757,19 @@ No BenchmarkDotNet project, representative load test, connection/round-trip budg
 - All GitHub Actions workflow YAML files: parser validation succeeded.
 - `git diff --check`: succeeded.
 - kubectl v1.33.0 amd64/arm64 checksums match the values published by `dl.k8s.io`.
+- Private-network Azure validation: the RelayProxy image includes the SqlClient Azure authentication
+  provider required by DacFx, and local DACPAC extraction/package preparation falls back to the
+  allowlisted Relay route only for SQL network denial 47073. The targeted ACI DACPAC-source external
+  test passed end-to-end against private Azure SQL, Storage, Event Hubs, and ACI resources.
+- SQL Server and PostgreSQL ACI external tests track each generated container-group name and run
+  post-test cleanup even after a test failure. Cleanup removes the named ACI instance and its optional
+  `<aciName>profile` network profile. Targeted SQL Server and PostgreSQL ACI tests passed, and direct
+  ARM lookups confirmed both resource types were deleted.
+- Relay-backed DACPAC extraction now starts a bounded background job and polls with short Relay
+  requests before downloading the completed artifact, avoiding Azure Relay's synchronous response
+  deadline for variable-duration DacFx work. Completed/abandoned jobs are cleaned up, extraction is
+  serialized to protect the small proxy container, and the synchronous timeout-prone route was removed.
+  The previously failing ACI DACPAC-source external test passed end-to-end after deployment.
 
 ### Phase 2 - Build, Supply Chain, and Configuration (1-2 sprints)
 

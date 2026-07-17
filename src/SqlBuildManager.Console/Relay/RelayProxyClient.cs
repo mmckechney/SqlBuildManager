@@ -297,20 +297,54 @@ namespace SqlBuildManager.Console.Relay
                 server,
                 database
             });
-            using var response = await SendAsync(
+            using var startResponse = await SendAsync(
                 HttpMethod.Post,
-                "sql-test/dacpac",
+                "sql-test/dacpac-jobs",
                 content,
                 cancellationToken).ConfigureAwait(false);
-            await using var source = await response.Content
+            await using var startStream = await startResponse.Content
                 .ReadAsStreamAsync(cancellationToken)
                 .ConfigureAwait(false);
-            await using var destination = new FileStream(
-                destinationPath,
-                FileMode.Create,
-                FileAccess.Write,
-                FileShare.None);
-            await source.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
+            var startResult = await JsonSerializer.DeserializeAsync<DacpacJobStartResponse>(
+                startStream,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (startResult == null || !Guid.TryParse(startResult.JobId, out var jobId))
+            {
+                throw new InvalidDataException("Relay proxy response did not include a valid DACPAC job ID.");
+            }
+
+            while (true)
+            {
+                using var response = await SendAsync(
+                    HttpMethod.Get,
+                    $"sql-test/dacpac-jobs/{jobId:D}",
+                    null,
+                    cancellationToken).ConfigureAwait(false);
+                if (response.StatusCode == HttpStatusCode.Accepted)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken).ConfigureAwait(false);
+                    continue;
+                }
+
+                try
+                {
+                    await using var source = await response.Content
+                        .ReadAsStreamAsync(cancellationToken)
+                        .ConfigureAwait(false);
+                    await using var destination = new FileStream(
+                        destinationPath,
+                        FileMode.Create,
+                        FileAccess.Write,
+                        FileShare.None);
+                    await source.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
+                    return;
+                }
+                catch
+                {
+                    File.Delete(destinationPath);
+                    throw;
+                }
+            }
         }
 
         public static bool IsFallbackEligible(Exception exception) =>
@@ -466,6 +500,12 @@ namespace SqlBuildManager.Console.Relay
         {
             [JsonPropertyName("sessionId")]
             public string SessionId { get; set; } = string.Empty;
+        }
+
+        private sealed class DacpacJobStartResponse
+        {
+            [JsonPropertyName("jobId")]
+            public string JobId { get; set; } = string.Empty;
         }
 
         private sealed class EventMonitorPollResponse
