@@ -858,6 +858,7 @@ namespace SqlBuildManager.Console.ExternalTest
         /// </summary>
         [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", 2, ConcurrencyType.Count)]
         [TestMethod]
+        [Ignore("This test can not be run in an environment where the storage account does not allow public access")]
         public void ContainerApp_WorkerTest_SBMSource_Success(string settingsFile, int concurrency, ConcurrencyType concurrencyType)
         {
             string jobName = null!;
