@@ -58,6 +58,40 @@ namespace SqlBuildManager.Console.UnitTest
             Assert.IsNull(result, "200 is not a 404; this method returns null for all non-404 codes.");
         }
 
+        [TestMethod]
+        public void AciManager_ParseAciDeployment_ArmJson_ReturnsDeployment()
+        {
+            const string responseJson =
+                """
+                {
+                  "properties": {
+                    "containers": [
+                      {
+                        "name": "sqlbuildmanager000",
+                        "properties": {
+                          "instanceView": {
+                            "currentState": {
+                              "state": "Running",
+                              "detailStatus": "Running"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "name": "aci-test"
+                }
+                """;
+
+            var deployment = AciManager.ParseAciDeployment(responseJson);
+
+            Assert.AreEqual("aci-test", deployment.Name);
+            Assert.HasCount(1, deployment.Properties.Containers);
+            Assert.AreEqual(
+                "Running",
+                deployment.Properties.Containers[0].Properties.InstanceView.CurrentState.DetailStatus);
+        }
+
         // ── PERF-007: Elapsed.TotalSeconds vs Elapsed.Seconds ────────────────────
 
         [TestMethod]

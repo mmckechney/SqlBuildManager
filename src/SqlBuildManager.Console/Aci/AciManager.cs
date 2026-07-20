@@ -350,9 +350,13 @@ namespace SqlBuildManager.Console.Aci
         private static async Task<Aci.Arm.Deployment> GetAciInstanceData(string subscriptionId, string resourceGroupName, string aciName)
         {
             var resp = await ArmHelper.GetAciDeploymentDetails(subscriptionId, resourceGroupName, aciName);
-            var aciResult = JsonSerializer.Deserialize<Aci.Arm.Deployment>(JsonSerializer.Serialize(resp));
+            return ParseAciDeployment(resp);
+        }
 
-            return aciResult!;
+        internal static Aci.Arm.Deployment ParseAciDeployment(string responseJson)
+        {
+            return JsonSerializer.Deserialize<Aci.Arm.Deployment>(responseJson)
+                ?? throw new JsonException("The ACI deployment response was empty.");
         }
 
         /// <summary>
