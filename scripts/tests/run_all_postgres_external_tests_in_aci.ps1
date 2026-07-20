@@ -9,11 +9,20 @@
     and invokes GitHub Copilot CLI to analyze the test output.
 .PARAMETER envName
     Azure Developer CLI environment name. Defaults to the selected azd environment.
+.PARAMETER testGroups
+    Optional test groups to run. Valid values are aci, batch, containerapp, and aks.
+    Omit to run every group whose required platform is deployed.
+.EXAMPLE
+    .\run_all_postgres_external_tests_in_aci.ps1 -envName myenv -testGroups aci,batch
 #>
 [CmdletBinding()]
 param (
     [Parameter()]
-    [string] $envName
+    [string] $envName,
+
+    [Parameter()]
+    [ValidateSet('aci', 'batch', 'containerapp', 'aks')]
+    [string[]] $testGroups = @()
 )
 
 Set-StrictMode -Version Latest
@@ -80,6 +89,11 @@ $hasBatch        = Test-DeployFlag 'DEPLOY_BATCH_ACCOUNT', 'DEPLOY_BATCH'
 $hasContainerApp = Test-DeployFlag 'DEPLOY_CONTAINERAPP_ENV', 'DEPLOY_CONTAINERAPP'
 $hasAks          = Test-DeployFlag 'DEPLOY_AKS'
 $hasPostgreSQL   = Test-DeployFlag 'DEPLOY_POSTGRESQL'
+$requestedTestGroups = if ($testGroups.Count -eq 0) {
+    @('aci', 'batch', 'containerapp', 'aks')
+} else {
+    @($testGroups)
+}
 
 Write-Host ""
 Write-Host "Platform Availability:" -ForegroundColor Cyan
@@ -88,6 +102,7 @@ Write-Host "  ACI:            $(if ($hasAci)           { 'Deployed' } else { 'No
 Write-Host "  Batch:          $(if ($hasBatch)         { 'Deployed' } else { 'Not deployed' })" -ForegroundColor $(if ($hasBatch)         { 'Green' } else { 'DarkGray' })
 Write-Host "  Container Apps: $(if ($hasContainerApp)  { 'Deployed' } else { 'Not deployed' })" -ForegroundColor $(if ($hasContainerApp)  { 'Green' } else { 'DarkGray' })
 Write-Host "  AKS:            $(if ($hasAks)           { 'Deployed' } else { 'Not deployed' })" -ForegroundColor $(if ($hasAks)           { 'Green' } else { 'DarkGray' })
+Write-Host "  Test groups:    $($requestedTestGroups -join ', ')" -ForegroundColor DarkGreen
 Write-Host ""
 
 #############################################
@@ -95,35 +110,49 @@ Write-Host ""
 #############################################
 
 if (-not $hasPostgreSQL) {
-    Write-Host "SKIPPING [pg]: PostgreSQL database is not deployed" -ForegroundColor Yellow
+    Write-Host "SKIPPING requested PostgreSQL test groups: PostgreSQL is not deployed (DEPLOY_POSTGRESQL is not true)" -ForegroundColor Yellow
 } else {
-    # Build filter dynamically based on available compute platforms
     $pgFilters = @()
-    $pgSkipped = @()
+    $platforms = @(
+        @{
+            Name = 'aci'
+            Label = 'ACI'
+            Available = $hasAci
+            DeployFlags = 'DEPLOY_ACI'
+            Filter = 'FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.ExternalTest.AciTests'
+        },
+        @{
+            Name = 'batch'
+            Label = 'Batch'
+            Available = $hasBatch
+            DeployFlags = 'DEPLOY_BATCH_ACCOUNT/DEPLOY_BATCH'
+            Filter = 'FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.ExternalTest.BatchTests'
+        },
+        @{
+            Name = 'containerapp'
+            Label = 'Container Apps'
+            Available = $hasContainerApp
+            DeployFlags = 'DEPLOY_CONTAINERAPP_ENV/DEPLOY_CONTAINERAPP'
+            Filter = 'FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.ExternalTest.ContainerAppTests'
+        },
+        @{
+            Name = 'aks'
+            Label = 'AKS'
+            Available = $hasAks
+            DeployFlags = 'DEPLOY_AKS'
+            Filter = 'FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.ExternalTest.KubernetesTests'
+        }
+    )
 
-    if ($hasAci) {
-        $pgFilters += "FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.ExternalTest.AciTests"
-    } else {
-        $pgSkipped += "ACI"
-    }
-    if ($hasBatch) {
-        $pgFilters += "FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.ExternalTest.BatchTests"
-    } else {
-        $pgSkipped += "Batch"
-    }
-    if ($hasContainerApp) {
-        $pgFilters += "FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.ExternalTest.ContainerAppTests"
-    } else {
-        $pgSkipped += "Container Apps"
-    }
-    if ($hasAks) {
-        $pgFilters += "FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.ExternalTest.KubernetesTests"
-    } else {
-        $pgSkipped += "AKS"
-    }
-
-    if ($pgSkipped.Count -gt 0) {
-        Write-Host "SKIPPING PostgreSQL tests for unavailable compute: $($pgSkipped -join ', ')" -ForegroundColor Yellow
+    foreach ($platform in $platforms) {
+        if ($platform.Name -notin $requestedTestGroups) {
+            continue
+        }
+        if (-not $platform.Available) {
+            Write-Host "SKIPPING requested test group [$($platform.Name)]: $($platform.Label) compute is not deployed ($($platform.DeployFlags) is not true)" -ForegroundColor Yellow
+            continue
+        }
+        $pgFilters += $platform.Filter
     }
 
     if ($pgFilters.Count -gt 0) {
@@ -131,7 +160,7 @@ if (-not $hasPostgreSQL) {
         & (Join-Path $PSScriptRoot 'run_filtered_external_tests_in_aci.ps1') -envName $envName -customName pg -testFilter $pgTestFilter -timeoutMinutes 300 -timestamp $timestamp
         $exitCode += $LASTEXITCODE
     } else {
-        Write-Host "SKIPPING [pg]: No compute platforms available for PostgreSQL tests" -ForegroundColor Yellow
+        Write-Host "SKIPPING [pg]: None of the requested test groups are available" -ForegroundColor Yellow
     }
 }
 

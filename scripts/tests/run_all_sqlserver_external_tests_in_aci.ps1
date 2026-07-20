@@ -9,11 +9,21 @@
     GitHub Copilot CLI to analyze the test output.
 .PARAMETER envName
     Azure Developer CLI environment name. Defaults to the selected azd environment.
+.PARAMETER testGroups
+    Optional test groups to run. Valid values are aci, containerapp, batchqueue,
+    batchoverride, batchquery, and aks. Omit to run every group whose required
+    platform is deployed.
+.EXAMPLE
+    .\run_all_sqlserver_external_tests_in_aci.ps1 -envName myenv -testGroups aci,containerapp
 #>
 [CmdletBinding()]
 param (
     [Parameter()]
-    [string] $envName
+    [string] $envName,
+
+    [Parameter()]
+    [ValidateSet('aci', 'containerapp', 'batchqueue', 'batchoverride', 'batchquery', 'aks')]
+    [string[]] $testGroups = @()
 )
 
 Set-StrictMode -Version Latest
@@ -83,6 +93,11 @@ $hasBatch        = Test-DeployFlag 'DEPLOY_BATCH_ACCOUNT', 'DEPLOY_BATCH'
 $hasContainerApp = Test-DeployFlag 'DEPLOY_CONTAINERAPP_ENV', 'DEPLOY_CONTAINERAPP'
 $hasAks          = Test-DeployFlag 'DEPLOY_AKS'
 $hasSqlServer    = Test-DeployFlag 'DEPLOY_SQLSERVER'
+$requestedTestGroups = if ($testGroups.Count -eq 0) {
+    @('aci', 'containerapp', 'batchqueue', 'batchoverride', 'batchquery', 'aks')
+} else {
+    @($testGroups)
+}
 
 Write-Host ""
 Write-Host "Platform Availability:" -ForegroundColor Cyan
@@ -91,6 +106,7 @@ Write-Host "  ACI:            $(if ($hasAci)           { 'Deployed' } else { 'No
 Write-Host "  Batch:          $(if ($hasBatch)         { 'Deployed' } else { 'Not deployed' })" -ForegroundColor $(if ($hasBatch)         { 'Green' } else { 'DarkGray' })
 Write-Host "  Container Apps: $(if ($hasContainerApp)  { 'Deployed' } else { 'Not deployed' })" -ForegroundColor $(if ($hasContainerApp)  { 'Green' } else { 'DarkGray' })
 Write-Host "  AKS:            $(if ($hasAks)           { 'Deployed' } else { 'Not deployed' })" -ForegroundColor $(if ($hasAks)           { 'Green' } else { 'DarkGray' })
+Write-Host "  Test groups:    $($requestedTestGroups -join ', ')" -ForegroundColor DarkGreen
 Write-Host ""
 
 function Invoke-TestIfAvailable {
@@ -99,17 +115,27 @@ function Invoke-TestIfAvailable {
         [string]$testFilter,
         [string]$computeLabel,
         [bool]$computeAvailable,
+        [string]$computeDeployFlags,
         [string]$databaseLabel,
         [bool]$databaseAvailable,
+        [string]$databaseDeployFlags,
         [int]$timeoutMinutes = 300
     )
 
+    if ($customName -notin $requestedTestGroups) {
+        return 0
+    }
+
     $skipReasons = @()
-    if (-not $computeAvailable) { $skipReasons += "$computeLabel compute is not deployed" }
-    if (-not $databaseAvailable) { $skipReasons += "$databaseLabel database is not deployed" }
+    if (-not $computeAvailable) {
+        $skipReasons += "$computeLabel compute is not deployed ($computeDeployFlags is not true)"
+    }
+    if (-not $databaseAvailable) {
+        $skipReasons += "$databaseLabel database is not deployed ($databaseDeployFlags is not true)"
+    }
 
     if ($skipReasons.Count -gt 0) {
-        Write-Host "SKIPPING [$customName]: $($skipReasons -join '; ')" -ForegroundColor Yellow
+        Write-Host "SKIPPING requested test group [$customName]: $($skipReasons -join '; ')" -ForegroundColor Yellow
         return 0
     }
 
@@ -124,32 +150,44 @@ function Invoke-TestIfAvailable {
 $exitCode += Invoke-TestIfAvailable -customName "aci" `
     -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.AciTests" `
     -computeLabel "ACI" -computeAvailable $hasAci `
-    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer
+    -computeDeployFlags "DEPLOY_ACI" `
+    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
+    -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "containerapp" `
     -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.ContainerAppTests" `
     -computeLabel "Container Apps" -computeAvailable $hasContainerApp `
-    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer
+    -computeDeployFlags "DEPLOY_CONTAINERAPP_ENV/DEPLOY_CONTAINERAPP" `
+    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
+    -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "batchqueue" `
     -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.BatchTests.Batch_Queue" `
     -computeLabel "Batch" -computeAvailable $hasBatch `
-    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer
+    -computeDeployFlags "DEPLOY_BATCH_ACCOUNT/DEPLOY_BATCH" `
+    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
+    -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "aks" `
     -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.KubernetesTests" `
     -computeLabel "AKS" -computeAvailable $hasAks `
-    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer
+    -computeDeployFlags "DEPLOY_AKS" `
+    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
+    -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "batchoverride" `
     -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.BatchTests.Batch_Override" `
     -computeLabel "Batch" -computeAvailable $hasBatch `
-    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer
+    -computeDeployFlags "DEPLOY_BATCH_ACCOUNT/DEPLOY_BATCH" `
+    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
+    -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "batchquery" `
     -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.BatchTests.Batch_Query" `
     -computeLabel "Batch" -computeAvailable $hasBatch `
-    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer
+    -computeDeployFlags "DEPLOY_BATCH_ACCOUNT/DEPLOY_BATCH" `
+    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
+    -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 # Download test results
 if ((Test-Path ./testresults) -eq $false) { New-Item -ItemType Directory ./testresults | Out-Null }
