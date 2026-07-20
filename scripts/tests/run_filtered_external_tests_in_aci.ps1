@@ -294,20 +294,25 @@ Write-Host ""
 # Write-Host "Test Results" -ForegroundColor Cyan
 # Write-Host "========================================" -ForegroundColor Cyan
 
-# Get container state with null checks
-$container = az container show --name $testContainerName --resource-group $resourceGroupName 2>$null | ConvertFrom-Json -Depth 10
+# Get the final state as a fallback when the test exit code was not found in logs.
+$currentState = Get-AciContainerCurrentState `
+    -containerName $testContainerName `
+    -resourceGroupName $resourceGroupName
 $containerState = "Unknown"
 $containerExitCode = $null
 
-if ($null -ne $container -and $null -ne $container.PSObject -and $container.PSObject.Properties.Name -contains 'containers') {
-    # $containers = $container.containers
-#     if ($null -ne $containers -and $containers.Count -gt 0) {
-        $containerInstance = $container.containers
-        if ($null -ne $containerInstance -and $null -ne $containerInstance.instanceView -and $null -ne $containerInstance.instanceView.currentState) {
-            $containerState = $containerInstance.containers.instanceView.currentState.detailStatus
-            $containerExitCode = $containerInstance.containers.instanceView.currentState.detailStatus
-        }
-#     }
+if ($null -ne $currentState) {
+    $detailStatusProperty = $currentState.PSObject.Properties['detailStatus']
+    $stateProperty = $currentState.PSObject.Properties['state']
+    $exitCodeProperty = $currentState.PSObject.Properties['exitCode']
+    if ($null -ne $detailStatusProperty) {
+        $containerState = $detailStatusProperty.Value
+    } elseif ($null -ne $stateProperty) {
+        $containerState = $stateProperty.Value
+    }
+    if ($null -ne $exitCodeProperty) {
+        $containerExitCode = $exitCodeProperty.Value
+    }
 }
 
 # Use the exit code we extracted from logs, or default to container exit code

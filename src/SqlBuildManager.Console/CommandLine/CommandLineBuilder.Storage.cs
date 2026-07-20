@@ -16,6 +16,12 @@ namespace SqlBuildManager.Console.CommandLine
             Description = "Optional blob name prefix used to filter the listing"
         };
 
+        internal static Option<string> storageDownloadPrefixOption = new("--prefix")
+        {
+            Description = "Blob name prefix identifying files to download",
+            Required = true
+        };
+
         internal static Option<string[]> storageBlobOption = new("--blob", "-b")
         {
             Description = "Blob name to download. Specify one or more names after the option.",
@@ -82,11 +88,39 @@ namespace SqlBuildManager.Console.CommandLine
             }
         }
 
+        private static Command StorageDownloadPrefixCommand
+        {
+            get
+            {
+                var cmd = new Command("download-prefix", "Download Blob files matching a prefix through Azure Relay")
+                {
+                    storageContainerOption,
+                    storageDownloadPrefixOption,
+                    storageOutputPathOption,
+                    relayProxyEndpointOption
+                };
+                cmd.AddRange(SettingsFileExistingOptions);
+                cmd.AddRange(IdentityArgumentsForBatch);
+                cmd.SetAction(async (parseResult, cancellationToken) =>
+                {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.DownloadRelayBlobFilesByPrefixAsync(
+                        cmdLine,
+                        parseResult.GetValue(storageContainerOption)!,
+                        parseResult.GetValue(storageDownloadPrefixOption)!,
+                        parseResult.GetValue(storageOutputPathOption)!,
+                        cancellationToken);
+                });
+                return cmd;
+            }
+        }
+
         private static Command StorageCommand =>
             new("storage", "List and download private Blob Storage files through Azure Relay")
             {
                 StorageListCommand,
-                StorageDownloadCommand
+                StorageDownloadCommand,
+                StorageDownloadPrefixCommand
             };
     }
 }

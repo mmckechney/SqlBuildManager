@@ -291,6 +291,29 @@ function Deploy-AciFromYaml {
 # Test Monitoring
 #############################################
 
+function Get-AciContainerCurrentState {
+    <#
+    .SYNOPSIS
+        Gets the current state of the first container in an ACI container group.
+    #>
+    param(
+        [string]$containerName,
+        [string]$resourceGroupName
+    )
+
+    $stateJson = az container show `
+        --name $containerName `
+        --resource-group $resourceGroupName `
+        --query 'containers[0].instanceView.currentState' `
+        --output json 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(($stateJson -join ''))) {
+        Write-Debug "Unable to retrieve current state for ACI container '$containerName'."
+        return $null
+    }
+
+    return $stateJson | ConvertFrom-Json
+}
+
 function Wait-ForAciTests {
     <#
     .SYNOPSIS
@@ -335,12 +358,20 @@ function Wait-ForAciTests {
     $testExitCode = $null
 
     while ($true) {
-        $container = az container show --name $containerName --resource-group $resourceGroupName 2>$null | ConvertFrom-Json -Depth 10
+        $currentState = Get-AciContainerCurrentState `
+            -containerName $containerName `
+            -resourceGroupName $resourceGroupName
         $state = $null
         $state2 = $null
-        if ($null -ne $container -and $null -ne $container.instanceView) {
-            $state = $container.containers.instanceView.currentState.detailStatus
-            $state2 = $container.containers.instanceView.currentState.state
+        if ($null -ne $currentState) {
+            $detailStatusProperty = $currentState.PSObject.Properties['detailStatus']
+            $stateProperty = $currentState.PSObject.Properties['state']
+            if ($null -ne $detailStatusProperty) {
+                $state = $detailStatusProperty.Value
+            }
+            if ($null -ne $stateProperty) {
+                $state2 = $stateProperty.Value
+            }
         }
         
         # Stream logs periodically and update test summary
@@ -421,7 +452,7 @@ function Download-TestResultsFromBlob {
     <#
     .SYNOPSIS
         Downloads test results from Azure Blob Storage to a local directory.
-        Handles errors gracefully (e.g., storage account firewall blocking access).
+        Falls back to RelayProxy when the storage account's public endpoint is unavailable.
     .PARAMETER storageAccountName
         The Azure Storage account name.
     .PARAMETER blobContainerName
@@ -471,9 +502,49 @@ function Download-TestResultsFromBlob {
             $errorText = $output | Out-String
             if ($errorText -match "AuthorizationFailure|Forbidden|firewall|network rules") {
                 Write-Host ""
-                Write-Host "WARNING: Unable to download test results - storage account firewall may be blocking access." -ForegroundColor Yellow
-                Write-Host "  You can download manually after updating firewall rules:" -ForegroundColor Yellow
-                Write-Host "  az storage blob download-batch --account-name $storageAccountName --source $blobContainerName --destination $localDestination --auth-mode login --overwrite" -ForegroundColor DarkGray
+                Write-Host "Direct Blob download is blocked; retrying through RelayProxy..." -ForegroundColor Yellow
+
+                $relayProxyEndpoint = azd env get-value RELAY_PROXY_ENDPOINT 2>$null
+                if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($relayProxyEndpoint)) {
+                    Write-Host "WARNING: RELAY_PROXY_ENDPOINT is unavailable in the selected azd environment." -ForegroundColor Yellow
+                    return $false
+                }
+
+                $repoRoot = $env:AZD_PROJECT_PATH
+                if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+                    $repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+                }
+                $repoSbmExe = Join-Path $repoRoot 'src\SqlBuildManager.Console\bin\Release\net10.0\sbm.exe'
+                $sbmCommand = Get-Command sbm.exe -ErrorAction SilentlyContinue
+                $sbmExe = if (Test-Path $repoSbmExe) {
+                    $repoSbmExe
+                } elseif ($null -ne $sbmCommand) {
+                    $sbmCommand.Source
+                } else {
+                    $repoSbmExe
+                }
+                if (-not (Test-Path $sbmExe)) {
+                    Write-Host "WARNING: sbm.exe is required for RelayProxy downloads but was not found at '$sbmExe'." -ForegroundColor Yellow
+                    Write-Host "  Build it with: dotnet build .\src\SqlBuildManager.Console\sbm.csproj --configuration Release -f net10.0" -ForegroundColor DarkGray
+                    return $false
+                }
+
+                $relayPrefix = if ([string]::IsNullOrWhiteSpace($blobPath)) {
+                    ''
+                } else {
+                    "$($blobPath.TrimEnd('/'))/"
+                }
+                & $sbmExe storage download-prefix `
+                    --container $blobContainerName `
+                    --prefix $relayPrefix `
+                    --outputpath $localDestination `
+                    --relayproxyendpoint $relayProxyEndpoint
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "Test results downloaded successfully through RelayProxy." -ForegroundColor Green
+                    return $true
+                }
+
+                Write-Host "WARNING: RelayProxy test-result download failed (exit code: $LASTEXITCODE)." -ForegroundColor Yellow
             } else {
                 Write-Host ""
                 Write-Host "WARNING: Failed to download test results (exit code: $LASTEXITCODE)" -ForegroundColor Yellow

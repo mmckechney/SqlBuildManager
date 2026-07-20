@@ -64,5 +64,43 @@ namespace SqlBuildManager.Console.UnitTest
 
             Assert.IsTrue(result.Errors.Any(error => error.Message.Contains("--blob")));
         }
+
+        [TestMethod]
+        public void StorageDownloadPrefix_RequiredArguments_Parses()
+        {
+            var outputPath = Path.GetTempPath();
+            var result = CommandLineBuilder.Parse(
+            [
+                "storage",
+                "download-prefix",
+                "--container",
+                "testresults",
+                "--prefix",
+                "2026-07-20-114546/",
+                "--outputpath",
+                outputPath
+            ]);
+
+            Assert.IsEmpty(result.Errors);
+            Assert.AreEqual(
+                "2026-07-20-114546/",
+                result.GetValue(CommandLineBuilder.storageDownloadPrefixOption));
+        }
+
+        [TestMethod]
+        public void StorageDownloadPrefix_WithoutPrefix_ReturnsParseError()
+        {
+            var result = CommandLineBuilder.Parse(
+            [
+                "storage",
+                "download-prefix",
+                "--container",
+                "testresults",
+                "--outputpath",
+                Path.GetTempPath()
+            ]);
+
+            Assert.IsTrue(result.Errors.Any(error => error.Message.Contains("--prefix")));
+        }
     }
 }

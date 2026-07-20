@@ -189,13 +189,6 @@ $exitCode += Invoke-TestIfAvailable -customName "batchquery" `
     -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
     -databaseDeployFlags "DEPLOY_SQLSERVER"
 
-# Download test results
-if ((Test-Path ./testresults) -eq $false) { New-Item -ItemType Directory ./testresults | Out-Null }
-az storage blob download-batch --account-name $storageAccountName --source testresults --pattern "$($timestamp)*" --destination ./testresults --auth-mode login --overwrite
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "WARNING: Failed to download test results from storage (exit code $LASTEXITCODE)." -ForegroundColor Yellow
-}
-
 # Analyze test results with GitHub Copilot CLI (local developer convenience; skip in CI).
 if (Get-Command copilot -ErrorAction SilentlyContinue) {
     $promptTemplate = Get-Content -Path (Join-Path $PSScriptRoot 'analyze-test-results-prompt.md') -Raw

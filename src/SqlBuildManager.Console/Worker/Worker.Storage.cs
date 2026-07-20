@@ -6,6 +6,7 @@ using SqlBuildManager.Console.Relay;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -68,6 +69,50 @@ namespace SqlBuildManager.Console
             catch (Exception ex)
             {
                 log.LogError($"Unable to download blobs from container '{containerName}': {ex.Message}");
+                return 1;
+            }
+        }
+
+        internal static async Task<int> DownloadRelayBlobFilesByPrefixAsync(
+            CommandLineArgs cmdLine,
+            string containerName,
+            string prefix,
+            DirectoryInfo outputPath,
+            CancellationToken cancellationToken)
+        {
+            if (!InitializeRelayStorageCommand(cmdLine))
+            {
+                return 1;
+            }
+
+            try
+            {
+                var files = await StorageManager.EnumerateBlobFilesThroughRelayAsync(
+                    containerName,
+                    prefix,
+                    cancellationToken).ConfigureAwait(false);
+                if (files.Count == 0)
+                {
+                    System.Console.WriteLine(
+                        $"No blobs matching prefix '{prefix}' were found in container '{containerName}'.");
+                    return 0;
+                }
+
+                var downloadedFiles = await StorageManager.DownloadBlobFilesThroughRelayAsync(
+                    containerName,
+                    files.Select(file => file.Name),
+                    outputPath.FullName,
+                    cancellationToken).ConfigureAwait(false);
+                foreach (var downloadedFile in downloadedFiles)
+                {
+                    System.Console.WriteLine(downloadedFile);
+                }
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                log.LogError(
+                    $"Unable to download blobs matching prefix '{prefix}' from container '{containerName}': {ex.Message}");
                 return 1;
             }
         }
