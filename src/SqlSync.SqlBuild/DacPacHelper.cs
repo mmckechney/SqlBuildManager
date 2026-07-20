@@ -6,6 +6,7 @@ using SqlSync.Connection;
 using SqlSync.SqlBuild.Models;
 using SqlSync.SqlBuild.MultiDb;
 using SqlSync.SqlBuild.Services;
+using SqlBuildManager.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
