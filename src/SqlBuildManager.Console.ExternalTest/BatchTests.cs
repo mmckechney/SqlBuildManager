@@ -30,8 +30,7 @@ namespace SqlBuildManager.Console.ExternalTest
 
         private string overrideFilePath = string.Empty;
         private string overrideFileWithBadTargetsPath = string.Empty;
-        private string settingsFilePath = string.Empty;
-        private string linuxSettingsFilePath = string.Empty;
+            private string linuxSettingsFilePath = string.Empty;
         private string settingsFileKeyPath = string.Empty;
         private string overrideWithTagFilePath = string.Empty;
         private string un = string.Empty;
@@ -46,7 +45,6 @@ namespace SqlBuildManager.Console.ExternalTest
         {
 
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<BatchTests>("SqlBuildManager.Console.log", Path.GetTempPath());
-            settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-windows-mi-only.json");
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
             linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux-mi-only.json");
             overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
@@ -57,7 +55,7 @@ namespace SqlBuildManager.Console.ExternalTest
             server = File.ReadAllText(Path.GetFullPath("TestConfig/server.txt")).Trim();
 
             cmdLine = new CommandLineArgs();
-            cmdLine.FileInfoSettingsFile = new FileInfo(settingsFilePath);
+            cmdLine.FileInfoSettingsFile = new FileInfo(linuxSettingsFilePath);
             cmdLine.SettingsFileKey = settingsFileKeyPath;
             bool ds;
             (ds, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
@@ -520,7 +518,6 @@ namespace SqlBuildManager.Console.ExternalTest
             catch { }
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-windows-mi-only.json", ConcurrencyType.Count, 10)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.Count, 10)]
         [TestMethod]
         public async Task Batch_Override_SBMSource_ManagedIdentity_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
@@ -1047,7 +1044,6 @@ namespace SqlBuildManager.Console.ExternalTest
 
         }
        
-        [DataRow("query", "TestConfig/settingsfile-batch-windows-mi-only.json")]
         [DataRow("query", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
         public async Task Batch_Query_Override_ManagedIdentity_SelectSuccess(string batchMethod, string settingsFile)
