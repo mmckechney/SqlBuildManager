@@ -27,6 +27,12 @@ namespace SqlBuildManager.Console.Relay
             Timeout = Timeout.InfiniteTimeSpan
         };
 
+        private static readonly char[] PortableInvalidFileNameChars = Path
+            .GetInvalidFileNameChars()
+            .Concat("<>:\"|?*")
+            .Concat(Enumerable.Range(0, 32).Select(value => (char)value))
+            .Distinct()
+            .ToArray();
         private readonly Uri endpoint;
 
         public RelayProxyClient(string endpoint)
@@ -458,7 +464,7 @@ namespace SqlBuildManager.Console.Relay
                     string.IsNullOrEmpty(segment) ||
                     segment == "." ||
                     segment == ".." ||
-                    segment.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0))
+                    segment.IndexOfAny(PortableInvalidFileNameChars) >= 0))
             {
                 throw new ArgumentException("Blob name contains an unsafe local path.", nameof(blobName));
             }

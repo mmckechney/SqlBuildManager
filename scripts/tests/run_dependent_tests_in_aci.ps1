@@ -321,10 +321,11 @@ $testExitCode = $monitorResult.TestExitCode
 # }
 
 # Download test results from blob storage
-az storage blob download-batch --account-name $storageAccountName --source $blobContainerName --pattern "$($timestamp)*" --destination "./testresults"  --auth-mode login --overwrite --only-show-errors
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "WARNING: Failed to download test results from storage (exit code $LASTEXITCODE)." -ForegroundColor Yellow
-}
+Download-TestResultsFromBlob `
+    -storageAccountName $storageAccountName `
+    -blobContainerName $blobContainerName `
+    -localDestination "./testresults" `
+    -blobPath $blobPath | Out-Null
 
 #############################################
 # Cleanup

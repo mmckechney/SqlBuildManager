@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Relay;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -59,6 +60,7 @@ namespace SqlBuildManager.Console.ExternalTest
             cmdLine.SettingsFileKey = settingsFileKeyPath;
             bool ds;
             (ds, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+            RelayProxyManager.ConfigureEndpoint(cmdLine.ConnectionArgs.RelayProxyEndpoint);
             overrideFileContents = File.ReadAllLines(overrideFilePath).ToList();
 
             Aad.AadHelper.ManagedIdentityClientId = string.Empty;
@@ -72,6 +74,7 @@ namespace SqlBuildManager.Console.ExternalTest
         [TestCleanup]
         public void CleanUp()
         {
+            RelayProxyManager.ConfigureEndpoint(string.Empty);
             System.Console.SetOut(originalConsoleOut);
             TestContext.WriteLine(ConsoleOutput.ToString());
         }
@@ -2097,4 +2100,3 @@ namespace SqlBuildManager.Console.ExternalTest
         }
     }
 }
-

@@ -22,6 +22,7 @@ namespace SqlSync.Connection
         public static string appName = "Sql Build Manager v{0} [{1}];";
         internal const int MinimumPoolSize = 0;
         internal const int MaximumPoolSize = 100;
+        internal const int SqlPublicNetworkAccessDeniedErrorNumber = 47073;
         private static readonly IDbConnectionFactory SqlServerFactory = new SqlServerConnectionFactory();
         private static readonly IDbConnectionFactory PostgresFactory = new PostgresConnectionFactory();
 
@@ -241,7 +242,17 @@ namespace SqlSync.Connection
                 //    connData.ManagedIdentityClientId = "";
                 //    return TestDatabaseConnection(connData);
                 //}
-                log.LogWarning(exe, "TestConnection failed");
+                if (IsSqlPublicNetworkAccessDenied(exe))
+                {
+                    log.LogWarning(
+                        "TestConnection blocked by SQL firewall or disabled public network access for {Server}/{Database}.",
+                        connData.SQLServerName,
+                        connData.DatabaseName);
+                }
+                else
+                {
+                    log.LogWarning("TestConnection failed. {Reason}", exe.Message);
+                }
                 connectionException = exe;
                 return false;
             }
@@ -251,6 +262,13 @@ namespace SqlSync.Connection
                     conn.Dispose();
             }
         }
+
+        internal static bool IsSqlPublicNetworkAccessDenied(Exception exception) =>
+            exception is SqlException sqlException &&
+            IsSqlPublicNetworkAccessDenied(sqlException.Number);
+
+        internal static bool IsSqlPublicNetworkAccessDenied(int errorNumber) =>
+            errorNumber == SqlPublicNetworkAccessDeniedErrorNumber;
 
     }
 }

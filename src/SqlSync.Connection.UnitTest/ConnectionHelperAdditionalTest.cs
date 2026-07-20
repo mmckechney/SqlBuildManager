@@ -161,6 +161,22 @@ namespace SqlSync.Connection.UnitTest
 
         #endregion
 
+        #region Connection Failure Classification
+
+        [TestMethod]
+        [DataRow(47073, true)]
+        [DataRow(18456, false)]
+        public void IsSqlPublicNetworkAccessDenied_ShouldClassifyExactError(
+            int errorNumber,
+            bool expected)
+        {
+            Assert.AreEqual(
+                expected,
+                ConnectionHelper.IsSqlPublicNetworkAccessDenied(errorNumber));
+        }
+
+        #endregion
+
         #region GetTargetDatabase Edge Cases
 
         [TestMethod]

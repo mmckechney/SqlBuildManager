@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Relay;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
@@ -110,7 +111,17 @@ namespace SqlBuildManager.Console.Batch
                 log.LogInformation($"Extracting Platinum Dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}");
                 string dacpacName = Path.Combine(cmdLine.RootLoggingPath, cmdLine.DacPacArgs.PlatinumDbSource + ".dacpac");
 
-                if (!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName, cmdLine.TimeoutRetryCount, cmdLine.IdentityArgs.ClientId))
+                if (!DacPacHelper.ExtractDacPac(
+                    cmdLine.DacPacArgs.PlatinumDbSource,
+                    cmdLine.DacPacArgs.PlatinumServerSource,
+                    cmdLine.AuthenticationArgs.AuthenticationType,
+                    cmdLine.AuthenticationArgs.UserName,
+                    cmdLine.AuthenticationArgs.Password,
+                    dacpacName,
+                    cmdLine.TimeoutRetryCount,
+                    cmdLine.IdentityArgs.ClientId,
+                    fallbackEligibility: RelayProxyManager.IsSqlFallbackEligible,
+                    fallbackExtractor: RelayProxyManager.ExtractSqlTestDacpac))
                 {
                     log.LogError($"Error creating the Platinum dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}");
                 }

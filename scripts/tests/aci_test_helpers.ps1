@@ -294,17 +294,28 @@ function Deploy-AciFromYaml {
 function Get-AciContainerCurrentState {
     <#
     .SYNOPSIS
-        Gets the current state of the first container in an ACI container group.
+        Gets the current state of a container in an ACI container group.
+    .PARAMETER aciContainerName
+        Container within the group to inspect. Defaults to the first container.
     #>
     param(
         [string]$containerName,
-        [string]$resourceGroupName
+        [string]$resourceGroupName,
+        [string]$aciContainerName
     )
+
+    $stateQuery = 'containers[0].instanceView.currentState'
+    if (-not [string]::IsNullOrWhiteSpace($aciContainerName)) {
+        if ($aciContainerName -notmatch '^[a-zA-Z0-9][a-zA-Z0-9-]*$') {
+            throw "Invalid ACI container name '$aciContainerName'."
+        }
+        $stateQuery = "containers[?name=='$aciContainerName'].instanceView.currentState | [0]"
+    }
 
     $stateJson = az container show `
         --name $containerName `
         --resource-group $resourceGroupName `
-        --query 'containers[0].instanceView.currentState' `
+        --query $stateQuery `
         --output json 2>$null
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(($stateJson -join ''))) {
         Write-Debug "Unable to retrieve current state for ACI container '$containerName'."
@@ -356,21 +367,32 @@ function Wait-ForAciTests {
     $lastLogTime = $startTime
     $testsCompleted = $false
     $testExitCode = $null
+    $monitoredContainerLabel = if ([string]::IsNullOrWhiteSpace($logContainerName)) {
+        "first container"
+    } else {
+        $logContainerName
+    }
 
     while ($true) {
         $currentState = Get-AciContainerCurrentState `
             -containerName $containerName `
-            -resourceGroupName $resourceGroupName
+            -resourceGroupName $resourceGroupName `
+            -aciContainerName $logContainerName
         $state = $null
         $state2 = $null
+        $containerExitCode = $null
         if ($null -ne $currentState) {
             $detailStatusProperty = $currentState.PSObject.Properties['detailStatus']
             $stateProperty = $currentState.PSObject.Properties['state']
+            $exitCodeProperty = $currentState.PSObject.Properties['exitCode']
             if ($null -ne $detailStatusProperty) {
                 $state = $detailStatusProperty.Value
             }
             if ($null -ne $stateProperty) {
                 $state2 = $stateProperty.Value
+            }
+            if ($null -ne $exitCodeProperty) {
+                $containerExitCode = $exitCodeProperty.Value
             }
         }
         
@@ -399,9 +421,12 @@ function Wait-ForAciTests {
         
         # Container terminates when tests and upload are complete
         if ($state -eq "Terminated" -or $state -eq "Completed" -or $state2 -eq "Terminated" -or $state2 -eq "Completed") {
+            if ($null -eq $testExitCode -and $null -ne $containerExitCode) {
+                $testExitCode = [int]$containerExitCode
+            }
             $testsCompleted = $true
             Write-Debug ""
-            Write-Debug "Container terminated. Tests complete." 
+            Write-Debug "Container '$monitoredContainerLabel' terminated with exit code $testExitCode. Tests complete."
             break
         }
         
