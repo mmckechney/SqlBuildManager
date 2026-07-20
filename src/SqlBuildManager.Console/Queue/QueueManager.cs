@@ -748,7 +748,7 @@ namespace SqlBuildManager.Console.Queue
             }
             try
             {
-
+                var removedRuleCount = 0;
                 IAsyncEnumerator<RuleProperties> rules = AdminClient.GetRulesAsync(topicName, topicSub).GetAsyncEnumerator();
                 while (await rules.MoveNextAsync())
                 {
@@ -758,17 +758,20 @@ namespace SqlBuildManager.Console.Queue
                         if (rules.Current.Name != jobName)
                         {
                             await AdminClient.DeleteRuleAsync(topicName, topicSub, rules.Current.Name);
+                            removedRuleCount++;
                             log.LogDebug($"Rule {rules.Current.Name} has been removed.");
                         }
                     });
                 }
-
+                log.LogInformation(
+                    "Removed {RuleCount} existing filter(s) for Service Bus subscription '{SubscriptionName}'",
+                    removedRuleCount,
+                    topicSub);
             }
             catch (Exception ex)
             {
                 log.LogError(ex, "Problem deleting customer filters");
             }
-            log.LogInformation("All existing filters have been removed.");
             return;
         }
 
@@ -812,4 +815,3 @@ namespace SqlBuildManager.Console.Queue
     }
 
 }
-

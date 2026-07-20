@@ -179,7 +179,12 @@ namespace SqlBuildManager.Console.Aci
 
             try
             {
-                log.LogDebug(JsonSerializer.Serialize<ContainerGroupData>(containerGroupData, new JsonSerializerOptions() { WriteIndented = true }));
+                log.LogDebug(
+                    "Deploying ACI group '{AciName}' with {ContainerCount} Linux container(s), image '{ImageName}', managed identity enabled, VNet integration: {VnetIntegrated}",
+                    cmdLine.AciArgs.AciName,
+                    containerGroupData.Containers.Count,
+                    imageName,
+                    subnetId.Length > 0);
 
                 var coll = rgResourceGroup.GetContainerGroups();
                 var result = await coll.CreateOrUpdateAsync(WaitUntil.Completed, cmdLine.AciArgs.AciName, containerGroupData);

@@ -174,17 +174,35 @@ namespace SqlBuildManager.Console
         }
 
         private static bool aciIsInErrorState = false;
-        private static async Task AciGetErrorState(CommandLineArgs cmdLine)
+        private static async Task AciGetErrorState(CommandLineArgs cmdLine, CancellationToken cancellationToken)
         {
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
                     var stat = await Aci.AciManager.AciIsInErrorState(cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName);
                     aciIsInErrorState = stat;
                 }
-                catch { }
-                await Task.Delay(15000);
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                catch (Exception exception)
+                {
+                    log.LogDebug(
+                        "Unable to poll ACI deployment '{AciName}' for an error state: {Reason}",
+                        cmdLine.AciArgs.AciName,
+                        exception.Message);
+                }
+
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
             }
         }
 

@@ -121,33 +121,34 @@ namespace SqlBuildManager.Console.KeyVault
         }
         public static (bool, CommandLineArgs) GetSecrets(CommandLineArgs cmdLine)
         {
-            if (string.IsNullOrEmpty(cmdLine.ConnectionArgs.KeyVaultName))
-            {
-                log.LogInformation("No Key Vault name supplied. Skipping retrieval of secrets from Key Vault");
-                cmdLine.KeyVaultSecretsRetrieved = true;
-                return (true, cmdLine);
-            } 
-
             if(cmdLine.KeyVaultSecretsRetrieved)
             {
-                log.LogDebug("KeyVault Secrets already retrieved");
+                log.LogDebug("Key Vault secrets already retrieved or lookup previously disabled");
+                return (true, cmdLine);
+            }
+
+            bool usingManagedIdentity =
+                cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.ManagedIdentity ||
+                cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.AzureADDefault;
+            if (string.IsNullOrEmpty(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                if (usingManagedIdentity)
+                {
+                    log.LogInformation("Key Vault lookup disabled by configuration; using Entra ID/managed identity authentication");
+                }
+                else
+                {
+                    log.LogDebug("Key Vault lookup disabled by configuration; using credentials supplied through command settings");
+                }
+                cmdLine.KeyVaultSecretsRetrieved = true;
                 return (true, cmdLine);
             }
             
             // Check if using Managed Identity mode - secrets from Key Vault are not needed
-            bool usingManagedIdentity =  cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity ||
-                cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault ;
             if (usingManagedIdentity)
             {
-                log.LogInformation("Using Managed Identity authentication - Key Vault secrets not required");
-                log.LogInformation("Services will authenticate using DefaultAzureCredential/Managed Identity");
+                log.LogInformation("Key Vault secret retrieval is not required; using Entra ID/managed identity authentication");
                 cmdLine.KeyVaultSecretsRetrieved = true;
-                return (true, cmdLine);
-            }
-
-            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
-            {
-                log.LogInformation("No Key Vault name supplied. Assuming Managed Identity mode for Azure services");
                 return (true, cmdLine);
             }
             var retrieved = new List<string>();

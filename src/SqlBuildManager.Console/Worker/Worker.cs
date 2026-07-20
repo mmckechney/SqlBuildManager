@@ -346,62 +346,81 @@ namespace SqlBuildManager.Console
             int lastErrorCount = -1;
             int lastEventCount = -1;
             int lastWorkers = -1;
+            long lastMessageCount = -1;
             int events = 0;
             int workersCompleted = 0;
             int error = 0, commit = 0;
             bool firstLoop = true;
+            var lastStatusWrite = DateTime.MinValue;
             int cursorStepBack = (targets == 0) ? 3 : 4;
             int unitTestLoops = 0;
+            using var aciStateCancellationSource = checkAciState
+                ? new CancellationTokenSource()
+                : null;
+            Task? aciStateTask = null;
             if (checkAciState && !string.IsNullOrWhiteSpace(cmdLine.AciArgs.AciName))
             {
-                _ = AciGetErrorState(cmdLine);
+                aciIsInErrorState = false;
+                aciStateTask = AciGetErrorState(cmdLine, aciStateCancellationSource!.Token);
             }
 
-            while (true && Worker.activeServiceBusMonitoring)
+            try
             {
-
-                if (Worker.aciIsInErrorState)
-                {
-                    log.LogError("The ACI instance is in an error state, please check the container logs for more detail.");
-                    log.LogInformation("This is commonly caused by a delay in the assignment of the Managed Identity to the deployment. Running 'sbm aci deloy' again may solve the issue.");
-                    return -1;
-                }
-
-                var lines = new List<CursorStatusItem>();
-                messageCount = await qManager.MonitorServiceBustopic(cmdLine.ConcurrencyType);
-                (commit, error, events, workersCompleted) = ehandler.GetCommitErrorScannedAndWorkerCompleteCounts();
-                if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
+                while (true && Worker.activeServiceBusMonitoring)
                 {
 
-                    lines = new List<CursorStatusItem>()
+                    if (Worker.aciIsInErrorState)
                     {
-                        new CursorStatusItem(){Label= "Events Scanned:", Counter = events},
-                        new CursorStatusItem(){Label= "Remaining Messages:", Counter = messageCount},
-                        new CursorStatusItem(){Label= "Database Commits:", Counter = commit},
-                        new CursorStatusItem(){Label= "Database Errors:", Counter = error},
-                        new CursorStatusItem(){Label= "Workers Complete:", Counter = workersCompleted}
-                    };
-                    if (targets > 0)
-                    {
-                        lines.Insert(2, new CursorStatusItem() { Label = "Remaining Databases:", Counter = (targets - commit - error) });
+                        log.LogError("The ACI instance is in an error state, please check the container logs for more detail.");
+                        log.LogInformation("This is commonly caused by a delay in the assignment of the Managed Identity to the deployment. Running 'sbm aci deloy' again may solve the issue.");
+                        return -1;
                     }
-                }
-                else
-                {
-                    lines.Add(new CursorStatusItem() { Label = "Remaining Queue Messages:", Counter = messageCount });
-                }
-                if (unittest) firstLoop = true; //Won't have a console to change position for unit tests
-                SetCursorStatus(lines, firstLoop, stream);
 
-                await Task.Delay(500);
-                if (messageCount == 0)
-                {
-                    zeroMessageCounter++;
-                }
-                else
-                {
-                    zeroMessageCounter = 0; unitTestLoops = 0;
-                }
+                    var lines = new List<CursorStatusItem>();
+                    messageCount = await qManager.MonitorServiceBustopic(cmdLine.ConcurrencyType);
+                    (commit, error, events, workersCompleted) = ehandler.GetCommitErrorScannedAndWorkerCompleteCounts();
+                    if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
+                    {
+
+                        lines = new List<CursorStatusItem>()
+                        {
+                            new CursorStatusItem(){Label= "Events Scanned:", Counter = events},
+                            new CursorStatusItem(){Label= "Remaining Messages:", Counter = messageCount},
+                            new CursorStatusItem(){Label= "Database Commits:", Counter = commit},
+                            new CursorStatusItem(){Label= "Database Errors:", Counter = error},
+                            new CursorStatusItem(){Label= "Workers Complete:", Counter = workersCompleted}
+                        };
+                        if (targets > 0)
+                        {
+                            lines.Insert(2, new CursorStatusItem() { Label = "Remaining Databases:", Counter = (targets - commit - error) });
+                        }
+                    }
+                    else
+                    {
+                        lines.Add(new CursorStatusItem() { Label = "Remaining Queue Messages:", Counter = messageCount });
+                    }
+                    var statusChanged = firstLoop ||
+                        lastCommitCount != commit ||
+                        lastErrorCount != error ||
+                        lastEventCount != events ||
+                        lastWorkers != workersCompleted ||
+                        lastMessageCount != messageCount;
+                    if (statusChanged || DateTime.UtcNow - lastStatusWrite >= TimeSpan.FromSeconds(30))
+                    {
+                        if (unittest) firstLoop = true; //Won't have a console to change position for unit tests
+                        SetCursorStatus(lines, firstLoop, stream);
+                        lastStatusWrite = DateTime.UtcNow;
+                    }
+
+                    await Task.Delay(500);
+                    if (messageCount == 0)
+                    {
+                        zeroMessageCounter++;
+                    }
+                    else
+                    {
+                        zeroMessageCounter = 0; unitTestLoops = 0;
+                    }
                 
                 if (targets == 0 && zeroMessageCounter >= 20 && lastCommitCount == commit && lastErrorCount == error && lastEventCount == events && (workersConfigured != 0 && lastWorkers == workersCompleted) && !unittest) //not seeing progress
                 {
@@ -462,13 +481,26 @@ namespace SqlBuildManager.Console
                     log.LogError("Unit test taking too long! There is likely something wrong with the containers.");
                     return -1;
                 }
-                lastErrorCount = error;
-                lastCommitCount = commit;
-                lastEventCount = events;
-                lastWorkers = workersCompleted;
-                firstLoop = false;
-                
-                unitTestLoops++;
+                    lastErrorCount = error;
+                    lastCommitCount = commit;
+                    lastEventCount = events;
+                    lastWorkers = workersCompleted;
+                    lastMessageCount = messageCount;
+                    firstLoop = false;
+
+                    unitTestLoops++;
+                }
+            }
+            finally
+            {
+                if (aciStateCancellationSource != null)
+                {
+                    await aciStateCancellationSource.CancelAsync();
+                    if (aciStateTask != null)
+                    {
+                        await aciStateTask;
+                    }
+                }
             }
 
             if (eventHubMonitorTask != null)
@@ -544,6 +576,7 @@ namespace SqlBuildManager.Console
             var ehTask = ehandler.MonitorEventHub(stream, startDate, cts.Token);
             int lastCommit = -1, lastError = -1, counter = 0, lastEvents = -1, lastWorkers = -1;
             int currentCommit, currentError, currentEvents, currentWorkers;
+            var lastStatusWrite = DateTime.MinValue;
 
             System.Console.Write("Waiting for EventHub client.");
             while (ehTask.Status == TaskStatus.WaitingForActivation || ehTask.Status == TaskStatus.WaitingToRun)
@@ -558,7 +591,12 @@ namespace SqlBuildManager.Console
             {
 
                 (currentCommit, currentError, currentEvents, currentWorkers) = ehandler.GetCommitErrorScannedAndWorkerCompleteCounts();
-                if (currentCommit == lastCommit && currentError == lastError && currentEvents == lastEvents)
+                var statusChanged =
+                    currentCommit != lastCommit ||
+                    currentError != lastError ||
+                    currentEvents != lastEvents ||
+                    currentWorkers != lastWorkers;
+                if (!statusChanged)
                 {
                     counter++;
                 }
@@ -585,7 +623,11 @@ namespace SqlBuildManager.Console
                 }
                     );
                 }
-                SetCursorStatus(lines, firstLoop, stream);
+                if (statusChanged || DateTime.UtcNow - lastStatusWrite >= TimeSpan.FromSeconds(30))
+                {
+                    SetCursorStatus(lines, firstLoop, stream);
+                    lastStatusWrite = DateTime.UtcNow;
+                }
                 await Task.Delay(2000);
                 firstLoop = false;
             }

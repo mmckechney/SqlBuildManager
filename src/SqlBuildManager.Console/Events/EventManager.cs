@@ -574,7 +574,10 @@ namespace SqlBuildManager.Console.Events
             var hadEventClient = _eventClient != null || _eventConsumerClient != null || customConsumerGroupCreated;
             if (skippedEvents > 0)
             {
-                log.LogDebug($"Skipped {skippedEvents} irrelevant events during monitoring");
+                log.LogDebug(
+                    "Ignored {EventCount} unrelated Event Hub events after filtering for job '{JobName}'; no matching error events were discarded",
+                    skippedEvents,
+                    jobName);
             }
             if (_eventClient != null)
             {
