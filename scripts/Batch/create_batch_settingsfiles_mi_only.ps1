@@ -107,7 +107,7 @@ $baseParams += @("--batchaccountname", $batchAccountName)
 # NO --batchaccountkey - will use Managed Identity
 $baseParams += @("--batchaccounturl", "https://$batchAcctEndpoint")
 $baseParams += @("--batchnodecount", "2")
-$baseParams += @("--batchvmsize", "STANDARD_D1_V2")
+$baseParams += @("--batchvmsize", "Standard_D2s_v3")
 $baseParams += @("--rootloggingpath", "C:/temp")
 $baseParams += @("--storageaccountname", $storageAccountName)
 $baseParams += @("--relayproxyendpoint", "https://$relayNamespaceName.servicebus.windows.net/relayproxy")

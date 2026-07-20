@@ -5,7 +5,7 @@
   "BatchArgs": {
     "ResourceGroup": "sbmXXX-rg",
     "BatchNodeCount": 2,
-    "BatchVmSize": "STANDARD_D1_V2",
+    "BatchVmSize": "Standard_D2s_v3",
     "DeleteBatchPool": false,
     "DeleteBatchJob": false,
     "PollBatchPoolStatus": true,

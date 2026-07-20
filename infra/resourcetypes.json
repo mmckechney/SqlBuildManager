@@ -32,7 +32,7 @@
   "connections": "con-",
   "containerApp": "ca-",
   "containerAppsEnvironment": "cae-",
-  "containerInstance": "ci",
+  "containerInstance": "ci-",
   "containerRegistry": "cr",
   "contentModerator": "cm-",
   "contentSafety": "cs-",

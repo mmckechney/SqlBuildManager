@@ -597,7 +597,7 @@ Generated Batch settings reference:
 At execution time SQL Build Manager:
 
 1. Creates a Linux AlmaLinux 8 Gen1 container-enabled Batch pool compatible with the default
-   `STANDARD_D1_V2` VM size.
+   `Standard_D2s_v3` VM size.
 2. Assigns `<prefix>identity` to the pool.
 3. Uses that identity's `AcrPull` role to prefetch the runtime image.
 4. Uses the same identity to download input `ResourceFile` blobs and upload task output files; all
