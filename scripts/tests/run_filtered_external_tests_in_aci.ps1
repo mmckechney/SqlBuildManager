@@ -1,7 +1,7 @@
  param
 (
     [Parameter(Mandatory=$true)]
-    [string] $prefix,
+    [string] $envName,
 
     [string] $resourceGroupName,
     [string] $customName,
@@ -29,11 +29,11 @@
     
     The container runs the tests, captures the results, and returns pass/fail status.
 
-.PARAMETER prefix
-    The resource name prefix used when deploying resources.
+.PARAMETER envName
+    The Azure Developer CLI environment name used when deploying resources.
 
 .PARAMETER resourceGroupName
-    The Azure resource group name (defaults to {prefix}-rg).
+    The Azure resource group name (defaults to rg-{envName}).
 
 .PARAMETER testFilter
     Optional test filter (e.g., "FullyQualifiedName~ContainerApp" or "TestCategory=Integration").
@@ -53,44 +53,45 @@
 
 .EXAMPLE
     # Build image and run all tests
-    .\run_tests_in_aci.ps1 -prefix mwm025 -buildImage
+    .\run_tests_in_aci.ps1 -envName mwm025 -buildImage
 
 .EXAMPLE
     # Run only ContainerApp tests (image already built)
-    .\run_tests_in_aci.ps1 -prefix mwm025 -testFilter "FullyQualifiedName~ContainerApp"
+    .\run_tests_in_aci.ps1 -envName mwm025 -testFilter "FullyQualifiedName~ContainerApp"
 
 .EXAMPLE
     # Run ACI tests and keep container for debugging
-    .\run_tests_in_aci.ps1 -prefix mwm025 -testFilter "FullyQualifiedName~AciTests" -keepContainer
+    .\run_tests_in_aci.ps1 -envName mwm025 -testFilter "FullyQualifiedName~AciTests" -keepContainer
 #>
 
 $ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
 
 # Dot-source shared ACI test helpers
 . (Join-Path $PSScriptRoot "aci_test_helpers.ps1")
 Initialize-TestSummaryState
 
-# Get the repo root
+# Get the repo root — use $PSScriptRoot for portable resolution.
 $repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
-    $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
+    $repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 }
 
 #############################################
-# Get resource name variables from prefix
+# Get resource name variables from the environment name
 #############################################
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
-. $prefixScript -prefix $prefix
-
-if ([string]::IsNullOrWhiteSpace($resourceGroupName)) {
-    $resourceGroupName = "$prefix-rg"
+$resourceGroupNameOverride = $resourceGroupName
+. $prefixScript -envName $envName
+if (-not [string]::IsNullOrWhiteSpace($resourceGroupNameOverride)) {
+    $resourceGroupName = $resourceGroupNameOverride
 }
 
 # Container name for test runner
 if ([string]::IsNullOrWhiteSpace($customName)) {
-    $testContainerName = "$prefix-test-runner"
+    $testContainerName = "$aciName-test-runner"
 } else {
-    $testContainerName = "$prefix-test-runner-$customName"
+    $testContainerName = "$aciName-test-runner-$customName"
 }
 $testImageName = "sqlbuildmanager-tests"
 
@@ -143,10 +144,10 @@ if ($buildImage) {
     $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $testImageScriptPath) {
-        & $testImageScriptPath -prefix $prefix -resourceGroupName $resourceGroupName 
+        & $testImageScriptPath -envName $envName -resourceGroupName $resourceGroupName
     } else {
         Write-Host "Test image build script not found at: $testImageScriptPath" -ForegroundColor Yellow
-        Write-Host "Run manually: .\scripts\ContainerRegistry\build_external_test_image.ps1 -prefix $prefix -resourceGroupName $resourceGroupName -path $outputPath -action BuildAndUpload" -ForegroundColor Yellow
+        Write-Host "Run manually: .\scripts\ContainerRegistry\build_external_test_image.ps1 -envName $envName -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
     }
    
 }
@@ -207,7 +208,6 @@ $uploadCmd = "az storage blob upload-batch --account-name $storageAccountName --
 # Build Kubernetes pre-requisite commands if test filter contains "Kubernetes"
 $aksPreCmd = ""
 if ($testFilter -like "*Kubernetes*" -or $testFilter -like "*PostgreSQL.ExternalTest*") {
-    $aksClusterName = "$($prefix)aks"
     $aksPreCmd = "az aks install-cli; az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName --overwrite-existing; "
     Write-Debug "Kubernetes tests detected - will install kubectl and get AKS credentials"
 }
@@ -294,20 +294,25 @@ Write-Host ""
 # Write-Host "Test Results" -ForegroundColor Cyan
 # Write-Host "========================================" -ForegroundColor Cyan
 
-# Get container state with null checks
-$container = az container show --name $testContainerName --resource-group $resourceGroupName 2>$null | ConvertFrom-Json -Depth 10
+# Get the final state as a fallback when the test exit code was not found in logs.
+$currentState = Get-AciContainerCurrentState `
+    -containerName $testContainerName `
+    -resourceGroupName $resourceGroupName
 $containerState = "Unknown"
 $containerExitCode = $null
 
-if ($null -ne $container -and $null -ne $container.PSObject -and $container.PSObject.Properties.Name -contains 'containers') {
-    # $containers = $container.containers
-#     if ($null -ne $containers -and $containers.Count -gt 0) {
-        $containerInstance = $container.containers
-        if ($null -ne $containerInstance -and $null -ne $containerInstance.instanceView -and $null -ne $containerInstance.instanceView.currentState) {
-            $containerState = $containerInstance.containers.instanceView.currentState.detailStatus
-            $containerExitCode = $containerInstance.containers.instanceView.currentState.detailStatus
-        }
-#     }
+if ($null -ne $currentState) {
+    $detailStatusProperty = $currentState.PSObject.Properties['detailStatus']
+    $stateProperty = $currentState.PSObject.Properties['state']
+    $exitCodeProperty = $currentState.PSObject.Properties['exitCode']
+    if ($null -ne $detailStatusProperty) {
+        $containerState = $detailStatusProperty.Value
+    } elseif ($null -ne $stateProperty) {
+        $containerState = $stateProperty.Value
+    }
+    if ($null -ne $exitCodeProperty) {
+        $containerExitCode = $exitCodeProperty.Value
+    }
 }
 
 # Use the exit code we extracted from logs, or default to container exit code
@@ -333,4 +338,3 @@ $tmp = Download-TestResultsFromBlob -storageAccountName $storageAccountName -blo
 #############################################
 $finalExitCode = Complete-AciTestRun -containerName $testContainerName -resourceGroupName $resourceGroupName -exitCode $exitCode -keepContainer:$keepContainer
 exit $finalExitCode
-

@@ -9,6 +9,10 @@ namespace SqlBuildManager.Enterprise.Policy
     public class WithNoLockPolicy : shP.IScriptPolicy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+
+        // PERF-006: Static cached regex for the fixed exception-tag pattern.
+        private static readonly Regex _regNoLockException = new Regex(@"\[NOLOCK Exception:.+\]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         #region IScriptPolicy Members
         public string PolicyId
         {
@@ -90,9 +94,7 @@ namespace SqlBuildManager.Enterprise.Policy
         }
         private bool HasNoLockExceptionTag(string script, List<string> tablesMissingNoLock)
         {
-            Regex regNoLockException = new Regex(@"\[NOLOCK Exception:.+\]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-            if (regNoLockException.Match(script).Success)
+            if (_regNoLockException.Match(script).Success)
             {
                 string format = @"(\b{0}\b)|";
                 string tables = string.Empty;
@@ -107,10 +109,10 @@ namespace SqlBuildManager.Enterprise.Policy
                 }
 
                 tables = tables.Substring(0, tables.Length - 1);
+                // regTableNames depends on runtime table names — cannot be cached statically.
                 Regex regTableNames = new Regex(tables);
 
-                string match = regNoLockException.Match(script).Value;
-
+                string match = _regNoLockException.Match(script).Value;
 
                 if (regTableNames.Match(match).Success)
                 {

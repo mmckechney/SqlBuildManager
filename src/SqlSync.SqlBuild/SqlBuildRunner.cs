@@ -144,6 +144,8 @@ namespace SqlSync.SqlBuild
                     TryCreateSavePoint(cData, savePointName, serverName, targetDatabase, fileName);
 
                     var start = DateTime.Now;
+                    // PERF-008: Use StringBuilder to avoid O(N²) string allocations per batch loop.
+                    var resultBuilder = new StringBuilder();
                     for (int x = 0; x < batchScripts.Length; x++)
                     {
                         if (cancellationToken.IsCancellationRequested)
@@ -166,12 +168,18 @@ namespace SqlSync.SqlBuild
                             var execResult = await _executor.ExecuteAsync(batchScripts[x], scriptTimeout, cData, _ctx.IsTransactional, cancellationToken).ConfigureAwait(false);
                             failureDueToScriptTimeout = failureDueToScriptTimeout || execResult.TimeoutDetected;
                             currentRun.Success = true;
-                            currentRun.Results = (currentRun.Results ?? string.Empty) + execResult.Results;
-                            _ctx.PublishScriptLog(false, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, fileName, currentRun.Results + _ctx.SqlInfoMessage));
+                            resultBuilder.Append(execResult.Results);
+                            // Publish only the delta from this batch (not the entire accumulated string).
+                            _ctx.PublishScriptLog(false, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, fileName, execResult.Results + _ctx.SqlInfoMessage));
                         }
                         catch (DbException e)
                         {
+                            // Sync accumulated results into currentRun before HandleDbException appends to it.
+                            currentRun.Results = resultBuilder.ToString();
                             var (handledBuildFailure, timeoutDetected) = HandleDbException(e, fileName, batchScripts[x], targetDatabase, savePointName, start, rollBackOnError, causesBuildFailure, cData, ref currentRun);
+                            // Re-seed builder with whatever HandleDbException may have appended.
+                            resultBuilder.Clear();
+                            resultBuilder.Append(currentRun.Results ?? string.Empty);
                             failureDueToScriptTimeout = failureDueToScriptTimeout || timeoutDetected;
                             buildFailure = buildFailure || handledBuildFailure;
                         }
@@ -179,6 +187,7 @@ namespace SqlSync.SqlBuild
                         if (buildFailure) { _ctx.ErrorOccured = true; break; }
                         if (rollBackOnError && currentRun.Success == false) break;
                     }
+                    currentRun.Results = resultBuilder.ToString();
 
                     if (cancellationToken.IsCancellationRequested)
                     {

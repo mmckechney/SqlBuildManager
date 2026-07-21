@@ -11,7 +11,6 @@ namespace SqlSync.SqlBuild.Validator
     public class SchemaValidator
     {
         bool isValid;
-        //private XmlSchemaCollection schemaCache;
 
         public SchemaValidator()
         {
@@ -42,14 +41,16 @@ namespace SqlSync.SqlBuild.Validator
             isValid = true;
 
             XmlReaderSettings settings = new XmlReaderSettings();
+            // SEC-003: explicitly prohibit DTD processing and disable external entity resolution.
+            settings.DtdProcessing = DtdProcessing.Prohibit;
+            settings.XmlResolver = null;
             settings.ValidationType = ValidationType.Schema;
             settings.Schemas.Add(GetSchema(schemaNamespace, schemaFileName));
             settings.Schemas.Compile();
             settings.ValidationEventHandler += new ValidationEventHandler(CheckValidity);
-            XmlTextReader r = new XmlTextReader(fileName);
             try
             {
-                using (XmlReader validator = XmlReader.Create(r, settings))
+                using (XmlReader validator = XmlReader.Create(fileName, settings))
                 {
                     while (validator.Read())
                     {
@@ -66,32 +67,6 @@ namespace SqlSync.SqlBuild.Validator
             }
 
             return isValid;
-
-            ////Check to see if this file matches the set schema
-            //XmlTextReader reader = new XmlTextReader(fileName);
-            //XmlReader validator = new XmlReader.cre(reader);
-            //validator.ValidationEventHandler += new ValidationEventHandler(CheckValidity);
-            //validator.ValidationType = ValidationType.Schema;
-            //try
-            //{
-            //	validator.Schemas.Add(GetSchema(schemaNamespace,schemaFileName) );
-            //	while(validator.Read())
-            //	{
-
-            //	}
-
-            //}
-            //catch(Exception exe)
-            //{
-            //             string error = exe.ToString();
-            //	isValid = false;
-            //}
-            //finally
-            //{
-            //	validator.Close();
-            //}
-
-            //return this.isValid;
         }
         /// <summary>
         /// Loads the generator XSD schema 

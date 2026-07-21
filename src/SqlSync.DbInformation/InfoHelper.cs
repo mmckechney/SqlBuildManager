@@ -189,50 +189,51 @@ namespace SqlSync.DbInformation
 
         public static TableSize[] GetDatabaseTableListWithRowCount(ConnectionData connData, string filter)
         {
+            // PERF-013: Replace N round-trip sp_spaceused calls with a single catalog query.
+            // sys.dm_db_partition_stats is used to get row counts from the heap or clustered index.
+            const string catalogSql = @"
+SELECT  s.name AS schema_name,
+        t.name AS table_name,
+        SUM(p.rows)  AS row_count
+FROM    sys.tables       t
+JOIN    sys.schemas      s  ON s.schema_id = t.schema_id
+JOIN    sys.indexes      i  ON i.object_id = t.object_id AND i.index_id IN (0, 1)
+JOIN    sys.partitions   p  ON p.object_id = i.object_id AND p.index_id = i.index_id
+WHERE   (@Filter = N'' OR t.name LIKE @Filter)
+GROUP BY s.name, t.name
+ORDER BY s.name, t.name";
 
-            string tableName;
-            string schemaOwner;
-            string[] tables = GetDatabaseTableList(connData, filter);
-            TableSize[] sizes = new TableSize[tables.Length];
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+            List<TableSize> results = new List<TableSize>();
+            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(
+                connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password,
+                connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
             try
             {
-                SqlCommand cmd = new SqlCommand();
-                cmd.Connection = conn;
+                SqlCommand cmd = new SqlCommand(catalogSql, conn);
+                cmd.Parameters.AddWithValue("@Filter", filter ?? string.Empty);
                 conn.Open();
-
-                for (int i = 0; i < tables.Length; i++)
+                using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
                 {
-                    ExtractNameAndSchema(tables[i], out tableName, out schemaOwner);
-                    try
+                    while (reader.Read())
                     {
-                        if (conn.State == ConnectionState.Closed)
-                            conn.Open();
-                        cmd.CommandText = "sp_spaceused [" + schemaOwner + "." + tableName + "]";
-                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        string schemaName = reader.GetString(0);
+                        string tableName = reader.GetString(1);
+                        long rowCountLong = reader.GetInt64(2);
+                        results.Add(new TableSize
                         {
-                            reader.Read();
-                            sizes[i] = new TableSize();
-                            sizes[i].TableName = schemaOwner + "." + reader.GetString(0);
-                            sizes[i].RowCount = Int32.Parse(reader[1].ToString()!);
-                        }
-                    }
-                    catch
-                    {
-                        sizes[i] = new TableSize();
-                        sizes[i].TableName = schemaOwner + "." + tableName;
-                        sizes[i].RowCount = -1;
+                            TableName = schemaName + "." + tableName,
+                            RowCount = rowCountLong > int.MaxValue ? int.MaxValue : (int)rowCountLong
+                        });
                     }
                 }
             }
             catch
             {
+                // Return empty on connection/catalog failure — preserve existing contract of returning
+                // an empty array when the database is unreachable.
+                return Array.Empty<TableSize>();
             }
-            finally
-            {
-                conn.Close();
-            }
-            return sizes;
+            return results.ToArray();
         }
         public static System.Collections.Generic.SortedDictionary<string, CodeTableAudit> GetTablesWithAuditColumns(ConnectionData connData)
         {

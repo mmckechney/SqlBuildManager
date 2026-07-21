@@ -1,0 +1,116 @@
+name: Performance Benchmarks
+
+# Runs BenchmarkDotNet benchmarks for PERF-017 baseline and regression tracking.
+# All benchmarks are pure in-memory — no Azure or database connectivity required.
+#
+# Triggers:
+#   - Manual dispatch (workflow_dispatch) — run on demand to capture a baseline
+#     or compare before/after a hot-path change.
+#   - Pull requests labeled "run-benchmarks" — opt-in benchmark gate.
+#   - Weekly schedule (Wednesdays 01:00 UTC) — maintains a rolling baseline.
+#
+# Artifacts:
+#   - BenchmarkDotNet results (HTML, CSV, JSON) uploaded for comparison.
+#   - Runs summary appended to the job step summary.
+#
+# NOTE: Phase 2 will add automated regression gates comparing artifact results.
+# For now, results are captured for human review and baseline establishment.
+
+on:
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: 'BenchmarkDotNet filter glob (e.g., "*Chunking*"). Leave blank for all.'
+        required: false
+        default: '*'
+  schedule:
+    - cron: '0 1 * * 3'   # Wednesdays 01:00 UTC
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_VERSION: '10.x'
+
+jobs:
+  benchmark:
+    name: Run Benchmarks
+    if: >
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.label.name == 'run-benchmarks')
+    # Use a self-hosted runner with dedicated hardware if available; fall back to GitHub-hosted.
+    # BenchmarkDotNet results are more stable on dedicated hardware.
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore src/SqlSync.SqlBuild.Benchmarks/SqlSync.SqlBuild.Benchmarks.csproj
+
+      - name: Build (Release — required by BenchmarkDotNet)
+        run: |
+          dotnet build src/SqlSync.SqlBuild.Benchmarks/SqlSync.SqlBuild.Benchmarks.csproj \
+            --configuration Release --no-restore
+
+      - name: Run benchmarks
+        id: run_bench
+        run: |
+          FILTER="${{ inputs.filter }}"
+          FILTER="${FILTER:-*}"
+          dotnet run \
+            --project src/SqlSync.SqlBuild.Benchmarks/SqlSync.SqlBuild.Benchmarks.csproj \
+            --configuration Release \
+            --no-build \
+            -- \
+            --filter "$FILTER" \
+            --buildTimeout 300 \
+            --exporters json html csv \
+            --artifacts BenchmarkResults \
+            --join
+        # BenchmarkDotNet exits 0 on success, non-zero on failure.
+
+      - name: Append summary
+        if: always()
+        run: |
+          echo "## Benchmark Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "Filter: \`${{ inputs.filter || '*' }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ -d BenchmarkResults ]; then
+            echo "Results written to artifacts \`benchmark-results-${{ github.run_id }}\`." >> "$GITHUB_STEP_SUMMARY"
+            # Print a short summary from the JSON files if present.
+            for f in BenchmarkResults/results/*.json; do
+              [ -f "$f" ] || continue
+              echo "### $(basename "$f" .json)" >> "$GITHUB_STEP_SUMMARY"
+              echo '```' >> "$GITHUB_STEP_SUMMARY"
+              python3 -c "
+          import json, sys
+          d = json.load(open('$f'))
+          for b in d.get('Benchmarks', []):
+              name = b.get('Method', b.get('FullName','?'))
+              mean = b.get('Statistics',{}).get('Mean',0)
+              alloc = b.get('Memory',{}).get('BytesAllocatedPerOperation',0)
+              print(f'  {name}: mean={mean/1e6:.3f} ms  alloc={alloc} B')
+          " 2>/dev/null || cat "$f" | head -30
+              echo '```' >> "$GITHUB_STEP_SUMMARY"
+            done
+          else
+            echo "No BenchmarkResults directory found." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload benchmark artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: benchmark-results-${{ github.run_id }}
+          path: BenchmarkResults/**
+          if-no-files-found: warn

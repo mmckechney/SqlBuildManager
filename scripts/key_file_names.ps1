@@ -6,13 +6,13 @@
     output directory. If they do not exist, generates new values (AES-256 key and
     random password). These files are consumed by settings file generation scripts
     to encrypt test configuration.
-.PARAMETER prefix
-    Environment name prefix (unused directly, passed through for consistency).
+.PARAMETER envName
+    Azure Developer CLI environment name (unused directly, passed through for consistency).
 .PARAMETER path
     Output directory for the key/credential files. Defaults to src\TestConfig.
 #>
 param (
-    $prefix,
+    $envName,
     $path
 )
 
@@ -32,6 +32,7 @@ if($false -eq (Test-Path $path))
 $resolvedPath = Resolve-Path $path
 
 $keyFile = (Join-Path $resolvedPath "settingsfilekey.txt")
+$settingsFileKey = $null
 if($false -eq (Test-Path $keyFile))
 {
     Write-Host "Writing new key file $keyFile" -ForegroundColor DarkGreen
@@ -40,9 +41,15 @@ if($false -eq (Test-Path $keyFile))
     $settingsFileKey = [System.Convert]::ToBase64String($AESKey);
     $settingsFileKey |  Set-Content -Path $keyFile
 }
+else
+{
+    $settingsFileKey = (Get-Content -Path $keyFile).Trim()
+}
 
 $unFile = (Join-Path $resolvedPath "un.txt")
 $pwFile = (Join-Path $resolvedPath "pw.txt")
+$sqlUserName = $null
+$sqlPassword = $null
 
 if(Test-Path $unFile)
 {

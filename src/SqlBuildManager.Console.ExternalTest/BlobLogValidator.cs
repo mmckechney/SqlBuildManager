@@ -2,7 +2,9 @@ using Azure.Identity;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Relay;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -50,6 +52,18 @@ namespace SqlBuildManager.Console.ExternalTest
         /// </summary>
         public async Task LoadLogsAsync()
         {
+            try
+            {
+                await LoadLogsDirectAsync();
+            }
+            catch (Exception ex) when (RelayProxyManager.IsFallbackEligible(ex))
+            {
+                await LoadLogsThroughRelayAsync();
+            }
+        }
+
+        private async Task LoadLogsDirectAsync()
+        {
             BlobNames = new List<string>();
             await foreach (var blob in _containerClient.GetBlobsAsync())
             {
@@ -69,6 +83,63 @@ namespace SqlBuildManager.Console.ExternalTest
                     TaskExecutionLogs[blobName] = await DownloadBlobTextAsync(blobName);
                 }
             }
+        }
+
+        private async Task LoadLogsThroughRelayAsync()
+        {
+            var blobs = await StorageManager.EnumerateBlobFilesThroughRelayAsync(_containerClient.Name);
+            BlobNames = blobs.Select(blob => blob.Name).ToList();
+            var logBlobNames = BlobNames
+                .Where(IsValidationLog)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+            var downloadDirectory = Path.Combine(
+                Path.GetTempPath(),
+                $"sbm-blob-validation-{Guid.NewGuid():N}");
+
+            try
+            {
+                if (logBlobNames.Length > 0)
+                {
+                    await StorageManager.DownloadBlobFilesThroughRelayAsync(
+                        _containerClient.Name,
+                        logBlobNames,
+                        downloadDirectory);
+                }
+
+                CommitsLog = ReadDownloadedText(downloadDirectory, "commits.log");
+                ErrorsLog = ReadDownloadedText(downloadDirectory, "errors.log");
+                SuccessDatabases = ReadDownloadedText(downloadDirectory, "successdatabases.cfg");
+                FailureDatabases = ReadDownloadedText(downloadDirectory, "failuredatabases.cfg");
+                TaskExecutionLogs = logBlobNames
+                    .Where(IsTaskExecutionLog)
+                    .ToDictionary(
+                        blobName => blobName,
+                        blobName => ReadDownloadedText(downloadDirectory, blobName));
+            }
+            finally
+            {
+                if (Directory.Exists(downloadDirectory))
+                {
+                    Directory.Delete(downloadDirectory, recursive: true);
+                }
+            }
+        }
+
+        private static bool IsValidationLog(string blobName) =>
+            blobName is "commits.log" or "errors.log" or "successdatabases.cfg" or "failuredatabases.cfg" ||
+            IsTaskExecutionLog(blobName);
+
+        private static bool IsTaskExecutionLog(string blobName) =>
+            blobName.Contains("sqlbuildmanager.console", StringComparison.OrdinalIgnoreCase) &&
+            blobName.EndsWith(".log", StringComparison.OrdinalIgnoreCase);
+
+        private static string ReadDownloadedText(string downloadDirectory, string blobName)
+        {
+            var filePath = Path.Combine(
+                downloadDirectory,
+                blobName.Replace('/', Path.DirectorySeparatorChar));
+            return File.Exists(filePath) ? File.ReadAllText(filePath) : string.Empty;
         }
 
         private async Task<string> DownloadBlobTextAsync(string blobName)
@@ -104,9 +175,9 @@ namespace SqlBuildManager.Console.ExternalTest
                 .Distinct()
                 .Count();
 
-            testContext?.WriteLine($"--- Blob Storage Log Validation (Success) ---");
+            testContext?.WriteLine("--- Post-run Blob Storage Validation: Build Success ---");
             testContext?.WriteLine($"  Blobs found: {BlobNames.Count}");
-            testContext?.WriteLine($"  Blob names: {string.Join(", ", BlobNames)}");
+            WriteKeyFileSummary(testContext);
             testContext?.WriteLine($"  commits.log length: {CommitsLog.Length}");
             testContext?.WriteLine($"  errors.log length: {ErrorsLog.Length}");
             testContext?.WriteLine($"  successdatabases.cfg length: {SuccessDatabases.Length}");
@@ -166,8 +237,9 @@ namespace SqlBuildManager.Console.ExternalTest
         /// </summary>
         public void AssertBuildFailure(TestContext? testContext = null)
         {
-            testContext?.WriteLine($"--- Blob Storage Log Validation (Failure) ---");
+            testContext?.WriteLine("--- Post-run Blob Storage Validation: Expected Build Failure ---");
             testContext?.WriteLine($"  Blobs found: {BlobNames.Count}");
+            WriteBlobNamesByType(testContext);
             testContext?.WriteLine($"  errors.log length: {ErrorsLog.Length}");
             testContext?.WriteLine($"  failuredatabases.cfg length: {FailureDatabases.Length}");
 
@@ -186,18 +258,73 @@ namespace SqlBuildManager.Console.ExternalTest
         /// </summary>
         public void AssertQuerySuccess(TestContext? testContext = null)
         {
-            testContext?.WriteLine($"--- Blob Storage Log Validation (Query Success) ---");
+            testContext?.WriteLine("--- Post-run Blob Storage Validation: Query Success ---");
             testContext?.WriteLine($"  Blobs found: {BlobNames.Count}");
-            testContext?.WriteLine($"  Blob names: {string.Join(", ", BlobNames)}");
+            WriteKeyFileSummary(testContext);
 
             Assert.IsTrue(BlobNames.Count > 0,
                 "Blob: Query run should produce output files in blob storage");
 
-            bool hasCsvOutput = BlobNames.Any(b => b.EndsWith(".csv"));
-            testContext?.WriteLine($"  Has CSV output: {hasCsvOutput}");
+            var csvOutputCount = BlobNames.Count(b => b.EndsWith(".csv", StringComparison.OrdinalIgnoreCase));
+            testContext?.WriteLine($"  CSV output files: {csvOutputCount}");
 
             Assert.IsTrue(string.IsNullOrWhiteSpace(ErrorsLog),
                 $"Blob: errors.log should be empty for a successful query, but contained:\n{Truncate(ErrorsLog, 500)}");
+        }
+
+        private void WriteKeyFileSummary(TestContext? testContext)
+        {
+            var keyFiles = BlobNames
+                .Where(name =>
+                    name.Equals("commits.log", StringComparison.OrdinalIgnoreCase) ||
+                    name.Equals("errors.log", StringComparison.OrdinalIgnoreCase) ||
+                    name.Equals("successdatabases.cfg", StringComparison.OrdinalIgnoreCase) ||
+                    name.Equals("failuredatabases.cfg", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            testContext?.WriteLine(
+                $"  Key validation files: {(keyFiles.Length == 0 ? "none" : string.Join(", ", keyFiles))}");
+        }
+
+        private void WriteBlobNamesByType(TestContext? testContext)
+        {
+            if (testContext == null || BlobNames.Count == 0)
+            {
+                return;
+            }
+
+            testContext.WriteLine("  Blob names by type:");
+            foreach (var group in BlobNames
+                .GroupBy(GetBlobType)
+                .OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                testContext.WriteLine($"    {group.Key}:");
+                foreach (var blobName in group.OrderBy(name => name, StringComparer.OrdinalIgnoreCase))
+                {
+                    testContext.WriteLine($"      {blobName}");
+                }
+            }
+        }
+
+        private static string GetBlobType(string blobName)
+        {
+            if (blobName.StartsWith("Working/", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Working artifacts";
+            }
+
+            if (IsValidationLog(blobName))
+            {
+                return "Validation logs";
+            }
+
+            if (blobName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase) ||
+                blobName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Query outputs";
+            }
+
+            return "Other artifacts";
         }
 
         /// <summary>
@@ -237,6 +364,7 @@ namespace SqlBuildManager.Console.ExternalTest
             cmdLine.FileInfoSettingsFile = new FileInfo(settingsFilePath);
             cmdLine.SettingsFileKey = settingsFileKeyPath;
             var (_, decrypted) = Cryptography.DecryptSensitiveFields(cmdLine);
+            RelayProxyManager.ConfigureEndpoint(decrypted.ConnectionArgs.RelayProxyEndpoint);
             return (decrypted.ConnectionArgs.StorageAccountName, decrypted.ConnectionArgs.StorageAccountKey);
         }
 

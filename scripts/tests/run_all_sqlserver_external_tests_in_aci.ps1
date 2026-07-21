@@ -7,35 +7,53 @@
     each available combination, launches the filtered external test runner in ACI.
     After all tests complete, downloads results from Azure Storage and invokes
     GitHub Copilot CLI to analyze the test output.
-.PARAMETER prefix
-    Environment name prefix. Can also be set via azd env AZURE_NAME_PREFIX.
+.PARAMETER envName
+    Azure Developer CLI environment name. Defaults to the selected azd environment.
+.PARAMETER testGroups
+    Optional test groups to run. Valid values are aci, containerapp, batchqueue,
+    batchoverride, batchquery, and aks. Omit to run every group whose required
+    platform is deployed.
+.EXAMPLE
+    .\run_all_sqlserver_external_tests_in_aci.ps1 -envName myenv -testGroups aci,containerapp
 #>
 [CmdletBinding()]
 param (
     [Parameter()]
-    [string] $prefix
+    [string] $envName,
+
+    [Parameter()]
+    [ValidateSet('aci', 'containerapp', 'batchqueue', 'batchoverride', 'batchquery', 'aks')]
+    [string[]] $testGroups = @()
 )
 
-# Resolve prefix: parameter > azd env AZURE_NAME_PREFIX
-if ([string]::IsNullOrWhiteSpace($prefix)) {
-    $prefix = azd env get-value AZURE_NAME_PREFIX 2>$null
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($prefix)) {
-        $prefix = $null
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+# Resolve environment name: parameter > azd environment
+if ([string]::IsNullOrWhiteSpace($envName)) {
+    $envName = azd env get-value AZURE_ENV_NAME 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($envName)) {
+        $envName = $null
     } else {
-        Write-Host "Using prefix '$prefix' from azd environment variable AZURE_NAME_PREFIX" -ForegroundColor DarkGreen
+        Write-Host "Using environment '$envName' from AZURE_ENV_NAME" -ForegroundColor DarkGreen
     }
 }
 
-if ([string]::IsNullOrWhiteSpace($prefix)) {
-    Write-Host "ERROR: The -prefix parameter is required." -ForegroundColor Red
-    Write-Host "  Provide it as a parameter:  .\run_all_sqlserver_external_tests_in_aci.ps1 -prefix <your-prefix>" -ForegroundColor Yellow
-    Write-Host "  Or set it in your azd environment:  azd env set AZURE_NAME_PREFIX <your-prefix>" -ForegroundColor Yellow
+if ([string]::IsNullOrWhiteSpace($envName)) {
+    Write-Host "ERROR: The -envName parameter is required." -ForegroundColor Red
+    Write-Host "  Provide it as a parameter:  .\run_all_sqlserver_external_tests_in_aci.ps1 -envName <your-env>" -ForegroundColor Yellow
+    Write-Host "  Or select an azd environment with 'azd env select'." -ForegroundColor Yellow
     exit 1
 }
 
+. (Join-Path (Split-Path $PSScriptRoot -Parent) "prefix_resource_names.ps1") -envName $envName
+
 $exitCode = 0
 $timestamp = (Get-Date -Format 'yyyy-MM-dd-HHmmss')
-Clear-Host
+# Clear-Host is suppressed in non-interactive (CI) sessions.
+if ($Host.Name -eq 'ConsoleHost' -and [string]::IsNullOrWhiteSpace($env:CI)) {
+    Clear-Host
+}
 
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "SQL Server Integration Test Runners (ACI in VNet)" -ForegroundColor Cyan
@@ -75,6 +93,11 @@ $hasBatch        = Test-DeployFlag 'DEPLOY_BATCH_ACCOUNT', 'DEPLOY_BATCH'
 $hasContainerApp = Test-DeployFlag 'DEPLOY_CONTAINERAPP_ENV', 'DEPLOY_CONTAINERAPP'
 $hasAks          = Test-DeployFlag 'DEPLOY_AKS'
 $hasSqlServer    = Test-DeployFlag 'DEPLOY_SQLSERVER'
+$requestedTestGroups = if ($testGroups.Count -eq 0) {
+    @('aci', 'containerapp', 'batchqueue', 'batchoverride', 'batchquery', 'aks')
+} else {
+    @($testGroups)
+}
 
 Write-Host ""
 Write-Host "Platform Availability:" -ForegroundColor Cyan
@@ -83,6 +106,7 @@ Write-Host "  ACI:            $(if ($hasAci)           { 'Deployed' } else { 'No
 Write-Host "  Batch:          $(if ($hasBatch)         { 'Deployed' } else { 'Not deployed' })" -ForegroundColor $(if ($hasBatch)         { 'Green' } else { 'DarkGray' })
 Write-Host "  Container Apps: $(if ($hasContainerApp)  { 'Deployed' } else { 'Not deployed' })" -ForegroundColor $(if ($hasContainerApp)  { 'Green' } else { 'DarkGray' })
 Write-Host "  AKS:            $(if ($hasAks)           { 'Deployed' } else { 'Not deployed' })" -ForegroundColor $(if ($hasAks)           { 'Green' } else { 'DarkGray' })
+Write-Host "  Test groups:    $($requestedTestGroups -join ', ')" -ForegroundColor DarkGreen
 Write-Host ""
 
 function Invoke-TestIfAvailable {
@@ -91,21 +115,31 @@ function Invoke-TestIfAvailable {
         [string]$testFilter,
         [string]$computeLabel,
         [bool]$computeAvailable,
+        [string]$computeDeployFlags,
         [string]$databaseLabel,
         [bool]$databaseAvailable,
+        [string]$databaseDeployFlags,
         [int]$timeoutMinutes = 300
     )
 
-    $skipReasons = @()
-    if (-not $computeAvailable) { $skipReasons += "$computeLabel compute is not deployed" }
-    if (-not $databaseAvailable) { $skipReasons += "$databaseLabel database is not deployed" }
-
-    if ($skipReasons.Count -gt 0) {
-        Write-Host "SKIPPING [$customName]: $($skipReasons -join '; ')" -ForegroundColor Yellow
+    if ($customName -notin $requestedTestGroups) {
         return 0
     }
 
-    .\run_filtered_external_tests_in_aci.ps1 -prefix $prefix -customName $customName -testFilter $testFilter -timeoutMinutes $timeoutMinutes -timestamp $timestamp
+    $skipReasons = @()
+    if (-not $computeAvailable) {
+        $skipReasons += "$computeLabel compute is not deployed ($computeDeployFlags is not true)"
+    }
+    if (-not $databaseAvailable) {
+        $skipReasons += "$databaseLabel database is not deployed ($databaseDeployFlags is not true)"
+    }
+
+    if ($skipReasons.Count -gt 0) {
+        Write-Host "SKIPPING requested test group [$customName]: $($skipReasons -join '; ')" -ForegroundColor Yellow
+        return 0
+    }
+
+    & (Join-Path $PSScriptRoot 'run_filtered_external_tests_in_aci.ps1') -envName $envName -customName $customName -testFilter $testFilter -timeoutMinutes $timeoutMinutes -timestamp $timestamp
     return $LASTEXITCODE
 }
 
@@ -116,39 +150,49 @@ function Invoke-TestIfAvailable {
 $exitCode += Invoke-TestIfAvailable -customName "aci" `
     -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.AciTests" `
     -computeLabel "ACI" -computeAvailable $hasAci `
-    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer
+    -computeDeployFlags "DEPLOY_ACI" `
+    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
+    -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "containerapp" `
     -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.ContainerAppTests" `
     -computeLabel "Container Apps" -computeAvailable $hasContainerApp `
-    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer
+    -computeDeployFlags "DEPLOY_CONTAINERAPP_ENV/DEPLOY_CONTAINERAPP" `
+    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
+    -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "batchqueue" `
     -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.BatchTests.Batch_Queue" `
     -computeLabel "Batch" -computeAvailable $hasBatch `
-    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer
+    -computeDeployFlags "DEPLOY_BATCH_ACCOUNT/DEPLOY_BATCH" `
+    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
+    -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "aks" `
     -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.KubernetesTests" `
     -computeLabel "AKS" -computeAvailable $hasAks `
-    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer
+    -computeDeployFlags "DEPLOY_AKS" `
+    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
+    -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "batchoverride" `
     -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.BatchTests.Batch_Override" `
     -computeLabel "Batch" -computeAvailable $hasBatch `
-    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer
+    -computeDeployFlags "DEPLOY_BATCH_ACCOUNT/DEPLOY_BATCH" `
+    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
+    -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "batchquery" `
     -testFilter "FullyQualifiedName~SqlBuildManager.Console.ExternalTest.BatchTests.Batch_Query" `
     -computeLabel "Batch" -computeAvailable $hasBatch `
-    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer
+    -computeDeployFlags "DEPLOY_BATCH_ACCOUNT/DEPLOY_BATCH" `
+    -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
+    -databaseDeployFlags "DEPLOY_SQLSERVER"
 
-# Download test results
-if ((Test-Path ./testresults) -eq $false) { mkdir testresults }
-az storage blob download-batch --account-name "$($prefix)storage" --source testresults --pattern "$($timestamp)*" --destination ./testresults --auth-mode login --overwrite
-
-# Analyze test results with GitHub Copilot
-$promptTemplate = Get-Content -Path "$PSScriptRoot\analyze-test-results-prompt.md" -Raw
-$prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
-$output = copilot --yolo -p $prompt 2>&1
-
+# Analyze test results with GitHub Copilot CLI (local developer convenience; skip in CI).
+Write-Host "Running Copilot AI analysis of test logs to look for patterns, failure reasons and areas for improvement" -ForegroundColor Yellow
+if (Get-Command copilot -ErrorAction SilentlyContinue) {
+    $promptTemplate = Get-Content -Path (Join-Path $PSScriptRoot 'analyze-test-results-prompt.md') -Raw
+    $prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
+    $output = copilot --yolo -p $prompt 2>&1
+}

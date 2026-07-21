@@ -14,6 +14,13 @@ namespace SqlSync.Connection.UnitTest
     [TestClass()]
     public class ConnectionHelperTest
     {
+        private static string WithExpectedPooling(string connectionString)
+        {
+            return connectionString.Replace(
+                "Pooling=False",
+                "Pooling=True;Min Pool Size=0;Max Pool Size=100",
+                StringComparison.Ordinal);
+        }
 
 
         public TestContext TestContext { get; set; }
@@ -59,7 +66,7 @@ namespace SqlSync.Connection.UnitTest
             string expected = String.Format($"Data Source=myserver;Initial Catalog=mydatabase;Integrated Security=True;Pooling=False;Connect Timeout=20;Trust Server Certificate=False;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
             string actual;
             actual = ConnectionHelper.GetConnectionString(connData);
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(WithExpectedPooling(expected), actual);
 
         }
         /// <summary>
@@ -73,7 +80,7 @@ namespace SqlSync.Connection.UnitTest
             string expected = String.Format($"Data Source=myserver;Initial Catalog=mydatabase;Integrated Security=True;Pooling=False;Connect Timeout=40;Trust Server Certificate=False;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
             string actual;
             actual = ConnectionHelper.GetConnectionString(connData);
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(WithExpectedPooling(expected), actual);
         }
         /// <summary>
         ///A test for GetConnectionString
@@ -88,7 +95,7 @@ namespace SqlSync.Connection.UnitTest
             string expected = String.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=User;Password=Password;Pooling=False;Connect Timeout=20;Trust Server Certificate=False;Authentication=SqlPassword;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
             string actual;
             actual = ConnectionHelper.GetConnectionString(connData);
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(WithExpectedPooling(expected), actual);
         }
         /// <summary>
         ///A test for GetConnectionString
@@ -103,7 +110,7 @@ namespace SqlSync.Connection.UnitTest
             connData.ScriptTimeout = 30;
             string expected = string.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=User;Password=Password;Pooling=False;Connect Timeout=30;Trust Server Certificate=False;Authentication=SqlPassword;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
             string actual = ConnectionHelper.GetConnectionString(connData);
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(WithExpectedPooling(expected), actual);
         }
 
         /// <summary>
@@ -120,7 +127,7 @@ namespace SqlSync.Connection.UnitTest
             string expected = string.Format($"Data Source=myserver;Initial Catalog=mydatabase;User ID=userid;Password=password;Pooling=False;Connect Timeout=100;Trust Server Certificate=False;Authentication=SqlPassword;Application Name=\"{appNameString}\";Connect Retry Count=3;Connect Retry Interval=10");
             string actual;
             actual = ConnectionHelper.GetConnectionString(dbName, serverName, uid, pw, AuthenticationType.Password, scriptTimeOut, "");
-            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(WithExpectedPooling(expected), actual);
         }
 
         /// <summary>
@@ -138,7 +145,7 @@ namespace SqlSync.Connection.UnitTest
             SqlConnection actual;
             actual = ConnectionHelper.GetConnection(dbName, serverName, uid, pw, AuthenticationType.Password, scriptTimeOut,"");
             Assert.IsNotNull(actual);
-            Assert.AreEqual(expected, actual.ConnectionString);
+            Assert.AreEqual(WithExpectedPooling(expected), actual.ConnectionString);
             Assert.AreEqual(System.Data.ConnectionState.Closed, actual.State);
             Assert.AreEqual("myserver", actual.DataSource);
 
@@ -155,7 +162,7 @@ namespace SqlSync.Connection.UnitTest
             SqlConnection actual;
             actual = ConnectionHelper.GetConnection(connData);
             Assert.IsNotNull(actual);
-            Assert.AreEqual(expected, actual.ConnectionString);
+            Assert.AreEqual(WithExpectedPooling(expected), actual.ConnectionString);
             Assert.AreEqual(System.Data.ConnectionState.Closed, actual.State);
             Assert.AreEqual("myserver", actual.DataSource);
 

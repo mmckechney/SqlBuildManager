@@ -43,8 +43,20 @@ namespace SqlBuildManager.Console.Queue
             this.concurrencyType = concurrencyType;
             if (!unitest)
             {
+                // Legacy sync-over-async path kept for backward compatibility.
+                // Prefer QueueManager.CreateAsync for all production call sites.
                 CreateSubscriptions().Wait();
             }
+        }
+
+        /// <summary>
+        /// Preferred async factory: creates subscriptions without blocking the calling thread.
+        /// </summary>
+        public static async Task<QueueManager> CreateAsync(string topicConnectionString, string jobName, ConcurrencyType concurrencyType)
+        {
+            var qm = new QueueManager(topicConnectionString, jobName, concurrencyType, unitest: true);
+            await qm.CreateSubscriptions();
+            return qm;
         }
 
         private string EnsureQualifiedNamespace(string input)
@@ -170,7 +182,7 @@ namespace SqlBuildManager.Console.Queue
                 var activeMessages = await MonitorServiceBustopic(cType);
                 while (activeMessages < count && retry < 4)
                 {
-                    Thread.Sleep(1000);
+                    await Task.Delay(1000);
                     activeMessages = await MonitorServiceBustopic(cType);
                 }
 
@@ -736,7 +748,7 @@ namespace SqlBuildManager.Console.Queue
             }
             try
             {
-
+                var removedRuleCount = 0;
                 IAsyncEnumerator<RuleProperties> rules = AdminClient.GetRulesAsync(topicName, topicSub).GetAsyncEnumerator();
                 while (await rules.MoveNextAsync())
                 {
@@ -746,17 +758,20 @@ namespace SqlBuildManager.Console.Queue
                         if (rules.Current.Name != jobName)
                         {
                             await AdminClient.DeleteRuleAsync(topicName, topicSub, rules.Current.Name);
+                            removedRuleCount++;
                             log.LogDebug($"Rule {rules.Current.Name} has been removed.");
                         }
                     });
                 }
-
+                log.LogInformation(
+                    "Removed {RuleCount} existing filter(s) for Service Bus subscription '{SubscriptionName}'",
+                    removedRuleCount,
+                    topicSub);
             }
             catch (Exception ex)
             {
                 log.LogError(ex, "Problem deleting customer filters");
             }
-            log.LogInformation("All existing filters have been removed.");
             return;
         }
 
@@ -800,4 +815,3 @@ namespace SqlBuildManager.Console.Queue
     }
 
 }
-

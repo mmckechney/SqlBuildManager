@@ -21,8 +21,8 @@ param vnetId string = ''
 @description('Private endpoint subnet ID (required when usePrivateEndpoint is true)')
 param privateEndpointSubnetId string = ''
 
-@description('Name prefix for private endpoint resources')
-param namePrefix string = ''
+@description('Azure Developer CLI environment name used in private endpoint resource names')
+param envName string
 
 @description('Current machine IP address to allow access')
 param currentIpAddress string = ''
@@ -33,6 +33,7 @@ param subnetNames string = ''
 @description('VNet name for subnet references')
 param vnetName string = ''
 
+var prefixes = loadJsonContent('../resourcetypes.json')
 // Private endpoints only supported on Premium SKU
 var canUsePrivateEndpoint = usePrivateEndpoint && serviceBusSku == 'Premium'
 
@@ -117,7 +118,7 @@ resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if(canU
 // Link private DNS zone to VNet
 resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if(canUsePrivateEndpoint) {
   parent: privateDnsZone
-  name: '${namePrefix}-servicebus-vnet-link'
+  name: '${prefixes.privateDnsZoneVirtualNetworkLink}${envName}-sb'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -129,7 +130,7 @@ resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
 
 // Private Endpoint for Service Bus (Premium SKU only)
 resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = if(canUsePrivateEndpoint) {
-  name: '${namePrefix}servicebus-pe'
+  name: '${prefixes.privateEndpoint}${envName}-sb'
   location: location
   properties: {
     subnet: {
@@ -137,7 +138,7 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = if(ca
     }
     privateLinkServiceConnections: [
       {
-        name: '${namePrefix}servicebus-plsc'
+        name: '${prefixes.privateLink}${envName}-sb'
         properties: {
           privateLinkServiceId: serviceBusNamespace.id
           groupIds: [

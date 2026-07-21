@@ -29,5 +29,8 @@ namespace SqlSync.SqlBuild.Services
 
         /// <summary>Returns a query to get blocking information with hash/date for a script ID</summary>
         string GetHasBlockingSqlLogQuery();
+
+        /// <summary>Returns a query to get blocking information for a batch of script IDs (parameterized IN clause)</summary>
+        string GetBatchHasBlockingSqlLogQuery(int paramCount);
     }
 }

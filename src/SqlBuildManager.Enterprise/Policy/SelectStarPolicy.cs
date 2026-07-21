@@ -10,6 +10,11 @@ namespace SqlBuildManager.Enterprise.Policy
     class SelectStarPolicy : shP.IScriptPolicyWithArguments
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+
+        // PERF-006: The base SELECT * pattern is fixed — cache it. Exception-list regexes are
+        // argument-driven and remain per-call.
+        private static readonly Regex _selectStar = new Regex(@"(SELECT\s*\*)|(SELECT\s*.*\.\*)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         #region IScriptPolicy Members
         public string PolicyId
         {
@@ -53,7 +58,6 @@ namespace SqlBuildManager.Enterprise.Policy
             try
             {
                 message = string.Empty;
-                Regex selectStar = new Regex(@"(SELECT\s*\*)|(SELECT\s*.*\.\*)", RegexOptions.IgnoreCase | RegexOptions.Compiled); // Finds "SELECT *" and also "SELECT abc.*"
                 List<string> regStrings = new List<string>();
                 var tmpRegStrings = (from a in arguments select a.Value);
                 if (tmpRegStrings.Count() > 0)
@@ -63,7 +67,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 foreach (string regStr in regStrings)
                     selectStarExceptions.Add(new Regex(regStr, RegexOptions.IgnoreCase));
 
-                MatchCollection starMatches = selectStar.Matches(script);
+                MatchCollection starMatches = _selectStar.Matches(script);
                 if (starMatches.Count == 0)
                     return true;
 

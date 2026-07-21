@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Relay;
 using SqlSync.Connection;
 using System;
 using System.Collections.Generic;
@@ -80,6 +81,21 @@ namespace SqlBuildManager.Console.ExternalTest
                         conn.Close();
                     }
                 }
+                catch (SqlException exe) when (
+                    !string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.RelayProxyEndpoint) &&
+                    RelayProxyClient.IsSqlPrivateNetworkDenial(exe))
+                {
+                    System.Console.WriteLine(
+                        $"Direct SQL access to {server}/{database} is blocked; creating the test table through Azure Relay.");
+                    new RelayProxyClient(cmdLine.ConnectionArgs.RelayProxyEndpoint)
+                        .CreateSqlTestTableAsync(
+                            server,
+                            database,
+                            randomTableName,
+                            randomColumnName)
+                        .GetAwaiter()
+                        .GetResult();
+                }
                 catch (Exception exe)
                 {
                     throw new Exception($"Unable to create random table in {server}: {database}\r\n{exe.ToString()}");
@@ -94,6 +110,15 @@ namespace SqlBuildManager.Console.ExternalTest
             var log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<BatchTests>("SqlBuildManager.Console.log", Path.GetTempPath());
             log.LogInformation("Creating DACPAC for tests");
             string fullname = Path.GetFullPath($"TestConfig/{database}.dacpac");
+            if (RequiresSqlRelay(cmdLine, server, database))
+            {
+                log.LogInformation($"Extracting DACPAC for {server}/{database} through Azure Relay");
+                new RelayProxyClient(cmdLine.ConnectionArgs.RelayProxyEndpoint)
+                    .ExtractSqlTestDacpacAsync(server, database, fullname)
+                    .GetAwaiter()
+                    .GetResult();
+                return fullname;
+            }
 
             var args = new string[]{
                 "dacpac",
@@ -118,6 +143,49 @@ namespace SqlBuildManager.Console.ExternalTest
                 return null!;
             }
 
+        }
+
+        internal static void ConfigureRelayEndpoint(
+            CommandLineArgs cmdLine,
+            string settingsFilePath,
+            string settingsFileKeyPath)
+        {
+            var settingsArgs = new CommandLineArgs
+            {
+                FileInfoSettingsFile = new FileInfo(settingsFilePath),
+                SettingsFileKey = settingsFileKeyPath
+            };
+            var (_, decrypted) = Cryptography.DecryptSensitiveFields(settingsArgs);
+            cmdLine.RelayProxyEndpoint = decrypted.ConnectionArgs.RelayProxyEndpoint;
+        }
+
+        private static bool RequiresSqlRelay(
+            CommandLineArgs cmdLine,
+            string server,
+            string database)
+        {
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.RelayProxyEndpoint))
+            {
+                return false;
+            }
+
+            var connStr = new SqlConnectionStringBuilder
+            {
+                Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault,
+                DataSource = server,
+                InitialCatalog = database,
+                ConnectTimeout = 15
+            };
+            try
+            {
+                using var connection = new SqlConnection(connStr.ConnectionString);
+                connection.Open();
+                return false;
+            }
+            catch (SqlException exe) when (RelayProxyClient.IsSqlPrivateNetworkDenial(exe))
+            {
+                return true;
+            }
         }
 
 

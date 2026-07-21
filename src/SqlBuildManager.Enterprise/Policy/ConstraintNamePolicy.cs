@@ -8,6 +8,18 @@ namespace SqlBuildManager.Enterprise.Policy
     class ConstraintNamePolicy : shP.IScriptPolicy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+
+        // PERF-006: Static cached regexes compiled once per process.
+        private static readonly Regex _regCheckForConstraint = new Regex(@"(\bALTER\s*TABLE\b.*\bCONSTRAINT\b)|(\bCREATE\s*TABLE\b.*\bCONSTRAINT\b)|(\bALTER\s*TABLE\b.*\bDEFAULT\b)|(\bCREATE\s*TABLE\b.*\bDEFAULT\b)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+        private static readonly Regex _regLocateTableChange = new Regex(@"(\bALTER\s*TABLE\b)|(\bCREATE\s*TABLE\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regLocateTableChangeEnd = new Regex(@"(\b\()|(\bWITH\b)|(\bADD\b)|(\bCHECK\b)|(\bCONSTRAINT\b)|(\()", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regNoDefaultName = new Regex(@"(\bADD\b\s*\bDEFAULT\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regDefaultConstraintName = new Regex(@"(\bCONSTRAINT\b(.*)\bDEFAULT\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regPrimaryKeyName = new Regex(@"(\bCONSTRAINT\b(.*)\bPRIMARY KEY\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regForeignKeyName = new Regex(@"(\bCONSTRAINT\b(.*)\bFOREIGN KEY\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regCheckConstraint = new Regex(@"(\bCONSTRAINT\b(.*)\bCHECK\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regEnableConstraint = new Regex(@"(\bCHECK\b\s*\bCONSTRAINT\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         #region IScriptPolicy Members
 
         public string PolicyId
@@ -37,24 +49,13 @@ namespace SqlBuildManager.Enterprise.Policy
         {
             try
             {
-                Regex regCheckForConstraint = new Regex(@"(\bALTER\s*TABLE\b.*\bCONSTRAINT\b)|(\bCREATE\s*TABLE\b.*\bCONSTRAINT\b)|(\bALTER\s*TABLE\b.*\bDEFAULT\b)|(\bCREATE\s*TABLE\b.*\bDEFAULT\b)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
-                //Regex regLocateTableName = new Regex(@"(\bALTER\s*TABLE\b)|(\bCREATE\s*TABLE\b)|(\bADD\b)|(\()|(\bCHECK\b)|(\bCONSTRAINT\b)|(\bWITH\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-                Regex regLocateTableChange = new Regex(@"(\bALTER\s*TABLE\b)|(\bCREATE\s*TABLE\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regLocateTableChangeEnd = new Regex(@"(\b\()|(\bWITH\b)|(\bADD\b)|(\bCHECK\b)|(\bCONSTRAINT\b)|(\()", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regNoDefaultName = new Regex(@"(\bADD\b\s*\bDEFAULT\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-                Regex regDefaultConstraintName = new Regex(@"(\bCONSTRAINT\b(.*)\bDEFAULT\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regPrimaryKeyName = new Regex(@"(\bCONSTRAINT\b(.*)\bPRIMARY KEY\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regForeignKeyName = new Regex(@"(\bCONSTRAINT\b(.*)\bFOREIGN KEY\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regCheckConstraint = new Regex(@"(\bCONSTRAINT\b(.*)\bCHECK\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regEnableConstraint = new Regex(@"(\bCHECK\b\s*\bCONSTRAINT\b)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-                if (!regCheckForConstraint.Match(script).Success)
+                if (!_regCheckForConstraint.Match(script).Success)
                 {
                     message = "No constraints found";
                     return true;
                 }
 
-                MatchCollection coll = regLocateTableChange.Matches(script);
+                MatchCollection coll = _regLocateTableChange.Matches(script);
                 for (int i = 0; i < coll.Count; i++)
                 {
                     Match tableStart = coll[i];
@@ -62,7 +63,7 @@ namespace SqlBuildManager.Enterprise.Policy
                     string tableName = string.Empty;
                     int start = tableStart.Index + tableStart.Length;
                     int length = 0;
-                    Match tableEnd = regLocateTableChangeEnd.Match(script, start);
+                    Match tableEnd = _regLocateTableChangeEnd.Match(script, start);
                     if (tableEnd.Success)
                     {
                         length = tableEnd.Index - start;
@@ -88,64 +89,63 @@ namespace SqlBuildManager.Enterprise.Policy
                         subScript = script.Substring(tableStart.Index);
 
                     //Check for unnamed default
-                    if (regNoDefaultName.Match(subScript).Success)
+                    if (_regNoDefaultName.Match(subScript).Success)
                     {
                         message = "No constraint name specified. Default constraint names not allowed.";
                         return false;
                     }
 
                     //Check for named default
-                    if (regDefaultConstraintName.Match(subScript).Success)
+                    if (_regDefaultConstraintName.Match(subScript).Success)
                     {
-                        string constraint = regDefaultConstraintName.Match(subScript).Value;
+                        string constraint = _regDefaultConstraintName.Match(subScript).Value;
                         if (constraint.IndexOf(tableName, 0, StringComparison.CurrentCultureIgnoreCase) == -1)
                         {
-                            message = "The default constraint name '" + regDefaultConstraintName.Match(subScript).Groups[2].Value.Trim() + "' does not contain the referenced table name '" + tableName + "'.";
+                            message = "The default constraint name '" + _regDefaultConstraintName.Match(subScript).Groups[2].Value.Trim() + "' does not contain the referenced table name '" + tableName + "'.";
                             return false;
                         }
                     }
 
                     //Check for named primary key
-                    if (regPrimaryKeyName.Match(subScript).Success)
+                    if (_regPrimaryKeyName.Match(subScript).Success)
                     {
-                        string constraint = regPrimaryKeyName.Match(subScript).Value;
+                        string constraint = _regPrimaryKeyName.Match(subScript).Value;
                         if (constraint.IndexOf(tableName, 0, StringComparison.CurrentCultureIgnoreCase) == -1)
                         {
-                            message = "The primary key name '" + regPrimaryKeyName.Match(subScript).Groups[2].Value.Trim() + "' does not contain the referenced table name '" + tableName + "'.";
+                            message = "The primary key name '" + _regPrimaryKeyName.Match(subScript).Groups[2].Value.Trim() + "' does not contain the referenced table name '" + tableName + "'.";
                             return false;
                         }
                     }
 
                     //Check for named foreign key
-                    if (regForeignKeyName.Match(subScript).Success)
+                    if (_regForeignKeyName.Match(subScript).Success)
                     {
-                        string constraint = regForeignKeyName.Match(subScript).Value;
+                        string constraint = _regForeignKeyName.Match(subScript).Value;
                         if (constraint.IndexOf(tableName, 0, StringComparison.CurrentCultureIgnoreCase) == -1)
                         {
-                            message = "The foreign key name '" + regForeignKeyName.Match(subScript).Groups[2].Value.Trim() + "' does not contain the referenced table name '" + tableName + "'.";
+                            message = "The foreign key name '" + _regForeignKeyName.Match(subScript).Groups[2].Value.Trim() + "' does not contain the referenced table name '" + tableName + "'.";
                             return false;
                         }
                     }
 
                     //Check for named 'check' constraint
-                    if (regCheckConstraint.Match(subScript).Success)
+                    if (_regCheckConstraint.Match(subScript).Success)
                     {
-                        string constraint = regCheckConstraint.Match(subScript).Value;
+                        string constraint = _regCheckConstraint.Match(subScript).Value;
                         if (constraint.IndexOf(tableName, 0, StringComparison.CurrentCultureIgnoreCase) == -1)
                         {
-                            message = "The check constraint name '" + regCheckConstraint.Match(subScript).Groups[2].Value.Trim() + "' does not contain the referenced table name '" + tableName + "'.";
+                            message = "The check constraint name '" + _regCheckConstraint.Match(subScript).Groups[2].Value.Trim() + "' does not contain the referenced table name '" + tableName + "'.";
                             return false;
                         }
                     }
 
                     //Check for then enabling of a constraint...
-                    if (regEnableConstraint.Match(subScript).Success)
+                    if (_regEnableConstraint.Match(subScript).Success)
                     {
-                        Match constraintMatch = regEnableConstraint.Match(subScript);
+                        Match constraintMatch = _regEnableConstraint.Match(subScript);
                         string constraint = constraintMatch.Value;
 
                         if (subScript.Substring(constraintMatch.Index + constraintMatch.Length).IndexOf(tableName, 0, StringComparison.CurrentCultureIgnoreCase) == -1)
-                        //if (constraint.IndexOf(tableName, 0, StringComparison.CurrentCultureIgnoreCase) == -1)
                         {
                             message = "An existing constraint enabled by your CHECK CONSTRAINT script does not contain the referenced table name '" + tableName + "'.";
                             return false;

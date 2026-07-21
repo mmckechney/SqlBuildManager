@@ -1,16 +1,16 @@
 <#
 .SYNOPSIS
-    Deletes all Azure Batch pools in all Batch accounts for a given deployment prefix.
+    Deletes all Azure Batch pools in all Batch accounts for a given azd environment.
 .DESCRIPTION
-    Lists all Batch accounts in the prefix resource group, enumerates their pools,
+    Lists all Batch accounts in the environment resource group, enumerates their pools,
     and deletes each pool. Used to clean up Batch resources after integration tests.
-.PARAMETER prefix
-    Environment name prefix used to derive resource names.
+.PARAMETER envName
+    Azure Developer CLI environment name used to derive resource names.
 #>
 param
 (
     [Parameter(Mandatory=$true)]
-    [string] $prefix
+    [string] $envName
 )
 
 # Get the repo root
@@ -20,9 +20,9 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 }
 
 #############################################
-# Get set resource name variables from prefix
+# Get resource name variables from the environment name
 #############################################
-. "$repoRoot\scripts\prefix_resource_names.ps1" -prefix $prefix
+. "$repoRoot\scripts\prefix_resource_names.ps1" -envName $envName
 
 
 $batchAccts = az batch account list --resource-group $resourceGroupName  --query "[].{Name:name, AccountEndpoint:accountEndpoint}" | ConvertFrom-Json

@@ -19,11 +19,10 @@ namespace SqlBuildManager.Console
             cmdLine.AciArgs = null!;
             cmdLine.ContainerAppArgs = null!;
             cmdLine.KubernetesArgs = null!;
-            cmdLine.ContainerRegistryArgs = null!;
 
             return SaveAndEncryptSettings(cmdLine, clearText);
         }
-        internal static int Batch_NodeCleanUp(CommandLineArgs cmdLine)
+        internal static async Task<int> Batch_NodeCleanUp(CommandLineArgs cmdLine)
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
@@ -31,7 +30,7 @@ namespace SqlBuildManager.Console
 
             DateTime start = DateTime.Now;
             Batch.BatchManager batchExe = new Batch.BatchManager(cmdLine);
-            var retVal = batchExe.CleanUpBatchNodes();
+            var retVal = await batchExe.CleanUpBatchNodes();
 
             TimeSpan span = DateTime.Now - start;
             string msg = "Total Run time: " + span.ToString();
@@ -78,7 +77,7 @@ namespace SqlBuildManager.Console
             //If using queue and subscription doesn't already exist from a `sbm batch enqueue` command, create it and enqueue targets
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
-                var qManager = new QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.JobName, cmdLine.ConcurrencyType);
+                var qManager = await QueueManager.CreateAsync(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.JobName, cmdLine.ConcurrencyType);
 
                 //Get message count
                 var messageCount = qManager.MonitorServiceBustopic(cmdLine.ConcurrencyType);
@@ -122,7 +121,6 @@ namespace SqlBuildManager.Console
             log.LogDebug("Entering Batch Execution");
             log.LogInformation("Running Batch Execution...");
             int retVal;
-            string readOnlySas;
             Task monitorTask = null!;
 
             //If using queue and subscription doesn't already exist from a `sbm batch enqueue` command, create it and enqueue targets
@@ -143,7 +141,7 @@ namespace SqlBuildManager.Console
                 stream = false;
             }
 
-            (retVal, readOnlySas) = await batchExe.StartBatch(stream, unittest).ConfigureAwait(false);
+            (retVal, _) = await batchExe.StartBatch(stream, unittest).ConfigureAwait(false);
 
             if (monitorTask != null)
             {
@@ -198,7 +196,7 @@ namespace SqlBuildManager.Console
             log.LogDebug("Entering Batch Query Execution");
             log.LogInformation("Running Batch Query Execution...");
             int retVal;
-            string readOnlySas;
+            string outputContainerAccessUrl;
 
             //If using queue and subscription doesn't already exist from a `sbm batch enqueue` command, create it and enqueue targets
             var enqueueRes = await CheckAndEnqueueDatabaseTargets(cmdLine);
@@ -218,21 +216,51 @@ namespace SqlBuildManager.Console
                 stream = false;
             }
 
-            (retVal, readOnlySas) = await batchExe.StartBatch(stream,unittest);
+            (retVal, outputContainerAccessUrl) = await batchExe.StartBatch(stream,unittest);
 
-            if (!string.IsNullOrWhiteSpace(readOnlySas))
+            if (!string.IsNullOrWhiteSpace(outputContainerAccessUrl))
             {
                 log.LogInformation("Downloading the consolidated output file...");
                 try
                 {
-                    if (await StorageManager.DownloadBlobToLocal(readOnlySas, cmdLine.OutputFile.FullName))
+                    bool downloadSucceeded;
+                    if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
+                    {
+                        var containerName = new Uri(outputContainerAccessUrl).AbsolutePath.Trim('/');
+                        var storageClient = StorageManager.CreateStorageClient(
+                            cmdLine.ConnectionArgs.StorageAccountName,
+                            cmdLine.ConnectionArgs.StorageAccountKey);
+                        downloadSucceeded = await StorageManager.DownloadBlobToLocal(
+                            storageClient,
+                            containerName,
+                            cmdLine.OutputFile.FullName);
+                    }
+                    else
+                    {
+                        downloadSucceeded = await StorageManager.DownloadBlobToLocal(
+                            outputContainerAccessUrl,
+                            cmdLine.OutputFile.FullName);
+                    }
+
+                    if (downloadSucceeded)
                     {
                         log.LogInformation($"Output file copied locally to {cmdLine.OutputFile.FullName}");
+                    }
+                    else
+                    {
+                        if (retVal == (int)ExecutionReturn.Successful)
+                        {
+                            retVal = (int)ExecutionReturn.FinishingWithErrors;
+                        }
                     }
                 }
                 catch (Exception exe)
                 {
                     log.LogError($"Unable to download the output file:  {exe.Message}");
+                    if (retVal == (int)ExecutionReturn.Successful)
+                    {
+                        retVal = (int)ExecutionReturn.FinishingWithErrors;
+                    }
                 }
             }
 

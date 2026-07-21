@@ -20,6 +20,11 @@ namespace SqlSync.Connection
 
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         public static string appName = "Sql Build Manager v{0} [{1}];";
+        internal const int MinimumPoolSize = 0;
+        internal const int MaximumPoolSize = 100;
+        internal const int SqlPublicNetworkAccessDeniedErrorNumber = 47073;
+        private static readonly IDbConnectionFactory SqlServerFactory = new SqlServerConnectionFactory();
+        private static readonly IDbConnectionFactory PostgresFactory = new PostgresConnectionFactory();
 
         /// <summary>
         /// Process-wide opt-in for trusting (not validating) the SQL Server TLS certificate.
@@ -48,8 +53,8 @@ namespace SqlSync.Connection
         {
             return platform switch
             {
-                DatabasePlatform.PostgreSQL => new PostgresConnectionFactory(),
-                _ => new SqlServerConnectionFactory(),
+                DatabasePlatform.PostgreSQL => PostgresFactory,
+                _ => SqlServerFactory,
             };
         }
 
@@ -112,7 +117,9 @@ namespace SqlSync.Connection
             builder.DataSource = serverName;
             builder.InitialCatalog = dbName;
             builder.ConnectTimeout = scriptTimeOut;
-            builder.Pooling = false;
+            builder.Pooling = true;
+            builder.MinPoolSize = MinimumPoolSize;
+            builder.MaxPoolSize = MaximumPoolSize;
             builder.ApplicationName = appName;
             //Set transient values
             builder.ConnectRetryCount = 3;
@@ -211,7 +218,13 @@ namespace SqlSync.Connection
         }
         public static bool TestDatabaseConnection(ConnectionData connData)
         {
+            return TryTestDatabaseConnection(connData, out _);
+        }
+
+        public static bool TryTestDatabaseConnection(ConnectionData connData, out Exception connectionException)
+        {
             DbConnection conn = null!;
+            connectionException = null!;
             try
             {
                 if (connData.ScriptTimeout <= 0)
@@ -229,7 +242,18 @@ namespace SqlSync.Connection
                 //    connData.ManagedIdentityClientId = "";
                 //    return TestDatabaseConnection(connData);
                 //}
-                log.LogWarning(exe, "TestConnection failed");
+                if (IsSqlPublicNetworkAccessDenied(exe))
+                {
+                    log.LogWarning(
+                        "TestConnection blocked by SQL firewall or disabled public network access for {Server}/{Database}.",
+                        connData.SQLServerName,
+                        connData.DatabaseName);
+                }
+                else
+                {
+                    log.LogWarning("TestConnection failed. {Reason}", exe.Message);
+                }
+                connectionException = exe;
                 return false;
             }
             finally
@@ -238,6 +262,13 @@ namespace SqlSync.Connection
                     conn.Dispose();
             }
         }
+
+        internal static bool IsSqlPublicNetworkAccessDenied(Exception exception) =>
+            exception is SqlException sqlException &&
+            IsSqlPublicNetworkAccessDenied(sqlException.Number);
+
+        internal static bool IsSqlPublicNetworkAccessDenied(int errorNumber) =>
+            errorNumber == SqlPublicNetworkAccessDeniedErrorNumber;
 
     }
 }

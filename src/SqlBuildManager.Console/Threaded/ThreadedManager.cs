@@ -2,6 +2,7 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Queue;
+using SqlBuildManager.Console.Relay;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.SqlBuild;
@@ -312,7 +313,17 @@ namespace SqlBuildManager.Console.Threaded
                 log.LogInformation($"Extracting Platinum Dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}");
                 string dacpacName = Path.Combine(_context.RootLoggingPath, cmdLine.DacPacArgs.PlatinumDbSource + ".dacpac");
 
-                if (!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName, cmdLine.DefaultScriptTimeout, cmdLine.IdentityArgs.ClientId))
+                if (!DacPacHelper.ExtractDacPac(
+                    cmdLine.DacPacArgs.PlatinumDbSource,
+                    cmdLine.DacPacArgs.PlatinumServerSource,
+                    cmdLine.AuthenticationArgs.AuthenticationType,
+                    cmdLine.AuthenticationArgs.UserName,
+                    cmdLine.AuthenticationArgs.Password,
+                    dacpacName,
+                    cmdLine.DefaultScriptTimeout,
+                    cmdLine.IdentityArgs.ClientId,
+                    fallbackEligibility: RelayProxyManager.IsSqlFallbackEligible,
+                    fallbackExtractor: RelayProxyManager.ExtractSqlTestDacpac))
                 {
                     var m = new LogMsg()
                     {

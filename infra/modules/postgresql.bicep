@@ -1,17 +1,15 @@
-@description('Prefix to prepend to account names')
-param namePrefix string
+@description('Azure Developer CLI environment name used in child resource names')
+param envName string
+
+param pgServerNameA string
+param pgServerNameB string
+param pgAdminUser string
 
 @description('Number of test databases to create per server')
 param testDbCountPerServer int = 10
 
 @description('Location for all resources.')
 param location string = resourceGroup().location
-
-@description('Current machine IP address to allow access to the PostgreSQL server.')
-param currentIpAddress string
-
-@description('Array of subnet resource ids to allow access via VNet rules.')
-param subnetNames string
 
 @description('Object ID (GUID) of the Entra ID user or group to set as PG AAD admin')
 param pgAdminObjectId string
@@ -23,27 +21,19 @@ param pgAdminLogin string
 @description('Administrator password for PostgreSQL (used for local/password-based auth)')
 param pgAdminPassword string
 
-@description('Whether to use private endpoints instead of public network access')
-param usePrivateEndpoint bool = false
+@description('Object ID of the managed identity used for private post-provision initialization')
+param postProvisionAdminObjectId string
 
-@description('VNet ID for private DNS zone link (required when usePrivateEndpoint is true)')
-param vnetId string = ''
+@description('Name of the managed identity used for private post-provision initialization')
+param postProvisionAdminName string
 
-@description('Private endpoint subnet ID (required when usePrivateEndpoint is true)')
-param privateEndpointSubnetId string = ''
+@description('VNet ID for the private DNS zone link')
+param vnetId string
 
-var pgServerNameA = '${namePrefix}pgserver-a'
-var pgServerNameB = '${namePrefix}pgserver-b'
-var pgAdminUser = '${namePrefix}pgadmin'
-var subnetNamesArray = split(subnetNames, ',')
+@description('Private endpoint subnet ID')
+param privateEndpointSubnetId string
 
-module networkResource 'network.bicep' = {
-  name: 'pgNetworkResource'
-  params: {
-    namePrefix: namePrefix
-    location: location
-  }
-}
+var prefixes = loadJsonContent('../resourcetypes.json')
 
 // ============================================================
 // PostgreSQL Server 'A'
@@ -70,6 +60,9 @@ resource pgFlexServerA 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = 
     highAvailability: {
       mode: 'Disabled'
     }
+    network: {
+      publicNetworkAccess: 'Disabled'
+    }
     authConfig: {
       activeDirectoryAuth: 'Enabled'
       passwordAuth: 'Enabled'
@@ -81,10 +74,6 @@ resource pgFlexServerA 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = 
 resource pgAadAdminA 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2024-08-01' = {
   parent: pgFlexServerA
   name: pgAdminObjectId
-  dependsOn: [
-    pgFirewallAzureServicesA
-    pgFirewallRuleA
-  ]
   properties: {
     principalType: 'User'
     principalName: pgAdminLogin
@@ -92,24 +81,16 @@ resource pgAadAdminA 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2
   }
 }
 
-resource pgFirewallRuleA 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2024-08-01' = if (currentIpAddress != '') {
+resource pgPostProvisionAdminA 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2024-08-01' = {
   parent: pgFlexServerA
-  name: '${namePrefix}_AllowCurrentIpA'
+  name: postProvisionAdminObjectId
   dependsOn: [
-    pgFirewallAzureServicesA
+    pgAadAdminA
   ]
   properties: {
-    startIpAddress: currentIpAddress
-    endIpAddress: currentIpAddress
-  }
-}
-
-resource pgFirewallAzureServicesA 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2024-08-01' = {
-  parent: pgFlexServerA
-  name: 'AllowAzureServices'
-  properties: {
-    startIpAddress: '0.0.0.0'
-    endIpAddress: '0.0.0.0'
+    principalType: 'ServicePrincipal'
+    principalName: postProvisionAdminName
+    tenantId: subscription().tenantId
   }
 }
 
@@ -151,6 +132,9 @@ resource pgFlexServerB 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = 
     highAvailability: {
       mode: 'Disabled'
     }
+    network: {
+      publicNetworkAccess: 'Disabled'
+    }
     authConfig: {
       activeDirectoryAuth: 'Enabled'
       passwordAuth: 'Enabled'
@@ -162,10 +146,6 @@ resource pgFlexServerB 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = 
 resource pgAadAdminB 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2024-08-01' = {
   parent: pgFlexServerB
   name: pgAdminObjectId
-  dependsOn: [
-    pgFirewallAzureServicesB
-    pgFirewallRuleB
-  ]
   properties: {
     principalType: 'User'
     principalName: pgAdminLogin
@@ -173,24 +153,16 @@ resource pgAadAdminB 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2
   }
 }
 
-resource pgFirewallRuleB 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2024-08-01' = if (currentIpAddress != '') {
+resource pgPostProvisionAdminB 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2024-08-01' = {
   parent: pgFlexServerB
-  name: '${namePrefix}_AllowCurrentIpB'
+  name: postProvisionAdminObjectId
   dependsOn: [
-    pgFirewallAzureServicesB
+    pgAadAdminB
   ]
   properties: {
-    startIpAddress: currentIpAddress
-    endIpAddress: currentIpAddress
-  }
-}
-
-resource pgFirewallAzureServicesB 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2024-08-01' = {
-  parent: pgFlexServerB
-  name: 'AllowAzureServices'
-  properties: {
-    startIpAddress: '0.0.0.0'
-    endIpAddress: '0.0.0.0'
+    principalType: 'ServicePrincipal'
+    principalName: postProvisionAdminName
+    tenantId: subscription().tenantId
   }
 }
 
@@ -212,14 +184,14 @@ resource pgDatabasesB 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2024-
 // ============================================================
 var pgPrivateDnsZoneName = 'privatelink.postgres.database.azure.com'
 
-resource pgPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (usePrivateEndpoint) {
+resource pgPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: pgPrivateDnsZoneName
   location: 'global'
 }
 
-resource pgPrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if (usePrivateEndpoint) {
+resource pgPrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   parent: pgPrivateDnsZone
-  name: '${namePrefix}-pg-vnet-link'
+  name: '${prefixes.privateDnsZoneVirtualNetworkLink}${envName}-psql'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -230,8 +202,8 @@ resource pgPrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkL
 }
 
 // Private Endpoint for PostgreSQL Server A
-resource pgPrivateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = if (usePrivateEndpoint) {
-  name: '${namePrefix}pg-a-pe'
+resource pgPrivateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = {
+  name: '${prefixes.privateEndpoint}${envName}-psql-a'
   location: location
   properties: {
     subnet: {
@@ -239,7 +211,7 @@ resource pgPrivateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = if
     }
     privateLinkServiceConnections: [
       {
-        name: '${namePrefix}pg-a-plsc'
+        name: '${prefixes.privateLink}${envName}-psql-a'
         properties: {
           privateLinkServiceId: pgFlexServerA.id
           groupIds: [
@@ -251,7 +223,7 @@ resource pgPrivateEndpointA 'Microsoft.Network/privateEndpoints@2023-05-01' = if
   }
 }
 
-resource pgPrivateEndpointADnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = if (usePrivateEndpoint) {
+resource pgPrivateEndpointADnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
   parent: pgPrivateEndpointA
   name: 'default'
   properties: {
@@ -267,8 +239,8 @@ resource pgPrivateEndpointADnsGroup 'Microsoft.Network/privateEndpoints/privateD
 }
 
 // Private Endpoint for PostgreSQL Server B
-resource pgPrivateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = if (usePrivateEndpoint) {
-  name: '${namePrefix}pg-b-pe'
+resource pgPrivateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = {
+  name: '${prefixes.privateEndpoint}${envName}-psql-b'
   location: location
   properties: {
     subnet: {
@@ -276,7 +248,7 @@ resource pgPrivateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = if
     }
     privateLinkServiceConnections: [
       {
-        name: '${namePrefix}pg-b-plsc'
+        name: '${prefixes.privateLink}${envName}-psql-b'
         properties: {
           privateLinkServiceId: pgFlexServerB.id
           groupIds: [
@@ -288,7 +260,7 @@ resource pgPrivateEndpointB 'Microsoft.Network/privateEndpoints@2023-05-01' = if
   }
 }
 
-resource pgPrivateEndpointBDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = if (usePrivateEndpoint) {
+resource pgPrivateEndpointBDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
   parent: pgPrivateEndpointB
   name: 'default'
   properties: {

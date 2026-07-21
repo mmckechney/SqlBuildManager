@@ -126,6 +126,7 @@ namespace SqlBuildManager.Console.CommandLine
                 {
                     jobnameRequiredOption,
                     storageaccountnameOption,
+                    relayProxyEndpointOption,
                     storageaccountkeyOption,
                     packagenameAsFileToUploadOption,
                     platinumdacpacFileInfoOption,

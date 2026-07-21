@@ -9,6 +9,19 @@ namespace SqlBuildManager.Enterprise.Policy
     class QualifiedNamesPolicy : shP.IScriptPolicy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+
+        // PERF-006: Static cached regexes for all fixed patterns.
+        private static readonly Regex _regTokens = new Regex(@"(\bINNER JOIN\b)|(\bOUTER JOIN\b) |(\bFROM\b)|(\bWHERE\b)|(\bON\b)|(WITH *\(NOLOCK\))|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bINTO\b)|(\bJOIN\b)|(\bGROUP BY\b)|(\bDELETE FROM\b)|(\bUPDATE\b)|(\bset\b)|(\binserted\b)|(\bdeleted\b)|(\bAS\b)|(\bNO ACTION\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regSelects = new Regex(@"(\bINNER JOIN\b)|(\bOUTER JOIN\b) |(\bFROM\b)|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bJOIN\b)|(\bDELETE FROM\b)|(\bUPDATE\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regWheres = new Regex(@"(\bWHERE\b)|(\bON\b)|(\bINNER JOIN\b)|(\bOUTER JOIN\b)|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bJOIN\b)|(\bset\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regFrom = new Regex(@"(\bFROM\b)|(\bDELETE FROM\b)|(\bUPDATE\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regFromWithTableName = new Regex(@"(\bFROM\b\s*.*\s*)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regNoLock = new Regex(@"(WITH *\(NOLOCK\))", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regCursorInto = new Regex(@"(\bINTO\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regTriggerTables = new Regex(@"(\binserted\b)|(\bdeleted\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regTriggerUpdateAs = new Regex(@"(\bAS\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regForeignKeyAction = new Regex(@"(\bNO ACTION\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         #region IScriptPolicy Members
         public string PolicyId
         {
@@ -44,25 +57,13 @@ namespace SqlBuildManager.Enterprise.Policy
                 int lengthToWhere;
                 Match current;
                 Match next;
-                Regex regTokens = new Regex(@"(\bINNER JOIN\b)|(\bOUTER JOIN\b) |(\bFROM\b)|(\bWHERE\b)|(\bON\b)|(WITH *\(NOLOCK\))|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bINTO\b)|(\bJOIN\b)|(\bGROUP BY\b)|(\bDELETE FROM\b)|(\bUPDATE\b)|(\bset\b)|(\binserted\b)|(\bdeleted\b)|(\bAS\b)|(\bNO ACTION\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regSelects = new Regex(@"(\bINNER JOIN\b)|(\bOUTER JOIN\b) |(\bFROM\b)|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bJOIN\b)|(\bDELETE FROM\b)|(\bUPDATE\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regWheres = new Regex(@"(\bWHERE\b)|(\bON\b)|(\bINNER JOIN\b)|(\bOUTER JOIN\b)|(\bLEFT JOIN\b)|(\bRIGHT JOIN\b)|(\bJOIN\b)|(\bset\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regFrom = new Regex(@"(\bFROM\b)|(\bDELETE FROM\b)|(\bUPDATE\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regFromWithTableName = new Regex(@"(\bFROM\b\s*.*\s*)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regNoLock = new Regex(@"(WITH *\(NOLOCK\))", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regCursorInto = new Regex(@"(\bINTO\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regTriggerTables = new Regex(@"(\binserted\b)|(\bdeleted\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regTriggerUpdateAs = new Regex(@"(\bAS\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regForeignKeyAction = new Regex(@"(\bNO ACTION\b)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                MatchCollection coll = regTokens.Matches(rawScript);
+                MatchCollection coll = _regTokens.Matches(rawScript);
                 int textIndex = 0;
                 for (int i = 0; i < coll.Count; i++)
                 {
                     current = coll[i];
 
-
-
-                    if (i == coll.Count - 1 && !regFrom.Match(current.Value).Success)
+                    if (i == coll.Count - 1 && !_regFrom.Match(current.Value).Success)
                         break;
                     else if (i == coll.Count - 1)// the last match is an unpaired FROM
                         next = current; //give it a fake value
@@ -70,18 +71,18 @@ namespace SqlBuildManager.Enterprise.Policy
                         next = coll[i + 1];
 
                     //Ignore trigger selectes "FROM inserted" or "FROM deleted" 
-                    if (regFrom.Match(current.Value).Success && regTriggerTables.Match(next.Value).Success)
+                    if (_regFrom.Match(current.Value).Success && _regTriggerTables.Match(next.Value).Success)
                         continue;
 
                     //Ignore trigger declaration "FOR UPDATE AS"
-                    if (regFrom.Match(current.Value).Success && regTriggerUpdateAs.Match(next.Value).Success)
+                    if (_regFrom.Match(current.Value).Success && _regTriggerUpdateAs.Match(next.Value).Success)
                         continue;
 
                     //Ignore foreign key action  "UPDATE  NO ACTION"
-                    if (regFrom.Match(current.Value).Success && regForeignKeyAction.Match(next.Value).Success)
+                    if (_regFrom.Match(current.Value).Success && _regForeignKeyAction.Match(next.Value).Success)
                         continue;
 
-                    if (!ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches) && regSelects.Match(current.Value).Success && (regWheres.Match(next.Value).Success || regNoLock.Match(next.Value).Success)) // we have found our FROM .. WHERE or INNER JOIN ... ON limits
+                    if (!ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches) && _regSelects.Match(current.Value).Success && (_regWheres.Match(next.Value).Success || _regNoLock.Match(next.Value).Success)) // we have found our FROM .. WHERE or INNER JOIN ... ON limits
                     {
                         lengthToWhere = next.Index - textIndex;
                         int start = current.Index + current.Value.Length;
@@ -92,7 +93,7 @@ namespace SqlBuildManager.Enterprise.Policy
                             string regString = "(WITH *" + sub.Trim().Replace(")", "\\)").Replace("(", "\\(") + @"\s*\()";
                             try
                             {
-
+                                // regCTE depends on runtime table name — cannot be cached statically.
                                 Regex regCTE = new Regex(regString); //Check for a Common Table Entity (CTE) declaration for this item. If it is declared as a CTE, don't fail the check, otherwise, fail it.
 
                                 if (regCTE.Matches(script).Count == 0)
@@ -115,12 +116,12 @@ namespace SqlBuildManager.Enterprise.Policy
                         }
 
                     }
-                    else if (!ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches) && regFrom.Match(current.Value).Success && !regNoLock.Match(next.Value).Success && !regCursorInto.Match(next.Value).Success) //handle the FROM that doesn't have a following WHERE or INNER or OUTER JOINS
+                    else if (!ScriptHandlingHelper.IsInComment(current.Index, commentBlockMatches) && _regFrom.Match(current.Value).Success && !_regNoLock.Match(next.Value).Success && !_regCursorInto.Match(next.Value).Success) //handle the FROM that doesn't have a following WHERE or INNER or OUTER JOINS
                     {
 
-                        if (regFromWithTableName.Match(rawScript, current.Index).Value.Length > 0)
+                        if (_regFromWithTableName.Match(rawScript, current.Index).Value.Length > 0)
                         {
-                            Match subMatch = regFromWithTableName.Match(rawScript, current.Index);
+                            Match subMatch = _regFromWithTableName.Match(rawScript, current.Index);
                             if (subMatch != null & subMatch!.Value.Length > 0)
                             {
                                 subStr = subMatch.Value.Substring(4);

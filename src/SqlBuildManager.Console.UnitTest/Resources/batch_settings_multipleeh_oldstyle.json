@@ -5,13 +5,18 @@
   "BatchArgs": {
     "ResourceGroup": "sbmXXX-rg",
     "BatchNodeCount": 2,
-    "BatchVmSize": "STANDARD_D1_V2",
+    "BatchVmSize": "Standard_D2s_v3",
     "DeleteBatchPool": false,
     "DeleteBatchJob": false,
     "PollBatchPoolStatus": true,
     "BatchPoolName": "SqlBuildManagerPoolLinux",
     "BatchPoolOs": "Linux",
     "JobMonitorTimeout": 30
+  },
+  "ContainerRegistryArgs": {
+    "RegistryServer": "sbmXXXXXcontainerregistry.azurecr.io",
+    "ImageName": "sqlbuildmanager",
+    "ImageTag": "latest-vNext"
   },
   "ConnectionArgs": {
     "EventHubConnectionString": "sbmXXXeventhubnamespace|sbmXXXeventhub",

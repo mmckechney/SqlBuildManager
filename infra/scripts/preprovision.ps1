@@ -3,6 +3,11 @@
 
 Write-Host "Setting up deployment environment..." -ForegroundColor Cyan
 
+az provider register --namespace Microsoft.Relay --wait
+if ($LASTEXITCODE -ne 0) {
+    throw "Unable to register the Microsoft.Relay resource provider."
+}
+
 # Get current IP address
 $currentIpAddress = (Invoke-WebRequest -Uri "https://api.ipify.org" -UseBasicParsing).Content.Trim()
 Write-Host "Current IP Address: $currentIpAddress" -ForegroundColor DarkGreen
@@ -15,7 +20,6 @@ Write-Host "Current User: $userLoginName" -ForegroundColor DarkGreen
 Write-Host "User Object ID: $userIdGuid" -ForegroundColor DarkGreen
 azd env set AZURE_PRINCIPAL_ID $userIdGuid
 azd env set AZURE_PRINCIPAL_NAME $userLoginName
-azd env set BUILD_BATCH_PACKAGES "true"
 azd env set BUILD_CONTAINER_IMAGES "true"
 azd env set GENERATE_MI_SETTINGS "true"
 

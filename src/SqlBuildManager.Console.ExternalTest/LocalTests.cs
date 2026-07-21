@@ -19,7 +19,6 @@ namespace SqlBuildManager.Console.ExternalTest
 
         private string overrideFilePath = string.Empty;
         private string settingsFilePath = string.Empty;
-        private string linuxSettingsFilePath = string.Empty;
         private string settingsFileKeyPath = string.Empty;
 
         [TestInitialize]
@@ -27,9 +26,8 @@ namespace SqlBuildManager.Console.ExternalTest
         {
 
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ContainerAppTests>("SqlBuildManager.Console.log", Path.GetTempPath());
-            settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-windows.json");
+            settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux.json");
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
-            linuxSettingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux.json");
             overrideFilePath = Path.GetFullPath("TestConfig/databasetargets.cfg");
 
             cmdLine = new CommandLineArgs();

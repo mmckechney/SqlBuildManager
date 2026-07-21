@@ -452,6 +452,21 @@ namespace SqlBuildManager.Console
                 messages.Add("--batchvmsize is required in command line or --settingsfile  Json");
                 returnVal = -888;
             }
+            if (cmdLine.BatchArgs.BatchPoolOs != CommandLine.OsType.Linux)
+            {
+                messages.Add("Azure Batch container execution requires --batchpoolos Linux");
+                returnVal = -888;
+            }
+            if (String.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
+            {
+                messages.Add("--registryserver is required in command line or --settingsfile Json for Azure Batch container execution");
+                returnVal = -888;
+            }
+            if (String.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.ImageTag))
+            {
+                messages.Add("--imagetag is required in command line or --settingsfile Json for Azure Batch container execution");
+                returnVal = -888;
+            }
 
             errorMessages = messages.ToArray();
             return returnVal;

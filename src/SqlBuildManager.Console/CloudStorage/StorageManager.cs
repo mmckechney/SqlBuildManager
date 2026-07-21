@@ -6,8 +6,10 @@ using Azure.Storage.Sas;
 using Microsoft.Azure.Batch;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Relay;
 using SqlSync.Connection;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,6 +23,57 @@ namespace SqlBuildManager.Console.CloudStorage
     public class StorageManager
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+
+        // PERF-004: Cache initialized BlobContainerClients by "{accountName}|{containerName}".
+        // CreateIfNotExistsAsync is called at most once per key per process lifetime.
+        internal static readonly ConcurrentDictionary<string, Task<BlobContainerClient>> _containerClientCache
+            = new ConcurrentDictionary<string, Task<BlobContainerClient>>(StringComparer.OrdinalIgnoreCase);
+        internal static string ContainerCacheKey(string storageAccountName, string containerName)
+            => $"{storageAccountName}|{containerName}";
+
+        /// <summary>
+        /// Returns a cached, fully initialized BlobContainerClient.
+        /// CreateIfNotExistsAsync is called exactly once per account/container per process.
+        /// </summary>
+        internal static async Task<BlobContainerClient> GetOrCreateBlobContainerClientAsync(
+            string storageAccountName, string storageAccountKey, string containerName)
+        {
+            var key = ContainerCacheKey(storageAccountName, containerName);
+            var initializationTask = _containerClientCache.GetOrAdd(key, _ =>
+                CreateAndEnsureContainerAsync(storageAccountName, storageAccountKey, containerName));
+
+            try
+            {
+                return await initializationTask;
+            }
+            catch
+            {
+                ((ICollection<KeyValuePair<string, Task<BlobContainerClient>>>)_containerClientCache)
+                    .Remove(new KeyValuePair<string, Task<BlobContainerClient>>(key, initializationTask));
+                throw;
+            }
+        }
+
+        private static async Task<BlobContainerClient> CreateAndEnsureContainerAsync(
+            string storageAccountName, string storageAccountKey, string containerName)
+        {
+            BlobContainerClient client;
+            if (string.IsNullOrWhiteSpace(storageAccountKey))
+            {
+                var url = $"https://{storageAccountName}.blob.core.windows.net/{containerName}";
+                log.LogDebug($"Creating container client with URL: '{url}' and Token Credential");
+                client = new BlobContainerClient(new Uri(url), Aad.AadHelper.TokenCredential);
+            }
+            else
+            {
+                var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
+                log.LogDebug($"Creating container client for '{storageAccountName}/{containerName}' with storage key");
+                client = new BlobContainerClient(connstr, containerName);
+            }
+            await client.CreateIfNotExistsAsync();
+            return client;
+        }
+
         // Unique per-process instance ID to prevent blob path collisions when multiple
         // containers in the same ACI group share the same HOSTNAME.
         private static readonly string _instanceSuffix = Guid.NewGuid().ToString("N").Substring(0, 8);
@@ -52,10 +105,33 @@ namespace SqlBuildManager.Console.CloudStorage
 
         internal static bool ConsolidateLogFiles(string storageAccountName, string storageAccountKey, string outputContainerName, List<string> workerFiles)
         {
-            var client = CreateStorageClient(storageAccountName, storageAccountKey);
-            return ConsolidateLogFiles(client, outputContainerName, workerFiles);
+            try
+            {
+                var client = CreateStorageClient(storageAccountName, storageAccountKey);
+                return ConsolidateLogFilesCore(client, outputContainerName, workerFiles);
+            }
+            catch (Exception ex) when (CanUseRelayProxy(ex))
+            {
+                log.LogWarning($"Direct Blob Storage access failed while consolidating '{outputContainerName}'. Retrying through the Relay proxy.");
+                CreateRelayProxyClient().ConsolidateLogsAsync(outputContainerName).GetAwaiter().GetResult();
+                return true;
+            }
         }
         internal static bool ConsolidateLogFiles(BlobServiceClient storageSvcClient, string outputContainerName, List<string> workerFiles)
+        {
+            try
+            {
+                return ConsolidateLogFilesCore(storageSvcClient, outputContainerName, workerFiles);
+            }
+            catch (Exception ex) when (CanUseRelayProxy(ex))
+            {
+                log.LogWarning($"Direct Blob Storage access failed while consolidating '{outputContainerName}'. Retrying through the Relay proxy.");
+                CreateRelayProxyClient().ConsolidateLogsAsync(outputContainerName).GetAwaiter().GetResult();
+                return true;
+            }
+        }
+
+        private static bool ConsolidateLogFilesCore(BlobServiceClient storageSvcClient, string outputContainerName, List<string> workerFiles)
         {
             workerFiles.AddRange(new string[] { "dacpac", "sbm", "sql", "execution.log", "csv", "cfg" });
             var container = storageSvcClient.GetBlobContainerClient(outputContainerName);
@@ -101,16 +177,17 @@ namespace SqlBuildManager.Console.CloudStorage
                                 if (exe.ErrorCode == "BlobAlreadyExists")
                                 {
                                     log.LogWarning($"Unable to consolidate log file, '{blob.Name}': That file already exists");
+                                    hadErrors = true;
                                 }
                                 else if (exe.ErrorCode == "InvalidHeaderValue")
                                 {
                                     log.LogWarning($"Unable to consolidate log file, '{blob.Name}': Problem with appendind the consolidated file. {Environment.NewLine}{exe.Message}");
+                                    hadErrors = true;
                                 }
                                 else
                                 {
                                     throw;
                                 }
-                                hadErrors = true;
                             }
                         }
                     }
@@ -120,8 +197,12 @@ namespace SqlBuildManager.Console.CloudStorage
                     if (exe.ErrorCode == "BlobAlreadyExists")
                     {
                         log.LogWarning($"Unable to consolidate log file, '{blob.Name}': That file already exists. This can happen when you run two Batch jobs with the same job name");
+                        hadErrors = true;
                     }
-                    hadErrors = true;
+                    else
+                    {
+                        throw;
+                    }
                 }
             }
             return !hadErrors;
@@ -171,6 +252,31 @@ namespace SqlBuildManager.Console.CloudStorage
             return $"https://{storageAccountName}.blob.core.windows.net/{outputContainerName}";
         }
 
+        internal static async Task<string> EnsureOutputContainerAsync(
+            string storageAccountName,
+            string outputContainerName,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var serviceClient = new BlobServiceClient(
+                    new Uri($"https://{storageAccountName}.blob.core.windows.net"),
+                    Aad.AadHelper.TokenCredential);
+                await serviceClient
+                    .GetBlobContainerClient(outputContainerName)
+                    .CreateIfNotExistsAsync(cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+                return GetContainerRawUrl(storageAccountName, outputContainerName);
+            }
+            catch (Exception ex) when (CanUseRelayProxy(ex))
+            {
+                log.LogWarning($"Direct Blob Storage access failed for container '{outputContainerName}'. Retrying through the Relay proxy.");
+                return await CreateRelayProxyClient()
+                    .EnsureContainerAsync(outputContainerName, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+        }
+
         /// <summary>
         /// Async version of GetOutputContainerSasUrl.
         /// </summary>
@@ -178,53 +284,17 @@ namespace SqlBuildManager.Console.CloudStorage
         {
             if (string.IsNullOrWhiteSpace(storageAccountKey))
             {
-                // Use Managed Identity with User Delegation Key
-                return await GetOutputContainerSasUrlWithManagedIdentity(storageAccountName, outputContainerName, forRead, cancellationToken).ConfigureAwait(false);
+                throw new InvalidOperationException(
+                    "SAS generation requires a Storage account key. Managed-identity workflows must use an identity-authenticated Blob URL.");
             }
-            else
-            {
-                // Legacy: Use storage key
-                var cred = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
-                return await GetOutputContainerSasUrlWithKeyAsync(storageAccountName, outputContainerName, cred, forRead, cancellationToken).ConfigureAwait(false);
-            }
-        }
 
-        /// <summary>
-        /// Generates a SAS URL using User Delegation Key (Managed Identity) instead of storage account key
-        /// </summary>
-        private static async Task<string> GetOutputContainerSasUrlWithManagedIdentity(string storageAccountName, string outputContainerName, bool forRead, CancellationToken cancellationToken = default)
-        {
-            log.LogDebug($"Generating SAS URL with Managed Identity for container '{outputContainerName}'");
-            
-            var serviceClient = new BlobServiceClient(
-                new Uri($"https://{storageAccountName}.blob.core.windows.net"),
-                Aad.AadHelper.TokenCredential);
-
-            // Get user delegation key
-            var startsOn = DateTimeOffset.UtcNow.AddHours(-1);
-            var expiresOn = forRead ? DateTimeOffset.UtcNow.AddHours(7) : DateTimeOffset.UtcNow.AddHours(4);
-
-            var userDelegationKey = await serviceClient.GetUserDelegationKeyAsync(startsOn, expiresOn, cancellationToken);
-
-            var container = serviceClient.GetBlobContainerClient(outputContainerName);
-            await container.CreateIfNotExistsAsync();
-
-            BlobSasBuilder sasBuilder;
-            if (!forRead)
-            {
-                var permissions = BlobSasPermissions.Add | BlobSasPermissions.Create | BlobSasPermissions.Write | BlobSasPermissions.Read | BlobSasPermissions.List;
-                sasBuilder = new BlobSasBuilder(permissions, expiresOn);
-            }
-            else
-            {
-                var permissions = BlobSasPermissions.Read | BlobSasPermissions.List;
-                sasBuilder = new BlobSasBuilder(permissions, expiresOn);
-            }
-            sasBuilder.StartsOn = startsOn;
-            sasBuilder.BlobContainerName = outputContainerName;
-
-            var sasToken = sasBuilder.ToSasQueryParameters(userDelegationKey.Value, storageAccountName);
-            return $"https://{storageAccountName}.blob.core.windows.net/{outputContainerName}?{sasToken}";
+            var cred = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
+            return await GetOutputContainerSasUrlWithKeyAsync(
+                storageAccountName,
+                outputContainerName,
+                cred,
+                forRead,
+                cancellationToken).ConfigureAwait(false);
         }
 
         private static async Task<string> GetOutputContainerSasUrlWithKeyAsync(string storageAccountName, string outputContainerName, StorageSharedKeyCredential storageCreds, bool forRead, CancellationToken cancellationToken = default)
@@ -276,90 +346,115 @@ namespace SqlBuildManager.Console.CloudStorage
         }
         internal static bool StorageContainerHasExistingFiles(string storageAccountName, string storageAccountKey, string containerName)
         {
-            var container = GetBlobContainerClient(storageAccountName, storageAccountKey, containerName);
-            var files = container.GetBlobs();
-            if (files.Any())
+            try
             {
-                return true;
+                var container = GetBlobContainerClient(storageAccountName, storageAccountKey, containerName);
+                return container.GetBlobs().Any();
             }
-            else
+            catch (Exception ex) when (CanUseRelayProxy(ex))
             {
-                return false;
+                log.LogWarning($"Direct Blob Storage access failed while checking container '{containerName}'. Retrying through the Relay proxy.");
+                return CreateRelayProxyClient().HasBlobsAsync(containerName).GetAwaiter().GetResult();
             }
-
-
-
         }
         internal static async Task<bool> DeleteStorageContainer(string storageAccountName, string storageAccountKey, string containerName)
         {
             try
             {
+                // Evict from cache before deletion so the next caller re-creates the container
+                _containerClientCache.TryRemove(ContainerCacheKey(storageAccountName, containerName), out _);
                 var container = GetBlobContainerClient(storageAccountName, storageAccountKey, containerName);
                 var result = await container.DeleteAsync();
                 if (result.Status == 202)
                 {
-                    while (container.Exists())
+                    while (await container.ExistsAsync())
                     {
-                        System.Threading.Thread.Sleep(1000);
+                        await Task.Delay(1000);
                     }
                 }
                 return true;
             }
             catch (Exception ex)
             {
+                if (CanUseRelayProxy(ex))
+                {
+                    log.LogWarning($"Direct Blob Storage access failed while deleting container '{containerName}'. Retrying through the Relay proxy.");
+                    await CreateRelayProxyClient().DeleteContainerAsync(containerName).ConfigureAwait(false);
+                    _containerClientCache.TryRemove(ContainerCacheKey(storageAccountName, containerName), out _);
+                    return true;
+                }
                 log.LogError($"Unable to delete container {containerName} in storage account {storageAccountName}: {ex.Message}");
                 return false;
             }
         }
         internal static async Task<bool> UploadFilesToStorageContainer(string storageAccountName, string storageAccountKey, string containerName, string[] filePaths, bool isRetry = false)
         {
-
+            BlobContainerClient container;
             try
             {
-                foreach (var filePath in filePaths)
-                {
-                    if (!isRetry)
-                    {
-                        log.LogInformation($"Uploading file {filePath} to container [{containerName}]...");
-                    }
-                    string blobName = Path.GetFileName(filePath);
-
-                    var container = GetBlobContainerClient(storageAccountName, storageAccountKey, containerName);
-
-                    var blobData = GetBlockBlobClient(storageAccountName, storageAccountKey, containerName, blobName);
-                    using (var fs = new FileStream(filePath, FileMode.Open))
-                    {
-                        blobData.Upload(fs);
-                    }
-                    log.LogInformation($"File {filePath} uploaded to container [{containerName}]");
-                }
-                return true;
+                container = await GetOrCreateBlobContainerClientAsync(storageAccountName, storageAccountKey, containerName);
             }
             catch (Azure.RequestFailedException rfExe)
             {
                 if (rfExe.ErrorCode == "ContainerBeingDeleted")
                 {
                     log.LogInformation("Existing storage container is still being deleted. waiting...");
-                    System.Threading.Thread.Sleep(3000);
-                    return await UploadFilesToStorageContainer(storageAccountName, storageAccountKey, containerName, filePaths, true); ;
+                    // Evict stale cache entry so retry creates a fresh container
+                    _containerClientCache.TryRemove(ContainerCacheKey(storageAccountName, containerName), out _);
+                    await Task.Delay(3000);
+                    return await UploadFilesToStorageContainer(storageAccountName, storageAccountKey, containerName, filePaths, true);
                 }
-                else
+                if (CanUseRelayProxy(rfExe))
                 {
-                    log.LogError($"Unable to upload files '{string.Join(',', filePaths)}' to container {containerName}: {rfExe.Message}");
-                    return false;
+                    return await UploadFilesThroughProxyAsync(containerName, filePaths).ConfigureAwait(false);
                 }
+                log.LogError($"Unable to upload files '{string.Join(',', filePaths)}' to container {containerName}: {rfExe.Message}");
+                return false;
             }
             catch (Exception ex)
             {
+                if (CanUseRelayProxy(ex))
+                {
+                    return await UploadFilesThroughProxyAsync(containerName, filePaths).ConfigureAwait(false);
+                }
                 log.LogError($"Unable to upload files '{string.Join(',', filePaths)}' to container {containerName}: {ex.Message}");
                 return false;
             }
+
+            foreach (var filePath in filePaths)
+            {
+                if (!isRetry)
+                {
+                    log.LogInformation($"Uploading file {filePath} to container [{containerName}]...");
+                }
+
+                try
+                {
+                    var blobData = container.GetBlockBlobClient(Path.GetFileName(filePath));
+                    using var fs = new FileStream(filePath, FileMode.Open);
+                    await blobData.UploadAsync(fs);
+                }
+                catch (Exception ex) when (CanUseRelayProxy(ex))
+                {
+                    log.LogWarning($"Direct upload failed for '{filePath}'. Retrying through the Relay proxy.");
+                    await CreateRelayProxyClient().UploadFileAsync(containerName, filePath).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    log.LogError($"Unable to upload file '{filePath}' to container {containerName}: {ex.Message}");
+                    return false;
+                }
+                log.LogInformation($"File {filePath} uploaded to container [{containerName}]");
+            }
+            return true;
         }
         internal static async Task<bool> DownloadBlobToLocal(string sasUrl, string localFileName)
         {
+            var containerUri = new Uri(sasUrl);
+            var containerName = containerUri.AbsolutePath.Trim('/');
             try
             {
-                var cloudBlobContainer = new BlobContainerClient(new Uri(sasUrl));
+                var cloudBlobContainer = new BlobContainerClient(containerUri);
                 var blob = cloudBlobContainer.GetBlobClient(Path.GetFileName(localFileName));
                 var resp = await blob.DownloadToAsync(localFileName);
                 if (resp.Status < 300)
@@ -371,6 +466,14 @@ namespace SqlBuildManager.Console.CloudStorage
                     log.LogError($"Unable to download file {Path.GetFileName(localFileName)} to {localFileName}: {resp.ReasonPhrase}");
                     return false;
                 }
+            }
+            catch (Exception ex) when (CanUseRelayProxy(ex))
+            {
+                log.LogWarning($"Direct Blob Storage access failed while downloading '{localFileName}'. Retrying through the Relay proxy.");
+                await CreateRelayProxyClient()
+                    .DownloadBlobAsync(containerName, Path.GetFileName(localFileName), localFileName)
+                    .ConfigureAwait(false);
+                return true;
             }
             catch (Exception ex)
             {
@@ -397,6 +500,14 @@ namespace SqlBuildManager.Console.CloudStorage
                     return false;
                 }
             }
+            catch (Exception ex) when (CanUseRelayProxy(ex))
+            {
+                log.LogWarning($"Direct Blob Storage access failed while downloading '{localFileName}'. Retrying through the Relay proxy.");
+                await CreateRelayProxyClient()
+                    .DownloadBlobAsync(containerName, Path.GetFileName(localFileName), localFileName)
+                    .ConfigureAwait(false);
+                return true;
+            }
             catch (Exception ex)
             {
                 log.LogError($"Unable to download file {Path.GetFileName(localFileName)} to {localFileName}: {ex.Message}");
@@ -404,7 +515,13 @@ namespace SqlBuildManager.Console.CloudStorage
             }
         }
 
-        internal static async Task<ResourceFile> UploadFileToBatchContainerAsync(string storageAcctName, string containerName, StorageSharedKeyCredential storageCreds, string filePath, CancellationToken cancellationToken = default)
+        internal static async Task<ResourceFile> UploadFileToBatchContainerAsync(
+            string storageAcctName,
+            string containerName,
+            StorageSharedKeyCredential storageCreds,
+            string filePath,
+            string identityResourceId = "",
+            CancellationToken cancellationToken = default)
         {
             log.LogInformation($"Uploading file {filePath} to container [{containerName}]...");
 
@@ -422,12 +539,27 @@ namespace SqlBuildManager.Console.CloudStorage
                 blobData = new BlockBlobClient(new Uri($"https://{storageAcctName}.blob.core.windows.net/{containerName}/{blobName}"), Aad.AadHelper.TokenCredential);
             }
 
-            using (var fs = new FileStream(filePath, FileMode.Open))
+            try
             {
+                using var fs = new FileStream(filePath, FileMode.Open);
                 await blobData.UploadAsync(fs, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
+            catch (Exception ex) when (CanUseRelayProxy(ex))
+            {
+                log.LogWarning($"Direct upload failed for '{filePath}'. Retrying through the Relay proxy.");
+                var proxiedBlobUrl = await CreateRelayProxyClient().UploadFileAsync(
+                    containerName,
+                    filePath,
+                    cancellationToken).ConfigureAwait(false);
+                return CreateBatchResourceFile(proxiedBlobUrl, blobName, identityResourceId);
+            }
 
-            // Generate SAS URL
+            if (!string.IsNullOrWhiteSpace(identityResourceId))
+            {
+                return CreateBatchResourceFile(blobData.Uri.ToString(), blobName, identityResourceId);
+            }
+
+            // Legacy shared-key deployments still use SAS.
             if (storageCreds != null)
             {
                 // Legacy: Use storage key for SAS
@@ -439,38 +571,80 @@ namespace SqlBuildManager.Console.CloudStorage
                 string blobSasUri = blobData.GenerateSasUri(sasPermissions).ToString();
                 return ResourceFile.FromUrl(blobSasUri, blobName, null);
             }
-            else
+            throw new InvalidOperationException(
+                "A Batch managed identity resource ID is required when Storage shared-key authentication is disabled.");
+        }
+
+        private static bool CanUseRelayProxy(Exception exception) =>
+            RelayProxyManager.IsFallbackEligible(exception);
+
+        private static RelayProxyClient CreateRelayProxyClient() =>
+            RelayProxyManager.CreateClient();
+
+        /// <summary>
+        /// Lists blobs through the configured Azure Relay proxy, optionally restricted by prefix.
+        /// </summary>
+        public static Task<IReadOnlyList<RelayBlobFile>> EnumerateBlobFilesThroughRelayAsync(
+            string containerName,
+            string prefix = "",
+            CancellationToken cancellationToken = default) =>
+            CreateRelayProxyClient().ListBlobsAsync(containerName, prefix, cancellationToken);
+
+        /// <summary>
+        /// Downloads the selected blobs through the configured Azure Relay proxy.
+        /// Nested blob paths are preserved beneath <paramref name="destinationDirectory"/>.
+        /// </summary>
+        public static Task<IReadOnlyList<string>> DownloadBlobFilesThroughRelayAsync(
+            string containerName,
+            IEnumerable<string> blobNames,
+            string destinationDirectory,
+            CancellationToken cancellationToken = default) =>
+            CreateRelayProxyClient().DownloadBlobsAsync(
+                containerName,
+                blobNames,
+                destinationDirectory,
+                cancellationToken);
+
+        private static ResourceFile CreateBatchResourceFile(
+            string blobUrl,
+            string blobName,
+            string identityResourceId) =>
+            ResourceFile.FromUrl(
+                blobUrl,
+                new ComputeNodeIdentityReference { ResourceId = identityResourceId },
+                blobName,
+                null);
+
+        private static async Task<bool> UploadFilesThroughProxyAsync(string containerName, IEnumerable<string> filePaths)
+        {
+            log.LogWarning($"Direct Blob Storage access failed for container '{containerName}'. Retrying uploads through the Relay proxy.");
+            var proxy = CreateRelayProxyClient();
+            foreach (var filePath in filePaths)
             {
-                // Use Managed Identity with User Delegation Key
-                return await GetResourceFileWithUserDelegationKey(storageAcctName, containerName, blobName, cancellationToken).ConfigureAwait(false);
+                await proxy.UploadFileAsync(containerName, filePath).ConfigureAwait(false);
+                log.LogInformation($"File {filePath} uploaded to container [{containerName}] through the Relay proxy");
+            }
+            return true;
+        }
+
+        internal static bool CombineQueryOutputfiles(BlobServiceClient storageSvcClient, string storageContainerName, string outputFile)
+        {
+            try
+            {
+                return CombineQueryOutputfilesCore(storageSvcClient, storageContainerName, outputFile);
+            }
+            catch (Exception ex) when (CanUseRelayProxy(ex))
+            {
+                log.LogWarning($"Direct Blob Storage access failed while combining query output in '{storageContainerName}'. Retrying through the Relay proxy.");
+                CreateRelayProxyClient()
+                    .CombineQueryOutputAsync(storageContainerName, Path.GetFileName(outputFile))
+                    .GetAwaiter()
+                    .GetResult();
+                return true;
             }
         }
 
-        /// <summary>
-        /// Creates a ResourceFile with SAS URL using User Delegation Key (Managed Identity)
-        /// </summary>
-        private static async Task<ResourceFile> GetResourceFileWithUserDelegationKey(string storageAcctName, string containerName, string blobName, CancellationToken cancellationToken = default)
-        {
-            var serviceClient = new BlobServiceClient(
-                new Uri($"https://{storageAcctName}.blob.core.windows.net"),
-                Aad.AadHelper.TokenCredential);
-
-            var startsOn = DateTimeOffset.UtcNow.AddHours(-1);
-            var expiresOn = DateTimeOffset.UtcNow.AddHours(3);
-            var userDelegationKey = await serviceClient.GetUserDelegationKeyAsync(startsOn, expiresOn, cancellationToken);
-
-            var sasBuilder = new BlobSasBuilder(BlobSasPermissions.Read, expiresOn)
-            {
-                BlobContainerName = containerName,
-                BlobName = blobName,
-                StartsOn = startsOn
-            };
-
-            var sasToken = sasBuilder.ToSasQueryParameters(userDelegationKey.Value, storageAcctName);
-            string blobSasUri = $"https://{storageAcctName}.blob.core.windows.net/{containerName}/{blobName}?{sasToken}";
-            return ResourceFile.FromUrl(blobSasUri, blobName, null);
-        }
-        internal static bool CombineQueryOutputfiles(BlobServiceClient storageSvcClient, string storageContainerName, string outputFile)
+        private static bool CombineQueryOutputfilesCore(BlobServiceClient storageSvcClient, string storageContainerName, string outputFile)
         {
             bool hadErrors = false;
             log.LogInformation("Consolidating Query output files...");
@@ -528,7 +702,8 @@ namespace SqlBuildManager.Console.CloudStorage
 
         internal static async Task<bool> WriteLogsToBlobContainer(string storageAccountName, string storageAccountKey, string outputContainerName, string rootLoggingPath)
         {
-            var container = GetBlobContainerClient(storageAccountName, storageAccountKey, outputContainerName);
+            // PERF-004: Use the async cache so CreateIfNotExistsAsync is paid at most once per container per run.
+            var container = await GetOrCreateBlobContainerClientAsync(storageAccountName, storageAccountKey, outputContainerName);
             var res = await WriteLogsToBlobContainer(container, rootLoggingPath);
             return res;
         }
@@ -650,16 +825,15 @@ namespace SqlBuildManager.Console.CloudStorage
             return containerClient;
         }
 
-        internal static bool  CopyFileToStorage(string storageAccountName, string storageAccountKey, string jobName, string localName, string storageName)
+        internal static async Task<bool> CopyFileToStorage(string storageAccountName, string storageAccountKey, string jobName, string localName, string storageName)
         {
             try
             {
-                var container = GetBlobContainerClient(storageAccountName, storageAccountKey, jobName);
-
-                var blobData = GetBlockBlobClient(storageAccountName, storageAccountKey, jobName, storageName);
+                var container = await GetOrCreateBlobContainerClientAsync(storageAccountName, storageAccountKey, jobName);
+                var blobData = container.GetBlockBlobClient(storageName);
                 using (var fs = new FileStream(localName, FileMode.Open))
                 {
-                    blobData.Upload(fs);
+                    await blobData.UploadAsync(fs);
                 }
                 log.LogInformation($"File {localName} uploaded to {storageName} in container [{jobName}]");
                 return true;
@@ -673,4 +847,3 @@ namespace SqlBuildManager.Console.CloudStorage
     }
 
 }
-

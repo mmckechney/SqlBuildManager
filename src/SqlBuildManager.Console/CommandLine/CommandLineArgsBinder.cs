@@ -4,6 +4,8 @@ using System.CommandLine.Parsing;
 using System.IO;
 using Microsoft.Extensions.Logging;
 using SqlSync.Connection;
+using SqlBuildManager.Console.CloudStorage;
+using SqlBuildManager.Console.Relay;
 
 namespace SqlBuildManager.Console.CommandLine
 {
@@ -70,6 +72,7 @@ namespace SqlBuildManager.Console.CommandLine
         private static void SeedConnectionDefaults(CommandLineArgs args)
         {
             ConnectionHelper.TrustServerCertificate = args?.AuthenticationArgs?.TrustServerCertificate ?? false;
+            RelayProxyManager.ConfigureEndpoint(args?.ConnectionArgs?.RelayProxyEndpoint ?? string.Empty);
         }
 
         /// <summary>
@@ -228,6 +231,7 @@ namespace SqlBuildManager.Console.CommandLine
             _registry.Register(CommandLineBuilder.eventhubconnectionOption, (args, v) => args.EventHubConnection = v);
             _registry.Register(CommandLineBuilder.serviceBusconnectionOption, (args, v) => args.ServiceBusTopicConnection = v);
             _registry.Register(CommandLineBuilder.storageaccountnameOption, (args, v) => args.StorageAccountName = v);
+            _registry.Register(CommandLineBuilder.relayProxyEndpointOption, (args, v) => args.RelayProxyEndpoint = v);
             _registry.Register(CommandLineBuilder.storageaccountkeyOption, (args, v) => args.StorageAccountKey = v);
             _registry.Register(CommandLineBuilder.batchaccountnameOption, (args, v) => args.BatchAccountName = v);
             _registry.Register(CommandLineBuilder.batchaccountkeyOption, (args, v) => args.BatchAccountKey = v);
@@ -250,7 +254,6 @@ namespace SqlBuildManager.Console.CommandLine
             _registry.Register(CommandLineBuilder.batchvmsizeOption, (args, v) => args.BatchVmSize = v);
             _registry.Register(CommandLineBuilder.batchResourceGroupOption, (args, v) => args.BatchResourceGroup = v);
             _registry.Register(CommandLineBuilder.batchpoolnameOption, (args, v) => args.BatchPoolName = v);
-            _registry.Register(CommandLineBuilder.batchApplicationOption, (args, v) => args.ApplicationPackage = v);
             _registry.Register(CommandLineBuilder.outputcontainersasurlOption, (args, v) => args.OutputContainerSasUrl = v);
             _registry.Register(CommandLineBuilder.batchJobMonitorTimeoutMin, (args, v) => args.BatchJobMonitorTimeout = v);
         }

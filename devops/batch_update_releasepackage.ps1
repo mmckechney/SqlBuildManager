@@ -17,7 +17,7 @@ param(
  $resourceGroupName,
 
  [string]
- $batchprefix,
+ $envName,
 
  [string]
  $windowsZipPackage,
@@ -26,11 +26,34 @@ param(
  $linuxZipPackage,
 
  [string]
- $releaseVersion
+ $releaseVersion,
+
+ [string]
+ $resourceTypesPath,
+
+ [string]
+ $batchAccountName
 
 )
 
-$batchAcctName = $batchprefix + "batchacct"
+$batchAcctName = $batchAccountName
+if ([string]::IsNullOrWhiteSpace($batchAcctName) -and -not [string]::IsNullOrWhiteSpace($env:ARMOUTPUTS)) {
+    $deploymentOutputs = $env:ARMOUTPUTS | ConvertFrom-Json
+    $batchAcctName = $deploymentOutputs.BATCH_ACCOUNT_NAME.value
+}
+if ([string]::IsNullOrWhiteSpace($batchAcctName)) {
+    if ([string]::IsNullOrWhiteSpace($resourceTypesPath)) {
+        $resourceTypesPath = Join-Path (Split-Path $PSScriptRoot -Parent) "infra\resourcetypes.json"
+    }
+    if (-not (Test-Path $resourceTypesPath -PathType Leaf)) {
+        throw "Neither BATCH_ACCOUNT_NAME deployment output nor Azure resource type prefix map '$resourceTypesPath' was available."
+    }
+
+    $resourceTypePrefixes = Get-Content $resourceTypesPath -Raw | ConvertFrom-Json
+    $normalizedEnvName = $envName.Replace("-", "").ToLowerInvariant()
+    $batchPrefix = $resourceTypePrefixes.batchAccounts -replace '[^a-zA-Z0-9]', ''
+    $batchAcctName = "$batchPrefix$normalizedEnvName"
+}
 
 ##########################################
 # Set up variables to be used

@@ -21,6 +21,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
         public TestContext TestContext { get; set; }
 
         private string settingsFileKeyPath = string.Empty;
+        private AciTestResourceTracker aciResources = null!;
         private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
 
         [TestInitialize]
@@ -28,14 +29,16 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
         {
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<AciTests>("SqlBuildManager.Console.log", Path.GetTempPath());
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
+            aciResources = new AciTestResourceTracker(settingsFileKeyPath);
 
             System.Console.SetOut(new StringWriter(ConsoleOutput));
             ConsoleOutput.Clear();
         }
 
         [TestCleanup]
-        public void CleanUp()
+        public async Task CleanUp()
         {
+            await aciResources.CleanupAsync();
         }
 
         [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
@@ -55,7 +58,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 int startingLine = PgTestHelper.LogFileCurrentLineCount();
 
                 var rootCommand = CommandLineBuilder.SetUp();
-                string jobName = PgTestHelper.GetUniqueJobName("aci-pg");
+                string jobName = aciResources.Track(PgTestHelper.GetUniqueJobName("aci-pg"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 var args = new string[]{
@@ -63,6 +66,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                     "aci", "run",
                     "--settingsfile", settingsFile,
                     "--jobname", jobName,
+                    "--aciname", jobName,
                     "--packagename", sbmFileName,
                     "--override", overrideFile,
                     "--platform", "PostgreSQL",
@@ -83,6 +87,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 // Validate blob storage logs agree with ACI PG test result
                 var logFileContents = PgTestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                WriteCommandExecutionLog();
                 BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
 
                 var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
@@ -93,7 +98,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             }
             finally
             {
-                TestContext.WriteLine(ConsoleOutput.ToString());
+                WriteRemainingCommandOutput();
             }
         }
 
@@ -114,7 +119,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 int startingLine = PgTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = PgTestHelper.GetUniqueJobName("aci-pg");
+                string jobName = aciResources.Track(PgTestHelper.GetUniqueJobName("aci-pg"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 // Prep
@@ -152,6 +157,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                     "--settingsfile", settingsFile,
                     "--packagename", sbmFileName,
                     "--jobname", jobName,
+                    "--aciname", jobName,
                     "--containercount", containerCount.ToString(),
                     "--concurrencytype", concurrencyType.ToString(),
                     "--concurrency", concurrency.ToString(),
@@ -170,6 +176,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 // Validate blob storage logs
                 var logFileContents = PgTestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                WriteCommandExecutionLog();
                 BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
 
                 var dbCount = File.ReadAllLines(overrideFile).Where(l => !string.IsNullOrWhiteSpace(l)).Count();
@@ -180,7 +187,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             }
             finally
             {
-                TestContext.WriteLine(ConsoleOutput.ToString());
+                WriteRemainingCommandOutput();
             }
         }
 
@@ -201,7 +208,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 int startingLine = PgTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = PgTestHelper.GetUniqueJobName("aci-pg");
+                string jobName = aciResources.Track(PgTestHelper.GetUniqueJobName("aci-pg"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 // Prep
@@ -237,6 +244,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                     "--settingsfile", settingsFile,
                     "--packagename", sbmFileName,
                     "--jobname", jobName,
+                    "--aciname", jobName,
                     "--containercount", containerCount.ToString(),
                     "--concurrencytype", concurrencyType.ToString(),
                     "--concurrency", concurrency.ToString(),
@@ -257,6 +265,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 // Validate blob storage logs
                 var logFileContents = PgTestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                WriteCommandExecutionLog();
                 BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
 
                 var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
@@ -266,7 +275,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             }
             finally
             {
-                TestContext.WriteLine(ConsoleOutput.ToString());
+                WriteRemainingCommandOutput();
             }
         }
 
@@ -288,13 +297,14 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 int startingLine = PgTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = PgTestHelper.GetUniqueJobName("aci-pg");
+                string jobName = aciResources.Track(PgTestHelper.GetUniqueJobName("aci-pg"), settingsFile);
 
                 var args = new string[]{
                     "--loglevel", "debug",
                     "aci", "query",
                     "--settingsfile", settingsFile,
                     "--jobname", jobName,
+                    "--aciname", jobName,
                     "--override", overrideFile,
                     "--outputfile", outputFile,
                     "--queryfile", queryFile,
@@ -320,6 +330,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 // Validate blob storage logs
                 var logFileContents = PgTestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                WriteCommandExecutionLog();
                 BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
 
                 var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
@@ -329,11 +340,27 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             }
             finally
             {
-                TestContext.WriteLine(ConsoleOutput.ToString());
+                WriteRemainingCommandOutput();
                 if (File.Exists(outputFile))
                 {
                     File.Delete(outputFile);
                 }
+            }
+        }
+
+        private void WriteCommandExecutionLog()
+        {
+            TestContext.WriteLine("--- Command Execution Log ---");
+            TestContext.WriteLine(ConsoleOutput.ToString());
+            ConsoleOutput.Clear();
+        }
+
+        private void WriteRemainingCommandOutput()
+        {
+            if (ConsoleOutput.Length > 0)
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+                ConsoleOutput.Clear();
             }
         }
     }

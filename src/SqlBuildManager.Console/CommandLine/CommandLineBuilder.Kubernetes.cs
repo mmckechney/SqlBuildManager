@@ -314,6 +314,7 @@ namespace SqlBuildManager.Console.CommandLine
                     overrideOption,
                     unitTestOption,
                     storageaccountnameOption,
+                    relayProxyEndpointOption,
                     storageaccountkeyOption,
                     threadedConcurrencyTypeOption,
                 });
@@ -356,6 +357,7 @@ namespace SqlBuildManager.Console.CommandLine
 
                     keyVaultNameOption,
                     storageaccountnameOption,
+                    relayProxyEndpointOption,
                     storageaccountkeyOption
 
                 });

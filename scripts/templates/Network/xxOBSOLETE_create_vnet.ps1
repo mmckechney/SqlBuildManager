@@ -11,12 +11,12 @@ param (
 
     [Parameter()]
     [string]
-    $prefix,
+    $envName,
 
 
     [Parameter()]
     [string]
-    $resourceGroupName =$prefix + "-rg",
+    $resourceGroupName,
   
     [Parameter()]
     [string]
@@ -64,10 +64,17 @@ param (
 
 )
 
+$repoRoot = Split-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) -Parent
+$resourceGroupNameOverride = $resourceGroupName
+. (Join-Path $repoRoot "scripts\prefix_resource_names.ps1") -envName $envName
+if (-not [string]::IsNullOrWhiteSpace($resourceGroupNameOverride)) {
+    $resourceGroupName = $resourceGroupNameOverride
+}
+
 $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
 Write-Host "Creating VNET and subnets" -ForegroundColor DarkGreen
 
-$params = "{ ""namePrefix"":{""value"":""$prefix""},"
+$params = "{ ""envName"":{""value"":""$envName""},"
 if("" -ne $nsgName) { $params += """nsgName"":{""value"":""$nsgName""}," }
 if("" -ne $vnet) { $params += """vnetName"":{""value"":""$vnet""},"}
 if("" -ne $aksSubnet) { $params += """aksSubnetName"":{""value"":""$aksSubnet""},"}

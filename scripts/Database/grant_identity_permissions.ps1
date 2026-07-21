@@ -1,7 +1,7 @@
 param
 (
     [Parameter(Mandatory=$true)]
-    [string] $prefix,
+    [string] $envName,
 
     [Parameter(Mandatory=$true)]
     [string] $resourceGroupName,
@@ -17,16 +17,17 @@ param
     Grants the managed identity access to all SQL databases using Entra ID (Azure AD) authentication.
 
 .DESCRIPTION
-    This script connects to each SQL Server and database using the current user's Entra ID credentials
+    This script connects to each SQL Server and database using the active Azure identity
     and creates a database user for the managed identity, then grants it the specified role.
     
     Prerequisites:
-    - The current user must be an Entra ID admin on the SQL Server
+    - The active Azure identity must be an Entra ID admin on the SQL Server
+    - The host running this script must have connectivity to the SQL private endpoints
     - Az CLI must be installed and logged in
     - SqlServer PowerShell module must be installed (Install-Module -Name SqlServer)
 
-.PARAMETER prefix
-    The resource name prefix used when deploying resources.
+.PARAMETER envName
+    The Azure Developer CLI environment name used when deploying resources.
 
 .PARAMETER resourceGroupName
     The Azure resource group containing the SQL servers.
@@ -36,7 +37,7 @@ param
     Options: db_owner, db_datareader, db_datawriter
 
 .EXAMPLE
-    .\grant_identity_permissions.ps1 -prefix "myprefix" -resourceGroupName "myprefix-rg"
+    .\grant_identity_permissions.ps1 -envName "myenv" -resourceGroupName "rg-myenv"
 #>
 
 # Get the repo root
@@ -46,14 +47,14 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($path)) {
-    $path = Join-Path $repoRoot "src\TestConfig"
+    $path = Join-Path $repoRoot 'src' 'TestConfig'
 }
 
 #############################################
-# Get set resource name variables from prefix
+# Get resource name variables from the environment name
 #############################################
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
-. $prefixScript -prefix $prefix
+. $prefixScript -envName $envName
 
 Write-Host "Granting Managed Identity '$identityName' access to SQL databases" -ForegroundColor Cyan
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
@@ -75,7 +76,6 @@ if ($null -eq $identity) {
 }
 
 $identityClientId = $identity.clientId
-$identityPrincipalId = $identity.principalId
 Write-Host "Managed Identity Name: $identityName" -ForegroundColor DarkGreen
 Write-Host "Managed Identity Client ID: $identityClientId" -ForegroundColor DarkGreen
 
@@ -96,21 +96,7 @@ if ($null -eq $sqlServers -or $sqlServers.Count -eq 0) {
 
 Write-Host "Found $($sqlServers.Count) SQL server(s)" -ForegroundColor DarkGreen
 
-# Get current IP address and add firewall rules
-$currentIpAddress = (Invoke-WebRequest -Uri "https://api.ipify.org" -UseBasicParsing).Content.Trim()
-Write-Host "Current IP Address: $currentIpAddress" -ForegroundColor DarkGreen
-$firewallRuleName = "GrantIdentityPermissions_TempRule"
-
-# Add temporary firewall rules to all SQL servers
-foreach ($server in $sqlServers) {
-    Write-Host "Adding temporary firewall rule to $($server.name)..." -ForegroundColor DarkGreen
-    az sql server firewall-rule create --resource-group $resourceGroupName --server $server.name --name $firewallRuleName --start-ip-address $currentIpAddress --end-ip-address $currentIpAddress --output none 2>$null
-}
-
-# Wait a moment for firewall rules to propagate
-Write-Host "Waiting for firewall rules to propagate..." -ForegroundColor DarkGreen
-Start-Sleep -Seconds 10
-
+$failureCount = 0
 foreach ($server in $sqlServers) {
     $serverFqdn = $server.fullyQualifiedDomainName
     Write-Host "`nProcessing SQL Server: $serverFqdn" -ForegroundColor Cyan
@@ -126,14 +112,17 @@ foreach ($server in $sqlServers) {
     foreach ($dbName in $databases) {
         Write-Host "  Processing database: $dbName" -ForegroundColor DarkGreen
 
-        # SQL to create user and grant role
-        # For external (Entra ID) users, we use CREATE USER ... FROM EXTERNAL PROVIDER
+        # Create the external user from its client ID without requiring Microsoft Graph
+        # directory lookup permissions on the SQL logical server.
         $sql = @"
--- Check if user already exists
+DECLARE @name SYSNAME = '$identityName';
+DECLARE @clientId UNIQUEIDENTIFIER = '$identityClientId';
+DECLARE @sid NVARCHAR(34) = CONVERT(VARCHAR(34), CONVERT(VARBINARY(16), @clientId), 1);
+
 IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = '$identityName')
 BEGIN
-    -- Create user from external provider (Entra ID / Azure AD)
-    CREATE USER [$identityName] FROM EXTERNAL PROVIDER;
+    DECLARE @createUser NVARCHAR(MAX) = N'CREATE USER [' + @name + '] WITH SID = ' + @sid + ', TYPE = E;';
+    EXEC (@createUser);
     PRINT 'Created user [$identityName]';
 END
 ELSE
@@ -158,66 +147,30 @@ BEGIN
 END
 "@
 
-        $maxRetries = 3
-        $retryCount = 0
         $success = $false
-
-        while (-not $success -and $retryCount -lt $maxRetries) {
+        for ($attempt = 1; $attempt -le 5 -and -not $success; $attempt++) {
             try {
-                # Execute SQL using the access token
                 Invoke-Sqlcmd -ServerInstance $serverFqdn -Database $dbName -AccessToken $accessToken -Query $sql -ErrorAction Stop
                 Write-Host "    ✓ Granted $databaseRole to $identityName" -ForegroundColor Green
                 $success = $true
             }
             catch {
-                $errorMessage = $_.Exception.Message
-                
-                # Check if the error is due to blocked IP address
-                if ($errorMessage -match "Client with IP address '([0-9\.]+)' is not allowed") {
-                    $blockedIp = $matches[1]
-                    Write-Host "    ⚠ Connection blocked for IP: $blockedIp" -ForegroundColor Yellow
-                    Write-Host "    Adding IP $blockedIp to firewall rules..." -ForegroundColor Yellow
-                    
-                    # Add the blocked IP to firewall rules
-                    $dynamicRuleName = "GrantIdentityPermissions_Dynamic_$blockedIp"
-                    az sql server firewall-rule create --resource-group $resourceGroupName --server $server.name --name $dynamicRuleName --start-ip-address $blockedIp --end-ip-address $blockedIp --output none 2>$null
-                    
-                    # Wait for firewall rule to propagate
-                    Write-Host "    Waiting for firewall rule to propagate..." -ForegroundColor Yellow
-                    Start-Sleep -Seconds 5
-                    
-                    $retryCount++
-                    Write-Host "    Retrying ($retryCount/$maxRetries)..." -ForegroundColor Yellow
+                if ($attempt -lt 5) {
+                    Write-Host "    Connection attempt $attempt failed; retrying while private DNS and administrator changes propagate..." -ForegroundColor Yellow
+                    Start-Sleep -Seconds 15
                 }
                 else {
-                    # Different error, don't retry
-                    Write-Host "    ✗ Failed to grant permissions: $errorMessage" -ForegroundColor Red
-                    break
+                    Write-Host "    ✗ Failed to grant permissions: $($_.Exception.Message)" -ForegroundColor Red
+                    $failureCount++
                 }
             }
-        }
-
-        if (-not $success -and $retryCount -ge $maxRetries) {
-            Write-Host "    ✗ Failed after $maxRetries retries" -ForegroundColor Red
         }
     }
 }
 
-# Clean up temporary firewall rules
-Write-Host "`nCleaning up temporary firewall rules..." -ForegroundColor DarkGreen
-foreach ($server in $sqlServers) {
-    # Remove the main temporary firewall rule
-    az sql server firewall-rule delete --resource-group $resourceGroupName --server $server.name --name $firewallRuleName --output none 2>$null
-    Write-Host "  Removed firewall rule from $($server.name)" -ForegroundColor DarkGreen
-    
-    # Remove any dynamically created firewall rules
-    $allRules = az sql server firewall-rule list --resource-group $resourceGroupName --server $server.name --query "[?starts_with(name, 'GrantIdentityPermissions_Dynamic_')].name" -o tsv
-    if ($allRules) {
-        foreach ($ruleName in $allRules) {
-            az sql server firewall-rule delete --resource-group $resourceGroupName --server $server.name --name $ruleName --output none 2>$null
-            Write-Host "  Removed dynamic firewall rule: $ruleName" -ForegroundColor DarkGreen
-        }
-    }
+if ($failureCount -gt 0) {
+    Write-Error "Failed to grant SQL permissions on $failureCount database(s)."
+    exit 1
 }
 
 Write-Host "`n========================================" -ForegroundColor Cyan

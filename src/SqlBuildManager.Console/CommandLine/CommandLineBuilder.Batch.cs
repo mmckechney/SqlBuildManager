@@ -159,9 +159,9 @@ namespace SqlBuildManager.Console.CommandLine
                     batchaccounturlOption
                 };
                 cmd.AddRange(SettingsFileExistingOptions);
-                cmd.SetAction((parseResult) => {
+                cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
-                    return Worker.Batch_NodeCleanUp(cmdLine);
+                    return await Worker.Batch_NodeCleanUp(cmdLine);
                 });
                 return cmd;
             }

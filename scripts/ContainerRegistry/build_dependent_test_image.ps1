@@ -1,7 +1,7 @@
 
 param
 (
-    [string] $prefix,
+    [string] $envName,
     [string] $resourceGroupName,
     [string] $imageTag = "dependent-test-runner"
 )
@@ -14,35 +14,35 @@ param
     Copies the src/ folder (excluding build artifacts) to a temp directory and uses
     ACR Build to build the Dockerfile.dependent-tests image.
 
-.PARAMETER prefix
-    The resource name prefix used when deploying resources.
+.PARAMETER envName
+    The Azure Developer CLI environment name used when deploying resources.
 
 .PARAMETER resourceGroupName
-    Optional resource group name override (defaults to "$prefix-rg").
+    Optional resource group name override. Defaults to the resource-group prefix from infra/resourcetypes.json plus envName.
 
 .PARAMETER imageTag
     Tag for the container image (default: dependent-test-runner).
 #>
 
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+# Use $PSScriptRoot for portable repo-root resolution.
 $repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
-    $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
-}
-
-if([string]::IsNullOrWhiteSpace($resourceGroupName)) {
-    $resourceGroupName = "$prefix-rg"
+    $repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 }
 
 $testImageName = "sqlbuildmanager-dependent-tests"
 
 #############################################
-# Get set resource name variables from prefix
+# Get resource name variables from the environment name
 #############################################
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
-. $prefixScript -prefix $prefix
-
-if ([string]::IsNullOrWhiteSpace($resourceGroupName)) {
-    $resourceGroupName = "$prefix-rg"
+$resourceGroupNameOverride = $resourceGroupName
+. $prefixScript -envName $envName
+if (-not [string]::IsNullOrWhiteSpace($resourceGroupNameOverride)) {
+    $resourceGroupName = $resourceGroupNameOverride
 }
 
 #############################################
@@ -60,7 +60,7 @@ Write-Host "Building image using ACR Build..." -ForegroundColor DarkGreen
 Write-Host "  Context: $contextPath" -ForegroundColor DarkGray
 
 # Copy source to temp folder excluding .vs and other problematic folders
-$tempContext = Join-Path $env:TEMP "sbm-dependent-tests-$(Get-Date -Format 'yyyyMMddHHmmss')"
+$tempContext = Join-Path ([System.IO.Path]::GetTempPath()) "sbm-dependent-tests-$(Get-Date -Format 'yyyyMMddHHmmss')"
 Write-Host "Copying source to temp location (excluding .vs, bin, obj)..." -ForegroundColor DarkGray
 
 $excludeDirs = ".vs", ".vs_backup", "bin", "obj", "TestResults"
@@ -95,6 +95,7 @@ try {
         --image "${testImageName}:${imageTag}" `
         --file "$tempContext\$dockerfileName" `
         --no-logs `
+        --output none `
         $tempContext
     
     if ($LASTEXITCODE -ne 0) {

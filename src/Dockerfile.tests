@@ -22,13 +22,33 @@ RUN cp -r TestConfig /tests/TestConfig
 # Create the final test runner image (using SDK since we need dotnet test)
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS testrunner
 
-# Install Azure CLI and kubectl
+# Pinned kubectl version and architecture-aware SHA-256 checksums (update both when bumping).
+# Checksums sourced from https://dl.k8s.io/release/<version>/bin/linux/<arch>/kubectl.sha256
+ARG KUBECTL_VERSION=v1.33.0
+ARG KUBECTL_AMD64_SHA256=9efe8d3facb23e1618cba36fb1c4e15ac9dc3ed5a2c2e18109e4a66b2bac12dc
+ARG KUBECTL_ARM64_SHA256=48541d119455ac5bcc5043275ccda792371e0b112483aa0b29378439cf6322b9
+
+# Install Azure CLI from the signed Microsoft package repository and kubectl with SHA-256 verification.
+# No remote shell scripts are executed (replaces the former curl | bash Azure CLI install).
 RUN apt-get update && \
-    apt-get install -y curl gnupg lsb-release && \
-    curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
-    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
-    rm kubectl && \
+    apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg && \
+    mkdir -p /etc/apt/keyrings && \
+    curl -sLS https://packages.microsoft.com/keys/microsoft.asc | \
+      gpg --dearmor -o /etc/apt/keyrings/microsoft.gpg && \
+    chmod go+r /etc/apt/keyrings/microsoft.gpg && \
+    AZ_DIST=$(lsb_release -cs) && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ ${AZ_DIST} main" \
+      > /etc/apt/sources.list.d/azure-cli.list && \
+    apt-get update && \
+    apt-get install -y azure-cli && \
+    ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "amd64" ]; then EXPECTED_SHA256="${KUBECTL_AMD64_SHA256}"; \
+    elif [ "$ARCH" = "arm64" ]; then EXPECTED_SHA256="${KUBECTL_ARM64_SHA256}"; \
+    else echo "Unsupported architecture: $ARCH" >&2 && exit 1; fi && \
+    curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl" -o /tmp/kubectl && \
+    echo "${EXPECTED_SHA256}  /tmp/kubectl" | sha256sum -c - && \
+    install -o root -g root -m 0755 /tmp/kubectl /usr/local/bin/kubectl && \
+    rm /tmp/kubectl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

@@ -174,17 +174,35 @@ namespace SqlBuildManager.Console
         }
 
         private static bool aciIsInErrorState = false;
-        private static async Task AciGetErrorState(CommandLineArgs cmdLine)
+        private static async Task AciGetErrorState(CommandLineArgs cmdLine, CancellationToken cancellationToken)
         {
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
                     var stat = await Aci.AciManager.AciIsInErrorState(cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName);
                     aciIsInErrorState = stat;
                 }
-                catch { }
-                System.Threading.Thread.Sleep(15000);
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                catch (Exception exception)
+                {
+                    log.LogDebug(
+                        "Unable to poll ACI deployment '{AciName}' for an error state: {Reason}",
+                        cmdLine.AciArgs.AciName,
+                        exception.Message);
+                }
+
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
             }
         }
 
@@ -244,7 +262,7 @@ namespace SqlBuildManager.Console
         #region Container Execution Methods
         internal static async Task<int> AciWorker_RunQueueQuery(CommandLineArgs cmdLine)
         {
-            (bool success, cmdLine) = AciWorker_PrepCommandLine(cmdLine);
+            (bool success, cmdLine) = await AciWorker_PrepCommandLine(cmdLine);
             if (!success)
             {
                 return -1;
@@ -254,14 +272,14 @@ namespace SqlBuildManager.Console
 
         internal static async Task<int> AciWorker_RunQueueBuild(CommandLineArgs cmdLine)
         {
-            (bool success, cmdLine) = AciWorker_PrepCommandLine(cmdLine);
+            (bool success, cmdLine) = await AciWorker_PrepCommandLine(cmdLine);
             if (!success)
             {
                 return -1;
             }
             return await GenericContainer.GenericContainerWorker_RunQueueBuild(cmdLine);
         }
-        private static (bool, CommandLineArgs) AciWorker_PrepCommandLine(CommandLineArgs cmdLine)
+        private static async Task<(bool, CommandLineArgs)> AciWorker_PrepCommandLine(CommandLineArgs cmdLine)
         {
             SqlBuildManager.Logging.ApplicationLogging.SetLogLevel(cmdLine.LogLevel);
             cmdLine.RootLoggingPath = Path.Combine(Directory.GetCurrentDirectory(), "logs");
@@ -271,11 +289,9 @@ namespace SqlBuildManager.Console
             }
             cmdLine.RunningAsContainer = true;
 
-
-
             int seconds = 5;
             log.LogInformation($"Waiting {seconds} for Managed Identity assignment");
-            System.Threading.Thread.Sleep(seconds * 1000);
+            await Task.Delay(seconds * 1000);
 
             cmdLine = ContainerShared.EnvironmentVariableHelper.ReadRuntimeEnvironmentVariables(cmdLine);
 

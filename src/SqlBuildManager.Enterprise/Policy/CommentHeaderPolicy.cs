@@ -8,6 +8,13 @@ namespace SqlBuildManager.Enterprise.Policy
     public class CommentHeaderPolicy : shP.IScriptPolicy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+
+        // PERF-006: Static cached regexes compiled once per process.
+        private static readonly Regex _regFindProc = new Regex(@"((\bCREATE\b\s*\bPROCEDURE\b)|(\bALTER\b\s*\bPROCEDURE\b)) ([A-Za-z0-9\[\]\._]{1,})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regFindFunc = new Regex(@"((\bCREATE\b\s*\bFUNCTION\b)|(\bALTER\b\s*\bFUNCTION\b)) ([A-Za-z0-9\[\]\._]{1,})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regCommentHeader = new Regex(@"(/\*\*\*\*\*\*\*\*\*)|(\*\*\s*Desc)|(\*\*\s*Auth)|(\*\*\s*Change History)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regDate = new Regex(@"\d{1,2}\/\d{1,2}\/\d{2,4}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         #region IScriptPolicy Members
 
         public string PolicyId
@@ -48,28 +55,21 @@ namespace SqlBuildManager.Enterprise.Policy
             try
             {
                 message = string.Empty;
-                //With this regex, the SP name is always in the 4th group find...
-                Regex regFindProc = new Regex(@"((\bCREATE\b\s*\bPROCEDURE\b)|(\bALTER\b\s*\bPROCEDURE\b)) ([A-Za-z0-9\[\]\._]{1,})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                //With this regex, the SP name is always in the 4th group find...
-                Regex regFindFunc = new Regex(@"((\bCREATE\b\s*\bFUNCTION\b)|(\bALTER\b\s*\bFUNCTION\b)) ([A-Za-z0-9\[\]\._]{1,})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regCommentHeader = new Regex(@"(/\*\*\*\*\*\*\*\*\*)|(\*\*\s*Desc)|(\*\*\s*Auth)|(\*\*\s*Change History)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex regDate = new Regex(@"\d{1,2}\/\d{1,2}\/\d{2,4}", RegexOptions.IgnoreCase);
-
                 List<string> names = new List<string>();
                 string tmpVal = string.Empty;
 
                 //Find a proc...
-                if (regFindProc.Match(script).Success && regFindProc.Match(script).Groups.Count > 3)
+                if (_regFindProc.Match(script).Success && _regFindProc.Match(script).Groups.Count > 3)
                 {
-                    tmpVal = regFindProc.Match(script).Groups[4].Value;
+                    tmpVal = _regFindProc.Match(script).Groups[4].Value;
                     if (!names.Contains(tmpVal))
                         names.Add(tmpVal);
                 }
 
                 //or find a function...
-                if (regFindFunc.Match(script).Success && regFindFunc.Match(script).Groups.Count > 3)
+                if (_regFindFunc.Match(script).Success && _regFindFunc.Match(script).Groups.Count > 3)
                 {
-                    tmpVal = regFindFunc.Match(script).Groups[4].Value;
+                    tmpVal = _regFindFunc.Match(script).Groups[4].Value;
                     if (!names.Contains(tmpVal))
                         names.Add(tmpVal);
                 }
@@ -82,7 +82,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 }
 
                 //Check for the header format...
-                MatchCollection header = regCommentHeader.Matches(script);
+                MatchCollection header = _regCommentHeader.Matches(script);
                 if (header.Count < 4)
                 {
                     message = "No standard comment header found";
@@ -90,7 +90,7 @@ namespace SqlBuildManager.Enterprise.Policy
                 }
 
                 int lookForDateStart = header[0].Index;
-                MatchCollection collDates = regDate.Matches(script, lookForDateStart);
+                MatchCollection collDates = _regDate.Matches(script, lookForDateStart);
                 if (collDates.Count == 0)
                 {
                     message = "No create date or change dates found.";

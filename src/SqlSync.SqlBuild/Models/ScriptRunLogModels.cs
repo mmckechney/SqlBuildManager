@@ -17,4 +17,14 @@ namespace SqlSync.SqlBuild.Models
         string? AllowBlockUpdateId,
         string? ScriptText,
         string? Tag);
+
+    /// <summary>
+    /// Pre-fetched blocking SQL log status for a single script.
+    /// Returned by <c>IDatabaseUtility.GetBatchBlockingSqlLog</c>.
+    /// </summary>
+    public readonly record struct SqlLogStatus(
+        bool HasBlock,
+        string ScriptHash,
+        string ScriptTextHash,
+        DateTime CommitDate);
 }

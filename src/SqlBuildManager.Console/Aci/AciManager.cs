@@ -179,7 +179,12 @@ namespace SqlBuildManager.Console.Aci
 
             try
             {
-                log.LogDebug(JsonSerializer.Serialize<ContainerGroupData>(containerGroupData, new JsonSerializerOptions() { WriteIndented = true }));
+                log.LogDebug(
+                    "Deploying ACI group '{AciName}' with {ContainerCount} Linux container(s), image '{ImageName}', managed identity enabled, VNet integration: {VnetIntegrated}",
+                    cmdLine.AciArgs.AciName,
+                    containerGroupData.Containers.Count,
+                    imageName,
+                    subnetId.Length > 0);
 
                 var coll = rgResourceGroup.GetContainerGroups();
                 var result = await coll.CreateOrUpdateAsync(WaitUntil.Completed, cmdLine.AciArgs.AciName, containerGroupData);
@@ -259,17 +264,16 @@ namespace SqlBuildManager.Console.Aci
                 {
                     return false;
                 }
-                else
-                {
-                    log.LogError(rexe.Message);
-                    return true;
-                }
+                // Any non-404 ARM error means we cannot confirm existence — rethrow so
+                // callers see a real failure rather than a false positive.
+                log.LogError(rexe, "ARM request failed while checking ACI instance existence (status {Status}): {Message}", rexe.Status, rexe.Message);
+                throw;
             }
             catch (Exception ex)
             {
-
-                log.LogError(ex.Message);
-                return true;
+                // Unknown failure — fail closed; do NOT treat as success.
+                log.LogError(ex, "Unexpected error while checking ACI instance existence: {Message}", ex.Message);
+                throw;
             }
         }
 
@@ -280,13 +284,55 @@ namespace SqlBuildManager.Console.Aci
                 log.LogInformation("Removing any pre-existing ACI deployment");
                 var success = await ArmHelper.DeleteResource(subscriptionId, resourceGroupName, aciName);
                 //Wait for the delete to complete
-                Thread.Sleep(10000);
+                await Task.Delay(10000);
                 log.LogInformation("Pre-existing ACI deployment removed");
                 return success;
             }
             catch (Exception exe)
             {
                 log.LogError($"Unable to remove existing ACI instance: {exe.Message}");
+                return false;
+            }
+        }
+
+        internal static async Task<bool> DeleteAciResources(
+            string subscriptionId,
+            string resourceGroupName,
+            string aciName)
+        {
+            var containerDeleted = await DeleteAciInstance(subscriptionId, resourceGroupName, aciName);
+            var networkProfileDeleted = await DeleteNetworkProfileIfExists(
+                subscriptionId,
+                resourceGroupName,
+                $"{aciName}profile");
+            return containerDeleted && networkProfileDeleted;
+        }
+
+        private static async Task<bool> DeleteNetworkProfileIfExists(
+            string subscriptionId,
+            string resourceGroupName,
+            string networkProfileName)
+        {
+            var resourceId =
+                $"/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}" +
+                $"/providers/Microsoft.Network/networkProfiles/{networkProfileName}";
+            try
+            {
+                await ArmHelper.DeleteResource(resourceId);
+                log.LogInformation("ACI network profile '{NetworkProfileName}' removed", networkProfileName);
+                return true;
+            }
+            catch (RequestFailedException exception) when (exception.Status == 404)
+            {
+                log.LogDebug("ACI network profile '{NetworkProfileName}' does not exist", networkProfileName);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                log.LogError(
+                    exception,
+                    "Unable to remove ACI network profile '{NetworkProfileName}'",
+                    networkProfileName);
                 return false;
             }
         }
@@ -304,9 +350,24 @@ namespace SqlBuildManager.Console.Aci
         private static async Task<Aci.Arm.Deployment> GetAciInstanceData(string subscriptionId, string resourceGroupName, string aciName)
         {
             var resp = await ArmHelper.GetAciDeploymentDetails(subscriptionId, resourceGroupName, aciName);
-            var aciResult = JsonSerializer.Deserialize<Aci.Arm.Deployment>(JsonSerializer.Serialize(resp));
+            return ParseAciDeployment(resp);
+        }
 
-            return aciResult!;
+        internal static Aci.Arm.Deployment ParseAciDeployment(string responseJson)
+        {
+            return JsonSerializer.Deserialize<Aci.Arm.Deployment>(responseJson)
+                ?? throw new JsonException("The ACI deployment response was empty.");
+        }
+
+        /// <summary>
+        /// Classifies an ARM HTTP status code: 404 means "not found" (returns false),
+        /// any other non-success status should be treated as an error (returns null).
+        /// Used by <see cref="AciInstanceExists"/> so the decision logic is unit-testable.
+        /// </summary>
+        internal static bool? ClassifyArmExistenceStatus(int httpStatus)
+        {
+            if (httpStatus == 404) return false;   // definitive "not found"
+            return null;                             // non-404: cannot determine — caller must throw
         }
 
         #region Container Worker Methods

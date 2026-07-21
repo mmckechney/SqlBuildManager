@@ -45,6 +45,9 @@ jobs:
     - name: Run SqlSync.Connection.UnitTest
       run: dotnet test ./src/SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj --configuration Release
 
+    - name: Run SqlSync.DbInformation.UnitTest
+      run: dotnet test ./src/SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.csproj --configuration Release
+
     - name: Run SqlSync.ObjectScript.UnitTest
       run: dotnet test ./src/SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj --configuration Release
 

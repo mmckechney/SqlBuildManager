@@ -8,6 +8,10 @@ namespace SqlBuildManager.Enterprise.Policy
     class GrantExecuteToPublicPolicy : shP.IScriptPolicy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+
+        // PERF-006: Static cached regex compiled once per process.
+        private static readonly Regex _regGrantPublic = new Regex(@"GRANT.+TO.+public", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         #region IScriptPolicy Members
         public string PolicyId
         {
@@ -37,10 +41,7 @@ namespace SqlBuildManager.Enterprise.Policy
             try
             {
                 message = string.Empty;
-                //With this regex, the SP name is always in the 4th group find...
-                Regex regGrantPublic = new Regex(@"GRANT.+TO.+public", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-                if (regGrantPublic.Match(script).Success)
+                if (_regGrantPublic.Match(script).Success)
                 {
                     message = "Script contains a GRANT statement to the [public] group";
                     return false;

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Relay;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild.Models;
@@ -41,7 +42,17 @@ namespace SqlBuildManager.Console
                 Directory.CreateDirectory(path);
             }
 
-            if (!sqlB.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, fullName, cmdLine.DefaultScriptTimeout, cmdLine.IdentityArgs.ClientId))
+            if (!sqlB.DacPacHelper.ExtractDacPac(
+                cmdLine.Database,
+                cmdLine.Server,
+                cmdLine.AuthenticationArgs.AuthenticationType,
+                cmdLine.AuthenticationArgs.UserName,
+                cmdLine.AuthenticationArgs.Password,
+                fullName,
+                cmdLine.DefaultScriptTimeout,
+                cmdLine.IdentityArgs.ClientId,
+                fallbackEligibility: RelayProxyManager.IsSqlFallbackEligible,
+                fallbackExtractor: RelayProxyManager.ExtractSqlTestDacpac))
             {
                 log.LogError($"Error creating the dacpac from {cmdLine.Server} : {cmdLine.Database}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
@@ -273,7 +284,17 @@ namespace SqlBuildManager.Console
             string id = Guid.NewGuid().ToString();
             string goldTmp = Path.Combine(path, $"gold-{id}.dacpac");
             string targetTmp = Path.Combine(path, $"target-{id}.dacpac");
-            if (!sqlB.DacPacHelper.ExtractDacPac(cmdLine.SynchronizeArgs.GoldDatabase, cmdLine.SynchronizeArgs.GoldServer, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, goldTmp, cmdLine.DefaultScriptTimeout, cmdLine.IdentityArgs.ClientId))
+            if (!sqlB.DacPacHelper.ExtractDacPac(
+                cmdLine.SynchronizeArgs.GoldDatabase,
+                cmdLine.SynchronizeArgs.GoldServer,
+                cmdLine.AuthenticationArgs.AuthenticationType,
+                cmdLine.AuthenticationArgs.UserName,
+                cmdLine.AuthenticationArgs.Password,
+                goldTmp,
+                cmdLine.DefaultScriptTimeout,
+                cmdLine.IdentityArgs.ClientId,
+                fallbackEligibility: RelayProxyManager.IsSqlFallbackEligible,
+                fallbackExtractor: RelayProxyManager.ExtractSqlTestDacpac))
             {
                 log.LogError($"Error creating the tempprary dacpac from {cmdLine.SynchronizeArgs.GoldServer} : {cmdLine.SynchronizeArgs.GoldDatabase}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
@@ -283,7 +304,17 @@ namespace SqlBuildManager.Console
                 log.LogInformation($"Temporary DACPAC created from {cmdLine.SynchronizeArgs.GoldServer} : {cmdLine.SynchronizeArgs.GoldDatabase} saved to -- {goldTmp}");
             }
 
-            if (!sqlB.DacPacHelper.ExtractDacPac(cmdLine.Database, cmdLine.Server, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, targetTmp, cmdLine.DefaultScriptTimeout, cmdLine.IdentityArgs.ClientId))
+            if (!sqlB.DacPacHelper.ExtractDacPac(
+                cmdLine.Database,
+                cmdLine.Server,
+                cmdLine.AuthenticationArgs.AuthenticationType,
+                cmdLine.AuthenticationArgs.UserName,
+                cmdLine.AuthenticationArgs.Password,
+                targetTmp,
+                cmdLine.DefaultScriptTimeout,
+                cmdLine.IdentityArgs.ClientId,
+                fallbackEligibility: RelayProxyManager.IsSqlFallbackEligible,
+                fallbackExtractor: RelayProxyManager.ExtractSqlTestDacpac))
             {
                 log.LogError($"Error creating the tempprary dacpac from {cmdLine.Server} : {cmdLine.Database}");
                 return (int)ExecutionReturn.BuildFileExtractionError;
@@ -581,7 +612,12 @@ namespace SqlBuildManager.Console
                    cmd.AuthenticationArgs.Password,
                    cmd.BuildRevision,
                    cmd.DefaultScriptTimeout,
-                   multiDb, batchScripts, cmd.AllowObjectDelete, cmd.IdentityArgs.ClientId);
+                   multiDb,
+                   batchScripts,
+                   cmd.AllowObjectDelete,
+                   cmd.IdentityArgs.ClientId,
+                   fallbackEligibility: RelayProxyManager.IsSqlFallbackEligible,
+                   fallbackExtractor: RelayProxyManager.ExtractSqlTestDacpac);
 
             }
             else
@@ -596,7 +632,12 @@ namespace SqlBuildManager.Console
                     cmd.AuthenticationArgs.Password,
                     cmd.BuildRevision,
                     cmd.DefaultScriptTimeout,
-                    multiDb, batchScripts, cmd.AllowObjectDelete, cmd.IdentityArgs.ClientId);
+                    multiDb,
+                    batchScripts,
+                    cmd.AllowObjectDelete,
+                    cmd.IdentityArgs.ClientId,
+                    fallbackEligibility: RelayProxyManager.IsSqlFallbackEligible,
+                    fallbackExtractor: RelayProxyManager.ExtractSqlTestDacpac);
             }
         }
 

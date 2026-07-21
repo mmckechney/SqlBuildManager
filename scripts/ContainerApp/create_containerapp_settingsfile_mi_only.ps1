@@ -1,7 +1,7 @@
 param
 (
     [Parameter(Mandatory=$true)]
-    [string] $prefix,
+    [string] $envName,
 
     [string] $sbmExe = "sbm.exe",
     [string] $path,
@@ -22,8 +22,8 @@ param
     - SQL: Uses Managed Identity (no username/password)
     - Container Registry: Uses Managed Identity (no password)
 
-.PARAMETER prefix
-    The resource name prefix used when deploying resources.
+.PARAMETER envName
+    The Azure Developer CLI environment name used when deploying resources.
 
 .PARAMETER sbmExe
     Path to the sbm.exe executable.
@@ -32,7 +32,7 @@ param
     Output path for the generated settings files.
 
 .PARAMETER resourceGroupName
-    The Azure resource group name (defaults to {prefix}-rg).
+    The Azure resource group name (defaults to rg-{envName}).
 
 .PARAMETER imageTag
     The container image tag to use.
@@ -52,10 +52,10 @@ if ([string]::IsNullOrWhiteSpace($path)) {
 # Get set resource name variables from prefix
 #############################################
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
-. $prefixScript -prefix $prefix
-
-if ([string]::IsNullOrWhiteSpace($resourceGroupName)) {
-    $resourceGroupName = "$prefix-rg"
+$resourceGroupNameOverride = $resourceGroupName
+. $prefixScript -envName $envName
+if (-not [string]::IsNullOrWhiteSpace($resourceGroupNameOverride)) {
+    $resourceGroupName = $resourceGroupNameOverride
 }
 
 Write-Host "============================================" -ForegroundColor Cyan
@@ -113,6 +113,7 @@ $params += @("--imagetag", $imageTag)
 $params += @("--settingsfile", $settingsContainerApp)
 $params += @("--settingsfilekey", $keyFile)
 $params += @("--storageaccountname", $storageAccountName)
+$params += @("--relayproxyendpoint", "https://$relayNamespaceName.servicebus.windows.net/relayproxy")
 # NO --storageaccountkey - will use Managed Identity
 $params += @("--ehrg", $resourceGroupName)
 $params += @("--ehsub", $subscriptionId)

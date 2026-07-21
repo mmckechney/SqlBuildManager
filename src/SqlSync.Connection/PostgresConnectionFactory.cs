@@ -2,6 +2,8 @@ using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using System;
+using System.Collections.Concurrent;
 using System.Data.Common;
 
 namespace SqlSync.Connection
@@ -18,6 +20,10 @@ namespace SqlSync.Connection
         /// The Azure AD scope for Azure Database for PostgreSQL.
         /// </summary>
         private static readonly string[] PgAadScopes = new[] { "https://ossrdbms-aad.database.windows.net/.default" };
+        private static readonly TimeSpan TokenRefreshBuffer = TimeSpan.FromMinutes(5);
+        private static readonly ConcurrentDictionary<string, TokenCredential> Credentials = new();
+        private static readonly ConcurrentDictionary<string, AccessToken> Tokens = new();
+        private static readonly ConcurrentDictionary<string, object> TokenLocks = new();
 
         public DbConnection CreateConnection(ConnectionData connData)
         {
@@ -61,7 +67,9 @@ namespace SqlSync.Connection
             builder.Port = port;
             builder.Database = dbName;
             builder.Timeout = scriptTimeOut;
-            builder.Pooling = false;
+            builder.Pooling = true;
+            builder.MinPoolSize = ConnectionHelper.MinimumPoolSize;
+            builder.MaxPoolSize = ConnectionHelper.MaximumPoolSize;
             builder.ApplicationName = ConnectionHelper.appName;
 
             switch (authType)
@@ -116,20 +124,35 @@ namespace SqlSync.Connection
         {
             try
             {
-                TokenCredential credential;
-                if (!string.IsNullOrEmpty(managedIdentityClientId))
+                string cacheKey = string.IsNullOrWhiteSpace(managedIdentityClientId)
+                    ? "<default>"
+                    : managedIdentityClientId;
+                if (Tokens.TryGetValue(cacheKey, out AccessToken cachedToken) &&
+                    cachedToken.ExpiresOn > DateTimeOffset.UtcNow.Add(TokenRefreshBuffer))
                 {
-                    credential = new ManagedIdentityCredential(managedIdentityClientId);
-                }
-                else
-                {
-                    credential = new DefaultAzureCredential();
+                    return cachedToken.Token;
                 }
 
-                var tokenRequestContext = new TokenRequestContext(PgAadScopes);
-                var token = credential.GetToken(tokenRequestContext, default);
-                log.LogDebug("Successfully acquired Azure AD token for PostgreSQL");
-                return token.Token;
+                lock (TokenLocks.GetOrAdd(cacheKey, _ => new object()))
+                {
+                    if (Tokens.TryGetValue(cacheKey, out cachedToken) &&
+                        cachedToken.ExpiresOn > DateTimeOffset.UtcNow.Add(TokenRefreshBuffer))
+                    {
+                        return cachedToken.Token;
+                    }
+
+                    TokenCredential credential = Credentials.GetOrAdd(cacheKey, _ =>
+                        string.IsNullOrWhiteSpace(managedIdentityClientId)
+                            ? new DefaultAzureCredential()
+                            : new ManagedIdentityCredential(
+                                ManagedIdentityId.FromUserAssignedClientId(managedIdentityClientId)));
+
+                    var tokenRequestContext = new TokenRequestContext(PgAadScopes);
+                    AccessToken token = credential.GetToken(tokenRequestContext, default);
+                    Tokens[cacheKey] = token;
+                    log.LogDebug("Successfully acquired Azure AD token for PostgreSQL");
+                    return token.Token;
+                }
             }
             catch (System.Exception ex)
             {

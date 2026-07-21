@@ -1,0 +1,159 @@
+name: External Runtime Tests (SQL Server + PostgreSQL)
+
+# Cost-bearing external integration tests that run against live Azure services.
+# Uses run_all_sqlserver_external_tests_in_aci.ps1 and
+# run_all_postgres_external_tests_in_aci.ps1 with automatic cleanup.
+#
+# Triggers:
+#   - Weekly schedule (Sundays 03:00 UTC) — nightly/weekly baseline.
+#   - Manual dispatch — for pre-release or on-demand runs.
+#   - On push of version tags (e.g., v*) — pre-release gate.
+#
+# Required secrets (repo or environment level):
+#   AZURE_CLIENT_ID       — OIDC federated client ID
+#   AZURE_TENANT_ID       — Azure AD tenant ID
+#   AZURE_SUBSCRIPTION_ID — Azure subscription ID
+#   AZURE_NAME_PREFIX     — resource-name prefix (e.g. "sbm-ci")
+#
+# The underlying scripts read platform flags from the AZD environment to skip
+# tests for platforms not deployed (ACI, Batch, Container Apps, AKS).
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'   # Sundays 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      prefix:
+        description: 'Resource name prefix (overrides secret AZURE_NAME_PREFIX)'
+        required: false
+      suite:
+        description: 'Which suite to run'
+        type: choice
+        options: [both, sqlserver, postgres]
+        default: both
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  external-sqlserver:
+    name: External Tests – SQL Server
+    if: >
+      github.event_name == 'schedule' ||
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+       (inputs.suite == 'both' || inputs.suite == 'sqlserver'))
+    runs-on: ubuntu-latest
+    environment: external-tests
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Log in to Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Resolve resource prefix
+        id: prefix
+        shell: pwsh
+        run: |
+          $prefix = "${{ inputs.prefix }}"
+          if ([string]::IsNullOrWhiteSpace($prefix)) {
+            $prefix = "${{ secrets.AZURE_NAME_PREFIX }}"
+          }
+          if ([string]::IsNullOrWhiteSpace($prefix)) {
+            Write-Error "Resource prefix is required."
+            exit 1
+          }
+          "value=$prefix" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Configure AZD environment prefix
+        shell: pwsh
+        run: |
+          # Make the prefix available to azd commands inside the script.
+          "AZURE_NAME_PREFIX=${{ steps.prefix.outputs.value }}" | Out-File -FilePath $env:GITHUB_ENV -Append
+          # Also configure azd if available (best-effort; scripts fall back to env var).
+          if (Get-Command azd -ErrorAction SilentlyContinue) {
+            azd env set AZURE_NAME_PREFIX "${{ steps.prefix.outputs.value }}" 2>$null
+          }
+
+      - name: Run SQL Server external test suites
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/scripts/tests/run_all_sqlserver_external_tests_in_aci.ps1" `
+            -envName "${{ steps.prefix.outputs.value }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload SQL Server test results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: external-sqlserver-results-${{ github.run_id }}
+          path: testresults/**
+          if-no-files-found: warn
+
+  external-postgres:
+    name: External Tests – PostgreSQL
+    if: >
+      github.event_name == 'schedule' ||
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+       (inputs.suite == 'both' || inputs.suite == 'postgres'))
+    runs-on: ubuntu-latest
+    environment: external-tests
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Log in to Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Resolve resource prefix
+        id: prefix
+        shell: pwsh
+        run: |
+          $prefix = "${{ inputs.prefix }}"
+          if ([string]::IsNullOrWhiteSpace($prefix)) {
+            $prefix = "${{ secrets.AZURE_NAME_PREFIX }}"
+          }
+          if ([string]::IsNullOrWhiteSpace($prefix)) {
+            Write-Error "Resource prefix is required."
+            exit 1
+          }
+          "value=$prefix" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Configure AZD environment prefix
+        shell: pwsh
+        run: |
+          "AZURE_NAME_PREFIX=${{ steps.prefix.outputs.value }}" | Out-File -FilePath $env:GITHUB_ENV -Append
+          if (Get-Command azd -ErrorAction SilentlyContinue) {
+            azd env set AZURE_NAME_PREFIX "${{ steps.prefix.outputs.value }}" 2>$null
+          }
+
+      - name: Run PostgreSQL external test suites
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/scripts/tests/run_all_postgres_external_tests_in_aci.ps1" `
+            -envName "${{ steps.prefix.outputs.value }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload PostgreSQL test results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: external-postgres-results-${{ github.run_id }}
+          path: testresults/**
+          if-no-files-found: warn

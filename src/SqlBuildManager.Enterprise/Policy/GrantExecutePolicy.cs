@@ -8,6 +8,11 @@ namespace SqlBuildManager.Enterprise.Policy
     class GrantExecutePolicy : shP.IScriptPolicy
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+
+        // PERF-006: Static cached regexes for patterns that don't depend on call-time arguments.
+        private static readonly Regex _regFindProc = new Regex(@"((\bCREATE\b\s*\bPROCEDURE\b)|(\bALTER\b\s*\bPROCEDURE\b)) ([A-Za-z0-9\[\]\._]{1,})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _regFindFunc = new Regex(@"((\bCREATE\b\s*\bFUNCTION\b)|(\bALTER\b\s*\bFUNCTION\b)) ([A-Za-z0-9\[\]\._]{1,})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         #region IScriptPolicy Members
 
         public string PolicyId
@@ -38,23 +43,18 @@ namespace SqlBuildManager.Enterprise.Policy
             try
             {
                 message = string.Empty;
-                //With this regex, the SP name is always in the 4th group find...
-                Regex regFindProc = new Regex(@"((\bCREATE\b\s*\bPROCEDURE\b)|(\bALTER\b\s*\bPROCEDURE\b)) ([A-Za-z0-9\[\]\._]{1,})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                //With this regex, the SP name is always in the 4th group find...
-                Regex regFindFunc = new Regex(@"((\bCREATE\b\s*\bFUNCTION\b)|(\bALTER\b\s*\bFUNCTION\b)) ([A-Za-z0-9\[\]\._]{1,})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
                 List<string> names = new List<string>();
                 string tmpVal;
-                if (regFindProc.Match(script).Success && regFindProc.Match(script).Groups.Count > 3)
+                if (_regFindProc.Match(script).Success && _regFindProc.Match(script).Groups.Count > 3)
                 {
-                    tmpVal = regFindProc.Match(script).Groups[4].Value;
+                    tmpVal = _regFindProc.Match(script).Groups[4].Value;
                     if (!names.Contains(tmpVal))
                         names.Add(tmpVal);
                 }
 
-                if (regFindFunc.Match(script).Success && regFindFunc.Match(script).Groups.Count > 3)
+                if (_regFindFunc.Match(script).Success && _regFindFunc.Match(script).Groups.Count > 3)
                 {
-                    tmpVal = regFindFunc.Match(script).Groups[4].Value;
+                    tmpVal = _regFindFunc.Match(script).Groups[4].Value;
                     if (!names.Contains(tmpVal))
                         names.Add(tmpVal);
                 }
@@ -80,6 +80,7 @@ namespace SqlBuildManager.Enterprise.Policy
                         routine = names[i].Replace("[", "").Replace("]", "").Trim();
                     }
 
+                    // regGrant depends on runtime schema/routine values — cannot be cached statically.
                     Regex regGrant = new Regex("GRANT EXECU?T?E? ON .*" + schema + ".*" + routine, RegexOptions.IgnoreCase);
                     if (!regGrant.Match(script).Success)
                     {

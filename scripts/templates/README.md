@@ -39,7 +39,7 @@ Otherwise you can specify a `-deploy` value of `Batch`, `AKS`, `ContainerApp` or
 
 ----
 
-## Legacy: create_all_settingsfiles_fromprefix.ps1
+## Legacy: xxOBSOLETE_create_all_settingsfiles_fromenv.ps1
 
 A helper script that will create the settings files for all of the deployment types. If you run `create_azure_resources.ps1`, it will already create the settings files for you. 
 

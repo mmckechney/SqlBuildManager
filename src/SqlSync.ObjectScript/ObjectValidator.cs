@@ -27,7 +27,7 @@ namespace SqlSync.ObjectScript
                 OBJECTPROPERTY(object_id, 'ExecIsAnsiNullsOn') as ansi_nulls_on, user_name(o.schema_id) owner, s.name as [schema], type 
                 from sys.objects o 
                 INNER JOIN sys.schemas s ON s.schema_id = o.schema_id where type in ('P', 'V', 'FN') order by type";
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
+            using SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
             SqlCommand cmd = new SqlCommand(getObjSql, conn);
             SqlDataAdapter adapt = new SqlDataAdapter(cmd);
             DataTable table = new DataTable();
@@ -94,46 +94,43 @@ namespace SqlSync.ObjectScript
                 string procText = sb.ToString();
 
                 #region << Check that the columns are valid >>
-                //execute the command (this will check for valid colums)
+                //execute the command (this will check for valid columns)
                 try
                 {
-                    using (conn)
-                    {
+                    if (conn.State == ConnectionState.Closed)
                         conn.Open();
-                        SqlCommand sqlCmd = new SqlCommand("SET NOEXEC ON", conn);
-                        sqlCmd.CommandType = CommandType.Text;
-                        sqlCmd.ExecuteNonQuery();
 
-                        sqlCmd = new SqlCommand("SET QUOTED_IDENTIFIER " + quoted_ident, conn);
-                        sqlCmd.CommandType = CommandType.Text;
-                        sqlCmd.ExecuteNonQuery();
+                    SqlCommand sqlCmd = new SqlCommand("SET NOEXEC ON", conn);
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.ExecuteNonQuery();
 
-                        sqlCmd = new SqlCommand("SET ANSI_NULLS " + ansi_nulls_on, conn);
-                        sqlCmd.CommandType = CommandType.Text;
-                        sqlCmd.ExecuteNonQuery();
+                    sqlCmd = new SqlCommand("SET QUOTED_IDENTIFIER " + quoted_ident, conn);
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.ExecuteNonQuery();
 
-                        sqlCmd = new SqlCommand(procText, conn);
-                        sqlCmd.CommandType = CommandType.Text;
-                        sqlCmd.ExecuteNonQuery();
+                    sqlCmd = new SqlCommand("SET ANSI_NULLS " + ansi_nulls_on, conn);
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.ExecuteNonQuery();
 
-                        sqlCmd = new SqlCommand("SET QUOTED_IDENTIFIER OFF ", conn);
-                        sqlCmd.CommandType = CommandType.Text;
-                        sqlCmd.ExecuteNonQuery();
+                    sqlCmd = new SqlCommand(procText, conn);
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.ExecuteNonQuery();
 
-                        sqlCmd = new SqlCommand("SET ANSI_NULLS ON", conn);
-                        sqlCmd.CommandType = CommandType.Text;
-                        sqlCmd.ExecuteNonQuery();
+                    sqlCmd = new SqlCommand("SET QUOTED_IDENTIFIER OFF ", conn);
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.ExecuteNonQuery();
 
-                        sqlCmd = new SqlCommand("SET NOEXEC OFF", conn);
-                        sqlCmd.CommandType = CommandType.Text;
-                        sqlCmd.ExecuteNonQuery();
+                    sqlCmd = new SqlCommand("SET ANSI_NULLS ON", conn);
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.ExecuteNonQuery();
 
-                        sqlCmd = new SqlCommand("SET PARSEONLY OFF", conn);
-                        sqlCmd.CommandType = CommandType.Text;
-                        sqlCmd.ExecuteNonQuery();
+                    sqlCmd = new SqlCommand("SET NOEXEC OFF", conn);
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.ExecuteNonQuery();
 
-                    }
-
+                    sqlCmd = new SqlCommand("SET PARSEONLY OFF", conn);
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.ExecuteNonQuery();
                 }
                 catch (SqlException ex)
                 {

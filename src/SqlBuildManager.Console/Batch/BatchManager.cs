@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Relay;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
@@ -42,7 +43,7 @@ namespace SqlBuildManager.Console.Batch
         private CommandLineArgs cmdLine;
 
         // Batch resource settings
-        private string PoolName = "SqlBuildManagerPoolWindows";
+        private string PoolName = "SqlBuildManagerPoolLinux";
         private const string JobIdFormat = "SqlBuildManagerJob{0}_{1}";
 
         private string queryFile = string.Empty;
@@ -97,25 +98,6 @@ namespace SqlBuildManager.Console.Batch
 
         public async Task<(int retval, string readOnlySas)> StartBatch(bool stream = false, bool unittest = false)
         {
-            string applicationPackage = string.Empty;
-            if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.ApplicationPackage))
-            {
-                switch (cmdLine.BatchArgs.BatchPoolOs)
-                {
-                    case OsType.Linux:
-                        applicationPackage = "SqlBuildManagerLinux";
-                        break;
-                    case OsType.Windows:
-                    default:
-                        applicationPackage = "SqlBuildManagerWindows";
-                        break;
-                }
-            }
-            else
-            {
-                applicationPackage = cmdLine.BatchArgs.ApplicationPackage;
-            }
-
             int cmdValid = ValidateBatchArgs(cmdLine, batchType);
             if (cmdValid != 0)
             {
@@ -129,7 +111,17 @@ namespace SqlBuildManager.Console.Batch
                 log.LogInformation($"Extracting Platinum Dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}");
                 string dacpacName = Path.Combine(cmdLine.RootLoggingPath, cmdLine.DacPacArgs.PlatinumDbSource + ".dacpac");
 
-                if (!DacPacHelper.ExtractDacPac(cmdLine.DacPacArgs.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumServerSource, cmdLine.AuthenticationArgs.AuthenticationType, cmdLine.AuthenticationArgs.UserName, cmdLine.AuthenticationArgs.Password, dacpacName, cmdLine.TimeoutRetryCount, cmdLine.IdentityArgs.ClientId))
+                if (!DacPacHelper.ExtractDacPac(
+                    cmdLine.DacPacArgs.PlatinumDbSource,
+                    cmdLine.DacPacArgs.PlatinumServerSource,
+                    cmdLine.AuthenticationArgs.AuthenticationType,
+                    cmdLine.AuthenticationArgs.UserName,
+                    cmdLine.AuthenticationArgs.Password,
+                    dacpacName,
+                    cmdLine.TimeoutRetryCount,
+                    cmdLine.IdentityArgs.ClientId,
+                    fallbackEligibility: RelayProxyManager.IsSqlFallbackEligible,
+                    fallbackExtractor: RelayProxyManager.ExtractSqlTestDacpac))
                 {
                     log.LogError($"Error creating the Platinum dacpac from {cmdLine.DacPacArgs.PlatinumServerSource} : {cmdLine.DacPacArgs.PlatinumDbSource}");
                 }
@@ -188,21 +180,28 @@ namespace SqlBuildManager.Console.Batch
                 //Get storage ready - use Managed Identity if no storage key provided
                 BlobServiceClient storageSvcClient;
                 StorageSharedKeyCredential storageCreds = null!;
-                string containerSasToken;
+                string outputContainerUrl;
+                ComputeNodeIdentityReference storageIdentity = null!;
 
                 if (cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity || cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault)
                 {
-                    log.LogDebug($"Generating SAS URL with Managed Identity for container '{storageContainerName}'");
+                    log.LogDebug($"Preparing Entra-authenticated container '{storageContainerName}'");
                     storageSvcClient = new BlobServiceClient(new Uri($"https://{cmdLine.ConnectionArgs.StorageAccountName}.blob.core.windows.net"), Aad.AadHelper.TokenCredential);
-                    containerSasToken = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, null!, storageContainerName, false).ConfigureAwait(false);
+                    outputContainerUrl = await StorageManager
+                        .EnsureOutputContainerAsync(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName)
+                        .ConfigureAwait(false);
+                    storageIdentity = new ComputeNodeIdentityReference
+                    {
+                        ResourceId = cmdLine.IdentityArgs.ResourceId
+                    };
                 }
                 else
                 {
                     storageSvcClient = StorageManager.CreateStorageClient(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
                     storageCreds = StorageManager.GetStorageSharedKeyCredential(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey);
-                    containerSasToken = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, false).ConfigureAwait(false);
+                    outputContainerUrl = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, false).ConfigureAwait(false);
                 }
-                log.LogDebug($"Generated output write SAS token for storage account '{cmdLine.ConnectionArgs.StorageAccountName}'");
+                log.LogDebug($"Prepared output container for storage account '{cmdLine.ConnectionArgs.StorageAccountName}'");
 
 
                 // Get a Batch client using account creds or Managed Identity
@@ -301,11 +300,16 @@ namespace SqlBuildManager.Console.Batch
 
                 foreach (string filePath in inputFilePaths)
                 {
-                    inputFiles.Add(await StorageManager.UploadFileToBatchContainerAsync(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName, storageCreds, filePath).ConfigureAwait(false));
+                    inputFiles.Add(await StorageManager.UploadFileToBatchContainerAsync(
+                        cmdLine.ConnectionArgs.StorageAccountName,
+                        storageContainerName,
+                        storageCreds,
+                        filePath,
+                        storageIdentity?.ResourceId ?? string.Empty).ConfigureAwait(false));
                 }
 
                 //Create the individual command lines for each node
-                IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, containerSasToken, cmdLine.BatchArgs.BatchNodeCount, jobId, cmdLine.BatchArgs.BatchPoolOs, applicationPackage, batchType);
+                IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, outputContainerUrl, cmdLine.BatchArgs.BatchNodeCount, jobId, cmdLine.BatchArgs.BatchPoolOs, batchType);
                 foreach (var s in commandLines)
                     log.LogDebug(s);
 
@@ -351,27 +355,26 @@ namespace SqlBuildManager.Console.Batch
 
                     CloudTask task = new CloudTask(taskId, taskCommandLine);
                     task.ResourceFiles = inputFiles;
-                    task.ApplicationPackageReferences = new List<ApplicationPackageReference>
-                        {
-                            new ApplicationPackageReference { ApplicationId = applicationPackage }
-                        };
+                    task.ContainerSettings = new TaskContainerSettings(
+                        imageName: GetBatchContainerImage(cmdLine),
+                        workingDirectory: ContainerWorkingDirectory.TaskWorkingDirectory);
                     task.OutputFiles = new List<OutputFile>
                         {
                             new OutputFile(
                                 filePattern: @"../std*.txt",
-                                destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
+                                destination: new OutputFileDestination(CreateOutputDestination(outputContainerUrl, storageIdentity, taskId)),
                                 uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion)),
                              new OutputFile(
                                 filePattern: @"../*.csv",
-                                destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
+                                destination: new OutputFileDestination(CreateOutputDestination(outputContainerUrl, storageIdentity, taskId)),
                                 uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion)),
                              new OutputFile(
                                 filePattern: @"../*.cfg",
-                                destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
+                                destination: new OutputFileDestination(CreateOutputDestination(outputContainerUrl, storageIdentity, taskId)),
                                 uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion)),
                              new OutputFile(
                                 filePattern: @"../*.log",
-                                destination: new OutputFileDestination(new OutputFileBlobContainerDestination(containerUrl: containerSasToken, path: taskId)),
+                                destination: new OutputFileDestination(CreateOutputDestination(outputContainerUrl, storageIdentity, taskId)),
                                 uploadOptions: new OutputFileUploadOptions(uploadCondition: OutputFileUploadCondition.TaskCompletion))
                         };
 
@@ -447,28 +450,6 @@ namespace SqlBuildManager.Console.Batch
                 }
 
 
-                // Clean up Batch resources
-                if (cmdLine.BatchArgs.DeleteBatchJob)
-                {
-
-                    log.LogInformation($"Requesting Batch Job deletion for Job ID: {jobId}");
-                    batchClient.JobOperations.DeleteJob(jobId);
-                }
-
-                if (cmdLine.BatchArgs.DeleteBatchPool)
-                {
-                    log.LogInformation($"Requesting Batch pool deletion for Pool ID: {poolId}");
-                    var stat = CleanUpBatchNodes();
-                    if (stat != 0)
-                    {
-                        log.LogError("Batch cleanup failure, but this will not fail the build.");
-                    }
-                }
-
-                SqlBuildManager.Logging.Threaded.Configure.CloseAndFlushAllLoggers();
-
-
-
                 log.LogInformation("Consolidating log files");
                 StorageManager.ConsolidateLogFiles(storageSvcClient, storageContainerName, inputFilePaths);
 
@@ -478,9 +459,9 @@ namespace SqlBuildManager.Console.Batch
                 }
 
 
-                // Generate read-only SAS URL for log access - use MI if no key provided
-                log.LogDebug($"Generating SAS URL with Managed Identity for container '{storageContainerName}'");
-                readOnlySasToken = await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, true).ConfigureAwait(false);
+                readOnlySasToken = string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey)
+                    ? StorageManager.GetContainerRawUrl(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName)
+                    : await StorageManager.GetOutputContainerSasUrlAsync(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, storageContainerName, true).ConfigureAwait(false);
                 log.LogInformation($"The consolidated log files can be found in the Azure storage account '{cmdLine.ConnectionArgs.StorageAccountName}' in blob container '{storageContainerName}'");
                 log.LogInformation("You can download \"Azure Storage Explorer\" from here: https://azure.microsoft.com/en-us/features/storage-explorer/");
                 log.LogInformation("You can also get details on your Azure Batch execution from the \"Azure Batch Explorer\" found here: https://azure.github.io/BatchExplorer/");
@@ -504,8 +485,39 @@ namespace SqlBuildManager.Console.Batch
                 log.LogInformation("Batch complete");
                 if (batchClient != null)
                 {
+                    if (cmdLine.BatchArgs.DeleteBatchJob)
+                    {
+                        try
+                        {
+                            log.LogInformation($"Requesting Batch Job deletion for Job ID: {jobId}");
+                            batchClient.JobOperations.DeleteJob(jobId);
+                        }
+                        catch (Exception cleanupException)
+                        {
+                            log.LogError(cleanupException, $"Unable to delete Batch job {jobId}");
+                        }
+                    }
+
+                    if (cmdLine.BatchArgs.DeleteBatchPool)
+                    {
+                        try
+                        {
+                            log.LogInformation($"Requesting Batch pool deletion for Pool ID: {poolId}");
+                            int cleanupStatus = await CleanUpBatchNodes();
+                            if (cleanupStatus != 0)
+                            {
+                                log.LogError($"Batch pool cleanup returned status {cleanupStatus}, but this will not replace the build result.");
+                            }
+                        }
+                        catch (Exception cleanupException)
+                        {
+                            log.LogError(cleanupException, $"Unable to delete Batch pool {poolId}");
+                        }
+                    }
+
                     batchClient.Dispose();
                 }
+                SqlBuildManager.Logging.Threaded.Configure.CloseAndFlushAllLoggers();
             }
 
             if (myExitCode.HasValue)
@@ -635,22 +647,35 @@ namespace SqlBuildManager.Console.Batch
             data.Identity = new ManagedServiceIdentity("UserAssigned");
             data.Identity!.UserAssignedIdentities![new ResourceIdentifier(cmdLine.IdentityArgs!.ResourceId)] = new Azure.ResourceManager.Models.UserAssignedIdentity();
 
-            BatchImageReference imageReference;
-            BatchVmConfiguration virtualMachineConfiguration;
-            switch (os)
+            if (os != OsType.Linux)
             {
-                case OsType.Linux:
-                    imageReference = new BatchImageReference() { Publisher = "microsoft-azure-batch", Offer = "ubuntu-server-container", Sku = "20-04-lts", Version = "latest" };
-                    virtualMachineConfiguration = new BatchVmConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.ubuntu 20.04");
-                    break;
-
-                case OsType.Windows:
-                default:
-                    imageReference = new BatchImageReference { Publisher = "MicrosoftWindowsServer", Offer = "WindowsServer", Sku = "2022-datacenter", Version = "latest" };
-                    virtualMachineConfiguration = new BatchVmConfiguration(imageReference: imageReference, nodeAgentSkuId: "batch.node.windows amd64");
-
-                    break;
+                throw new ArgumentException("Azure Batch container execution supports Linux pools only.");
             }
+
+            var containerImage = GetBatchContainerImage(cmdLine);
+            var registryServer = NormalizeRegistryServer(cmdLine.ContainerRegistryArgs.RegistryServer);
+            var containerRegistry = new BatchVmContainerRegistry()
+            {
+                RegistryServer = registryServer,
+                IdentityResourceId = new ResourceIdentifier(userAssignedResourceId)
+            };
+            var containerConfiguration = new BatchVmContainerConfiguration("dockerCompatible");
+            containerConfiguration.ContainerImageNames.Add(containerImage);
+            containerConfiguration.ContainerRegistries.Add(containerRegistry);
+
+            var imageReference = new BatchImageReference()
+            {
+                Publisher = "almalinux",
+                Offer = "almalinux-hpc",
+                Sku = "8-hpc-gen1",
+                Version = "latest"
+            };
+            var virtualMachineConfiguration = new BatchVmConfiguration(
+                imageReference: imageReference,
+                nodeAgentSkuId: "batch.node.el 8")
+            {
+                ContainerConfiguration = containerConfiguration
+            };
             data.DeploymentConfiguration = new BatchDeploymentConfiguration() { VmConfiguration = virtualMachineConfiguration };
             data.ScaleSettings = new BatchAccountPoolScaleSettings() { FixedScale = new BatchAccountFixedScaleSettings() { TargetDedicatedNodes = nodeCount } };
             data.VmSize = vmSize;
@@ -712,12 +737,40 @@ namespace SqlBuildManager.Console.Batch
                         var requestedSubnetId = data.NetworkConfiguration?.SubnetId?.ToString();
                         bool networkMismatch = !string.Equals(existingSubnetId ?? "", requestedSubnetId ?? "", StringComparison.OrdinalIgnoreCase);
 
-                        if (networkMismatch)
+                        var existingContainerConfiguration = poolresult.Value.Data.DeploymentConfiguration?.VmConfiguration?.ContainerConfiguration;
+                        bool containerConfigurationMismatch =
+                            existingContainerConfiguration == null ||
+                            !existingContainerConfiguration.ContainerImageNames.Contains(containerImage, StringComparer.OrdinalIgnoreCase) ||
+                            !existingContainerConfiguration.ContainerRegistries.Any(registry =>
+                                string.Equals(registry.RegistryServer, registryServer, StringComparison.OrdinalIgnoreCase) &&
+                                registry.IdentityResourceId == new ResourceIdentifier(userAssignedResourceId));
+
+                        var existingVmConfiguration = poolresult.Value.Data.DeploymentConfiguration?.VmConfiguration;
+                        var existingImageReference = existingVmConfiguration?.ImageReference;
+                        bool vmConfigurationMismatch =
+                            existingImageReference == null ||
+                            !string.Equals(existingImageReference.Publisher, imageReference.Publisher, StringComparison.OrdinalIgnoreCase) ||
+                            !string.Equals(existingImageReference.Offer, imageReference.Offer, StringComparison.OrdinalIgnoreCase) ||
+                            !string.Equals(existingImageReference.Sku, imageReference.Sku, StringComparison.OrdinalIgnoreCase) ||
+                            !string.Equals(existingVmConfiguration?.NodeAgentSkuId, virtualMachineConfiguration.NodeAgentSkuId, StringComparison.OrdinalIgnoreCase);
+
+                        if (networkMismatch || containerConfigurationMismatch || vmConfigurationMismatch)
                         {
-                            log.LogWarning($"The pool {poolId} network configuration does not match. Existing subnet: '{existingSubnetId ?? "none"}', Requested subnet: '{requestedSubnetId ?? "none"}'");
-                            log.LogWarning($"Deleting pool {poolId} to recreate with correct network configuration (subnet is immutable)...");
+                            if (networkMismatch)
+                            {
+                                log.LogWarning($"The pool {poolId} network configuration does not match. Existing subnet: '{existingSubnetId ?? "none"}', Requested subnet: '{requestedSubnetId ?? "none"}'");
+                            }
+                            if (containerConfigurationMismatch)
+                            {
+                                log.LogWarning($"The pool {poolId} does not have the requested container image and managed-identity registry configuration.");
+                            }
+                            if (vmConfigurationMismatch)
+                            {
+                                log.LogWarning($"The pool {poolId} does not use the requested Batch VM image and node agent.");
+                            }
+                            log.LogWarning($"Deleting pool {poolId} to recreate with immutable pool configuration...");
                             await poolresult.Value.DeleteAsync(Azure.WaitUntil.Completed);
-                            log.LogInformation($"Pool {poolId} deleted. Recreating with correct network configuration...");
+                            log.LogInformation($"Pool {poolId} deleted. Recreating with the requested configuration...");
 
                             ArmOperation<BatchAccountPoolResource> lro = await collection.CreateOrUpdateAsync(Azure.WaitUntil.Completed, poolId, data);
                             BatchAccountPoolResource result = lro.Value;
@@ -771,6 +824,14 @@ namespace SqlBuildManager.Console.Batch
 
         }
 
+        private static OutputFileBlobContainerDestination CreateOutputDestination(
+            string containerUrl,
+            ComputeNodeIdentityReference? identity,
+            string path) =>
+            identity == null
+                ? new OutputFileBlobContainerDestination(containerUrl, path)
+                : new OutputFileBlobContainerDestination(containerUrl, identity, path);
+
 
 
         /// <summary>
@@ -780,8 +841,13 @@ namespace SqlBuildManager.Console.Batch
         /// <param name="cmdLine"></param>
         /// <param name="poolNodeCount"></param>
         /// <returns></returns>
-        public IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles, string containerSasToken, int poolNodeCount, string jobId, OsType os, string applicationPackage, BatchType bType)
+        public IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles, string outputContainerUrl, int poolNodeCount, string jobId, OsType os, BatchType bType)
         {
+            if (os != OsType.Linux)
+            {
+                throw new ArgumentException("Azure Batch container execution supports Linux pools only.", nameof(os));
+            }
+
             // var z = inputFiles.Where(x => x.FilePath.ToLower().Contains(cmdLine.PackageName.ToLower())).FirstOrDefault();
 
             List<string> commandLines = new List<string>();
@@ -848,19 +914,9 @@ namespace SqlBuildManager.Console.Batch
                     threadCmdLine.MultiDbRunConfigFileName = target.FilePath;
                 }
 
-                //Set set the Sas URL
-                threadCmdLine.BatchArgs.OutputContainerSasUrl = containerSasToken;
+                threadCmdLine.BatchArgs.OutputContainerSasUrl = outputContainerUrl;
 
-                StringBuilder sb = new StringBuilder();
-                switch (os)
-                {
-                    case OsType.Windows:
-                        sb.Append($"cmd /c %AZ_BATCH_APP_PACKAGE_{applicationPackage}%\\sbm.exe ");
-                        break;
-                    case OsType.Linux:
-                        sb.Append($"/bin/sh -c '$AZ_BATCH_APP_PACKAGE_{applicationPackage.ToLower()}/sbm ");
-                        break;
-                }
+                StringBuilder sb = new StringBuilder("/bin/sh -c '/app/sbm ");
                 sb.Append($"--loglevel {threadCmdLine.LogLevel} batch ");
 
                 switch (bType)
@@ -872,15 +928,7 @@ namespace SqlBuildManager.Console.Batch
                         sb.Append("querythreaded ");
                         break;
                 }
-                switch (os)
-                {
-                    case OsType.Windows:
-                        sb.Append(threadCmdLine.ToBatchString());
-                        break;
-                    case OsType.Linux:
-                        sb.Append(threadCmdLine.ToBatchString() + "'");
-                        break;
-                }
+                sb.Append(threadCmdLine.ToBatchString() + "'");
 
 
 
@@ -888,6 +936,20 @@ namespace SqlBuildManager.Console.Batch
             }
 
             return commandLines;
+        }
+
+        internal static string GetBatchContainerImage(CommandLineArgs cmdLine)
+        {
+            var registryServer = NormalizeRegistryServer(cmdLine.ContainerRegistryArgs.RegistryServer);
+            return $"{registryServer}/{cmdLine.ContainerRegistryArgs.ImageName}:{cmdLine.ContainerRegistryArgs.ImageTag}";
+        }
+
+        private static string NormalizeRegistryServer(string registryServer)
+        {
+            return registryServer
+                .Trim()
+                .Replace("https://", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .TrimEnd('/');
         }
 
         /// <summary>
@@ -948,7 +1010,7 @@ namespace SqlBuildManager.Console.Batch
             log.LogInformation("Creating Batch pool nodes ");
 
             // Get a Batch client using account creds or Managed Identity
-            var batchClient = GetBatchClient(cmdLine);
+            using var batchClient = GetBatchClient(cmdLine);
 
             // Create a Batch pool, VM configuration, Windows Server image
             // bool success = CreateBatchPoolLegacy(batchClient, poolId, cmdLine.BatchArgs.BatchNodeCount, cmdLine.BatchArgs.BatchVmSize, cmdLine.BatchArgs.BatchPoolOs);
@@ -985,7 +1047,7 @@ namespace SqlBuildManager.Console.Batch
                 if (status.AllocationState != AllocationState.Steady)
                 {
                     if (cmdLine.BatchArgs.PollBatchPoolStatus) log.LogInformation($"Pool status: {status.AllocationState}");
-                    System.Threading.Thread.Sleep(10000);
+                    await Task.Delay(10000);
                 }
                 else
                 {
@@ -1029,7 +1091,7 @@ namespace SqlBuildManager.Console.Batch
                         });
                     }
 
-                    System.Threading.Thread.Sleep(15000);
+                    await Task.Delay(15000);
                 }
 
                 else
@@ -1062,7 +1124,7 @@ namespace SqlBuildManager.Console.Batch
 
         }
 
-        public int CleanUpBatchNodes()
+        public async Task<int> CleanUpBatchNodes()
         {
             string[] errorMessages;
             log.LogInformation("Validating batch cleanup command parameters");
@@ -1097,7 +1159,7 @@ namespace SqlBuildManager.Console.Batch
                     isPolling = true;
                     count = batchClient.PoolOperations.ListComputeNodes(PoolName, null, null).Count();
                     if (cmdLine.BatchArgs.PollBatchPoolStatus) log.LogInformation($"Pool delete in progress. Current node count: {count}");
-                    System.Threading.Thread.Sleep(15000);
+                    await Task.Delay(15000);
 
                 }
                 log.LogInformation($"Pool {PoolName} successfully deleted");

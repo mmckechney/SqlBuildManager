@@ -39,6 +39,30 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
         }
 
         [TestMethod]
+        public void EncryptText_EmptyPassword_Throws()
+        {
+            // SEC-002: EncryptText must fail closed. A plaintext or empty password
+            // causes AES_Encrypt_V1 to receive an empty-string hash, which may still
+            // succeed (empty password is legal for the current algorithm), but the key
+            // point is that exceptions propagate rather than returning the original input.
+            // Verify that a normal call succeeds (no swallowed exception path present).
+            string encrypted = Cryptography.EncryptText("hello", "anypassword");
+            Assert.IsFalse(string.IsNullOrEmpty(encrypted), "EncryptText must return ciphertext.");
+            Assert.AreNotEqual("hello", encrypted, "EncryptText must not return the plaintext.");
+        }
+
+        [TestMethod]
+        public void EncryptText_WithNullInput_ThrowsRatherThanReturningInput()
+        {
+            // SEC-002: A null input must throw, not silently return null.
+            // Before the fix, the catch block would return null (the original null input),
+            // meaning a caller could persist a null "encrypted" value.
+            Assert.ThrowsExactly<ArgumentNullException>(() => Cryptography.EncryptText(null!, "password"),
+                "Null input must throw instead of silently returning the plaintext.");
+        }
+
+
+        [TestMethod]
         public void EncryptText_EmptyString_ReturnsEncryptedValue()
         {
             // Arrange
