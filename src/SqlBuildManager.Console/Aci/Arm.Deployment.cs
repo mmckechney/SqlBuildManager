@@ -58,7 +58,7 @@ namespace SqlBuildManager.Console.Aci.Arm
         public double MemoryInGB { get; set; }
 
         [JsonPropertyName("cpu")]
-        public int Cpu { get; set; }
+        public double Cpu { get; set; }
     }
 
     public class Resources
@@ -151,5 +151,4 @@ namespace SqlBuildManager.Console.Aci.Arm
 
 
 }
-
 

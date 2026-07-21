@@ -69,6 +69,12 @@ namespace SqlBuildManager.Console.UnitTest
                       {
                         "name": "sqlbuildmanager000",
                         "properties": {
+                          "resources": {
+                            "requests": {
+                              "memoryInGB": 1.5,
+                              "cpu": 0.75
+                            }
+                          },
                           "instanceView": {
                             "currentState": {
                               "state": "Running",
@@ -90,6 +96,9 @@ namespace SqlBuildManager.Console.UnitTest
             Assert.AreEqual(
                 "Running",
                 deployment.Properties.Containers[0].Properties.InstanceView.CurrentState.DetailStatus);
+            Assert.AreEqual(
+                0.75,
+                deployment.Properties.Containers[0].Properties.Resources.Requests.Cpu);
         }
 
         // ── PERF-007: Elapsed.TotalSeconds vs Elapsed.Seconds ────────────────────
