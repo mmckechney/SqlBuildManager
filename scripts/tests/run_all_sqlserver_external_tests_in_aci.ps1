@@ -190,6 +190,7 @@ $exitCode += Invoke-TestIfAvailable -customName "batchquery" `
     -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 # Analyze test results with GitHub Copilot CLI (local developer convenience; skip in CI).
+Write-Host "Running Copilot AI analysis of test logs to look for patterns, failure reasons and areas for improvement" -ForegroundColor Yellow
 if (Get-Command copilot -ErrorAction SilentlyContinue) {
     $promptTemplate = Get-Content -Path (Join-Path $PSScriptRoot 'analyze-test-results-prompt.md') -Raw
     $prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
