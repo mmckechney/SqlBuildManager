@@ -84,11 +84,6 @@ Write-Host "Using Batch Container Image: $registryServer/sqlbuildmanager:latest-
 # Output file paths
 $settingsJsonLinuxMiOnly = Join-Path $path "settingsfile-batch-linux-mi-only.json"
 $settingsJsonLinuxQueueMiOnly = Join-Path $path "settingsfile-batch-linux-queue-mi-only.json"
-$staleWindowsSettings = @(
-    (Join-Path $path "settingsfile-batch-windows-mi-only.json"),
-    (Join-Path $path "settingsfile-batch-windows-queue-mi-only.json")
-)
-$staleWindowsSettings | Where-Object { Test-Path $_ } | Remove-Item -Force
 
 # Settings file key
 $keyFile = Join-Path $path "settingsfilekey.txt"

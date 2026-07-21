@@ -175,9 +175,9 @@ namespace SqlBuildManager.Console.ExternalTest
                 .Distinct()
                 .Count();
 
-            testContext?.WriteLine($"--- Blob Storage Log Validation (Success) ---");
+            testContext?.WriteLine("--- Post-run Blob Storage Validation: Build Success ---");
             testContext?.WriteLine($"  Blobs found: {BlobNames.Count}");
-            testContext?.WriteLine($"  Blob names: {string.Join(", ", BlobNames)}");
+            WriteKeyFileSummary(testContext);
             testContext?.WriteLine($"  commits.log length: {CommitsLog.Length}");
             testContext?.WriteLine($"  errors.log length: {ErrorsLog.Length}");
             testContext?.WriteLine($"  successdatabases.cfg length: {SuccessDatabases.Length}");
@@ -237,8 +237,9 @@ namespace SqlBuildManager.Console.ExternalTest
         /// </summary>
         public void AssertBuildFailure(TestContext? testContext = null)
         {
-            testContext?.WriteLine($"--- Blob Storage Log Validation (Failure) ---");
+            testContext?.WriteLine("--- Post-run Blob Storage Validation: Expected Build Failure ---");
             testContext?.WriteLine($"  Blobs found: {BlobNames.Count}");
+            WriteBlobNamesByType(testContext);
             testContext?.WriteLine($"  errors.log length: {ErrorsLog.Length}");
             testContext?.WriteLine($"  failuredatabases.cfg length: {FailureDatabases.Length}");
 
@@ -257,18 +258,73 @@ namespace SqlBuildManager.Console.ExternalTest
         /// </summary>
         public void AssertQuerySuccess(TestContext? testContext = null)
         {
-            testContext?.WriteLine($"--- Blob Storage Log Validation (Query Success) ---");
+            testContext?.WriteLine("--- Post-run Blob Storage Validation: Query Success ---");
             testContext?.WriteLine($"  Blobs found: {BlobNames.Count}");
-            testContext?.WriteLine($"  Blob names: {string.Join(", ", BlobNames)}");
+            WriteKeyFileSummary(testContext);
 
             Assert.IsTrue(BlobNames.Count > 0,
                 "Blob: Query run should produce output files in blob storage");
 
-            bool hasCsvOutput = BlobNames.Any(b => b.EndsWith(".csv"));
-            testContext?.WriteLine($"  Has CSV output: {hasCsvOutput}");
+            var csvOutputCount = BlobNames.Count(b => b.EndsWith(".csv", StringComparison.OrdinalIgnoreCase));
+            testContext?.WriteLine($"  CSV output files: {csvOutputCount}");
 
             Assert.IsTrue(string.IsNullOrWhiteSpace(ErrorsLog),
                 $"Blob: errors.log should be empty for a successful query, but contained:\n{Truncate(ErrorsLog, 500)}");
+        }
+
+        private void WriteKeyFileSummary(TestContext? testContext)
+        {
+            var keyFiles = BlobNames
+                .Where(name =>
+                    name.Equals("commits.log", StringComparison.OrdinalIgnoreCase) ||
+                    name.Equals("errors.log", StringComparison.OrdinalIgnoreCase) ||
+                    name.Equals("successdatabases.cfg", StringComparison.OrdinalIgnoreCase) ||
+                    name.Equals("failuredatabases.cfg", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            testContext?.WriteLine(
+                $"  Key validation files: {(keyFiles.Length == 0 ? "none" : string.Join(", ", keyFiles))}");
+        }
+
+        private void WriteBlobNamesByType(TestContext? testContext)
+        {
+            if (testContext == null || BlobNames.Count == 0)
+            {
+                return;
+            }
+
+            testContext.WriteLine("  Blob names by type:");
+            foreach (var group in BlobNames
+                .GroupBy(GetBlobType)
+                .OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                testContext.WriteLine($"    {group.Key}:");
+                foreach (var blobName in group.OrderBy(name => name, StringComparer.OrdinalIgnoreCase))
+                {
+                    testContext.WriteLine($"      {blobName}");
+                }
+            }
+        }
+
+        private static string GetBlobType(string blobName)
+        {
+            if (blobName.StartsWith("Working/", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Working artifacts";
+            }
+
+            if (IsValidationLog(blobName))
+            {
+                return "Validation logs";
+            }
+
+            if (blobName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase) ||
+                blobName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Query outputs";
+            }
+
+            return "Other artifacts";
         }
 
         /// <summary>

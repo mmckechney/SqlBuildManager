@@ -87,6 +87,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 // Validate blob storage logs agree with ACI PG test result
                 var logFileContents = PgTestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                WriteCommandExecutionLog();
                 BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
 
                 var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
@@ -97,7 +98,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             }
             finally
             {
-                TestContext.WriteLine(ConsoleOutput.ToString());
+                WriteRemainingCommandOutput();
             }
         }
 
@@ -175,6 +176,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 // Validate blob storage logs
                 var logFileContents = PgTestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                WriteCommandExecutionLog();
                 BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
 
                 var dbCount = File.ReadAllLines(overrideFile).Where(l => !string.IsNullOrWhiteSpace(l)).Count();
@@ -185,7 +187,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             }
             finally
             {
-                TestContext.WriteLine(ConsoleOutput.ToString());
+                WriteRemainingCommandOutput();
             }
         }
 
@@ -263,6 +265,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 // Validate blob storage logs
                 var logFileContents = PgTestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                WriteCommandExecutionLog();
                 BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
 
                 var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
@@ -272,7 +275,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             }
             finally
             {
-                TestContext.WriteLine(ConsoleOutput.ToString());
+                WriteRemainingCommandOutput();
             }
         }
 
@@ -327,6 +330,7 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
                 // Validate blob storage logs
                 var logFileContents = PgTestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                WriteCommandExecutionLog();
                 BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
 
                 var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
@@ -336,11 +340,27 @@ namespace SqlBuildManager.Console.PostgreSQL.ExternalTest
             }
             finally
             {
-                TestContext.WriteLine(ConsoleOutput.ToString());
+                WriteRemainingCommandOutput();
                 if (File.Exists(outputFile))
                 {
                     File.Delete(outputFile);
                 }
+            }
+        }
+
+        private void WriteCommandExecutionLog()
+        {
+            TestContext.WriteLine("--- Command Execution Log ---");
+            TestContext.WriteLine(ConsoleOutput.ToString());
+            ConsoleOutput.Clear();
+        }
+
+        private void WriteRemainingCommandOutput()
+        {
+            if (ConsoleOutput.Length > 0)
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+                ConsoleOutput.Clear();
             }
         }
     }
