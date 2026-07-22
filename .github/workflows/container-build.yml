@@ -59,23 +59,6 @@ jobs:
           ignore-unfixed: true
           exit-code: 1
 
-      - name: Scan container image (SARIF format)
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 #0.36.0
-        with:
-          image-ref: sqlbuildmanager:scan
-          format: sarif
-          output: trivy-results.sarif
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: 1    
-
-      - name: Upload container scan
-        if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy-results.sarif
-          category: trivy-container
-
       - name: Build and push container
         if: github.event_name != 'pull_request'
         id: push
