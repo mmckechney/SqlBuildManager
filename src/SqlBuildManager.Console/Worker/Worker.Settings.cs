@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.KeyVault;
+using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using System;
 using System.IO;
@@ -18,12 +19,12 @@ namespace SqlBuildManager.Console
             if (string.IsNullOrWhiteSpace(cmdLine.SettingsFile))
             {
                 log.LogError("When 'sbm batch/aci/containerapp/k8s savesettings' is specified the --settingsfile argument is also required");
-                return -3;
+                return (int)ExecutionReturn.InvalidOutputFile;
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.SettingsFileKey) && cmdLine.SettingsFileKey.Length < 16)
             {
                 log.LogError("The value for the --settingsfilekey must be at least 16 characters long");
-                return -4;
+                return (int)ExecutionReturn.InvalidSettingsKey;
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))

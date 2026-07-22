@@ -1,0 +1,45 @@
+name: Supply Chain Security
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nuget-audit:
+    name: NuGet audit
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
+
+      - name: Audit locked dependency graph
+        run: |
+          dotnet restore ./src/SqlBuildManager-console.sln --locked-mode -p:ContinuousIntegrationBuild=true
+          dotnet restore ./src/SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.csproj --locked-mode -p:ContinuousIntegrationBuild=true
+          dotnet restore ./src/SqlSync.SqlBuild.Benchmarks/SqlSync.SqlBuild.Benchmarks.csproj --locked-mode -p:ContinuousIntegrationBuild=true
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout complete history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Scan changed commits for verified secrets
+        uses: trufflesecurity/trufflehog@27b0417c16317ca9a472a9a8092acce143b49c55 # v3.95.9
+        with:
+          version: v3.95.9
+          extra_args: --only-verified

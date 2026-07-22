@@ -483,7 +483,7 @@ The repository lacks a contributor/local-dependent-test setup guide. Numeric exi
 **Implementation update (2026-07-15):** Azure Batch application packages were replaced by the
 Release-built `sqlbuildmanager:latest-vNext` Linux container image in ACR. Batch pools now use
 managed identity for ACR pulls and run `/app/sbm` in Linux container tasks. Azure accepted the
-AlmaLinux 8 Gen1 container pool with the default `STANDARD_D1_V2` VM size.
+AlmaLinux 8 Gen1 container pool with the default `Standard_D2s_v3` VM size.
 
 ### PERF-002 - Connection pooling is disabled for both database platforms
 
@@ -773,11 +773,39 @@ No BenchmarkDotNet project, representative load test, connection/round-trip budg
 
 ### Phase 2 - Build, Supply Chain, and Configuration (1-2 sprints)
 
+> **Execution status (2026-07-22): Completed locally.**
+> Implementation, locked restores, builds, unit tests, workflow parsing, and regression review are
+> complete. All five repository Dockerfiles build successfully with the Docker Desktop Linux engine,
+> and their runtime/toolchain smoke checks pass.
+
 1. Adopt `Directory.Packages.props` and a reproducible restore policy.
 2. Add pull-request CodeQL, secret scanning, NuGet audit, SBOM, provenance, and image scanning.
 3. Refactor Dockerfiles for cached restore and a single runtime distribution model.
 4. Centralize validated execution options for names, timeouts, resource sizes, SAS duration, retry, and polling.
 5. Normalize documented exit codes and operational error contracts.
+
+#### Phase 2 Implementation Evidence
+
+| Item | Status | Evidence |
+|---:|---|---|
+| 1 | Complete | Added central package management for all 53 NuGet packages, deterministic lock-file generation, and 30 committed `packages.lock.json` files. CI, CodeQL, supply-chain, and container restores use locked mode. High and critical direct/transitive NuGet advisories fail CI. |
+| 2 | Complete | Added pull-request CodeQL, locked NuGet audit, verified-secret scanning, pre-push Trivy image gates, BuildKit SBOM/provenance, GitHub build-provenance attestations, and Dependabot coverage for NuGet, Docker, and GitHub Actions. Third-party security actions are pinned to immutable commits, and fork pull requests skip only the unauthorized SARIF upload while retaining the scan gate. |
+| 3 | Complete | Refactored production, RelayProxy, external-test, and dependent-test Dockerfiles to copy manifests and lock files before source, restore with locked mode, and reuse cached restore layers. Production images use one framework-dependent .NET 10 runtime model. .NET SDK/runtime base tags are pinned to multi-platform manifest digests and tracked by Dependabot. Ubuntu package repositories use HTTPS for reliable container builds. |
+| 4 | Complete | Added centralized defaults and validation for concurrency, script timeout, retry, backend capacity, Batch monitoring and names, SAS lifetimes, polling, retries, cleanup, and credential timeouts. Backend-only capacity validation now runs only for the selected Batch, Kubernetes, or Container Apps backend, preserving compatibility with unrelated settings files. |
+| 5 | Complete | Added named, operator-described `ExecutionReturn` values for operational failures, replaced multi-digit magic command return codes, documented the signed/POSIX exit behavior, and added regression coverage for defaults, validation scope, authentication errors, names, and enum descriptions. |
+
+#### Phase 2 Validation Evidence
+
+- Locked CI-mode restore succeeded for the solution and both solution-excluded projects.
+- Full Release solution build, RelayProxy build, SQL Server/PostgreSQL external-test builds, and benchmark build succeeded.
+- All seven hermetic unit-test projects passed; the Console suite passed 200 tests with 1 skipped after the final validation-scope correction.
+- All changed workflow/configuration YAML files parsed successfully.
+- Every tracked project has a lock file, no inline package versions remain, and all literal Docker `COPY` sources exist.
+- .NET 10 SDK/runtime manifest-list digests resolved successfully for all supported Linux architectures.
+- Independent regression review found and corrected backend-only validation leaking into local/threaded commands; no unresolved high-confidence code defect remains.
+- `git diff --check` succeeded.
+- All five repository Dockerfiles built successfully: production CLI, RelayProxy, external tests, dependent tests, and private post-provision bootstrap.
+- Production CLI help, RelayProxy runtime, external/dependent test toolchains, and post-provision Azure CLI/SqlServer module smoke checks succeeded.
 
 ### Phase 3 - Architectural Refactoring (1-2 quarters)
 

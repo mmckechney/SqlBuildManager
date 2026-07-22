@@ -26,7 +26,7 @@ namespace SqlBuildManager.Console
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
-            if (!initSuccess) return -8675;
+            if (!initSuccess) return (int)ExecutionReturn.RunInitializationError;
 
             DateTime start = DateTime.Now;
             Batch.BatchManager batchExe = new Batch.BatchManager(cmdLine);
@@ -43,7 +43,7 @@ namespace SqlBuildManager.Console
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
-            if (!initSuccess) return -8675;
+            if (!initSuccess) return (int)ExecutionReturn.RunInitializationError;
 
             DateTime start = DateTime.Now;
             var retVal = Batch.BatchCleaner.DeleteAllCompletedJobs(cmdLine);
@@ -59,7 +59,7 @@ namespace SqlBuildManager.Console
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
-            if (!initSuccess) return -8675;
+            if (!initSuccess) return (int)ExecutionReturn.RunInitializationError;
 
             DateTime start = DateTime.Now;
             Batch.BatchManager batchExe = new Batch.BatchManager(cmdLine);
@@ -110,7 +110,7 @@ namespace SqlBuildManager.Console
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
-            if (!initSuccess) return -8675;
+            if (!initSuccess) return (int)ExecutionReturn.RunInitializationError;
 
             log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<Worker>(Program.applicationLogFileName, cmdLine.RootLoggingPath);
 

@@ -197,7 +197,7 @@ namespace SqlBuildManager.Console
 
                 try
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
+                    await Task.Delay(ExecutionOptions.AciPollingInterval, cancellationToken);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {

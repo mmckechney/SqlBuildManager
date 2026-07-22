@@ -121,8 +121,8 @@ namespace SqlBuildManager.Console.CommandLine
 
             public string ResourceGroup { get; set; } = string.Empty;
 
-            [DefaultValue(10)]
-            public int BatchNodeCount { get; set; } = 10;
+            [DefaultValue(ExecutionOptions.DefaultBatchNodeCount)]
+            public int BatchNodeCount { get; set; } = ExecutionOptions.DefaultBatchNodeCount;
             public string BatchVmSize { get; set; } = null!;
             [JsonIgnore]
             public string OutputContainerSasUrl { get; set; } = string.Empty;
@@ -137,7 +137,7 @@ namespace SqlBuildManager.Console.CommandLine
             public string BatchPoolName { get; set; } = null!;
             [JsonConverter(typeof(JsonStringEnumConverter))]
             public OsType BatchPoolOs { get; set; } = OsType.Linux;
-            public int JobMonitorTimeout { get; set; } = 30;
+            public int JobMonitorTimeout { get; set; } = ExecutionOptions.DefaultBatchJobMonitorTimeoutMinutes;
             
         }
     }

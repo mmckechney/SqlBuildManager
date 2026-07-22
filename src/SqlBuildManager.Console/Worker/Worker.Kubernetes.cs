@@ -5,6 +5,7 @@ using SqlBuildManager.Console.ContainerShared;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Console.Kubernetes;
 using SqlBuildManager.Console.Queue;
+using SqlBuildManager.Interfaces.Console;
 using SqlSync.Connection;
 using SqlSync.SqlBuild.MultiDb;
 using System;
@@ -45,6 +46,12 @@ namespace SqlBuildManager.Console
         internal static async Task<int> KubernetesRun(CommandLineArgs cmdLine, FileInfo @override, FileInfo packagename, FileInfo platinumdacpac, bool force, bool allowObjectDelete, bool unittest, bool stream, bool cleanupOnFailure)
         {
             (var x, cmdLine) = Init(cmdLine);
+            var validationErrors = Validation.ValidateKubernetesArgs(cmdLine);
+            if (validationErrors.Count > 0)
+            {
+                validationErrors.ForEach(m => log.LogError(m));
+                return (int)ExecutionReturn.InvalidExecutionOption;
+            }
             if (packagename == null && platinumdacpac == null)
             {
                 log.LogError("Either an SBM package or DACPAC file is required.");
@@ -141,6 +148,12 @@ namespace SqlBuildManager.Console
         internal static async Task<int> KubernetesSaveYamlFiles(CommandLineArgs cmdLine, DirectoryInfo path, string prefix, FileInfo packagename, FileInfo platinumdacpac, bool force)
         {
             (var x, cmdLine) = Init(cmdLine);
+            var validationErrors = Validation.ValidateKubernetesArgs(cmdLine);
+            if (validationErrors.Count > 0)
+            {
+                validationErrors.ForEach(m => log.LogError(m));
+                return (int)ExecutionReturn.InvalidExecutionOption;
+            }
             if (packagename != null)
             {
                 cmdLine.BuildFileName = packagename.FullName;
@@ -158,6 +171,12 @@ namespace SqlBuildManager.Console
             if (success != 0)
             {
                 return success;
+            }
+            var validationErrors = Validation.ValidateKubernetesArgs(cmdLine);
+            if (validationErrors.Count > 0)
+            {
+                validationErrors.ForEach(m => log.LogError(m));
+                return (int)ExecutionReturn.InvalidExecutionOption;
             }
 
             log.LogDebug("Entering Kubernetes Query Execution");

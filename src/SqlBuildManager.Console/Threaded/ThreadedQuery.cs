@@ -82,9 +82,6 @@ namespace SqlBuildManager.Console.Threaded
         }
         private async Task<int> ExecuteQueryFromQueueAsync(CommandLineArgs cmdLine, ConnectionData connData, string query, string userName, CancellationToken cancellationToken = default)
         {
-            const int QueuePollDelayMs = 5000;
-            const int MaxNoMessageRetries = 4;
-            
             log.LogInformation("Executing database queries from queued targets.");
             var resultCode = 0;
             var listResultsTempFiles = new List<string>();
@@ -93,7 +90,7 @@ namespace SqlBuildManager.Console.Threaded
             var collector = new QueryCollector(null!, connData);
             if(!collector.EnsureOutputPath(tmpOutput))
             {
-                return -3545;
+                return (int)ExecutionReturn.InvalidOutputFile;
             }
             bool messagesSinceLastLoop = true;
             int noMessagesCounter = 0;
@@ -105,7 +102,7 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     if (cmdLine.RunningAsContainer)
                     {
-                        log.LogInformation($"No messages found in Service Bus Topic. Waiting {QueuePollDelayMs / 1000} seconds to check again...");
+                        log.LogInformation($"No messages found in Service Bus Topic. Waiting {ExecutionOptions.QueueWorkerPollingInterval.TotalSeconds:0} seconds to check again...");
                         var msg = new LogMsg() { RunId = this.runId, Message = $"Waiting for additional Service Bus messages on {Environment.MachineName}", LogType = LogType.Message };
                         threadLogger.WriteToLog(msg);
                         if (messagesSinceLastLoop)
@@ -115,15 +112,15 @@ namespace SqlBuildManager.Console.Threaded
                         }
                         else
                         {
-                            if (noMessagesCounter == MaxNoMessageRetries)
+                            if (noMessagesCounter == ExecutionOptions.QueueVisibilityRetryCount)
                             {
-                                log.LogInformation($"No messages found in Service Bus Topic after {MaxNoMessageRetries} retries. Terminating Container.");
+                                log.LogInformation($"No messages found in Service Bus Topic after {ExecutionOptions.QueueVisibilityRetryCount} retries. Terminating Container.");
                                 break;
                             }
                             noMessagesCounter++;
                         }
                         messagesSinceLastLoop = false;
-                        await Task.Delay(QueuePollDelayMs, cancellationToken);
+                        await Task.Delay(ExecutionOptions.QueueWorkerPollingInterval, cancellationToken);
                     }
                     else
                     {

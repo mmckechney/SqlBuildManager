@@ -8,6 +8,7 @@
 - [Event Hub Logging Options](#event-hub-logging-options)
 - [Container Environment Variables](#container-environment-variables)
 - [Logging](#logging)
+- [Execution options and exit codes](execution-options-and-exit-codes.md)
 
 ----
 
@@ -16,6 +17,9 @@
 The `sbm` executable uses a command pattern for execution `sbm [command]`
 
 **For detailed information on the available and required options for each command, leverage the self-generated documentation via `sbm [command] --help`**
+
+Validated runtime defaults, polling behavior, and process return values are documented in
+[Execution options and exit codes](execution-options-and-exit-codes.md).
 
 ----
 

@@ -56,7 +56,7 @@ namespace SqlBuildManager.Console.CommandLine
             public string SubscriptionId { get; set; } = string.Empty;
             public string ResourceGroup { get; set; } = string.Empty;
             public string Location { get; set; } = string.Empty;
-            public int MaxContainerCount { get; set; } = 10;
+            public int MaxContainerCount { get; set; } = ExecutionOptions.DefaultContainerAppMaxCount;
             [JsonIgnore]
             [DefaultValue(false)]
             public bool RunningAsContainerApp { get; set; } = false;

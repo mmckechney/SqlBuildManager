@@ -3,8 +3,9 @@ FROM mcr.microsoft.com/powershell:7.5-ubuntu-22.04
 ENV ACCEPT_EULA=Y
 ENV AZD_PROJECT_PATH=/bootstrap
 
-RUN apt-get update && \
-    apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg && \
+RUN sed -i 's|http://archive.ubuntu.com|https://archive.ubuntu.com|g; s|http://security.ubuntu.com|https://security.ubuntu.com|g' /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -y ca-certificates curl apt-transport-https gnupg && \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | \
       gpg --dearmor -o /etc/apt/keyrings/microsoft.gpg && \

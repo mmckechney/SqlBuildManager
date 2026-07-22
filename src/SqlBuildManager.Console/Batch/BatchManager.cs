@@ -43,13 +43,13 @@ namespace SqlBuildManager.Console.Batch
         private CommandLineArgs cmdLine;
 
         // Batch resource settings
-        private string PoolName = "SqlBuildManagerPoolLinux";
-        private const string JobIdFormat = "SqlBuildManagerJob{0}_{1}";
+        private string PoolName = ExecutionOptions.DefaultBatchPoolName;
+        private const string JobIdFormat = ExecutionOptions.BatchJobIdFormat;
 
         private string queryFile = string.Empty;
         private string outputFile = string.Empty;
         private BatchType batchType = BatchType.Run;
-        private const string baseTargetFormat = "target_{0}.cfg";
+        private const string baseTargetFormat = ExecutionOptions.BatchTargetFileFormat;
 
         public BatchManager(CommandLineArgs cmdLine)
         {
@@ -212,7 +212,7 @@ namespace SqlBuildManager.Console.Batch
                 if (!success)
                 {
                     log.LogError("Unable to create Batch node pool. Can not continue processing");
-                    return (-324, "");
+                    return ((int)ExecutionReturn.BatchPoolCreationError, "");
                 }
 
                 //  Make sure that the pool and nodes are stable and ready, otherwise return an error code
@@ -477,7 +477,7 @@ namespace SqlBuildManager.Console.Batch
                     j.Terminate("Failed");
                 }
                 catch { }
-                myExitCode = 486;
+                myExitCode = (int)ExecutionReturn.BatchExecutionError;
 
             }
             finally
@@ -528,8 +528,8 @@ namespace SqlBuildManager.Console.Batch
             }
             else
             {
-                log.LogInformation($"Exit Code: {-100009}");
-                return (-100009, readOnlySasToken);
+                log.LogInformation($"Exit Code: {(int)ExecutionReturn.BatchJobMonitorTimeout}");
+                return ((int)ExecutionReturn.BatchJobMonitorTimeout, readOnlySasToken);
             }
 
         }
@@ -1018,7 +1018,7 @@ namespace SqlBuildManager.Console.Batch
             if (!success)
             {
                 log.LogError("Unable to create Batch node pool. Cannot continue processing");
-                return (-324);
+                return (int)ExecutionReturn.BatchPoolCreationError;
             }
             var status = await PollBatchPoolAndNodeStatus(cmdLine, PoolName, batchClient);
             if (status == 0)
@@ -1029,7 +1029,7 @@ namespace SqlBuildManager.Console.Batch
             else
             {
                 log.LogError("There was a problem creating the Batch pool/nodes. Please see prior log messages");
-                return -65643;
+                return (int)ExecutionReturn.BatchNodeUnavailable;
             }
 
         }
@@ -1047,7 +1047,7 @@ namespace SqlBuildManager.Console.Batch
                 if (status.AllocationState != AllocationState.Steady)
                 {
                     if (cmdLine.BatchArgs.PollBatchPoolStatus) log.LogInformation($"Pool status: {status.AllocationState}");
-                    await Task.Delay(10000);
+                    await Task.Delay(ExecutionOptions.ResourceProvisioningPollingInterval);
                 }
                 else
                 {
@@ -1068,7 +1068,7 @@ namespace SqlBuildManager.Console.Batch
                     var badStatuses = nodes.Where(n => n.State == ComputeNodeState.Unusable).Select(n => n.State.ToString());
                     log.LogError($"There was a problem creating {badCount} compute nodes. Please check to see if you have exceeded your core quota and request a quota increase if necessary");
                     log.LogError($"Statuses of failed nodes: {string.Join(", ", badStatuses)}");
-                    return -65423;
+                    return (int)ExecutionReturn.BatchNodeUnavailable;
                 }
 
 
@@ -1091,7 +1091,7 @@ namespace SqlBuildManager.Console.Batch
                         });
                     }
 
-                    await Task.Delay(15000);
+                    await Task.Delay(ExecutionOptions.BatchNodePollingInterval);
                 }
 
                 else
@@ -1110,7 +1110,7 @@ namespace SqlBuildManager.Console.Batch
                         var badStatuses = nodes.Where(n => n.State == ComputeNodeState.Idle).Select(n => n.State.ToString());
                         log.LogError($"There was a problem creating {badCount} compute nodes. Please check to see if you have exceeded your core quota and request a quota increase if necessary");
                         log.LogError($"Statuses of failed nodes: {string.Join(", ", badStatuses)}");
-                        return -65423;
+                        return (int)ExecutionReturn.BatchNodeUnavailable;
                     }
                     else
                     {
@@ -1159,7 +1159,7 @@ namespace SqlBuildManager.Console.Batch
                     isPolling = true;
                     count = batchClient.PoolOperations.ListComputeNodes(PoolName, null, null).Count();
                     if (cmdLine.BatchArgs.PollBatchPoolStatus) log.LogInformation($"Pool delete in progress. Current node count: {count}");
-                    await Task.Delay(15000);
+                    await Task.Delay(ExecutionOptions.BatchNodePollingInterval);
 
                 }
                 log.LogInformation($"Pool {PoolName} successfully deleted");
@@ -1182,7 +1182,7 @@ namespace SqlBuildManager.Console.Batch
                 else
                 {
                     log.LogError($"Error encountered trying to delete pool {PoolName} from Batch account {cmdLine.ConnectionArgs.BatchAccountName}.{Environment.NewLine}{exe.ToString()}");
-                    return 42345346;
+                    return (int)ExecutionReturn.BatchCleanupError;
                 }
             }
         }

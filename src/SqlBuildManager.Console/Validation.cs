@@ -26,9 +26,9 @@ namespace SqlBuildManager.Console
                 if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
                     error = "The --username and --password arguments are required when authentication type is set to Password or AzurePassword.";
-                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
+                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidAuthenticationArguments };
                     log.LogError(error);
-                    return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
+                    return (int)ExecutionReturn.InvalidAuthenticationArguments;
                 }
             }
 
@@ -40,9 +40,9 @@ namespace SqlBuildManager.Console
                 if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
                     error = "The --username and --password arguments must be used together in command line of --settingsfile Json.";
-                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.FinishingWithErrors };
+                    errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.InvalidAuthenticationArguments };
                     log.LogError(error);
-                    return (int)ExecutionReturn.BadRetryCountAndTransactionalCombo;
+                    return (int)ExecutionReturn.InvalidAuthenticationArguments;
                 }
             }
 
@@ -61,6 +61,18 @@ namespace SqlBuildManager.Console
             {
                 return pwVal;
             }
+
+            var optionErrors = ExecutionOptionValidator.Validate(cmdLine);
+            if (optionErrors.Count > 0)
+            {
+                errorMessages = [.. optionErrors, "Returning error code: " + (int)ExecutionReturn.InvalidExecutionOption];
+                foreach (string optionError in optionErrors)
+                {
+                    log.LogError(optionError);
+                }
+                return (int)ExecutionReturn.InvalidExecutionOption;
+            }
+
             string error = string.Empty;
 
             //Validate and set the value for the root logging path
@@ -314,14 +326,14 @@ namespace SqlBuildManager.Console
                 {
                     string err = String.Format("A Platinum Dacpac file was specified but could not be located at '{0}'", cmdLine.DacPacArgs.PlatinumDacpac);
                     log.LogError(err);
-                    return (-729, cmdLine);
+                    return ((int)ExecutionReturn.InvalidBuildFileNameValue, cmdLine);
                 }
 
                 if (!String.IsNullOrEmpty(cmdLine.DacPacArgs.TargetDacpac) && !File.Exists(cmdLine.DacPacArgs.TargetDacpac))
                 {
                     string err = String.Format("A Target Dacpac file was specified but could not be located at '{0}'", cmdLine.DacPacArgs.TargetDacpac);
                     log.LogError(err);
-                    return (-728, cmdLine);
+                    return ((int)ExecutionReturn.InvalidBuildFileNameValue, cmdLine);
                 }
             }
 
@@ -345,7 +357,7 @@ namespace SqlBuildManager.Console
                     else
                     {
                         log.LogError("Error creating SBM package from Platinum dacpac");
-                        return (-5120, cmdLine);
+                        return ((int)ExecutionReturn.ProcessBuildError, cmdLine);
                     }
                 }
                 else
@@ -360,11 +372,15 @@ namespace SqlBuildManager.Console
         public static int ValidateBatchArguments(CommandLineArgs cmdLine, out string[] errorMessages)
         {
             int returnVal = 0;
-            List<string> messages = new List<string>();
+            List<string> messages = new List<string>(ExecutionOptionValidator.ValidateBatch(cmdLine));
+            if (messages.Count > 0)
+            {
+                returnVal = (int)ExecutionReturn.InvalidExecutionOption;
+            }
             if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountName))
             {
                 messages.Add("--batchaccountname is required in command line or --settingsfile Json");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             // BatchAccountKey is not required when using Managed Identity
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey) &&
@@ -372,34 +388,34 @@ namespace SqlBuildManager.Console
                  cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault))
             {
                 messages.Add("--batchaccountkey is required in command line or --settingsfile Json");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountUrl))
             {
                 messages.Add("--batchaccounturl is required in command line or --settingsfile Json");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName))
             {
                 messages.Add("--storageaccountname is required in command line or --settingsfile Json");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey) && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
             {
                 messages.Add("--storageaccountkey is required in command line or --settingsfile json if a Managed Identity is not included");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
 
             if (String.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchVmSize))
             {
                 messages.Add("--batchvmsize, is required in command line or --settingsfile Json");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
 
             if (!String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) && string.IsNullOrEmpty(cmdLine.BatchArgs.BatchJobName))
             {
                 messages.Add("When --servicebusconnection is provided in command line or --settingsfile Json, then --batchjobname is required");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
 
             (int ret, string msg) = ValidateBatchjobName(cmdLine.BatchArgs.BatchJobName);
@@ -415,24 +431,25 @@ namespace SqlBuildManager.Console
 
         public static (int, string) ValidateBatchjobName(string batchJobName)
         {
-            if (!String.IsNullOrEmpty(batchJobName))
+            if (!ExecutionOptionValidator.TryValidateBatchJobName(batchJobName, required: false, out string error))
             {
-                if (batchJobName.Length < 3 || batchJobName.Length > 41 || !Regex.IsMatch(batchJobName, @"^[a-z0-9]+(-[a-z0-9]+)*$"))
-                {
-                    return (-888, $"The value for --jobname must be: lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'{Environment.NewLine}\tThis requirement is because the job name is also the storage container name and needs to accomodate a timestamp: https://docs.microsoft.com/en-us/rest/api/storageservices/Naming-and-Referencing-Containers--Blobs--and-Metadata");
-                }
+                return ((int)ExecutionReturn.InvalidBatchArguments, error);
             }
-            return (0, "");
+            return ((int)ExecutionReturn.Successful, string.Empty);
         }
 
         public static int ValidateBatchPreStageArguments(ref CommandLineArgs cmdLine, out string[] errorMessages)
         {
             int returnVal = 0;
-            List<string> messages = new List<string>();
+            List<string> messages = new List<string>(ExecutionOptionValidator.ValidateBatch(cmdLine));
+            if (messages.Count > 0)
+            {
+                returnVal = (int)ExecutionReturn.InvalidExecutionOption;
+            }
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountName))
             {
                 messages.Add("--batchaccountname is required in command line or --settingsfile  Json");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             // BatchAccountKey is not required when using Managed Identity
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey) &&
@@ -440,32 +457,32 @@ namespace SqlBuildManager.Console
                  cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault))
             {
                 messages.Add("--batchaccountkey is required in command line or --settingsfile  Json");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountUrl))
             {
                 messages.Add("--batchaccounturl is required in command line or --settingsfile  Json");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             if (String.IsNullOrEmpty(cmdLine.BatchArgs.BatchVmSize))
             {
                 messages.Add("--batchvmsize is required in command line or --settingsfile  Json");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             if (cmdLine.BatchArgs.BatchPoolOs != CommandLine.OsType.Linux)
             {
                 messages.Add("Azure Batch container execution requires --batchpoolos Linux");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             if (String.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryServer))
             {
                 messages.Add("--registryserver is required in command line or --settingsfile Json for Azure Batch container execution");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             if (String.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.ImageTag))
             {
                 messages.Add("--imagetag is required in command line or --settingsfile Json for Azure Batch container execution");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
 
             errorMessages = messages.ToArray();
@@ -479,7 +496,7 @@ namespace SqlBuildManager.Console
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountName))
             {
                 messages.Add("--batchaccountname is required in command line or --settingsfile  Json");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             // BatchAccountKey is not required when using Managed Identity
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey) && 
@@ -487,12 +504,12 @@ namespace SqlBuildManager.Console
                 cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault))
             {
                 messages.Add("--batchaccountkey is required in command line or --settingsfile  Json");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountUrl))
             {
                 messages.Add("--batchaccounturl is required in command line or --settingsfile  Json");
-                returnVal = -888;
+                returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
 
             errorMessages = messages.ToArray();
@@ -537,7 +554,7 @@ namespace SqlBuildManager.Console
         public static List<string> ValidateContainerAppArgs(CommandLineArgs cmdLine)
         {
 
-            List<string> messages = new List<string>();
+            List<string> messages = new List<string>(ExecutionOptionValidator.ValidateContainerApp(cmdLine));
             if (String.IsNullOrEmpty(cmdLine.ContainerAppArgs.EnvironmentName))
             {
                 messages.Add("--environmentname is required in command line or --settingsfile");
@@ -569,6 +586,11 @@ namespace SqlBuildManager.Console
 
             return messages;
 
+        }
+
+        public static List<string> ValidateKubernetesArgs(CommandLineArgs cmdLine)
+        {
+            return new List<string>(ExecutionOptionValidator.ValidateKubernetes(cmdLine));
         }
 
         public static List<string> ValidateAciAppArgs(CommandLineArgs cmdLine)

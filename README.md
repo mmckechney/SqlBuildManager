@@ -60,6 +60,8 @@ With this update, it significantly reduces the the need to save and manage secre
     - [Threaded](#threaded-1)
     - [Batch, Kubernetes and ACI](#batch-kubernetes-and-aci)
   - [Command Line Reference](docs/commandline.md) - Full command reference with runtime options
+  - [Execution Options and Exit Codes](docs/execution-options-and-exit-codes.md)
+  - [Dependency and Supply-Chain Policy](docs/dependency-management.md)
   - [Detailed Process Flow](docs/threaded_build_process_flow.md)
 
 ---

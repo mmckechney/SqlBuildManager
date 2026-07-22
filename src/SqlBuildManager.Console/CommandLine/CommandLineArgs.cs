@@ -120,8 +120,8 @@ namespace SqlBuildManager.Console.CommandLine
             }
         }
 
-        [DefaultValue(10)]
-        public virtual int Concurrency { get; set; } = 10;
+        [DefaultValue(ExecutionOptions.DefaultConcurrency)]
+        public virtual int Concurrency { get; set; } = ExecutionOptions.DefaultConcurrency;
         [JsonConverter(typeof(JsonStringEnumConverter))]
         [DefaultValue(ConcurrencyType.Count)]
         public virtual ConcurrencyType ConcurrencyType { get; set; } = ConcurrencyType.Count;
@@ -131,9 +131,9 @@ namespace SqlBuildManager.Console.CommandLine
         [JsonIgnore]
         [DefaultValue(true)]
         public virtual bool Transactional { get; set; } = true;
-        public virtual int TimeoutRetryCount { get; set; } = 0;
-        [DefaultValue(500)]
-        public virtual int DefaultScriptTimeout { get; set; } = 500;
+        public virtual int TimeoutRetryCount { get; set; } = ExecutionOptions.DefaultTimeoutRetryCount;
+        [DefaultValue(ExecutionOptions.DefaultScriptTimeoutSeconds)]
+        public virtual int DefaultScriptTimeout { get; set; } = ExecutionOptions.DefaultScriptTimeoutSeconds;
         public virtual string RootLoggingPath { get; set; } = string.Empty;
         [JsonIgnore]
         public virtual string Description { get; set; } = string.Empty;

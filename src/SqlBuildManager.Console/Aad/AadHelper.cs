@@ -9,7 +9,7 @@ namespace SqlBuildManager.Console.Aad
 {
     public class AadHelper
     {
-        private static readonly TimeSpan CredentialProcessTimeout = TimeSpan.FromSeconds(60);
+        private static readonly TimeSpan CredentialProcessTimeout = ExecutionOptions.CredentialProcessTimeout;
         private static CancellationTokenSource src = new CancellationTokenSource();
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private static string _managedIdentityClientId = string.Empty;

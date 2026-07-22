@@ -36,7 +36,7 @@ namespace SqlBuildManager.Console
             if (!decryptSuccess)
             {
                 log.LogWarning("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
-                return -8675;
+                return (int)ExecutionReturn.RunInitializationError;
             }
 
             try
@@ -284,7 +284,7 @@ namespace SqlBuildManager.Console
             if(!success)
             {
                 log.LogError("There was a problem initilizing command settings");
-                return -322;
+                return (int)ExecutionReturn.RunInitializationError;
             }
     
             if (cmdLine.IdentityArgs != null)

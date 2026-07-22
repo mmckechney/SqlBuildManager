@@ -462,7 +462,7 @@ namespace SqlBuildManager.Console.Events
             var sessionId = _eventRelaySessionId;
             _eventRelayClient = null!;
             _eventRelaySessionId = string.Empty;
-            using var cleanupTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            using var cleanupTimeout = new CancellationTokenSource(ExecutionOptions.CleanupTimeout);
             try
             {
                 await client.StopEventMonitorAsync(sessionId, cleanupTimeout.Token).ConfigureAwait(false);
