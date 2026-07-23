@@ -65,13 +65,13 @@ jobs:
 
     # Artifacts
     - name: Upload a Build Artifact sbm-windows
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: sbm-windows-${{ env.DOTNET_VERSION }}
         path: "./src/SqlBuildManager.Console/bin/Release/${{ env.DOTNET_VERSION }}/win-x64/publish"
 
     - name: Upload a Build Artifact sbm-linux
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: sbm-linux-${{ env.DOTNET_VERSION }}
         path: "./src/SqlBuildManager.Console/bin/Release/${{ env.DOTNET_VERSION }}/linux-x64/publish"

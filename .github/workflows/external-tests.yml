@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload SQL Server test results
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: external-sqlserver-results-${{ github.run_id }}
           path: testresults/**
@@ -152,7 +152,7 @@ jobs:
 
       - name: Upload PostgreSQL test results
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: external-postgres-results-${{ github.run_id }}
           path: testresults/**
