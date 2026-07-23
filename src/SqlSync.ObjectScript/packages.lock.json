@@ -33,9 +33,9 @@
       },
       "Microsoft.SqlServer.SqlManagementObjects": {
         "type": "Direct",
-        "requested": "[181.19.0, )",
-        "resolved": "181.19.0",
-        "contentHash": "7YyNfynW0wrmt+YK8hZi6z1gdPU0Udu1RO0QyswV3BODC54PwUuM4cOCY9qJgOktr41L5xbV7Gnggh9rJNcAPQ==",
+        "requested": "[181.25.0, )",
+        "resolved": "181.25.0",
+        "contentHash": "HczPoZWibscHl/o4Ph77d7i6unAf5feK5oHY4kpsqOf1CPYgeoSFHFZL1w+6+VgNAf/I5hF21Kj6VNB6wM9JaA==",
         "dependencies": {
           "Microsoft.Data.SqlClient": "6.1.3",
           "System.Data.OleDb": "8.0.0",
