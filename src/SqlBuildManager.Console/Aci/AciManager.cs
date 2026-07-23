@@ -284,7 +284,7 @@ namespace SqlBuildManager.Console.Aci
                 log.LogInformation("Removing any pre-existing ACI deployment");
                 var success = await ArmHelper.DeleteResource(subscriptionId, resourceGroupName, aciName);
                 //Wait for the delete to complete
-                await Task.Delay(10000);
+                await Task.Delay(ExecutionOptions.ResourceProvisioningPollingInterval);
                 log.LogInformation("Pre-existing ACI deployment removed");
                 return success;
             }

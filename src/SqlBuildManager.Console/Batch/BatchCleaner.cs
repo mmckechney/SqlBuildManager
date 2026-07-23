@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MoreLinq;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Interfaces.Console;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,7 +66,7 @@ namespace SqlBuildManager.Console.Batch
             catch (Exception exe)
             {
                 log.LogError($"Problem deleting Batch jobs: {exe.ToString()}");
-                return 6859;
+                return (int)ExecutionReturn.BatchCleanupError;
             }
         }
     }

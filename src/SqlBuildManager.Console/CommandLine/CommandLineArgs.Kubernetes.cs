@@ -21,8 +21,8 @@ namespace SqlBuildManager.Console.CommandLine
         }
         public class Kubernetes :ArgsBase
         {
-            [DefaultValue(10)]
-            public int PodCount { get; set; } = 10;
+            [DefaultValue(ExecutionOptions.DefaultKubernetesPodCount)]
+            public int PodCount { get; set; } = ExecutionOptions.DefaultKubernetesPodCount;
             [JsonIgnore]
             [DefaultValue(false)]
             public bool RunningInKubernetes = false;

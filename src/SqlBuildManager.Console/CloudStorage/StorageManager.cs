@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -308,15 +307,15 @@ namespace SqlBuildManager.Console.CloudStorage
             {
                 var permissions = BlobSasPermissions.Add | BlobSasPermissions.Create | BlobSasPermissions.Write | BlobSasPermissions.Read | BlobSasPermissions.List;
                 sasConstraints = new BlobSasBuilder(permissions, new DateTimeOffset(DateTime.UtcNow, new TimeSpan(0, 0, 0)));
-                sasConstraints.StartsOn = DateTime.UtcNow.AddHours(-1);
-                sasConstraints.ExpiresOn = DateTime.UtcNow.AddHours(4);
+                sasConstraints.StartsOn = DateTime.UtcNow.AddHours(-ExecutionOptions.SasClockSkewHours);
+                sasConstraints.ExpiresOn = DateTime.UtcNow.AddHours(ExecutionOptions.SasWriteDurationHours);
             }
             else
             {
                 var permissions = BlobSasPermissions.Read | BlobSasPermissions.List;
                 sasConstraints = new BlobSasBuilder(permissions, new DateTimeOffset(DateTime.UtcNow, new TimeSpan(0, 0, 0, 0, 0)));
-                sasConstraints.StartsOn = DateTime.UtcNow.AddHours(-1);
-                sasConstraints.ExpiresOn = DateTime.UtcNow.AddHours(7);
+                sasConstraints.StartsOn = DateTime.UtcNow.AddHours(-ExecutionOptions.SasClockSkewHours);
+                sasConstraints.ExpiresOn = DateTime.UtcNow.AddHours(ExecutionOptions.SasReadDurationHours);
             }
             sasConstraints.BlobContainerName = outputContainerName;
 
@@ -330,16 +329,17 @@ namespace SqlBuildManager.Console.CloudStorage
             if (!string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchJobName))
             {
                 cmdLine.BatchJobName = cmdLine.BatchArgs.BatchJobName.ToLower();
-                if (cmdLine.BatchArgs.BatchJobName.Length < 3 || cmdLine.BatchArgs.BatchJobName.Length > 41 || !Regex.IsMatch(cmdLine.BatchArgs.BatchJobName, @"^[a-z0-9]+(-[a-z0-9]+)*$"))
+                if (!ExecutionOptionValidator.TryValidateBatchJobName(cmdLine.BatchArgs.BatchJobName, required: true, out string error))
                 {
-                    throw new ArgumentException($"The job name must be lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'. Value provided: '{cmdLine.JobName}'");
+                    throw new ArgumentException(error, nameof(cmdLine));
                 }
                 jobId = cmdLine.BatchArgs.BatchJobName;
                 storageContainerName = cmdLine.BatchArgs.BatchJobName + "-" + jobToken; ;
             }
             else
             {
-                throw new ArgumentException("The job name is required and must be lower case, between 3 and 41 characters in length, and the only special character allowed are dashes '-'. No Value provided!");
+                ExecutionOptionValidator.TryValidateBatchJobName(null, required: true, out string error);
+                throw new ArgumentException(error, nameof(cmdLine));
             }
 
             return (jobId, storageContainerName);
@@ -369,7 +369,7 @@ namespace SqlBuildManager.Console.CloudStorage
                 {
                     while (await container.ExistsAsync())
                     {
-                        await Task.Delay(1000);
+                        await Task.Delay(ExecutionOptions.FastPollingInterval);
                     }
                 }
                 return true;
@@ -401,7 +401,7 @@ namespace SqlBuildManager.Console.CloudStorage
                     log.LogInformation("Existing storage container is still being deleted. waiting...");
                     // Evict stale cache entry so retry creates a fresh container
                     _containerClientCache.TryRemove(ContainerCacheKey(storageAccountName, containerName), out _);
-                    await Task.Delay(3000);
+                    await Task.Delay(ExecutionOptions.StorageDeletionRetryInterval);
                     return await UploadFilesToStorageContainer(storageAccountName, storageAccountKey, containerName, filePaths, true);
                 }
                 if (CanUseRelayProxy(rfExe))

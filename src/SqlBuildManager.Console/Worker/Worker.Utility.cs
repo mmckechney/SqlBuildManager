@@ -31,7 +31,7 @@ namespace SqlBuildManager.Console
             if (!decryptSuccess)
             {
                 log.LogWarning("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
-                return -8675;
+                return (int)ExecutionReturn.RunInitializationError;
             }
 
 
@@ -68,7 +68,7 @@ namespace SqlBuildManager.Console
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
-            if (!initSuccess) return -8675;
+            if (!initSuccess) return (int)ExecutionReturn.RunInitializationError;
 
             #region Validate flags
             string[] errorMessages;
@@ -81,7 +81,7 @@ namespace SqlBuildManager.Console
             if (File.Exists(cmdLine.OutputSbm))
             {
                 log.LogError($"The --outputsbm file already exists at {cmdLine.OutputSbm}. Please choose another name or delete the existing file.");
-                System.Environment.Exit(-1);
+                System.Environment.Exit((int)ExecutionReturn.InvalidOutputFile);
             }
             #endregion
 
@@ -119,9 +119,9 @@ namespace SqlBuildManager.Console
 
             bool success = await Synchronize.SyncDatabasesAsync(cmdLine).ConfigureAwait(false);
             if (success)
-                System.Environment.Exit(0);
+                System.Environment.Exit((int)ExecutionReturn.Successful);
             else
-                System.Environment.Exit(954);
+                System.Environment.Exit((int)ExecutionReturn.ProcessBuildError);
         }
 
 
@@ -139,7 +139,7 @@ namespace SqlBuildManager.Console
 
             string history = Synchronize.GetDatabaseRunHistoryTextDifference(cmdLine);
             log.LogInformation(history);
-            System.Environment.Exit(0);
+            System.Environment.Exit((int)ExecutionReturn.Successful);
         }
 
         internal static async Task CreateBackout(CommandLineArgs cmdLine)
@@ -158,11 +158,11 @@ namespace SqlBuildManager.Console
             if (!String.IsNullOrEmpty(packageName))
             {
                 log.LogInformation(packageName);
-                System.Environment.Exit(0);
+                System.Environment.Exit((int)ExecutionReturn.Successful);
             }
             else
             {
-                System.Environment.Exit(856);
+                System.Environment.Exit((int)ExecutionReturn.ProcessBuildError);
             }
         }
 
@@ -171,7 +171,7 @@ namespace SqlBuildManager.Console
             if (!File.Exists(cmdLine.OutputSbm))
             {
                 log.LogWarning($"The specified output file '{cmdLine.OutputSbm}' does not exists. If you want to create a package, please use the \"sbm create\" command");
-                return -646;
+                return (int)ExecutionReturn.InvalidOutputFile;
             }
 
             if (Path.GetExtension(cmdLine.OutputSbm).ToLower() == ".sbx")
@@ -194,7 +194,7 @@ namespace SqlBuildManager.Console
                     {
                         File.Copy(file.FullName, Path.Combine(workingDir, file.Name));
                     }
-                    buildModel = await sqlB.SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "").ConfigureAwait(false);
+                    buildModel = await sqlB.SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, ExecutionOptions.DefaultScriptTimeoutSeconds, Guid.NewGuid(), "").ConfigureAwait(false);
                     counter++;
                 }
                 // Note: AddScriptFileToBuildAsync with saveToZip=true already persists the project file and packages the zip.
@@ -223,14 +223,14 @@ namespace SqlBuildManager.Console
                     foreach (var file in cmdLine.Scripts)
                     {
                         lastBuildNumber++;
-                        buildModel = await sqlB.SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel, projectFileName, file.Name, lastBuildNumber, "", true, true, "client", true, cmdLine.OutputSbm, true, true, Environment.UserName, 500, Guid.NewGuid(), "").ConfigureAwait(false);
+                        buildModel = await sqlB.SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel, projectFileName, file.Name, lastBuildNumber, "", true, true, "client", true, cmdLine.OutputSbm, true, true, Environment.UserName, ExecutionOptions.DefaultScriptTimeoutSeconds, Guid.NewGuid(), "").ConfigureAwait(false);
                     }
                     await sqlB.SqlBuildFileHelper.CleanUpAndDeleteWorkingDirectoryAsync(workingDir).ConfigureAwait(false);
                 }
                 else
                 {
                     log.LogError($"Unable to extract and read the build file at {cmdLine.OutputSbm}!");
-                    return -952;
+                    return (int)ExecutionReturn.LoadProjectFileError;
                 }
             }
             log.LogInformation($"Added {cmdLine.Scripts.Count()} scripts to '{cmdLine.OutputSbm}'");
@@ -243,7 +243,7 @@ namespace SqlBuildManager.Console
         internal static async Task<int> CreatePackageFromDacpacs(string outputSbm, FileInfo platinumDacpac, FileInfo targetDacpac, bool allowObjectDelete)
         {
             var outputSbmFile = Path.GetFullPath(outputSbm);
-            var (res, tmpSbm) = await sqlB.DacPacHelper.CreateSbmFromDacPacDifferencesAsync(platinumDacpac.FullName, targetDacpac.FullName, true, string.Empty, 500, allowObjectDelete).ConfigureAwait(false);
+            var (res, tmpSbm) = await sqlB.DacPacHelper.CreateSbmFromDacPacDifferencesAsync(platinumDacpac.FullName, targetDacpac.FullName, true, string.Empty, ExecutionOptions.DefaultScriptTimeoutSeconds, allowObjectDelete).ConfigureAwait(false);
 
             if (res == sqlB.DacpacDeltasStatus.Success)
             {
@@ -264,7 +264,7 @@ namespace SqlBuildManager.Console
                         log.LogError("There was an error creating the requested package");
                         break;
                 }
-                return -232323;
+                return (int)ExecutionReturn.ProcessBuildError;
             }
         }
 
@@ -274,7 +274,7 @@ namespace SqlBuildManager.Console
             if (File.Exists(sbmFileName))
             {
                 log.LogError($"The output file '{sbmFileName}' already exists. Please delete the file or use 'sbm add' if you want to add new scripts to the file");
-                return -343;
+                return (int)ExecutionReturn.InvalidOutputFile;
             }
             string path = Path.GetDirectoryName(sbmFileName)!;
             if (!Directory.Exists(path))
@@ -348,7 +348,7 @@ namespace SqlBuildManager.Console
                         log.LogError("There was an error creating the requested package");
                         break;
                 }
-                return -232323;
+                return (int)ExecutionReturn.ProcessBuildError;
             }
         }
 
@@ -422,7 +422,7 @@ namespace SqlBuildManager.Console
             if (File.Exists(cmdLine.OutputSbm))
             {
                 log.LogWarning($"The specified output file '{cmdLine.OutputSbm}' already exists and can not be created. If you want to add scripts to this file, please use the \"sbm add\" command");
-                return -432;
+                return (int)ExecutionReturn.InvalidOutputFile;
             }
 
             string workingDir = Path.GetDirectoryName(cmdLine.OutputSbm)!;
@@ -450,7 +450,7 @@ namespace SqlBuildManager.Console
                     {
                         File.Copy(file.FullName, Path.Combine(workingDir, file.Name));
                     }
-                    buildModel = await sqlB.SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, 500, Guid.NewGuid(), "").ConfigureAwait(false);
+                    buildModel = await sqlB.SqlBuildFileHelper.AddScriptFileToBuildAsync(buildModel, projFile, file.Name, counter, "", true, true, "client", true, sbxFileName, true, true, Environment.UserName, ExecutionOptions.DefaultScriptTimeoutSeconds, Guid.NewGuid(), "").ConfigureAwait(false);
                     counter++;
                 }
                 await sqlM.SqlSyncBuildDataXmlSerializer.SaveAsync(projFile, buildModel).ConfigureAwait(false);
@@ -468,12 +468,12 @@ namespace SqlBuildManager.Console
                     }
                 });
 
-                bool success = await sqlB.SqlBuildFileHelper.SaveSqlFilesToNewBuildFileAsync(cmdLine.OutputSbm, cmdLine.Scripts.Select(f => f.FullName).ToList(), "client", 500, false).ConfigureAwait(false);
+                bool success = await sqlB.SqlBuildFileHelper.SaveSqlFilesToNewBuildFileAsync(cmdLine.OutputSbm, cmdLine.Scripts.Select(f => f.FullName).ToList(), "client", ExecutionOptions.DefaultScriptTimeoutSeconds, false).ConfigureAwait(false);
                 copied.ForEach(f => File.Delete(f));
                 if (!success)
                 {
                     log.LogError("Unable to create the build file!");
-                    return -425;
+                    return (int)ExecutionReturn.ProcessBuildError;
                 }
                 await ListPackageScriptsAsync(new FileInfo[] { new FileInfo(cmdLine.OutputSbm) }, true).ConfigureAwait(false);
             }
@@ -496,7 +496,7 @@ namespace SqlBuildManager.Console
             if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
                 log.LogError("No --packagename was specified. This is required for 'sbm gethash' command");
-                System.Environment.Exit(626);
+                System.Environment.Exit((int)ExecutionReturn.InvalidExecutionOption);
 
             }
             string packageName = cmdLine.BuildFileName;
@@ -505,11 +505,11 @@ namespace SqlBuildManager.Console
             {
                 //log.LogInformation(hash);
                 System.Console.WriteLine(hash);
-                System.Environment.Exit(0);
+                System.Environment.Exit((int)ExecutionReturn.Successful);
             }
             else
             {
-                System.Environment.Exit(621);
+                System.Environment.Exit((int)ExecutionReturn.ProcessBuildError);
             }
         }
 
@@ -529,7 +529,7 @@ namespace SqlBuildManager.Console
             if (string.IsNullOrWhiteSpace(cmdLine.BuildFileName))
             {
                 log.LogError("No --packagename was specified. This is required for 'sbm policycheck' command");
-                System.Environment.Exit(34536);
+                System.Environment.Exit((int)ExecutionReturn.InvalidExecutionOption);
 
             }
             string packageName = cmdLine.BuildFileName;
@@ -554,11 +554,11 @@ namespace SqlBuildManager.Console
 
             if (passed)
             {
-                System.Environment.Exit(0);
+                System.Environment.Exit((int)ExecutionReturn.Successful);
             }
             else
             {
-                System.Environment.Exit(739);
+                System.Environment.Exit((int)ExecutionReturn.ProcessBuildError);
             }
         }
 
@@ -578,7 +578,7 @@ namespace SqlBuildManager.Console
             if (string.IsNullOrWhiteSpace(cmdLine.Directory))
             {
                 log.LogError("The --directory argument is required for 'sbm package' command");
-                System.Environment.Exit(9835);
+                System.Environment.Exit((int)ExecutionReturn.InvalidExecutionOption);
             }
             string directory = cmdLine.Directory;
             List<string> sbmFiles = await sqlB.SqlBuildFileHelper.PackageSbxFilesIntoSbmFilesAsync(directory).ConfigureAwait(false);
@@ -587,12 +587,12 @@ namespace SqlBuildManager.Console
                 foreach (string sbm in sbmFiles)
                     log.LogInformation(sbm);
 
-                System.Environment.Exit(0);
+                System.Environment.Exit((int)ExecutionReturn.Successful);
             }
             else
             {
                 log.LogWarning("No SBX files found or packaged in directory: " + directory);
-                System.Environment.Exit(604);
+                System.Environment.Exit((int)ExecutionReturn.ProcessBuildError);
             }
         }
 
@@ -673,18 +673,18 @@ namespace SqlBuildManager.Console
             if (cmdLine.ScriptFile == null && string.IsNullOrWhiteSpace(cmdLine.ScriptText))
             {
                 log.LogError("Please specify a --scriptfile or --scripttext parameter.");
-                return -1;
+                return (int)ExecutionReturn.InvalidExecutionOption;
             }
             else if (cmdLine.ScriptFile != null && !string.IsNullOrWhiteSpace(cmdLine.ScriptText))
             {
                 log.LogError("Please specify either a --scriptfile or --scripttext parameter, not both.");
-                return -2;
+                return (int)ExecutionReturn.InvalidExecutionOption;
             }
             var outputFileName = Path.Join(Path.GetDirectoryName(cmdLine.OutputFile.FullName), Path.GetFileNameWithoutExtension(cmdLine.OutputFile.FullName) + ".cfg");
             if (File.Exists(outputFileName) && !force)
             {
                 log.LogError($"Output file already exists: \"{outputFileName}\". To overwite it, please use the --force flag");
-                return -3;
+                return (int)ExecutionReturn.InvalidOutputFile;
             }
 
             log.LogInformation("Generating override file from SQL script...");

@@ -218,9 +218,6 @@ namespace SqlBuildManager.Console.Threaded
         }
         private async Task<int> ExecuteFromQueueAsync(CommandLineArgs cmdLine, string buildRequestedBy, string storageContainerName, CancellationToken cancellationToken = default)
         {
-            const int QueuePollDelayMs = 5000;
-            const int MaxNoMessageRetries = 4;
-            
             qManager = new Queue.QueueManager(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
             bool messagesSinceLastLoop = true;
             int noMessagesCounter = 0;
@@ -232,7 +229,7 @@ namespace SqlBuildManager.Console.Threaded
                 {
                     if (cmdLine.RunningAsContainer)
                     {
-                        log.LogInformation($"No messages found in Service Bus Topic. Waiting {QueuePollDelayMs/1000} seconds to check again...");
+                        log.LogInformation($"No messages found in Service Bus Topic. Waiting {ExecutionOptions.QueueWorkerPollingInterval.TotalSeconds:0} seconds to check again...");
                         var msg = new LogMsg() { RunId = _context.RunId, Message = $"Waiting for additional Service Bus messages on {Environment.MachineName}", LogType = LogType.Message };
                         threadedLog.WriteToLog(msg);
                         if (messagesSinceLastLoop)
@@ -242,15 +239,15 @@ namespace SqlBuildManager.Console.Threaded
                         }
                         else
                         {
-                            if (noMessagesCounter == MaxNoMessageRetries)
+                            if (noMessagesCounter == ExecutionOptions.QueueVisibilityRetryCount)
                             {
-                                log.LogInformation($"No messages found in Service Bus Topic after {MaxNoMessageRetries} retries. Terminating Container.");
+                                log.LogInformation($"No messages found in Service Bus Topic after {ExecutionOptions.QueueVisibilityRetryCount} retries. Terminating Container.");
                                 break;
                             }
                             noMessagesCounter++;
                         }
                         messagesSinceLastLoop = false;
-                        await Task.Delay(QueuePollDelayMs, cancellationToken);
+                        await Task.Delay(ExecutionOptions.QueueWorkerPollingInterval, cancellationToken);
                     }
                     else
                     {
@@ -421,7 +418,7 @@ namespace SqlBuildManager.Console.Threaded
                     await this.qManager.RenewMessageLock(message);
                     timer.Restart();
                 }
-                await Task.Delay(1000, cancellationToken);
+                await Task.Delay(ExecutionOptions.FastPollingInterval, cancellationToken);
             }
             timer.Stop();
             

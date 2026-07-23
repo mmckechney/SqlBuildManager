@@ -7,6 +7,7 @@ using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Console.Threaded;
+using SqlBuildManager.Interfaces.Console;
 using SqlSync.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
@@ -69,13 +70,13 @@ namespace SqlBuildManager.Console
                     catch (OperationCanceledException)
                     {
                         log.LogInformation("The job has been killed with CTRL+C");
-                        exitCode = -3;
+                        exitCode = (int)ExecutionReturn.UserCancelled;
                     }
                     catch (Exception exe)
                     {
                         System.Console.WriteLine($"Error closing: {exe.Message}");
                         System.Environment.FailFast("");
-                        exitCode = -100000;
+                        exitCode = (int)ExecutionReturn.UnhandledException;
                     }
                     finally
                     {
@@ -134,7 +135,7 @@ namespace SqlBuildManager.Console
         {
             bool initSuccess = false;
             (initSuccess, cmdLine) = Init(cmdLine);
-            if (!initSuccess) return -8675;
+            if (!initSuccess) return (int)ExecutionReturn.RunInitializationError;
 
 
             if (!string.IsNullOrWhiteSpace(cmdLine.RootLoggingPath))
@@ -178,13 +179,13 @@ namespace SqlBuildManager.Console
             if(!success)
             {
                 log.LogError("Problem reading configuration");
-                return 3424;
+                return (int)ExecutionReturn.RunInitializationError;
             }
 
             if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 log.LogError("A --servicebusconnection value is required. Please include this in either the settings file content or as a specific command option");
-                return 9839;
+                return (int)ExecutionReturn.InvalidExecutionOption;
             }
             (int ret, string msg) = Validation.ValidateBatchjobName(cmdLine.BatchArgs.BatchJobName);
             if (ret != 0)
@@ -218,7 +219,7 @@ namespace SqlBuildManager.Console
             else
             {
                 log.LogError("Error sending messages to Service Bus queue");
-                return 2355;
+                return (int)ExecutionReturn.OneOrMoreRemoteServersHadError;
             }
         }
 
@@ -233,19 +234,19 @@ namespace SqlBuildManager.Console
             if (!decryptSuccess)
             {
                 log.LogWarning("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
-                return -53443;
+                return (int)ExecutionReturn.RunInitializationError;
             }
 
 
             if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
                 log.LogError("A --servicebustopicconnection value is required. Please include this in either the settings file content or as a specific command option");
-                return 9839;
+                return (int)ExecutionReturn.InvalidExecutionOption;
             }
             if (string.IsNullOrWhiteSpace(cmdLine.BatchArgs.BatchJobName))
             {
                 log.LogError("A --jobname value is required. Please include this in either the settings file content or as a specific command option");
-                return 9839;
+                return (int)ExecutionReturn.InvalidExecutionOption;
             }
 
             var qManager = await QueueManager.CreateAsync(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, cmdLine.BatchArgs.BatchJobName, cmdLine.ConcurrencyType);
@@ -262,7 +263,7 @@ namespace SqlBuildManager.Console
             else
             {
                 log.LogError($"Error deleting Service Bus queue subscription for '{cmdLine.JobName}'");
-                return 2355;
+                return (int)ExecutionReturn.OneOrMoreRemoteServersHadError;
             }
         }
 
@@ -272,7 +273,7 @@ namespace SqlBuildManager.Console
             (bool success, cmdLine) = Init(cmdLine);
             if (!success)
             {
-                return (-8675, cmdLine);
+                return ((int)ExecutionReturn.RunInitializationError, cmdLine);
             }
             log = Logging.ApplicationLogging.CreateLogger<Worker>(Program.applicationLogFileName, cmdLine.RootLoggingPath);
             var outpt = Validation.ValidateQueryArguments(ref cmdLine);
@@ -405,14 +406,14 @@ namespace SqlBuildManager.Console
                         lastEventCount != events ||
                         lastWorkers != workersCompleted ||
                         lastMessageCount != messageCount;
-                    if (statusChanged || DateTime.UtcNow - lastStatusWrite >= TimeSpan.FromSeconds(30))
+                    if (statusChanged || DateTime.UtcNow - lastStatusWrite >= ExecutionOptions.StatusHeartbeatInterval)
                     {
                         if (unittest) firstLoop = true; //Won't have a console to change position for unit tests
                         SetCursorStatus(lines, firstLoop, stream);
                         lastStatusWrite = DateTime.UtcNow;
                     }
 
-                    await Task.Delay(500);
+                    await Task.Delay(ExecutionOptions.MessagePollingInterval);
                     if (messageCount == 0)
                     {
                         zeroMessageCounter++;
@@ -581,7 +582,7 @@ namespace SqlBuildManager.Console
             System.Console.Write("Waiting for EventHub client.");
             while (ehTask.Status == TaskStatus.WaitingForActivation || ehTask.Status == TaskStatus.WaitingToRun)
             {
-                await Task.Delay(2000);
+                await Task.Delay(ExecutionOptions.DistributedPollingInterval);
                 System.Console.Write(".");
             }
             System.Console.WriteLine();
@@ -623,12 +624,12 @@ namespace SqlBuildManager.Console
                 }
                     );
                 }
-                if (statusChanged || DateTime.UtcNow - lastStatusWrite >= TimeSpan.FromSeconds(30))
+                if (statusChanged || DateTime.UtcNow - lastStatusWrite >= ExecutionOptions.StatusHeartbeatInterval)
                 {
                     SetCursorStatus(lines, firstLoop, stream);
                     lastStatusWrite = DateTime.UtcNow;
                 }
-                await Task.Delay(2000);
+                await Task.Delay(ExecutionOptions.DistributedPollingInterval);
                 firstLoop = false;
             }
             System.Console.WriteLine();

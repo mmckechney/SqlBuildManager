@@ -347,7 +347,7 @@ namespace SqlBuildManager.Console.ContainerApp
             if (result.GetRawResponse().Status < 300)
             {
                 //Introduce a delay to see if that will help with what seems to be an issue with a timely managed identity assignment
-                await Task.Delay(10000);
+                await Task.Delay(ExecutionOptions.ResourceProvisioningPollingInterval);
                 log.LogInformation($"Completed Container App deployment for App Name: '{containerAppName}'");
                 return true;
             }

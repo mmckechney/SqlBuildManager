@@ -180,9 +180,9 @@ namespace SqlBuildManager.Console.Queue
                 //Confirm message count in Queue 
                 int retry = 0;
                 var activeMessages = await MonitorServiceBustopic(cType);
-                while (activeMessages < count && retry < 4)
+                while (activeMessages < count && retry < ExecutionOptions.QueueVisibilityRetryCount)
                 {
-                    await Task.Delay(1000);
+                    await Task.Delay(ExecutionOptions.FastPollingInterval);
                     activeMessages = await MonitorServiceBustopic(cType);
                 }
 

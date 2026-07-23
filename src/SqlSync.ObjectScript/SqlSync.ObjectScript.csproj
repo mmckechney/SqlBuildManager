@@ -12,11 +12,11 @@
     <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.8" />
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.19.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.8" />
-    <PackageReference Include="System.Diagnostics.EventLog" Version="10.0.8" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
+    <PackageReference Include="System.Diagnostics.EventLog" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />

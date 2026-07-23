@@ -91,7 +91,7 @@ namespace SqlBuildManager.Console.Arm
             while (!result.HasCompleted)
             {
                 result.UpdateStatus();
-                await Task.Delay(1000);
+                await Task.Delay(ExecutionOptions.FastPollingInterval);
             }
             if (result.GetRawResponse().Status >= 300)
             {

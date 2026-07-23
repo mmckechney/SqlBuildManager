@@ -9,7 +9,7 @@ namespace SqlBuildManager.Console.Aad
 {
     public class AadHelper
     {
-        private static readonly TimeSpan CredentialProcessTimeout = TimeSpan.FromSeconds(60);
+        private static readonly TimeSpan CredentialProcessTimeout = ExecutionOptions.CredentialProcessTimeout;
         private static CancellationTokenSource src = new CancellationTokenSource();
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private static string _managedIdentityClientId = string.Empty;
@@ -98,7 +98,7 @@ namespace SqlBuildManager.Console.Aad
                             pwshOpts.TenantId = AadHelper.TenantId;
                         }
 
-                        _tokenCred = new ChainedTokenCredential(new AzureCliCredential(cliOpts), new ManagedIdentityCredential(ManagedIdentityClientId = AadHelper.ManagedIdentityClientId), new AzurePowerShellCredential(pwshOpts));
+                        _tokenCred = new ChainedTokenCredential( new ManagedIdentityCredential(ManagedIdentityClientId = AadHelper.ManagedIdentityClientId), new AzureCliCredential(cliOpts),new AzurePowerShellCredential(pwshOpts));
                         log.LogInformation($"Creating ChainedTokenCredential with ManagedIdentityClientId of: '{AadHelper.ManagedIdentityClientId}'");
                     }
                 }

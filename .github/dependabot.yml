@@ -1,7 +1,32 @@
 version: 2
 updates:
 - package-ecosystem: nuget
-  directory: "/"
+  directory: "/src"
   schedule:
     interval: daily
   open-pull-requests-limit: 10
+  groups:
+    azure-sdk:
+      patterns:
+      - "Azure.*"
+      - "Microsoft.Azure.*"
+    microsoft-extensions:
+      patterns:
+      - "Microsoft.Extensions.*"
+    test-tooling:
+      patterns:
+      - "Microsoft.NET.Test.Sdk"
+      - "MSTest.*"
+      - "coverlet.collector"
+- package-ecosystem: docker
+  directory: "/src"
+  schedule:
+    interval: weekly
+- package-ecosystem: docker
+  directory: "/src/SqlBuildManager.RelayProxy"
+  schedule:
+    interval: weekly
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: weekly

@@ -108,7 +108,8 @@ This will start the following process:
 4. A container-enabled AlmaLinux 8 Gen1 pool pulls the runtime image from ACR with managed identity
 5. The workload tasks are sent to Azure Batch and run `/app/sbm` inside the container
 6. The local executable polls for node status, waiting for each to complete
-7. Once complete, the aggregate return code is used as the exit code for `sbm`
+7. Once complete, the aggregate return code is used as the exit code for `sbm`; see
+   [Execution options and exit codes](execution-options-and-exit-codes.md)
 8. The log files for each of the nodes is uploaded to the Storage account associated with the Batch
 9. A SaS token URL to get read-only access to the log files is included in the console output. You can also view these files via the Azure portal or the [Azure Batch Explorer](https://azure.github.io/BatchExplorer/)
 
@@ -121,6 +122,11 @@ This will start the following process:
 
 1. Execute `sbm batch cleanup [options]`. This will delete the Azure Batch VM's so you are no longer charged for the compute. See the argument details [here](azure_batch_commands.md#batch-clean-up-batch-nodes)\
 _NOTE:_ this will not delete the log files, these are generally needed more long term and they will stay in the storage account
+
+If job monitoring reaches `--batchjobmonitortimeout`, SQL Build Manager returns
+`BatchJobMonitorTimeout`. The command still applies the configured `--deletebatchjob` and
+`--deletebatchpool` cleanup settings. If either setting retained the resource, run
+`sbm batch cleanup` after investigating the job.
 
 ## Alternative run options
 
@@ -144,4 +150,3 @@ sbm.exe batch run --settingsfile="C:\temp\my_settings.json" --settingsfilekey="C
 ## Log Details
 
 For details on the log files that are created during a Batch run, see the [Log Details page](threaded_and_batch_logs.md). There is also a section on [troubleshooting tips](threaded_and_batch_logs.md#troubleshooting-tips)
-

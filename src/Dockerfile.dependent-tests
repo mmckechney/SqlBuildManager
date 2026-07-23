@@ -1,31 +1,54 @@
-# Dockerfile for running all non-External tests with a SQL Server sidecar
-# Builds all UnitTest projects (excluding ExternalTest) and includes the test runner
-# Used with run_dependent_tests_in_aci.ps1 which provides a SQL Server sidecar container
+# syntax=docker/dockerfile:1
+# Runs all non-external tests with SQL Server and PostgreSQL sidecars.
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-
+FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:ed034a8bf0b24ded0cbbac07e17825d8e9ebfe21e308191d0f7421eaf5ad4664 AS restore
 WORKDIR /src
 
-# Copy everything
+COPY Directory.Build.props Directory.Packages.props ./
+COPY SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/packages.lock.json SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/
+COPY SqlBuildManager.Console.Dependent.UnitTest/SqlBuildManager.Console.Dependent.UnitTest.csproj SqlBuildManager.Console.Dependent.UnitTest/packages.lock.json SqlBuildManager.Console.Dependent.UnitTest/
+COPY SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj SqlBuildManager.Console.UnitTest/packages.lock.json SqlBuildManager.Console.UnitTest/
+COPY SqlBuildManager.Console/sbm.csproj SqlBuildManager.Console/packages.lock.json SqlBuildManager.Console/
+COPY SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj SqlBuildManager.Enterprise.UnitTest/packages.lock.json SqlBuildManager.Enterprise.UnitTest/
+COPY SqlBuildManager.Enterprise/SqlBuildManager.Enterprise.csproj SqlBuildManager.Enterprise/packages.lock.json SqlBuildManager.Enterprise/
+COPY SqlBuildManager.Interfaces/SqlBuildManager.Interfaces.csproj SqlBuildManager.Interfaces/packages.lock.json SqlBuildManager.Interfaces/
+COPY SqlBuildManager.Logging/SqlBuildManager.Logging.csproj SqlBuildManager.Logging/packages.lock.json SqlBuildManager.Logging/
+COPY SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj SqlBuildManager.ScriptHandling.UnitTest/packages.lock.json SqlBuildManager.ScriptHandling.UnitTest/
+COPY SqlBuildManager.ScriptHandling/SqlBuildManager.ScriptHandling.csproj SqlBuildManager.ScriptHandling/packages.lock.json SqlBuildManager.ScriptHandling/
+COPY SqlBuildManager.Test.Common/SqlBuildManager.Test.Common.csproj SqlBuildManager.Test.Common/packages.lock.json SqlBuildManager.Test.Common/
+COPY SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.csproj SqlSync.Connection.Dependent.UnitTest/packages.lock.json SqlSync.Connection.Dependent.UnitTest/
+COPY SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj SqlSync.Connection.UnitTest/packages.lock.json SqlSync.Connection.UnitTest/
+COPY SqlSync.Connection/SqlSync.Connection.csproj SqlSync.Connection/packages.lock.json SqlSync.Connection/
+COPY SqlSync.Constants/SqlSync.Constants.csproj SqlSync.Constants/packages.lock.json SqlSync.Constants/
+COPY SqlSync.DbInformation.Dependent.UnitTest/SqlSync.DbInformation.Dependent.UnitTest.csproj SqlSync.DbInformation.Dependent.UnitTest/packages.lock.json SqlSync.DbInformation.Dependent.UnitTest/
+COPY SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.csproj SqlSync.DbInformation.UnitTest/packages.lock.json SqlSync.DbInformation.UnitTest/
+COPY SqlSync.DbInformation/SqlSync.DbInformation.csproj SqlSync.DbInformation/packages.lock.json SqlSync.DbInformation/
+COPY SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.UnitTest.csproj SqlSync.ObjectScript.Dependent.UnitTest/packages.lock.json SqlSync.ObjectScript.Dependent.UnitTest/
+COPY SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj SqlSync.ObjectScript.UnitTest/packages.lock.json SqlSync.ObjectScript.UnitTest/
+COPY SqlSync.ObjectScript/SqlSync.ObjectScript.csproj SqlSync.ObjectScript/packages.lock.json SqlSync.ObjectScript/
+COPY SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/packages.lock.json SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/
+COPY SqlSync.SqlBuild.Dependent.TestBase/SqlSync.SqlBuild.Dependent.TestBase.csproj SqlSync.SqlBuild.Dependent.TestBase/packages.lock.json SqlSync.SqlBuild.Dependent.TestBase/
+COPY SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.csproj SqlSync.SqlBuild.Dependent.UnitTest/packages.lock.json SqlSync.SqlBuild.Dependent.UnitTest/
+COPY SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj SqlSync.SqlBuild.UnitTest/packages.lock.json SqlSync.SqlBuild.UnitTest/
+COPY SqlSync.SqlBuild/SqlSync.SqlBuild.csproj SqlSync.SqlBuild/packages.lock.json SqlSync.SqlBuild/
+
+RUN dotnet restore SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.Console.Dependent.UnitTest/SqlBuildManager.Console.Dependent.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlSync.DbInformation.Dependent.UnitTest/SqlSync.DbInformation.Dependent.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj --locked-mode
+
+FROM restore AS build
 COPY . .
-
-# Restore all non-External test projects
-RUN dotnet restore SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.csproj && \
-    dotnet restore SqlBuildManager.Console.Dependent.UnitTest/SqlBuildManager.Console.Dependent.UnitTest.csproj && \
-    dotnet restore SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.UnitTest.csproj && \
-    dotnet restore SqlSync.DbInformation.Dependent.UnitTest/SqlSync.DbInformation.Dependent.UnitTest.csproj && \
-    dotnet restore SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.csproj && \
-    dotnet restore SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj && \
-    dotnet restore SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj && \
-    dotnet restore SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj && \
-    dotnet restore SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj && \
-    dotnet restore SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj && \
-    dotnet restore SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.csproj && \
-    dotnet restore SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj && \
-    dotnet restore SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj && \
-    dotnet restore SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj
-
-# Build all non-External test projects (errors only, suppress warnings)
 RUN dotnet build SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.SqlBuild.Dependent.UnitTest && \
     dotnet build SqlBuildManager.Console.Dependent.UnitTest/SqlBuildManager.Console.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.Dependent.UnitTest && \
     dotnet build SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.ObjectScript.Dependent.UnitTest && \
@@ -41,31 +64,24 @@ RUN dotnet build SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.
     dotnet build SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.UnitTest && \
     dotnet build SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Enterprise.UnitTest
 
-# Final test runner image
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS testrunner
-
-# Install Azure CLI from the signed Microsoft package repository.
-# No remote shell scripts are executed (replaces the former curl | bash install).
-RUN apt-get update && \
-    apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg && \
+FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:ed034a8bf0b24ded0cbbac07e17825d8e9ebfe21e308191d0f7421eaf5ad4664 AS testrunner
+RUN sed -i 's|http://archive.ubuntu.com|https://archive.ubuntu.com|g; s|http://security.ubuntu.com|https://security.ubuntu.com|g' /etc/apt/sources.list.d/ubuntu.sources && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates curl apt-transport-https gnupg && \
     mkdir -p /etc/apt/keyrings && \
     curl -sLS https://packages.microsoft.com/keys/microsoft.asc | \
       gpg --dearmor -o /etc/apt/keyrings/microsoft.gpg && \
     chmod go+r /etc/apt/keyrings/microsoft.gpg && \
-    AZ_DIST=$(lsb_release -cs) && \
+    . /etc/os-release && AZ_DIST="${VERSION_CODENAME}" && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ ${AZ_DIST} main" \
       > /etc/apt/sources.list.d/azure-cli.list && \
     apt-get update && \
-    apt-get install -y azure-cli && \
+    apt-get install -y --no-install-recommends azure-cli && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /tests
-
-# Copy built test assemblies
 COPY --from=build /tests .
-
-# SQL Server connection environment variables (configured for sidecar)
 ENV SBM_TEST_SQL_SERVER=localhost
 ENV SBM_TEST_SQL_USER=sa
 ENV SBM_TEST_SQL_PASSWORD=""
@@ -73,9 +89,6 @@ ENV SBM_TEST_POSTGRES_SERVER=localhost
 ENV SBM_TEST_POSTGRES_USER=postgres
 ENV SBM_TEST_POSTGRES_PASSWORD=""
 ENV DOTNET_ENVIRONMENT=Production
-
-# Copy test runner script and ensure Unix line endings
 COPY run-dependent-tests.sh /tests/run-tests.sh
 RUN sed -i 's/\r$//' /tests/run-tests.sh && chmod +x /tests/run-tests.sh
-
 ENTRYPOINT ["/bin/bash", "/tests/run-tests.sh"]

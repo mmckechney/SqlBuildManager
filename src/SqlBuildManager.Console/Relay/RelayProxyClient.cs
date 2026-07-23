@@ -328,7 +328,7 @@ namespace SqlBuildManager.Console.Relay
                     cancellationToken).ConfigureAwait(false);
                 if (response.StatusCode == HttpStatusCode.Accepted)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(ExecutionOptions.DistributedPollingInterval, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
