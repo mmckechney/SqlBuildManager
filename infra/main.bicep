@@ -408,31 +408,31 @@ output POSTPROVISION_IDENTITY_PRINCIPAL_ID string = postProvisionIdentity.output
 output RELAY_PROXY_ENDPOINT string = deployRelayProxy ? relayProxy!.outputs.endpoint : ''
 
 output STORAGE_ACCOUNT_NAME string = storageAccountResource.outputs.name
-output STORAGE_ACCOUNT_ID string = storageAccountResource.outputs.id
+// output STORAGE_ACCOUNT_ID string = storageAccountResource.outputs.id
 
 output LOG_ANALYTICS_WORKSPACE_NAME string = logAnalyticsWorkspaceResource.outputs.name
 output LOG_ANALYTICS_WORKSPACE_ID string = logAnalyticsWorkspaceResource.outputs.id
 output LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = logAnalyticsWorkspaceResource.outputs.customerId
 
 output EVENTHUB_NAMESPACE_NAME string = eventHubNamespaceResource.outputs.namespaceName
-output EVENTHUB_NAMESPACE_ID string = eventHubNamespaceResource.outputs.namespaceId
+// output EVENTHUB_NAMESPACE_ID string = eventHubNamespaceResource.outputs.namespaceId
 output EVENTHUB_NAME string = eventHubNamespaceResource.outputs.eventHubName
 
 output SERVICEBUS_NAMESPACE_NAME string = serviceBusResource.outputs.namespaceName
-output SERVICEBUS_NAMESPACE_ID string = serviceBusResource.outputs.namespaceId
+// output SERVICEBUS_NAMESPACE_ID string = serviceBusResource.outputs.namespaceId
 
 output CONTAINER_REGISTRY_NAME string = containerRegistry.outputs.name
-output CONTAINER_REGISTRY_ID string = containerRegistry.outputs.id
+// output CONTAINER_REGISTRY_ID string = containerRegistry.outputs.id
 output CONTAINER_REGISTRY_LOGIN_SERVER string = containerRegistry.outputs.loginServer
 
 output CONTAINERAPP_ENVIRONMENT_NAME string = deployContainerAppEnv ? containerAppEnv!.outputs.name : ''
-output CONTAINERAPP_ENVIRONMENT_ID string = deployContainerAppEnv ? containerAppEnv!.outputs.id : ''
+// output CONTAINERAPP_ENVIRONMENT_ID string = deployContainerAppEnv ? containerAppEnv!.outputs.id : ''
 
 output BATCH_ACCOUNT_NAME string = deployBatchAccount ? batchAccount!.outputs.name : ''
-output BATCH_ACCOUNT_ID string = deployBatchAccount ? batchAccount!.outputs.id : ''
+// output BATCH_ACCOUNT_ID string = deployBatchAccount ? batchAccount!.outputs.id : ''
 
 output AKS_CLUSTER_NAME string = deployAks ? aks!.outputs.clusterName : ''
-output AKS_CLUSTER_ID string = deployAks ? aks!.outputs.clusterId : ''
+// output AKS_CLUSTER_ID string = deployAks ? aks!.outputs.clusterId : ''
 output AKS_FEDERATED_IDENTITY_NAME string = deployAks ? aks!.outputs.federatedIdName : ''
 output AKS_SERVICE_ACCOUNT_NAME string = deployAks ? aks!.outputs.serviceAccountName : ''
 
