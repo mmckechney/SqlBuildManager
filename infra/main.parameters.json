@@ -44,11 +44,17 @@
     "deployPostgreSQL": {
       "value": "${DEPLOY_POSTGRESQL}"
     },
+    "deployMySQL": {
+      "value": "${DEPLOY_MYSQL}"
+    },
     "deployRelayProxy": {
       "value": true
     },
     "pgAdminPassword": {
       "value": "${PG_ADMIN_PASSWORD}"
+    },
+    "mySqlAdminPassword": {
+      "value": "${MYSQL_ADMIN_PASSWORD}"
     }
   }
 }

@@ -20,6 +20,13 @@ namespace SqlSync.Connection.UnitTest
         }
 
         [TestMethod]
+        public void GetFactory_MySQL_ReturnsMySqlConnectionFactory()
+        {
+            var factory = ConnectionHelper.GetFactory(DatabasePlatform.MySQL);
+            Assert.IsInstanceOfType(factory, typeof(MySqlConnectionFactory));
+        }
+
+        [TestMethod]
         public void GetFactory_FromConnectionData_SqlServer_ReturnsSqlServerFactory()
         {
             var connData = new ConnectionData { DatabasePlatform = DatabasePlatform.SqlServer };
@@ -33,6 +40,14 @@ namespace SqlSync.Connection.UnitTest
             var connData = new ConnectionData { DatabasePlatform = DatabasePlatform.PostgreSQL };
             var factory = ConnectionHelper.GetFactory(connData);
             Assert.IsInstanceOfType(factory, typeof(PostgresConnectionFactory));
+        }
+
+        [TestMethod]
+        public void GetFactory_FromConnectionData_MySQL_ReturnsMySqlFactory()
+        {
+            var connData = new ConnectionData { DatabasePlatform = DatabasePlatform.MySQL };
+            var factory = ConnectionHelper.GetFactory(connData);
+            Assert.IsInstanceOfType(factory, typeof(MySqlConnectionFactory));
         }
 
         [TestMethod]
@@ -75,6 +90,24 @@ namespace SqlSync.Connection.UnitTest
 
             var conn = ConnectionHelper.GetDbConnection(connData);
             Assert.IsInstanceOfType(conn, typeof(Microsoft.Data.SqlClient.SqlConnection));
+            conn.Dispose();
+        }
+
+        [TestMethod]
+        public void GetDbConnection_MySQL_ReturnsMySqlConnection()
+        {
+            var connData = new ConnectionData
+            {
+                SQLServerName = "localhost",
+                DatabaseName = "mydb",
+                UserId = "mysqluser",
+                Password = "mysqlpass",
+                AuthenticationType = AuthenticationType.Password,
+                DatabasePlatform = DatabasePlatform.MySQL
+            };
+
+            var conn = ConnectionHelper.GetDbConnection(connData);
+            Assert.IsInstanceOfType(conn, typeof(MySqlConnector.MySqlConnection));
             conn.Dispose();
         }
 

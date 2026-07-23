@@ -107,5 +107,32 @@ namespace SqlSync.SqlBuild.UnitTest
 
             Assert.IsNotNull(helper.RunnerFactory);
         }
+
+        [TestMethod]
+        public void Constructor_MySQL_CreatesMySqlTransactionManager()
+        {
+            var connData = new ConnectionData("localhost", "testdb") { DatabasePlatform = DatabasePlatform.MySQL };
+            var helper = new SqlBuildHelper(connData, createScriptRunLogFile: false);
+
+            Assert.IsInstanceOfType(helper.TransactionManager, typeof(MySqlTransactionManager));
+        }
+
+        [TestMethod]
+        public void Constructor_MySQL_CreatesMySqlSyntaxProvider()
+        {
+            var connData = new ConnectionData("localhost", "testdb") { DatabasePlatform = DatabasePlatform.MySQL };
+            var helper = new SqlBuildHelper(connData, createScriptRunLogFile: false);
+
+            Assert.IsInstanceOfType(helper.SyntaxProvider, typeof(MySqlSyntaxProvider));
+        }
+
+        [TestMethod]
+        public void Constructor_MySQL_CreatesMySqlResourceProvider()
+        {
+            var connData = new ConnectionData("localhost", "testdb") { DatabasePlatform = DatabasePlatform.MySQL };
+            var helper = new SqlBuildHelper(connData, createScriptRunLogFile: false);
+
+            Assert.IsInstanceOfType(helper.ResourceProvider, typeof(MySqlResourceProvider));
+        }
     }
 }

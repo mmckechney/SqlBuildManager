@@ -29,12 +29,24 @@ for i in $(seq 1 $RETRIES); do
     sleep 5
 done
 
+echo "Waiting for MySQL to be ready..."
+for i in $(seq 1 $RETRIES); do
+    if timeout 2 bash -c "echo > /dev/tcp/localhost/3306" 2>/dev/null; then
+        echo "MySQL port is open, waiting for initialization to complete..."
+        sleep 10
+        echo "MySQL should be ready."
+        break
+    fi
+    echo "  Attempt $i/$RETRIES - MySQL not ready yet..."
+    sleep 5
+done
+
 mkdir -p /tests/TestResults
 
 # Run test DLLs in order:
 # 1. Pure unit tests (no external dependencies)
 # 2. SQL Server dependent tests - SqlSync.SqlBuild first (creates databases)
-# 3. PostgreSQL dependent tests
+# 3. PostgreSQL and MySQL dependent tests
 TEST_DLLS=(
     "SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.dll"
     "SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.dll"
@@ -50,6 +62,8 @@ TEST_DLLS=(
     "SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.dll"
     "SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.dll"
     "SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.dll"
+    "SqlSync.SqlBuild.Dependent.MySQL.UnitTest/SqlSync.SqlBuild.Dependent.MySQL.UnitTest.dll"
+    "SqlBuildManager.Console.Dependent.MySQL.UnitTest/SqlBuildManager.Console.Dependent.MySQL.UnitTest.dll"
 )
 
 OVERALL_EXIT=0

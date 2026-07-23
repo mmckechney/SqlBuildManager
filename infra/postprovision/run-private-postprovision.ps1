@@ -50,6 +50,16 @@ if ($env:DEPLOY_POSTGRESQL -eq 'true') {
     }
 }
 
+if ($env:DEPLOY_MYSQL -eq 'true') {
+    Write-Host "Running MySQL private initialization..." -ForegroundColor Cyan
+    & pwsh -NoLogo -NoProfile -File '/bootstrap/scripts/Database/grant_mysql_identity_permissions.ps1' `
+        -envName $envName `
+        -resourceGroupName $resourceGroupName
+    if ($LASTEXITCODE -ne 0) {
+        $failed = $true
+    }
+}
+
 if ($failed) {
     throw 'One or more private post-provision initialization steps failed.'
 }

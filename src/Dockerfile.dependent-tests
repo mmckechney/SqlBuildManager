@@ -6,6 +6,7 @@ WORKDIR /src
 
 COPY Directory.Build.props Directory.Packages.props ./
 COPY SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/packages.lock.json SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/
+COPY SqlBuildManager.Console.Dependent.MySQL.UnitTest/SqlBuildManager.Console.Dependent.MySQL.UnitTest.csproj SqlBuildManager.Console.Dependent.MySQL.UnitTest/packages.lock.json SqlBuildManager.Console.Dependent.MySQL.UnitTest/
 COPY SqlBuildManager.Console.Dependent.UnitTest/SqlBuildManager.Console.Dependent.UnitTest.csproj SqlBuildManager.Console.Dependent.UnitTest/packages.lock.json SqlBuildManager.Console.Dependent.UnitTest/
 COPY SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj SqlBuildManager.Console.UnitTest/packages.lock.json SqlBuildManager.Console.UnitTest/
 COPY SqlBuildManager.Console/sbm.csproj SqlBuildManager.Console/packages.lock.json SqlBuildManager.Console/
@@ -27,6 +28,7 @@ COPY SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.Unit
 COPY SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj SqlSync.ObjectScript.UnitTest/packages.lock.json SqlSync.ObjectScript.UnitTest/
 COPY SqlSync.ObjectScript/SqlSync.ObjectScript.csproj SqlSync.ObjectScript/packages.lock.json SqlSync.ObjectScript/
 COPY SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/packages.lock.json SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/
+COPY SqlSync.SqlBuild.Dependent.MySQL.UnitTest/SqlSync.SqlBuild.Dependent.MySQL.UnitTest.csproj SqlSync.SqlBuild.Dependent.MySQL.UnitTest/packages.lock.json SqlSync.SqlBuild.Dependent.MySQL.UnitTest/
 COPY SqlSync.SqlBuild.Dependent.TestBase/SqlSync.SqlBuild.Dependent.TestBase.csproj SqlSync.SqlBuild.Dependent.TestBase/packages.lock.json SqlSync.SqlBuild.Dependent.TestBase/
 COPY SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.csproj SqlSync.SqlBuild.Dependent.UnitTest/packages.lock.json SqlSync.SqlBuild.Dependent.UnitTest/
 COPY SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj SqlSync.SqlBuild.UnitTest/packages.lock.json SqlSync.SqlBuild.UnitTest/
@@ -39,6 +41,8 @@ RUN dotnet restore SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependen
     dotnet restore SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.csproj --locked-mode && \
     dotnet restore SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlSync.SqlBuild.Dependent.MySQL.UnitTest/SqlSync.SqlBuild.Dependent.MySQL.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.Console.Dependent.MySQL.UnitTest/SqlBuildManager.Console.Dependent.MySQL.UnitTest.csproj --locked-mode && \
     dotnet restore SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj --locked-mode && \
     dotnet restore SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj --locked-mode && \
     dotnet restore SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj --locked-mode && \
@@ -56,6 +60,8 @@ RUN dotnet build SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.
     dotnet build SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.Connection.Dependent.UnitTest && \
     dotnet build SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest && \
     dotnet build SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest && \
+    dotnet build SqlSync.SqlBuild.Dependent.MySQL.UnitTest/SqlSync.SqlBuild.Dependent.MySQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.SqlBuild.Dependent.MySQL.UnitTest && \
+    dotnet build SqlBuildManager.Console.Dependent.MySQL.UnitTest/SqlBuildManager.Console.Dependent.MySQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.Dependent.MySQL.UnitTest && \
     dotnet build SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.SqlBuild.UnitTest && \
     dotnet build SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.ObjectScript.UnitTest && \
     dotnet build SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.Connection.UnitTest && \
@@ -88,6 +94,9 @@ ENV SBM_TEST_SQL_PASSWORD=""
 ENV SBM_TEST_POSTGRES_SERVER=localhost
 ENV SBM_TEST_POSTGRES_USER=postgres
 ENV SBM_TEST_POSTGRES_PASSWORD=""
+ENV SBM_TEST_MYSQL_SERVER=localhost
+ENV SBM_TEST_MYSQL_USER=root
+ENV SBM_TEST_MYSQL_PASSWORD=""
 ENV DOTNET_ENVIRONMENT=Production
 COPY run-dependent-tests.sh /tests/run-tests.sh
 RUN sed -i 's/\r$//' /tests/run-tests.sh && chmod +x /tests/run-tests.sh

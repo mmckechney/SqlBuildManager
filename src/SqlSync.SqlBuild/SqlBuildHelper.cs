@@ -162,17 +162,23 @@ namespace SqlSync.SqlBuild
             TokenReplacementService = new Services.DefaultTokenReplacementService();
             // Select platform-specific services based on connection data
             var platform = data?.DatabasePlatform ?? Connection.DatabasePlatform.SqlServer;
-            if (platform == Connection.DatabasePlatform.PostgreSQL)
+            switch (platform)
             {
-                TransactionManager = new Services.PostgresTransactionManager();
-                SyntaxProvider = new Services.PostgresSyntaxProvider();
-                ResourceProvider = new Services.PostgresResourceProvider();
-            }
-            else
-            {
-                TransactionManager = new Services.SqlServerTransactionManager();
-                SyntaxProvider = new Services.SqlServerSyntaxProvider();
-                ResourceProvider = new Services.SqlServerResourceProvider();
+                case Connection.DatabasePlatform.PostgreSQL:
+                    TransactionManager = new Services.PostgresTransactionManager();
+                    SyntaxProvider = new Services.PostgresSyntaxProvider();
+                    ResourceProvider = new Services.PostgresResourceProvider();
+                    break;
+                case Connection.DatabasePlatform.MySQL:
+                    TransactionManager = new Services.MySqlTransactionManager();
+                    SyntaxProvider = new Services.MySqlSyntaxProvider();
+                    ResourceProvider = new Services.MySqlResourceProvider();
+                    break;
+                default:
+                    TransactionManager = new Services.SqlServerTransactionManager();
+                    SyntaxProvider = new Services.SqlServerSyntaxProvider();
+                    ResourceProvider = new Services.SqlServerResourceProvider();
+                    break;
             }
             ConnectionsService = connectionsService ?? new Services.DefaultConnectionsService(
                 Connection.ConnectionHelper.GetFactory(platform), TransactionManager);

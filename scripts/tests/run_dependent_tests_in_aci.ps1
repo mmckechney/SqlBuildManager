@@ -15,6 +15,8 @@
 
     [string] $pgPassword = "",
 
+    [string] $mySqlPassword = "",
+
     [switch] $buildImage,
     
     [switch] $keepContainer,
@@ -26,14 +28,16 @@
 
 <#
 .SYNOPSIS
-    Runs Dependent.UnitTest integration tests in ACI with a SQL Server sidecar.
+    Runs Dependent.UnitTest integration tests in ACI with SQL Server, PostgreSQL, and MySQL sidecars.
 
 .DESCRIPTION
-    Deploys a container group to ACI with two containers:
-    1. SQL Server 2022 on Linux (sidecar) - provides the database instance
-    2. Test runner - runs the Dependent.UnitTest projects against the SQL Server sidecar
+    Deploys a container group to ACI with four containers:
+    1. SQL Server 2022 on Linux (sidecar)
+    2. PostgreSQL 16 (sidecar)
+    3. MySQL 8.4 (sidecar)
+    4. Test runner - runs the Dependent.UnitTest projects against all three sidecars
     
-    The test runner waits for SQL Server to be ready, then runs all 5 Dependent.UnitTest
+    The test runner waits for database sidecars to be ready, then runs all Dependent.UnitTest
     projects. SqlSync.SqlBuild.Dependent.UnitTest runs first to create the test databases.
     
     Environment variables SBM_TEST_SQL_SERVER, SBM_TEST_SQL_USER, and SBM_TEST_SQL_PASSWORD
@@ -74,6 +78,7 @@ function New-SecureTestPassword {
 }
 if ([string]::IsNullOrWhiteSpace($sqlPassword)) { $sqlPassword = New-SecureTestPassword -tag 'Sql' }
 if ([string]::IsNullOrWhiteSpace($pgPassword))  { $pgPassword  = New-SecureTestPassword -tag 'Pg'  }
+if ([string]::IsNullOrWhiteSpace($mySqlPassword))  { $mySqlPassword  = New-SecureTestPassword -tag 'My'  }
 
 # Resolve environment name: parameter > azd environment
 if ([string]::IsNullOrWhiteSpace($envName)) {
@@ -120,7 +125,7 @@ $testImageName = "sqlbuildmanager-dependent-tests"
 
 Write-Host ""
 Write-Host "=======================================================================" -ForegroundColor Cyan
-Write-Host "Unit Test and Local DB Test Runner (ACI with SQL & PostgreSQL Sidecars)" -ForegroundColor Cyan
+Write-Host "Unit Test and Local DB Test Runner (ACI with SQL, PostgreSQL, and MySQL Sidecars)" -ForegroundColor Cyan
 Write-Host "=======================================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
@@ -184,6 +189,7 @@ Write-Debug "========================================"
 Write-Debug "Test Image: $fullImageName" 
 Write-Debug "SQL Server: mcr.microsoft.com/mssql/server:2022-latest" 
 Write-Debug "PostgreSQL: docker.io/library/postgres:16" 
+Write-Debug "MySQL: docker.io/library/mysql:8.4"
 Write-Debug ""
 
 $location = az group show --name $resourceGroupName --query location -o tsv
@@ -242,6 +248,20 @@ properties:
           memoryInGb: 2
       ports:
       - port: 5432
+  - name: mysql-server
+    properties:
+      image: docker.io/library/mysql:8.4
+      environmentVariables:
+      - name: MYSQL_ROOT_PASSWORD
+        value: "$mySqlPassword"
+      - name: MYSQL_ROOT_HOST
+        value: "%"
+      resources:
+        requests:
+          cpu: 1
+          memoryInGb: 2
+      ports:
+      - port: 3306
   - name: test-runner
     properties:
       image: $fullImageName
@@ -265,7 +285,13 @@ properties:
       - name: SBM_TEST_POSTGRES_USER
         value: postgres
       - name: SBM_TEST_POSTGRES_PASSWORD
-        value: "$pgPassword"$testFilterEnvVar
+        value: "$pgPassword"
+      - name: SBM_TEST_MYSQL_SERVER
+        value: localhost
+      - name: SBM_TEST_MYSQL_USER
+        value: root
+      - name: SBM_TEST_MYSQL_PASSWORD
+        value: "$mySqlPassword"$testFilterEnvVar
       resources:
         requests:
           cpu: 2

@@ -76,15 +76,17 @@ if ($needsPrompt) {
     Write-Host "Database platforms:" -ForegroundColor White
     Write-Host "  [1] SQL Server" -ForegroundColor Gray
     Write-Host "  [2] PostgreSQL" -ForegroundColor Gray
+    Write-Host "  [3] MySQL" -ForegroundColor Gray
     Write-Host ""
     $dbInput = Read-Host "Enter database selections (comma-separated, e.g. 1,2 or 'all')"
     if ([string]::IsNullOrWhiteSpace($dbInput)) { $dbInput = "all" }
 
-    $dbChoices = if ($dbInput.Trim().ToLower() -eq "all") { @("1","2") }
+    $dbChoices = if ($dbInput.Trim().ToLower() -eq "all") { @("1","2","3") }
                  else { $dbInput -split "," | ForEach-Object { $_.Trim() } }
 
     $deploySqlServer  = $dbChoices -contains "1"
     $deployPostgreSQL = $dbChoices -contains "2"
+    $deployMySQL      = $dbChoices -contains "3"
 
     # Save selections
     azd env set DEPLOY_BATCH          $(if ($deployBatch)        { "true" } else { "false" })
@@ -93,6 +95,7 @@ if ($needsPrompt) {
     azd env set DEPLOY_AKS            $(if ($deployAks)          { "true" } else { "false" })
     azd env set DEPLOY_SQLSERVER      $(if ($deploySqlServer)    { "true" } else { "false" })
     azd env set DEPLOY_POSTGRESQL     $(if ($deployPostgreSQL)   { "true" } else { "false" })
+    azd env set DEPLOY_MYSQL          $(if ($deployMySQL)        { "true" } else { "false" })
 
     Write-Host ""
     Write-Host "Selections saved to azd environment." -ForegroundColor Green
@@ -104,6 +107,7 @@ if ($needsPrompt) {
     $deployAks          = (Get-AzdEnvValueSafe "DEPLOY_AKS") -eq "true"
     $deploySqlServer    = (Get-AzdEnvValueSafe "DEPLOY_SQLSERVER") -eq "true"
     $deployPostgreSQL   = (Get-AzdEnvValueSafe "DEPLOY_POSTGRESQL") -eq "true"
+    $deployMySQL        = (Get-AzdEnvValueSafe "DEPLOY_MYSQL") -eq "true"
 
     Write-Host "Using saved deployment selections:" -ForegroundColor DarkGreen
 }
@@ -117,6 +121,7 @@ if ($deployAks)          { $computeList += "AKS" }
 $dbList = @()
 if ($deploySqlServer)    { $dbList += "SQL Server" }
 if ($deployPostgreSQL)   { $dbList += "PostgreSQL" }
+if ($deployMySQL)        { $dbList += "MySQL" }
 
 Write-Host "  Compute: $($computeList -join ', ')" -ForegroundColor Cyan
 Write-Host "  Database: $($dbList -join ', ')" -ForegroundColor Cyan
@@ -135,6 +140,26 @@ if ($deployPostgreSQL) {
         azd env set PG_ADMIN_PASSWORD $pgPassword
     } else {
         Write-Host "Using existing PostgreSQL admin password" -ForegroundColor DarkGreen
+    }
+
+    # Generate a random MySQL admin password if not already set
+    if ($deployMySQL) {
+        $mySqlPassword = azd env get-value MYSQL_ADMIN_PASSWORD 2>$null
+        if ([string]::IsNullOrWhiteSpace($mySqlPassword) -or $mySqlPassword -like "ERROR:*") {
+            $bytes = New-Object Byte[] 24
+            [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($bytes)
+            $mySqlPassword = [System.Convert]::ToBase64String($bytes)
+            Write-Host "Generated MySQL admin password" -ForegroundColor DarkGreen
+            azd env set MYSQL_ADMIN_PASSWORD $mySqlPassword
+        } else {
+            Write-Host "Using existing MySQL admin password" -ForegroundColor DarkGreen
+        }
+    } else {
+        # Set empty password so Bicep param substitution doesn't fail
+        $mySqlPassword = azd env get-value MYSQL_ADMIN_PASSWORD 2>$null
+        if ([string]::IsNullOrWhiteSpace($mySqlPassword) -or $mySqlPassword -like "ERROR:*") {
+            azd env set MYSQL_ADMIN_PASSWORD ""
+        }
     }
 } else {
     # Set empty password so Bicep param substitution doesn't fail

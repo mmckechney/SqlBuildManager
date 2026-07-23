@@ -115,6 +115,8 @@
   "monitorActionGroup": "ag-",
   "monitorDataCollectionRules": "dcr-",
   "mySQLDatabase": "mysql-",
+  "mySQLServer": "mysql-",
+  "mySQLAdministrator": "myad",
   "natGateway": "ng-",
   "networkInterface": "nic-",
   "networkSecurityGroup": "nsg-",

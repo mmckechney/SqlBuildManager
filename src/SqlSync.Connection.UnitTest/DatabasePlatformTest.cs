@@ -30,6 +30,14 @@ namespace SqlSync.Connection.UnitTest
         }
 
         [TestMethod]
+        public void ConnectionData_SetMySQL_ShouldReturnMySQL()
+        {
+            var connData = new ConnectionData();
+            connData.DatabasePlatform = DatabasePlatform.MySQL;
+            Assert.AreEqual(DatabasePlatform.MySQL, connData.DatabasePlatform);
+        }
+
+        [TestMethod]
         public void ConnectionData_ConstructorWithServerDb_DefaultsPlatformToSqlServer()
         {
             var connData = new ConnectionData("myserver", "mydb");
@@ -53,6 +61,25 @@ namespace SqlSync.Connection.UnitTest
             target.Fill(source);
 
             Assert.AreEqual(DatabasePlatform.PostgreSQL, target.DatabasePlatform);
+        }
+
+        [TestMethod]
+        public void ConnectionData_Fill_ShouldCopyMySqlPlatform()
+        {
+            var source = new ConnectionData
+            {
+                SQLServerName = "mysqlserver",
+                DatabaseName = "mysqldb",
+                DatabasePlatform = DatabasePlatform.MySQL,
+                AuthenticationType = AuthenticationType.Password,
+                UserId = "mysqluser",
+                Password = "mysqlpass"
+            };
+            var target = new ConnectionData();
+
+            target.Fill(source);
+
+            Assert.AreEqual(DatabasePlatform.MySQL, target.DatabasePlatform);
         }
 
         [TestMethod]

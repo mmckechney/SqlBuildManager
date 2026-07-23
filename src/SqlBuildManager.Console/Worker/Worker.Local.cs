@@ -127,8 +127,8 @@ namespace SqlBuildManager.Console
                     DatabasePlatform = cmdLine.AuthenticationArgs.DatabasePlatform,
                     TrustServerCertificate = cmdLine.AuthenticationArgs.TrustServerCertificate
                 };
-                // For PG MI auth, use identity name as UserId (PG role name)
-                if (connData.DatabasePlatform == DatabasePlatform.PostgreSQL
+                // For PostgreSQL/MySQL Entra auth, use identity name as UserId (database principal name)
+                if ((connData.DatabasePlatform == DatabasePlatform.PostgreSQL || connData.DatabasePlatform == DatabasePlatform.MySQL)
                     && string.IsNullOrEmpty(connData.UserId)
                     && !string.IsNullOrEmpty(cmdLine.IdentityArgs.IdentityName))
                 {

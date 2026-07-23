@@ -250,8 +250,8 @@ namespace SqlBuildManager.Console.Threaded
                 connData.DatabasePlatform = cmdArgs.AuthenticationArgs.DatabasePlatform;
                 connData.TrustServerCertificate = cmdArgs.AuthenticationArgs.TrustServerCertificate;
 
-                // For PG MI auth, use identity name as UserId (PG role name)
-                if (connData.DatabasePlatform == SqlSync.Connection.DatabasePlatform.PostgreSQL
+                // For PostgreSQL/MySQL Entra auth, use identity name as UserId (database principal name)
+                if ((connData.DatabasePlatform == SqlSync.Connection.DatabasePlatform.PostgreSQL || connData.DatabasePlatform == SqlSync.Connection.DatabasePlatform.MySQL)
                     && string.IsNullOrEmpty(connData.UserId)
                     && !string.IsNullOrEmpty(cmdArgs.IdentityArgs.IdentityName))
                 {

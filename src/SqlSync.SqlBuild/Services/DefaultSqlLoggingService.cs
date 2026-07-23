@@ -362,8 +362,8 @@ namespace SqlSync.SqlBuild.Services
             if (connData.Connection.State == ConnectionState.Closed)
                 await connData.Connection.OpenAsync();
 
-            // Build multi-row INSERT statement using lowercase unquoted column names (compatible with both SQL Server and PostgreSQL)
-            var tableName = resourceProvider is PostgresResourceProvider ? "sqlbuild_logging" : "SqlBuild_Logging";
+            // Build multi-row INSERT statement using provider-appropriate table casing.
+            var tableName = resourceProvider is SqlServerResourceProvider ? "SqlBuild_Logging" : "sqlbuild_logging";
             var sql = new StringBuilder();
             sql.AppendLine($"INSERT INTO {tableName}(BuildFileName,ScriptFileName,ScriptId,ScriptFileHash,CommitDate,Sequence,UserId,AllowScriptBlock,ScriptText,Tag,TargetDatabase,RunWithVersion,BuildProjectHash,BuildRequestedBy,ScriptRunStart,ScriptRunEnd,Description) VALUES");
 

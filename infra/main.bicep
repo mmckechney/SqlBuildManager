@@ -40,12 +40,19 @@ param usePrivateEndpoint bool = false
 @description('Whether to deploy Azure Database for PostgreSQL Flexible Server')
 param deployPostgreSQL bool = true
 
+@description('Whether to deploy Azure Database for MySQL Flexible Server')
+param deployMySQL bool = true
+
 @description('Whether to deploy the ACI Relay proxy for private service access')
 param deployRelayProxy bool = true
 
 @secure()
 @description('Administrator password for PostgreSQL Flexible Server')
 param pgAdminPassword string = ''
+
+@secure()
+@description('Administrator password for MySQL Flexible Server')
+param mySqlAdminPassword string = ''
 
 @allowed([
   'Basic'
@@ -225,6 +232,23 @@ module postgresql './modules/postgresql.bicep' = if(deployPostgreSQL && userIdGu
   }
 }
 
+// MySQL Flexible Server
+module mysql './modules/mysql.bicep' = if(deployMySQL && mySqlAdminPassword != ''){
+  name: 'mysql'
+  scope: rg
+  params: {
+    mySqlServerNameA: resourceNames.outputs.mySqlServerNameA
+    mySqlServerNameB: resourceNames.outputs.mySqlServerNameB
+    mySqlAdminUser: resourceNames.outputs.mySqlAdminUser
+    envName: resourceEnvName
+    testDbCountPerServer: testDbCountPerServer
+    location: location
+    mySqlAdminPassword: mySqlAdminPassword
+    vnetId: networkResource.outputs.vnetId
+    privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
+  }
+}
+
 // Batch Account
 module batchAccount './modules/batch.bicep' = if(deployBatchAccount){
   name: 'batchAccount'
@@ -356,6 +380,7 @@ output SERVICEBUS_SKU string = serviceBusSku
 output SKU_CAPACITY int = skuCapacity
 output USE_PRIVATE_ENDPOINT bool = usePrivateEndpoint
 output DEPLOY_POSTGRESQL bool = deployPostgreSQL
+output DEPLOY_MYSQL bool = deployMySQL
 output DEPLOY_RELAY_PROXY bool = deployRelayProxy
 
 // Resource outputs
@@ -422,3 +447,10 @@ output PG_SERVER_NAME_B string = deployPostgreSQL && pgAdminPassword != '' ? pos
 output PG_SERVER_FQDN_B string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerFqdnB : ''
 output PG_ADMIN_USER string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgAdminUser : ''
 output PG_DATABASE_COUNT_PER_SERVER int = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgDatabaseCountPerServer : 0
+
+output MYSQL_SERVER_NAME_A string = deployMySQL && mySqlAdminPassword != '' ? mysql!.outputs.mySqlServerNameA : ''
+output MYSQL_SERVER_FQDN_A string = deployMySQL && mySqlAdminPassword != '' ? mysql!.outputs.mySqlServerFqdnA : ''
+output MYSQL_SERVER_NAME_B string = deployMySQL && mySqlAdminPassword != '' ? mysql!.outputs.mySqlServerNameB : ''
+output MYSQL_SERVER_FQDN_B string = deployMySQL && mySqlAdminPassword != '' ? mysql!.outputs.mySqlServerFqdnB : ''
+output MYSQL_ADMIN_USER string = deployMySQL && mySqlAdminPassword != '' ? mysql!.outputs.mySqlAdminUser : ''
+output MYSQL_DATABASE_COUNT_PER_SERVER int = deployMySQL && mySqlAdminPassword != '' ? mysql!.outputs.mySqlDatabaseCountPerServer : 0

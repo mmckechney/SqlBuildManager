@@ -50,6 +50,7 @@ write-Host "SBM Executable: $sbmExe" -ForegroundColor DarkGreen
 
 $sqlServerDeployed = Get-AzdEnvValue "DEPLOY_SQLSERVER"
 $pgDeployed = Get-AzdEnvValue "DEPLOY_POSTGRESQL"
+$mySqlDeployed = Get-AzdEnvValue "DEPLOY_MYSQL"
 $privateInitializationScript = Join-Path $repoRoot "scripts\ContainerRegistry\run_private_postprovision_container.ps1"
 if (-not (Test-Path $privateInitializationScript)) {
     throw "Private initialization script not found at '$privateInitializationScript'."
@@ -60,7 +61,8 @@ if (-not (Test-Path $privateInitializationScript)) {
     -resourceGroupName $resourceGroupName `
     -repoRoot $repoRoot `
     -deploySqlServer ($sqlServerDeployed -ne "false") `
-    -deployPostgreSQL ($pgDeployed -eq "true")
+    -deployPostgreSQL ($pgDeployed -eq "true") `
+    -deployMySQL ($mySqlDeployed -eq "true")
 
 $relayProxyDeployed = Get-AzdEnvValue "DEPLOY_RELAY_PROXY"
 if ($relayProxyDeployed -eq "true") {
@@ -183,6 +185,22 @@ if ($pgDeployedForConfig -eq "true") {
         & $pgDbConfigScriptPath -envName $envName -path $outputPath
     } else {
         Write-Host "PostgreSQL config script not found at: $pgDbConfigScriptPath" -ForegroundColor Yellow
+    }
+}
+
+# Generate MySQL database override config files
+$mySqlDeployedForConfig = Get-AzdEnvValue "DEPLOY_MYSQL"
+if ($mySqlDeployedForConfig -eq "true") {
+    Write-Host ""
+    Write-Host "==================================================" -ForegroundColor Cyan
+    Write-Host "Post-Provision: Creating MySQL Database Config Files" -ForegroundColor Cyan
+    Write-Host "==================================================" -ForegroundColor Cyan
+
+    $mySqlDbConfigScriptPath = Join-Path $repoRoot "scripts\Database\create_mysql_database_override_files.ps1"
+    if (Test-Path $mySqlDbConfigScriptPath) {
+        & $mySqlDbConfigScriptPath -envName $envName -path $outputPath
+    } else {
+        Write-Host "MySQL config script not found at: $mySqlDbConfigScriptPath" -ForegroundColor Yellow
     }
 }
 

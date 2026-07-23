@@ -25,6 +25,7 @@ namespace SqlSync.Connection
         internal const int SqlPublicNetworkAccessDeniedErrorNumber = 47073;
         private static readonly IDbConnectionFactory SqlServerFactory = new SqlServerConnectionFactory();
         private static readonly IDbConnectionFactory PostgresFactory = new PostgresConnectionFactory();
+        private static readonly IDbConnectionFactory MySqlFactory = new MySqlConnectionFactory();
 
         /// <summary>
         /// Process-wide opt-in for trusting (not validating) the SQL Server TLS certificate.
@@ -54,6 +55,7 @@ namespace SqlSync.Connection
             return platform switch
             {
                 DatabasePlatform.PostgreSQL => PostgresFactory,
+                DatabasePlatform.MySQL => MySqlFactory,
                 _ => SqlServerFactory,
             };
         }

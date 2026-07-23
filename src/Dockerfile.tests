@@ -7,6 +7,7 @@ WORKDIR /src
 COPY Directory.Build.props Directory.Packages.props ./
 COPY SqlBuildManager.Console.ExternalTest/SqlBuildManager.Console.ExternalTest.csproj SqlBuildManager.Console.ExternalTest/packages.lock.json SqlBuildManager.Console.ExternalTest/
 COPY SqlBuildManager.Console.PostgreSQL.ExternalTest/SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj SqlBuildManager.Console.PostgreSQL.ExternalTest/packages.lock.json SqlBuildManager.Console.PostgreSQL.ExternalTest/
+COPY SqlBuildManager.Console.MySQL.ExternalTest/SqlBuildManager.Console.MySQL.ExternalTest.csproj SqlBuildManager.Console.MySQL.ExternalTest/packages.lock.json SqlBuildManager.Console.MySQL.ExternalTest/
 COPY SqlBuildManager.Console/sbm.csproj SqlBuildManager.Console/packages.lock.json SqlBuildManager.Console/
 COPY SqlBuildManager.Enterprise/SqlBuildManager.Enterprise.csproj SqlBuildManager.Enterprise/packages.lock.json SqlBuildManager.Enterprise/
 COPY SqlBuildManager.Interfaces/SqlBuildManager.Interfaces.csproj SqlBuildManager.Interfaces/packages.lock.json SqlBuildManager.Interfaces/
@@ -18,13 +19,16 @@ COPY SqlSync.DbInformation/SqlSync.DbInformation.csproj SqlSync.DbInformation/pa
 COPY SqlSync.ObjectScript/SqlSync.ObjectScript.csproj SqlSync.ObjectScript/packages.lock.json SqlSync.ObjectScript/
 COPY SqlSync.SqlBuild/SqlSync.SqlBuild.csproj SqlSync.SqlBuild/packages.lock.json SqlSync.SqlBuild/
 RUN dotnet restore SqlBuildManager.Console.ExternalTest/SqlBuildManager.Console.ExternalTest.csproj --locked-mode && \
-    dotnet restore SqlBuildManager.Console.PostgreSQL.ExternalTest/SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj --locked-mode
+    dotnet restore SqlBuildManager.Console.PostgreSQL.ExternalTest/SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.Console.MySQL.ExternalTest/SqlBuildManager.Console.MySQL.ExternalTest.csproj --locked-mode
 
 FROM restore AS build
 COPY . .
 RUN dotnet build SqlBuildManager.Console.ExternalTest/SqlBuildManager.Console.ExternalTest.csproj \
       --configuration Release --framework net10.0 --no-restore --output /tests && \
     dotnet build SqlBuildManager.Console.PostgreSQL.ExternalTest/SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj \
+      --configuration Release --framework net10.0 --no-restore --output /tests && \
+    dotnet build SqlBuildManager.Console.MySQL.ExternalTest/SqlBuildManager.Console.MySQL.ExternalTest.csproj \
       --configuration Release --framework net10.0 --no-restore --output /tests && \
     cp -r TestConfig /tests/TestConfig
 

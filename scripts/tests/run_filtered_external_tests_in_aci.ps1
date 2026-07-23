@@ -192,6 +192,8 @@ $blobPath = "$timestamp/$testContainerName"
 # Determine which test DLL to run based on the filter
 if ($testFilter -like "*PostgreSQL.ExternalTest*") {
     $testDll = "SqlBuildManager.Console.PostgreSQL.ExternalTest.dll"
+} elseif ($testFilter -like "*MySQL.ExternalTest*") {
+    $testDll = "SqlBuildManager.Console.MySQL.ExternalTest.dll"
 } else {
     $testDll = "SqlBuildManager.Console.ExternalTest.dll"
 }
@@ -207,7 +209,7 @@ $uploadCmd = "az storage blob upload-batch --account-name $storageAccountName --
 
 # Build Kubernetes pre-requisite commands if test filter contains "Kubernetes"
 $aksPreCmd = ""
-if ($testFilter -like "*Kubernetes*" -or $testFilter -like "*PostgreSQL.ExternalTest*") {
+if ($testFilter -like "*Kubernetes*" -or $testFilter -like "*PostgreSQL.ExternalTest*" -or $testFilter -like "*MySQL.ExternalTest*") {
     $aksPreCmd = "az aks install-cli; az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName --overwrite-existing; "
     Write-Debug "Kubernetes tests detected - will install kubectl and get AKS credentials"
 }
