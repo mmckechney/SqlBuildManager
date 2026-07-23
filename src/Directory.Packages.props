@@ -4,44 +4,44 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Azure.Core" Version="1.57.0" />
+    <PackageVersion Include="Azure.Core" Version="1.60.0" />
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
     <PackageVersion Include="Azure.Messaging.EventHubs" Version="5.12.2" />
     <PackageVersion Include="Azure.Messaging.EventHubs.Processor" Version="5.12.2" />
-    <PackageVersion Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
+    <PackageVersion Include="Azure.Messaging.ServiceBus" Version="7.20.2" />
     <PackageVersion Include="Azure.ResourceManager" Version="1.14.0" />
     <PackageVersion Include="Azure.ResourceManager.AppContainers" Version="1.5.0" />
-    <PackageVersion Include="Azure.ResourceManager.Batch" Version="1.6.0" />
-    <PackageVersion Include="Azure.ResourceManager.ContainerInstance" Version="1.3.0" />
+    <PackageVersion Include="Azure.ResourceManager.Batch" Version="1.7.0" />
+    <PackageVersion Include="Azure.ResourceManager.ContainerInstance" Version="1.3.1" />
     <PackageVersion Include="Azure.ResourceManager.EventHubs" Version="1.2.1" />
-    <PackageVersion Include="Azure.ResourceManager.Network" Version="1.15.0" />
+    <PackageVersion Include="Azure.ResourceManager.Network" Version="1.16.1" />
     <PackageVersion Include="Azure.ResourceManager.Resources" Version="1.11.2" />
     <PackageVersion Include="Azure.Security.KeyVault.Secrets" Version="4.11.0" />
-    <PackageVersion Include="Azure.Storage.Blobs" Version="12.28.0" />
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.29.1" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.14.0" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="Microsoft.Azure.Batch" Version="16.3.1" />
     <PackageVersion Include="Microsoft.Azure.Relay" Version="3.1.1" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.2" />
-    <PackageVersion Include="Microsoft.Data.SqlClient.Extensions.Azure" Version="1.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.8" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.8" />
+    <PackageVersion Include="Microsoft.Data.SqlClient.Extensions.Azure" Version="7.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.10" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
-    <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="170.3.93" />
-    <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.19.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
+    <PackageVersion Include="Microsoft.SqlServer.DacFx" Version="170.4.83" />
+    <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.25.0" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="morelinq" Version="4.4.0" />
-    <PackageVersion Include="MSTest.TestAdapter" Version="4.2.3" />
-    <PackageVersion Include="MSTest.TestFramework" Version="4.2.3" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="4.3.2" />
+    <PackageVersion Include="MSTest.TestFramework" Version="4.3.2" />
     <PackageVersion Include="MySqlConnector" Version="2.6.1" />
     <PackageVersion Include="Npgsql" Version="10.0.3" />
-    <PackageVersion Include="Polly" Version="8.6.6" />
+    <PackageVersion Include="Polly" Version="8.7.0" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <PackageVersion Include="Serilog.Expressions" Version="5.0.0" />
     <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
@@ -51,12 +51,12 @@
     <PackageVersion Include="Serilog.Sinks.AzureEventHub" Version="6.0.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageVersion Include="Spectre.Console" Version="0.55.2" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.8" />
-    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.8" />
-    <PackageVersion Include="System.Diagnostics.EventLog" Version="10.0.8" />
-    <PackageVersion Include="System.DirectoryServices" Version="10.0.8" />
-    <PackageVersion Include="System.Memory.Data" Version="10.0.8" />
-    <PackageVersion Include="YamlDotNet" Version="18.0.0" />
+    <PackageVersion Include="Spectre.Console" Version="0.57.2" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.10" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.10" />
+    <PackageVersion Include="System.Diagnostics.EventLog" Version="10.0.10" />
+    <PackageVersion Include="System.DirectoryServices" Version="10.0.10" />
+    <PackageVersion Include="System.Memory.Data" Version="10.0.10" />
+    <PackageVersion Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
 </Project>

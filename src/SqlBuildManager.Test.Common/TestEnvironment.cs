@@ -31,7 +31,7 @@ namespace SqlBuildManager.Test.Common
         // MySQL settings
         public static string MySqlServer { get; } = Environment.GetEnvironmentVariable("SBM_TEST_MYSQL_SERVER") ?? "localhost";
         public static string MySqlUser { get; } = Environment.GetEnvironmentVariable("SBM_TEST_MYSQL_USER") ?? "root";
-        public static string MySqlPassword { get; } = Environment.GetEnvironmentVariable("SBM_TEST_MYSQL_PASSWORD") ?? "MySq1Adm!n";
+        public static string MySqlPassword { get; } = Environment.GetEnvironmentVariable("SBM_TEST_MYSQL_PASSWORD") ?? "ZDtq=eG4cQm|cI!tjVij$?8t/K^i'-7uHB7H7.1O";
 
         /// <summary>
         /// Build a SQL Server connection string with placeholder {0} for the database name.
