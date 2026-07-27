@@ -1,10 +1,10 @@
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     internal sealed class SqlBuildOrchestrator : ISqlBuildOrchestrator
     {

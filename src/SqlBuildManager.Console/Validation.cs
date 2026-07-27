@@ -3,9 +3,9 @@ using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.Connection;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -385,8 +385,8 @@ namespace SqlBuildManager.Console
             }
             // BatchAccountKey is not required when using Managed Identity
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey) &&
-                 (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity &&
-                 cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault))
+                 (cmdLine.AuthenticationArgs.AuthenticationType != SqlBuildManager.Connection.AuthenticationType.ManagedIdentity &&
+                 cmdLine.AuthenticationArgs.AuthenticationType != SqlBuildManager.Connection.AuthenticationType.AzureADDefault))
             {
                 messages.Add("--batchaccountkey is required in command line or --settingsfile Json");
                 returnVal = (int)ExecutionReturn.InvalidBatchArguments;
@@ -454,8 +454,8 @@ namespace SqlBuildManager.Console
             }
             // BatchAccountKey is not required when using Managed Identity
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey) &&
-                 (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity &&
-                 cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault))
+                 (cmdLine.AuthenticationArgs.AuthenticationType != SqlBuildManager.Connection.AuthenticationType.ManagedIdentity &&
+                 cmdLine.AuthenticationArgs.AuthenticationType != SqlBuildManager.Connection.AuthenticationType.AzureADDefault))
             {
                 messages.Add("--batchaccountkey is required in command line or --settingsfile  Json");
                 returnVal = (int)ExecutionReturn.InvalidBatchArguments;
@@ -501,8 +501,8 @@ namespace SqlBuildManager.Console
             }
             // BatchAccountKey is not required when using Managed Identity
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey) && 
-                (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity &&
-                cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault))
+                (cmdLine.AuthenticationArgs.AuthenticationType != SqlBuildManager.Connection.AuthenticationType.ManagedIdentity &&
+                cmdLine.AuthenticationArgs.AuthenticationType != SqlBuildManager.Connection.AuthenticationType.AzureADDefault))
             {
                 messages.Add("--batchaccountkey is required in command line or --settingsfile  Json");
                 returnVal = (int)ExecutionReturn.InvalidBatchArguments;

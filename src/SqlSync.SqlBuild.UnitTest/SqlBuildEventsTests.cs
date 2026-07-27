@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class ScriptLogEventArgsTests

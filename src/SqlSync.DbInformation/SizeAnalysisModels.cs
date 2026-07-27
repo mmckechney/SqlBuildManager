@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 #nullable enable
 
-namespace SqlSync.DbInformation.Models
+namespace SqlBuildManager.DbInformation.Models
 {
     public sealed record class SizeAnalysis(
         string TableName,

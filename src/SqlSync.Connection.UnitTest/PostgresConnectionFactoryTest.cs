@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Npgsql;
 
-namespace SqlSync.Connection.UnitTest
+namespace SqlBuildManager.Connection.UnitTest
 {
     [TestClass]
     public class PostgresConnectionFactoryTest

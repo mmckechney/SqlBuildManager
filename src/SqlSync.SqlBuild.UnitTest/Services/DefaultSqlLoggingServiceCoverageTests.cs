@@ -1,12 +1,12 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.UnitTest.Services
+namespace SqlBuildManager.SqlBuild.UnitTest.Services
 {
     /// <summary>
     /// Extended tests for DefaultSqlLoggingService to improve code coverage
@@ -126,7 +126,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
 
             var mockRunnerProperties = new Mock<ISqlBuildRunnerProperties>();
             mockRunnerProperties.Setup(x => x.LogToDatabaseName).Returns(string.Empty);
-            mockRunnerProperties.Setup(x => x.ConnectionData).Returns(new SqlSync.Connection.ConnectionData());
+            mockRunnerProperties.Setup(x => x.ConnectionData).Returns(new SqlBuildManager.Connection.ConnectionData());
             mockRunnerProperties.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
             mockRunnerProperties.Setup(x => x.BuildFileName).Returns("test.sbm");
             mockRunnerProperties.Setup(x => x.ProjectFileName).Returns("test.xml");
@@ -135,8 +135,8 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockRunnerProperties.Setup(x => x.BuildDescription).Returns("Test build");
             mockRunnerProperties.Setup(x => x.IsTransactional).Returns(false);
 
-            var committedScripts = new List<SqlSync.SqlBuild.SqlLogging.CommittedScript>();
-            var multiDbData = new SqlSync.SqlBuild.MultiDb.MultiDbData();
+            var committedScripts = new List<SqlBuildManager.SqlBuild.SqlLogging.CommittedScript>();
+            var multiDbData = new SqlBuildManager.SqlBuild.MultiDb.MultiDbData();
 
             // Act - empty scripts list should just set up connections and return
             bool result = await service.LogCommittedScriptsToDatabase(

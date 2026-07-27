@@ -1,10 +1,10 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.ObjectScript;
-using SqlSync.ObjectScript.Models;
+using SqlBuildManager.ObjectScript;
+using SqlBuildManager.ObjectScript.Models;
 using System;
 using System.IO;
 
-namespace SqlSync.ObjectScript.UnitTest
+namespace SqlBuildManager.ObjectScript.UnitTest
 {
     [TestClass]
     public class AutoScriptingConfigModelTest

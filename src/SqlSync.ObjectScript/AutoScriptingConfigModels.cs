@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 #nullable enable
 
-namespace SqlSync.ObjectScript.Models
+namespace SqlBuildManager.ObjectScript.Models
 {
     public sealed record class AutoScripting(bool? AllowManualSelection, bool? IncludeFileHeaders, bool? DeletePreExistingFiles, bool? ZipScripts, int AutoScripting_Id);
 

@@ -21,4 +21,4 @@
         </xs:complexType>
     </xs:element>
 </xs:schema>
-<!-- xsd /c /namespace:SqlSync.SqlBuild.DefaultScripts DefaultScriptRegistry.xsd -->
+<!-- xsd /c /namespace:SqlBuildManager.SqlBuild.DefaultScripts DefaultScriptRegistry.xsd -->

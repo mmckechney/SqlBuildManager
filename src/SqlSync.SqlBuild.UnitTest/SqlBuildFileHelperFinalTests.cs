@@ -1,5 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     /// <summary>
     /// Final tests for SqlBuildFileHelper to increase coverage from 64.8% to 80%+

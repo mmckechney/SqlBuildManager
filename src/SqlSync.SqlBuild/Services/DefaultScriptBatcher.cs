@@ -7,10 +7,10 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using SqlSync.Constants;
-using SqlSync.SqlBuild.Utilities;
+using SqlBuildManager.Constants;
+using SqlBuildManager.SqlBuild.Utilities;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     public sealed class DefaultScriptBatcher : IScriptBatcher
     {
@@ -158,7 +158,7 @@ namespace SqlSync.SqlBuild.Services
             return batchNew;
         }
 
-        public ScriptBatchCollection LoadAndBatchSqlScripts(SqlSync.SqlBuild.Models.SqlSyncBuildDataModel model, string projectFilePath)
+        public ScriptBatchCollection LoadAndBatchSqlScripts(SqlBuildManager.SqlBuild.Models.SqlSyncBuildDataModel model, string projectFilePath)
         {
             ScriptBatchCollection coll = new ScriptBatchCollection();
             var scripts = model.Script.OrderBy(s => s.BuildOrder ?? double.MaxValue).ToList();

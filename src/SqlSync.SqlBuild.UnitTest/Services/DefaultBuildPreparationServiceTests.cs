@@ -1,13 +1,13 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.UnitTest.Services
+namespace SqlBuildManager.SqlBuild.UnitTest.Services
 {
     [TestClass]
     public class DefaultBuildPreparationServiceTests

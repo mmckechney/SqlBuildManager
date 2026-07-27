@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.MultiDb;
 using SqlBuildManager.Interfaces.Console;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// Provides the context needed by IBuildFinalizer to perform finalization operations.

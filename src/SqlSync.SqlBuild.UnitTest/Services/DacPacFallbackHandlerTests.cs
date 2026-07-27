@@ -1,10 +1,10 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
 using System.Threading.Tasks;
-using BuildModels = SqlSync.SqlBuild.Models;
+using BuildModels = SqlBuildManager.SqlBuild.Models;
 
-namespace SqlSync.SqlBuild.UnitTest.Services
+namespace SqlBuildManager.SqlBuild.UnitTest.Services
 {
     [TestClass]
     public class DacPacFallbackHandlerTests

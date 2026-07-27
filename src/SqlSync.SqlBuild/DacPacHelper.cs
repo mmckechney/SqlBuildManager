@@ -2,10 +2,10 @@ using Azure.Core;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Dac;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Services;
 using SqlBuildManager.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-namespace SqlSync.SqlBuild
+namespace SqlBuildManager.SqlBuild
 {
     public class DacPacHelper
     {

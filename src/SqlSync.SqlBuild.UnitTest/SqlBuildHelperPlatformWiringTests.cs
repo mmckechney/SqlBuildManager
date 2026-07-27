@@ -1,8 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Services;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class SqlBuildHelperPlatformWiringTests

@@ -1,4 +1,4 @@
-namespace SqlSync.ObjectScript
+namespace SqlBuildManager.ObjectScript
 {
     public class ObjectScriptingConfigData
     {

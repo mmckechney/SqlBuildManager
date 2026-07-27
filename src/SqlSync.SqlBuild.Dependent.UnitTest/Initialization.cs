@@ -2,17 +2,17 @@ using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Dependent.TestBase;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Dependent.TestBase;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Runtime.InteropServices;
-namespace SqlSync.SqlBuild.Dependent.UnitTest
+namespace SqlBuildManager.SqlBuild.Dependent.UnitTest
 {
     public class Initialization : InitializationBase
     {
@@ -445,10 +445,10 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
             return runData;
         }
 
-        public SqlSync.SqlBuild.Models.SqlBuildRunDataModel GetSqlBuildRunDataModel_TransactionalNotTrial(SqlSyncBuildDataModel buildData)
+        public SqlBuildManager.SqlBuild.Models.SqlBuildRunDataModel GetSqlBuildRunDataModel_TransactionalNotTrial(SqlSyncBuildDataModel buildData)
         {
             var uniqueId = Guid.NewGuid().ToString("N");
-            return new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
+            return new SqlBuildManager.SqlBuild.Models.SqlBuildRunDataModel(
                 buildDataModel: buildData,
                 buildType: "Development",
                 server: serverName,

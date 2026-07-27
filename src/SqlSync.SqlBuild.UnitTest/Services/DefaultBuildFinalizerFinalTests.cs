@@ -1,18 +1,18 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.Connection;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.Connection;
 using SqlBuildManager.Interfaces.Console;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
-using CommittedScript = SqlSync.SqlBuild.Models.CommittedScript;
+using LoggingCommittedScript = SqlBuildManager.SqlBuild.SqlLogging.CommittedScript;
+using CommittedScript = SqlBuildManager.SqlBuild.Models.CommittedScript;
 
-namespace SqlSync.SqlBuild.UnitTest.Services
+namespace SqlBuildManager.SqlBuild.UnitTest.Services
 {
     /// <summary>
     /// Final coverage tests for DefaultBuildFinalizer - testing SaveBuildDataModel and PerformRunScriptFinalization
@@ -31,7 +31,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             _mockSqlLoggingService = new Mock<ISqlLoggingService>();
             _mockSqlLoggingService
                 .Setup(x => x.LogCommittedScriptsToDatabase(
-                    It.IsAny<List<SqlSync.SqlBuild.SqlLogging.CommittedScript>>(),
+                    It.IsAny<List<SqlBuildManager.SqlBuild.SqlLogging.CommittedScript>>(),
                     It.IsAny<ISqlBuildRunnerProperties>(),
                     It.IsAny<MultiDbData>()))
                 .ReturnsAsync(true);
@@ -167,7 +167,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         {
             _mockSqlLoggingService
                 .Setup(x => x.LogCommittedScriptsToDatabase(
-                    It.IsAny<List<SqlSync.SqlBuild.SqlLogging.CommittedScript>>(),
+                    It.IsAny<List<SqlBuildManager.SqlBuild.SqlLogging.CommittedScript>>(),
                     It.IsAny<ISqlBuildRunnerProperties>(),
                     It.IsAny<MultiDbData>()))
                 .ReturnsAsync(false);

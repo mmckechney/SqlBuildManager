@@ -1,15 +1,15 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.DbInformation;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Status;
+using SqlBuildManager.Connection;
+using SqlBuildManager.DbInformation;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Status;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.Dependent.UnitTest
+namespace SqlBuildManager.SqlBuild.Dependent.UnitTest
 {
     /// <summary>
     /// Integration tests for Rebuilder class that require database access

@@ -1,7 +1,7 @@
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 using System.Linq;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// Default implementation of IBuildHistoryTracker that maintains build history in memory.

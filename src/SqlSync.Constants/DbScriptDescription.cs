@@ -1,4 +1,4 @@
-namespace SqlSync.Constants
+namespace SqlBuildManager.Constants
 {
     public class DbScriptDescription
     {

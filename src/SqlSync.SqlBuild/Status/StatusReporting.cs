@@ -1,6 +1,6 @@
-﻿using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Services;
+﻿using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.XPath;
 using System.Xml.Xsl;
-namespace SqlSync.SqlBuild.Status
+namespace SqlBuildManager.SqlBuild.Status
 {
     public class StatusReporting
     {

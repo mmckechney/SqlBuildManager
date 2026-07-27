@@ -1,15 +1,15 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.Connection;
-using SqlSync.DbInformation.ChangeDates;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
-using SqlSync.SqlBuild.Status;
+using SqlBuildManager.Connection;
+using SqlBuildManager.DbInformation.ChangeDates;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.Status;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SqlSync.SqlBuild.UnitTest.Status
+namespace SqlBuildManager.SqlBuild.UnitTest.Status
 {
     /// <summary>
     /// Unit tests for StatusHelper class.

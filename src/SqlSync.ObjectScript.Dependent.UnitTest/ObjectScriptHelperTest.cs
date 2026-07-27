@@ -1,8 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.ObjectScript.Hash;
+using SqlBuildManager.Connection;
+using SqlBuildManager.ObjectScript.Hash;
 
-namespace SqlSync.ObjectScript.Dependent.UnitTest
+namespace SqlBuildManager.ObjectScript.Dependent.UnitTest
 {
 
 

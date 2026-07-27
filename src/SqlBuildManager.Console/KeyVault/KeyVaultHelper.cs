@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CommandLine;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -203,7 +203,7 @@ namespace SqlBuildManager.Console.KeyVault
             }
 
             //Only get password and user name if not using managed identity
-            if (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity && cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault)
+            if (cmdLine.AuthenticationArgs.AuthenticationType != SqlBuildManager.Connection.AuthenticationType.ManagedIdentity && cmdLine.AuthenticationArgs.AuthenticationType != SqlBuildManager.Connection.AuthenticationType.AzureADDefault)
             {
                 tmp = GetSecret(kvName, KeyVaultHelper.UserName);
                 if (!string.IsNullOrWhiteSpace(tmp))

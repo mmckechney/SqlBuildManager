@@ -2,7 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Reflection;
 
-namespace SqlSync.SqlBuild.UnitTest.Services
+namespace SqlBuildManager.SqlBuild.UnitTest.Services
 {
     /// <summary>
     /// Regression tests for PERF-011: DefaultSqlLoggingService parameter chunking.
@@ -43,7 +43,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
         [TestMethod]
         public void DefaultSqlLoggingService_HasMaxRowsPerBatchConstant()
         {
-            var type = typeof(SqlSync.SqlBuild.Services.DefaultSqlLoggingService);
+            var type = typeof(SqlBuildManager.SqlBuild.Services.DefaultSqlLoggingService);
             var field = type.GetField("MaxRowsPerBatch",
                 BindingFlags.NonPublic | BindingFlags.Static);
             Assert.IsNotNull(field, "DefaultSqlLoggingService should have a private static MaxRowsPerBatch field.");

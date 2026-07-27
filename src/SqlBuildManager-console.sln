@@ -23,15 +23,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Logging", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.ScriptHandling", "SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj", "{905F1D45-9689-42A5-9ED7-175845FE4874}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.SqlBuild", "SqlSync.SqlBuild\SqlSync.SqlBuild.csproj", "{2EFC137D-1422-42D7-B93E-C4B7C96CD215}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild", "SqlSync.SqlBuild\SqlBuildManager.SqlBuild.csproj", "{2EFC137D-1422-42D7-B93E-C4B7C96CD215}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.Connection", "SqlSync.Connection\SqlSync.Connection.csproj", "{85037C42-C5F4-4D60-A29F-45D8030886C3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Connection", "SqlSync.Connection\SqlBuildManager.Connection.csproj", "{85037C42-C5F4-4D60-A29F-45D8030886C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.Constants", "SqlSync.Constants\SqlSync.Constants.csproj", "{B438CE61-0390-4816-8E54-1950F6399D84}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Constants", "SqlSync.Constants\SqlBuildManager.Constants.csproj", "{B438CE61-0390-4816-8E54-1950F6399D84}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.DbInformation", "SqlSync.DbInformation\SqlSync.DbInformation.csproj", "{48C28049-6892-4EBD-8095-242D0350AC7A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.DbInformation", "SqlSync.DbInformation\SqlBuildManager.DbInformation.csproj", "{48C28049-6892-4EBD-8095-242D0350AC7A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.ObjectScript", "SqlSync.ObjectScript\SqlSync.ObjectScript.csproj", "{BB07C795-75A0-49B7-852F-183DF7A2BB40}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.ObjectScript", "SqlSync.ObjectScript\SqlBuildManager.ObjectScript.csproj", "{BB07C795-75A0-49B7-852F-183DF7A2BB40}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
@@ -43,11 +43,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Test.Common
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Enterprise.UnitTest", "SqlBuildManager.Enterprise.UnitTest\SqlBuildManager.Enterprise.UnitTest.csproj", "{BD886D32-F7C1-4304-84C3-1FC8A6DF9456}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.Connection.UnitTest", "SqlSync.Connection.UnitTest\SqlSync.Connection.UnitTest.csproj", "{F828FDA4-D4E2-431E-A3BA-8AE5EDC0305A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Connection.UnitTest", "SqlSync.Connection.UnitTest\SqlBuildManager.Connection.UnitTest.csproj", "{F828FDA4-D4E2-431E-A3BA-8AE5EDC0305A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.ObjectScript.UnitTest", "SqlSync.ObjectScript.UnitTest\SqlSync.ObjectScript.UnitTest.csproj", "{D1482BD9-E84D-4C6B-BB2B-71B89642BF93}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.ObjectScript.UnitTest", "SqlSync.ObjectScript.UnitTest\SqlBuildManager.ObjectScript.UnitTest.csproj", "{D1482BD9-E84D-4C6B-BB2B-71B89642BF93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.SqlBuild.UnitTest", "SqlSync.SqlBuild.UnitTest\SqlSync.SqlBuild.UnitTest.csproj", "{09226601-C1C5-4297-9BDB-9D5D302DA67E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.UnitTest", "SqlSync.SqlBuild.UnitTest\SqlBuildManager.SqlBuild.UnitTest.csproj", "{09226601-C1C5-4297-9BDB-9D5D302DA67E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dependent", "dependent", "{AB0F2CD6-9914-C1DA-674C-FC411EB553D7}"
 EndProject
@@ -55,15 +55,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.Dep
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest", "SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest\SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj", "{87F12FD0-6EEE-4E71-A3F9-A9B8D016D02A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.Connection.Dependent.UnitTest", "SqlSync.Connection.Dependent.UnitTest\SqlSync.Connection.Dependent.UnitTest.csproj", "{61368752-DD18-4DC8-A75F-E087AF50665A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Connection.Dependent.UnitTest", "SqlSync.Connection.Dependent.UnitTest\SqlBuildManager.Connection.Dependent.UnitTest.csproj", "{61368752-DD18-4DC8-A75F-E087AF50665A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.DbInformation.Dependent.UnitTest", "SqlSync.DbInformation.Dependent.UnitTest\SqlSync.DbInformation.Dependent.UnitTest.csproj", "{CFD4441C-D8C2-4DAC-AFFD-38D773B853AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.DbInformation.Dependent.UnitTest", "SqlSync.DbInformation.Dependent.UnitTest\SqlBuildManager.DbInformation.Dependent.UnitTest.csproj", "{CFD4441C-D8C2-4DAC-AFFD-38D773B853AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.ObjectScript.Dependent.UnitTest", "SqlSync.ObjectScript.Dependent.UnitTest\SqlSync.ObjectScript.Dependent.UnitTest.csproj", "{6DE00331-81B0-41A6-AF28-82D57FFCE31F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.ObjectScript.Dependent.UnitTest", "SqlSync.ObjectScript.Dependent.UnitTest\SqlBuildManager.ObjectScript.Dependent.UnitTest.csproj", "{6DE00331-81B0-41A6-AF28-82D57FFCE31F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest", "SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest\SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj", "{ACF29F74-3E29-4B26-8638-3CFD7F866B74}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest", "SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest\SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj", "{ACF29F74-3E29-4B26-8638-3CFD7F866B74}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.SqlBuild.Dependent.TestBase", "SqlSync.SqlBuild.Dependent.TestBase\SqlSync.SqlBuild.Dependent.TestBase.csproj", "{341863DE-8403-4976-9B50-897A620C6348}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.Dependent.TestBase", "SqlSync.SqlBuild.Dependent.TestBase\SqlBuildManager.SqlBuild.Dependent.TestBase.csproj", "{341863DE-8403-4976-9B50-897A620C6348}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{525D8F67-DF9B-D7CA-6D99-9BAF2C1FB094}"
 EndProject
@@ -71,7 +71,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.Ext
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.PostgreSQL.ExternalTest", "SqlBuildManager.Console.PostgreSQL.ExternalTest\SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj", "{6C0A83D9-B31D-436B-892C-E9CA37F6BE93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.SqlBuild.Dependent.UnitTest", "SqlSync.SqlBuild.Dependent.UnitTest\SqlSync.SqlBuild.Dependent.UnitTest.csproj", "{7B78FEC7-26D6-4CDC-8E71-4E117DFDEAB2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.Dependent.UnitTest", "SqlSync.SqlBuild.Dependent.UnitTest\SqlBuildManager.SqlBuild.Dependent.UnitTest.csproj", "{7B78FEC7-26D6-4CDC-8E71-4E117DFDEAB2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.ScriptHandling.UnitTest", "SqlBuildManager.ScriptHandling.UnitTest\SqlBuildManager.ScriptHandling.UnitTest.csproj", "{9A20DC27-236E-BED6-8477-82FF331E0435}"
 EndProject
@@ -81,7 +81,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.Dep
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlBuildManager.Console", "SqlBuildManager.Console", "{0AF3C493-1589-3DED-6052-1911F6ADB1E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSync.SqlBuild.Dependent.MySQL.UnitTest", "SqlSync.SqlBuild.Dependent.MySQL.UnitTest\SqlSync.SqlBuild.Dependent.MySQL.UnitTest.csproj", "{4FE11F15-79B8-410F-A784-DCDB4D97EFAF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest", "SqlSync.SqlBuild.Dependent.MySQL.UnitTest\SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest.csproj", "{4FE11F15-79B8-410F-A784-DCDB4D97EFAF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.MySQL.ExternalTest", "SqlBuildManager.Console.MySQL.ExternalTest\SqlBuildManager.Console.MySQL.ExternalTest.csproj", "{AEA271D2-47ED-46C9-B7E6-3E8FA51B7764}"
 EndProject

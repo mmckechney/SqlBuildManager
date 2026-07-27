@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SqlSync.SqlBuild
+namespace SqlBuildManager.SqlBuild
 {
     public class ScriptBatchCollection : List<ScriptBatch>
     {

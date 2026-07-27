@@ -7,7 +7,7 @@ using Microsoft.Azure.Batch;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Relay;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

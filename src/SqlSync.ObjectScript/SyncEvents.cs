@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlSync.ObjectScript
+namespace SqlBuildManager.ObjectScript
 {
     #region ## Scripting Event Definition ##
     public delegate void DatabaseScriptEventHandler(object sender, DatabaseScriptEventArgs e);

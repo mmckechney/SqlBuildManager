@@ -3,7 +3,7 @@ using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.ContainerShared;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Console.Kubernetes.Yaml;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -392,7 +392,7 @@ namespace SqlBuildManager.Console.Kubernetes
 
          if (File.Exists("/etc/runtime/DatabasePlatform"))
          {
-            if (Enum.TryParse<SqlSync.Connection.DatabasePlatform>(File.ReadAllText("/etc/runtime/DatabasePlatform"), out SqlSync.Connection.DatabasePlatform dbPlatform))
+            if (Enum.TryParse<SqlBuildManager.Connection.DatabasePlatform>(File.ReadAllText("/etc/runtime/DatabasePlatform"), out SqlBuildManager.Connection.DatabasePlatform dbPlatform))
             {
                args.DatabasePlatform = dbPlatform;
             }
@@ -595,7 +595,7 @@ namespace SqlBuildManager.Console.Kubernetes
             args.AuthenticationType = auth;
          }
 
-         if (Enum.TryParse<SqlSync.Connection.DatabasePlatform>(GetValueFromConfigMapstring(filename, "DatabasePlatform"), out SqlSync.Connection.DatabasePlatform dbPlatform))
+         if (Enum.TryParse<SqlBuildManager.Connection.DatabasePlatform>(GetValueFromConfigMapstring(filename, "DatabasePlatform"), out SqlBuildManager.Connection.DatabasePlatform dbPlatform))
          {
             args.DatabasePlatform = dbPlatform;
          }

@@ -141,9 +141,9 @@ namespace SqlBuildManager.Console.ContainerApp
                 parms.Add(ContainerEnvVariables.IdentityName, cmdLine.IdentityArgs.IdentityName);
             }
             parms.Add(ContainerEnvVariables.AllowObjectDelete, cmdLine.AllowObjectDelete.ToString());
-            if (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.Password)
+            if (cmdLine.AuthenticationArgs.AuthenticationType != SqlBuildManager.Connection.AuthenticationType.Password)
             {
-                parms.Add(ContainerEnvVariables.AuthType, SqlSync.Connection.AuthenticationType.ManagedIdentity.ToString());
+                parms.Add(ContainerEnvVariables.AuthType, SqlBuildManager.Connection.AuthenticationType.ManagedIdentity.ToString());
             }
             else
             {

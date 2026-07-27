@@ -1,4 +1,4 @@
-namespace SqlSync.ObjectScript.Hash
+namespace SqlBuildManager.ObjectScript.Hash
 {
     public class ObjectScriptHashData
     {

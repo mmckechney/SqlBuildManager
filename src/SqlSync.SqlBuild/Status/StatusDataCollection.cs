@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
-namespace SqlSync.SqlBuild.Status
+namespace SqlBuildManager.SqlBuild.Status
 {
     [Serializable()]
     public class ServerStatusDataCollection

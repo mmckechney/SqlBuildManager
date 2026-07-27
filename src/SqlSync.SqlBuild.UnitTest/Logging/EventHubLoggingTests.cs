@@ -3,7 +3,7 @@ using SqlBuildManager.Logging.Threaded;
 using Microsoft.Extensions.Logging;
 using System;
 
-namespace SqlSync.SqlBuild.UnitTest.Logging
+namespace SqlBuildManager.SqlBuild.UnitTest.Logging
 {
     /// <summary>
     /// Unit tests for EventHubLogging class.

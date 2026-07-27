@@ -1,25 +1,25 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System.Collections.Generic;
 
-namespace SqlSync.SqlBuild.UnitTest.MultiDb
+namespace SqlBuildManager.SqlBuild.UnitTest.MultiDb
 {
     [TestClass]
     public class MultiDbDataSorterTests
     {
-        private SqlSync.SqlBuild.MultiDb.MultiDbDataSorter _sorter = null!;
+        private SqlBuildManager.SqlBuild.MultiDb.MultiDbDataSorter _sorter = null!;
 
         [TestInitialize]
         public void TestInitialize()
         {
-            _sorter = new SqlSync.SqlBuild.MultiDb.MultiDbDataSorter();
+            _sorter = new SqlBuildManager.SqlBuild.MultiDb.MultiDbDataSorter();
         }
 
         [TestMethod]
         public void Constructor_Default_CreatesInstance()
         {
             // Act
-            var sorter = new SqlSync.SqlBuild.MultiDb.MultiDbDataSorter();
+            var sorter = new SqlBuildManager.SqlBuild.MultiDb.MultiDbDataSorter();
 
             // Assert
             Assert.IsNotNull(sorter);

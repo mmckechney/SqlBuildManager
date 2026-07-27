@@ -59,8 +59,8 @@ namespace SqlBuildManager.Console.UnitTest
             context.PlatinumDacPacFileName = "platinum.dacpac";
             context.RootLoggingPath = loggingPath;
             context.WorkingDirectory = workingDir;
-            context.BatchCollection = new SqlSync.SqlBuild.ScriptBatchCollection();
-            context.BuildDataModel = SqlSync.SqlBuild.SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            context.BatchCollection = new SqlBuildManager.SqlBuild.ScriptBatchCollection();
+            context.BuildDataModel = SqlBuildManager.SqlBuild.SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             
             // Reset
             context.Reset();

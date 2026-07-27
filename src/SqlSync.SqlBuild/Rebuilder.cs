@@ -1,14 +1,14 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using SqlSync.Connection;
-using SqlSync.DbInformation;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Utilities;
+using SqlBuildManager.Connection;
+using SqlBuildManager.DbInformation;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-namespace SqlSync.SqlBuild
+namespace SqlBuildManager.SqlBuild
 {
     public class Rebuilder
     {
@@ -36,7 +36,7 @@ namespace SqlSync.SqlBuild
 
             List<RebuilderData> data = new List<RebuilderData>();
 
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(dbConnData);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(dbConnData);
             SqlCommand cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@BuildFileHash", buildFileHash);
             cmd.Parameters.AddWithValue("@CommitDate", commitDate.ToString("yyyy-MM-dd HH:mm:ss.FFF"));
@@ -75,7 +75,7 @@ namespace SqlSync.SqlBuild
             for (int i = 0; i < dbs.Length; i++)
             {
                 connData.DatabaseName = dbs[i];
-                SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
+                SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData);
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@BuildFileName", commitData.BuildFileName);
                 cmd.Parameters.AddWithValue("@CommitDate", commitData.CommitDate);
@@ -108,7 +108,7 @@ namespace SqlSync.SqlBuild
             Directory.CreateDirectory(tempPath);
             try
             {
-                string projFileName = Path.Combine(tempPath, SqlSync.SqlBuild.XmlFileNames.MainProjectFile);
+                string projFileName = Path.Combine(tempPath, SqlBuildManager.SqlBuild.XmlFileNames.MainProjectFile);
 
                 for (int i = 0; i < rebuildData.Count; i++)
                 {
@@ -180,7 +180,7 @@ namespace SqlSync.SqlBuild
                     continue;
 
                 connData.DatabaseName = dbList[i].DatabaseName;
-                SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
+                SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData);
                 try
                 {
                     SqlCommand cmd = new SqlCommand(sql, conn);
@@ -226,7 +226,7 @@ namespace SqlSync.SqlBuild
 
             List<CommittedBuildData> data = new List<CommittedBuildData>();
             connData.DatabaseName = databaseName;
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData);
             try
             {
                 SqlCommand cmd = new SqlCommand(sql, conn);

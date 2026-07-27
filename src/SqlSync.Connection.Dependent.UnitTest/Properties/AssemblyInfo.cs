@@ -1,10 +1,10 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("SqlSync.Connection.Dependent.UnitTest")]
+[assembly: AssemblyTitle("SqlBuildManager.Connection.Dependent.UnitTest")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyProduct("SqlSync.Connection.Dependent.UnitTest")]
+[assembly: AssemblyProduct("SqlBuildManager.Connection.Dependent.UnitTest")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 

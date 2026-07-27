@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SqlSync.SqlBuild.Dependent.UnitTest.Properties {
+namespace SqlBuildManager.SqlBuild.Dependent.UnitTest.Properties {
     using System;
     
     
@@ -19,7 +19,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -39,7 +39,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest.Properties {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SqlSync.SqlBuild.Dependent.UnitTest.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SqlBuildManager.SqlBuild.Dependent.UnitTest.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -65,7 +65,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest.Properties {
         ///BEGIN
         ///	IF EXISTS (SELECT 1 FROM dbo.SqlBuild_Logging WHERE CommitDate &lt; &apos;{0}&apos;)
         ///	BEGIN
-        ///		DELETE FROM SqlBuild_Logging
+        ///		DELETE FROM SqlBuild_Logging WHERE CommitDate &lt; &apos;{0}&apos;
         ///	END
         ///END.
         /// </summary>

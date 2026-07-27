@@ -1,9 +1,9 @@
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.Services;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class SqlBuildHelperBatchingTests

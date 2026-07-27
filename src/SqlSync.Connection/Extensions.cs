@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Reflection;
 
-namespace SqlSync.Connection
+namespace SqlBuildManager.Connection
 {
     public static class Extensions
     {

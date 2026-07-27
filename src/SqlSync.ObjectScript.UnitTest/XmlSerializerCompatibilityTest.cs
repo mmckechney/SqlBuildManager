@@ -1,8 +1,8 @@
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.ObjectScript;
+using SqlBuildManager.ObjectScript;
 
-namespace SqlSync.ObjectScript.UnitTest
+namespace SqlBuildManager.ObjectScript.UnitTest
 {
     [TestClass]
     public class XmlSerializerCompatibilityTest

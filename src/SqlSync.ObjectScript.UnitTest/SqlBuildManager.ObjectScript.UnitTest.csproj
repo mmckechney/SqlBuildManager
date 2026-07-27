@@ -15,9 +15,22 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AutoScriptingConfigModelTest.cs" />
+    <Compile Include="Initialization.cs" />
+    <Compile Include="ObjectScriptHelperTest.cs" />
+    <Compile Include="XmlSerializerCompatibilityTest.cs" />
+    <Compile Include="SanitizerExtensionsTest.cs" />
+    <Compile Include="ObjectSyncDataTest.cs" />
+    <Compile Include="BackoutPackageTest.cs" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlBuildManager.Test.Common\SqlBuildManager.Test.Common.csproj" />
-    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
-    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
+    <ProjectReference Include="..\SqlSync.DbInformation\SqlBuildManager.DbInformation.csproj" />
+    <ProjectReference Include="..\SqlSync.ObjectScript\SqlBuildManager.ObjectScript.csproj" />
+    <ProjectReference Include="..\SqlSync.Connection\SqlBuildManager.Connection.csproj" />
   </ItemGroup>
 </Project>

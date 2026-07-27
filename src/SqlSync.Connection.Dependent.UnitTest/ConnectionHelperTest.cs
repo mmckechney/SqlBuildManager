@@ -2,7 +2,7 @@
 using SqlBuildManager.Test.Common;
 using System;
 
-namespace SqlSync.Connection.Dependent.UnitTest
+namespace SqlBuildManager.Connection.Dependent.UnitTest
 {
     /// <summary>
     /// Summary description for ConnectionHelperTest

@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     /// <summary>
     /// Additional tests for SqlBuildFileHelper focused on file manipulation methods

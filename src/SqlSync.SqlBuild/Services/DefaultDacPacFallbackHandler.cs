@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// Default implementation of IDacPacFallbackHandler.

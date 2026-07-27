@@ -15,10 +15,10 @@ using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Relay;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.Connection;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Utilities;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -183,7 +183,7 @@ namespace SqlBuildManager.Console.Batch
                 string outputContainerUrl;
                 ComputeNodeIdentityReference storageIdentity = null!;
 
-                if (cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity || cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault)
+                if (cmdLine.AuthenticationArgs.AuthenticationType == SqlBuildManager.Connection.AuthenticationType.ManagedIdentity || cmdLine.AuthenticationArgs.AuthenticationType == SqlBuildManager.Connection.AuthenticationType.AzureADDefault)
                 {
                     log.LogDebug($"Preparing Entra-authenticated container '{storageContainerName}'");
                     storageSvcClient = new BlobServiceClient(new Uri($"https://{cmdLine.ConnectionArgs.StorageAccountName}.blob.core.windows.net"), Aad.AadHelper.TokenCredential);
@@ -419,7 +419,7 @@ namespace SqlBuildManager.Console.Batch
                     if (isDebug)
                     {
                         log.LogDebug("Standard out:");
-                        log.LogDebug(task.GetNodeFile(Constants.StandardOutFileName).ReadAsString());
+                        log.LogDebug(task.GetNodeFile("stdout.txt").ReadAsString());
                     }
                     if (task.ExecutionInformation.ExitCode != 0)
                     {

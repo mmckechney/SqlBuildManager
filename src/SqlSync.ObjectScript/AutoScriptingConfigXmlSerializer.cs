@@ -5,11 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
-using SqlSync.ObjectScript.Models;
+using SqlBuildManager.ObjectScript.Models;
 
 #nullable enable
 
-namespace SqlSync.ObjectScript
+namespace SqlBuildManager.ObjectScript
 {
     /// <summary>
     /// POCO-based XML serializer/deserializer for AutoScriptingConfigModel compatible with legacy DataSet XML.

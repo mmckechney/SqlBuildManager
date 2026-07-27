@@ -1,10 +1,10 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Services;
-using SqlSync.Connection;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.Services;
+using SqlBuildManager.Connection;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class SqlBuildHelperTokenReplacementTests

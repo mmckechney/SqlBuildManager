@@ -1,4 +1,4 @@
-namespace SqlSync.Connection
+namespace SqlBuildManager.Connection
 {
     public enum DatabasePlatform
     {

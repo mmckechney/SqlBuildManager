@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
-using sqlB = SqlSync.SqlBuild.Utilities;
+using sqlB = SqlBuildManager.SqlBuild.Utilities;
 namespace SqlBuildManager.Console.CommandLine
 {
 
@@ -68,8 +68,8 @@ namespace SqlBuildManager.Console.CommandLine
         private static bool _entraIdLogShown = false;
         public static (bool, CommandLineArgs) DecryptSensitiveFields(CommandLineArgs cmdLine, bool suppressLog = false)
         {
-            if(cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity ||
-                cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault)
+            if(cmdLine.AuthenticationArgs.AuthenticationType == SqlBuildManager.Connection.AuthenticationType.ManagedIdentity ||
+                cmdLine.AuthenticationArgs.AuthenticationType == SqlBuildManager.Connection.AuthenticationType.AzureADDefault)
             {
                 if (!_entraIdLogShown)
                 {

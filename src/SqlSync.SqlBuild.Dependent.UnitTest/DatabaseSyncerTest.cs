@@ -1,13 +1,13 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Synchronizer;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Synchronizer;
 using System;
 using System.Threading.Tasks;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild.Dependent.UnitTest
+namespace SqlBuildManager.SqlBuild.Dependent.UnitTest
 {
 
 
@@ -104,7 +104,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
 
             string sql = "DELETE FROM [SqlBuildTest_SyncTest2].[dbo].[SqlBuild_Logging]";
             ConnectionData sync2Conn = _init.CreateConnectionData("SqlBuildTest_SyncTest2");
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(sync2Conn);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(sync2Conn);
             conn.Open();
             using (SqlCommand cmd = new SqlCommand(sql, conn))
             {

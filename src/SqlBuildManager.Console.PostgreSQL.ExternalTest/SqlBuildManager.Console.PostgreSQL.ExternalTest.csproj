@@ -26,7 +26,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlBuildManager.Console\sbm.csproj" />
-    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
+    <ProjectReference Include="..\SqlSync.SqlBuild\SqlBuildManager.SqlBuild.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\TestConfig\**\*.*">

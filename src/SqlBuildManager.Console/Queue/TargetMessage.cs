@@ -1,5 +1,5 @@
 using Azure.ResourceManager.Network.Models;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System.Collections.Generic;
 
 namespace SqlBuildManager.Console.Queue

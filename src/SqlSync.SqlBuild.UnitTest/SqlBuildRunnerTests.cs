@@ -4,16 +4,16 @@ using System.ComponentModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading;
 using System.Threading.Tasks;
-using SqlSync.SqlBuild;
+using SqlBuildManager.SqlBuild;
 using Microsoft.Extensions.Logging.Abstractions;
-using BuildModels = SqlSync.SqlBuild.Models;
-using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.Connection;
+using BuildModels = SqlBuildManager.SqlBuild.Models;
+using LoggingCommittedScript = SqlBuildManager.SqlBuild.SqlLogging.CommittedScript;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.Connection;
 using Moq;
-using SqlSync.SqlBuild.Services;
-namespace SqlSync.SqlBuild.UnitTest
+using SqlBuildManager.SqlBuild.Services;
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class SqlBuildRunnerTests

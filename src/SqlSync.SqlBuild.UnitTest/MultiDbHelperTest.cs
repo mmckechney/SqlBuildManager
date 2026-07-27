@@ -1,11 +1,11 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
 
 

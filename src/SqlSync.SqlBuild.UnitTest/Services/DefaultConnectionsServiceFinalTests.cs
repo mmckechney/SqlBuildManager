@@ -1,14 +1,14 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
-using SqlSync.Connection;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
+using SqlBuildManager.Connection;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.UnitTest.Services
+namespace SqlBuildManager.SqlBuild.UnitTest.Services
 {
     /// <summary>
     /// Final coverage tests for DefaultConnectionsService
@@ -272,7 +272,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
 
             // Act - using reflection since the class is internal
             var service = Activator.CreateInstance(
-                typeof(DefaultConnectionsService).Assembly.GetType("SqlSync.SqlBuild.Services.DefaultSqlLoggingService")!,
+                typeof(DefaultConnectionsService).Assembly.GetType("SqlBuildManager.SqlBuild.Services.DefaultSqlLoggingService")!,
                 mockConnectionsService.Object,
                 mockProgressReporter.Object,
                 (ISqlResourceProvider?)null,
@@ -293,7 +293,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
             mockConnectionsService.Setup(x => x.Connections).Returns(new Dictionary<string, BuildConnectData>());
             
             // Create instance using internal constructor
-            var serviceType = typeof(DefaultConnectionsService).Assembly.GetType("SqlSync.SqlBuild.Services.DefaultSqlLoggingService")!;
+            var serviceType = typeof(DefaultConnectionsService).Assembly.GetType("SqlBuildManager.SqlBuild.Services.DefaultSqlLoggingService")!;
             var service = Activator.CreateInstance(serviceType, mockConnectionsService.Object, mockProgressReporter.Object, (ISqlResourceProvider?)null, (IScriptSyntaxProvider?)null) as ISqlLoggingService;
 
             var emptyConnections = new Dictionary<string, BuildConnectData>();

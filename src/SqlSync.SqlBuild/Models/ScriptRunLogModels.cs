@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild.Models
+namespace SqlBuildManager.SqlBuild.Models
 {
     public sealed record class ScriptRunLogEntry(
         string? BuildFileName,

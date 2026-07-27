@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.Synchronizer
+namespace SqlBuildManager.SqlBuild.Synchronizer
 {
     public class DatabaseSyncer
     {
@@ -157,7 +157,7 @@ namespace SqlSync.SqlBuild.Synchronizer
                 });
 
                 //Set the run meta-data
-                var runDataModel = new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
+                var runDataModel = new SqlBuildManager.SqlBuild.Models.SqlBuildRunDataModel(
                     buildDataModel: buildModel,
                     buildType: BuildType.Other,
                     server: toUpdate.SQLServerName,

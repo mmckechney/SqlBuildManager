@@ -1,13 +1,13 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Services;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using BuildModels = SqlSync.SqlBuild.Models;
+using BuildModels = SqlBuildManager.SqlBuild.Models;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class SqlBuildHelperRetryTests

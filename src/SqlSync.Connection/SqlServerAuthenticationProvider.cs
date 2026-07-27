@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqlSync.Connection
+namespace SqlBuildManager.Connection
 {
     public static class SqlServerAuthenticationProvider
     {

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Status;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Status;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,7 +15,7 @@ using System.Linq;
 using Azure.Messaging.EventHubs.Processor;
 using System.Security.Permissions;
 
-namespace SqlSync.SqlBuild.AdHocQuery
+namespace SqlBuildManager.SqlBuild.AdHocQuery
 {
     public class QueryCollector
     {

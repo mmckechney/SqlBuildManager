@@ -15,4 +15,4 @@
 		</xs:complexType>
 	</xs:element>
 </xs:schema>
-<!-- xsd.exe /c /n:SqlSync.ObjectScript AutoScriptList.xsd -->
+<!-- xsd.exe /c /n:SqlBuildManager.ObjectScript AutoScriptList.xsd -->

@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.CodeTable;
+using SqlBuildManager.SqlBuild.CodeTable;
 
-namespace SqlSync.SqlBuild.UnitTest.CodeTable
+namespace SqlBuildManager.SqlBuild.UnitTest.CodeTable
 {
     [TestClass]
     public class ScriptUpdatesTests

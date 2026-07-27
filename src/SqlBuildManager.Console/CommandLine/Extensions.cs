@@ -85,13 +85,13 @@ namespace SqlBuildManager.Console.CommandLine
                   }
                   else
                   {
-                     if (cmd.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity || cmd.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault)
+                     if (cmd.AuthenticationArgs.AuthenticationType == SqlBuildManager.Connection.AuthenticationType.ManagedIdentity || cmd.AuthenticationArgs.AuthenticationType == SqlBuildManager.Connection.AuthenticationType.AzureADDefault)
                      {
                         args.AddRange(new string[] { "--authtype", "ManagedIdentity".Quoted() });
                      }
                   }
 
-                  //if (cmd.AuthenticationArgs.DatabasePlatform != SqlSync.Connection.DatabasePlatform.SqlServer)
+                  //if (cmd.AuthenticationArgs.DatabasePlatform != SqlBuildManager.Connection.DatabasePlatform.SqlServer)
                   //{
                   //    args.AddRange(new string[] { "--databaseplatform", cmd.AuthenticationArgs.DatabasePlatform.ToString().Quoted() });
                   //}

@@ -1,11 +1,11 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("SqlSync.SqlBuild.UnitTest")]
+[assembly: AssemblyTitle("SqlBuildManager.SqlBuild.UnitTest")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("SqlSync.SqlBuild.UnitTest")]
+[assembly: AssemblyProduct("SqlBuildManager.SqlBuild.UnitTest")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

@@ -28,4 +28,4 @@
 	
 </xs:schema>
 
-<!-- xsd /c /namespace:SqlSync.Connection RegisteredServers.xsd -->
+<!-- xsd /c /namespace:SqlBuildManager.Connection RegisteredServers.xsd -->

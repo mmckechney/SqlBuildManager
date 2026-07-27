@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// Default implementation of IScriptLogWriter that writes script logs to files.

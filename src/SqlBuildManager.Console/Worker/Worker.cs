@@ -8,7 +8,7 @@ using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;

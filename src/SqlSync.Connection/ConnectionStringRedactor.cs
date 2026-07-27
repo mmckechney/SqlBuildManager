@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 
-namespace SqlSync.Connection
+namespace SqlBuildManager.Connection
 {
     /// <summary>
     /// Centralized helper for masking secrets before they are written to logs or other diagnostic output.

@@ -1,12 +1,12 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SqlSync.SqlBuild.UnitTest.Services
+namespace SqlBuildManager.SqlBuild.UnitTest.Services
 {
     /// <summary>
     /// Extended tests for DefaultDatabaseUtility to improve code coverage
@@ -412,7 +412,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 _mockProgressReporter.Object,
                 _mockFileHelper.Object);
 
-            var connData = new SqlSync.Connection.ConnectionData();
+            var connData = new SqlBuildManager.Connection.ConnectionData();
 
             // Act
             bool result = utility.HasBlockingSqlLog(
@@ -440,7 +440,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 _mockProgressReporter.Object,
                 _mockFileHelper.Object);
 
-            var connData = new SqlSync.Connection.ConnectionData();
+            var connData = new SqlBuildManager.Connection.ConnectionData();
 
             // Act
             bool result = utility.HasBlockingSqlLog(
@@ -465,7 +465,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 _mockProgressReporter.Object,
                 _mockFileHelper.Object);
 
-            var connData = new SqlSync.Connection.ConnectionData();
+            var connData = new SqlBuildManager.Connection.ConnectionData();
 
             // Act
             bool result = utility.HasBlockingSqlLog(

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace SqlSync.Connection
+namespace SqlBuildManager.Connection
 {
     public enum AuthenticationType
     {

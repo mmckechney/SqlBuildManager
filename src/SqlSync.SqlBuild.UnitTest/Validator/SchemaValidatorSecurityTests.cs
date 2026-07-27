@@ -1,9 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Validator;
+using SqlBuildManager.SqlBuild.Validator;
 using System;
 using System.IO;
 
-namespace SqlSync.SqlBuild.UnitTest.Validator
+namespace SqlBuildManager.SqlBuild.UnitTest.Validator
 {
     /// <summary>
     /// SEC-003 behavioral tests: SchemaValidator must reject DTD declarations and

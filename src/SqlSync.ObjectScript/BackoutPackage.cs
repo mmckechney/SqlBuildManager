@@ -1,17 +1,17 @@
 using Microsoft.Extensions.Logging;
-using SqlSync.Connection;
-using SqlSync.Constants;
-using SqlSync.DbInformation;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Objects;
+using SqlBuildManager.Connection;
+using SqlBuildManager.Constants;
+using SqlBuildManager.DbInformation;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Objects;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-namespace SqlSync.ObjectScript
+namespace SqlBuildManager.ObjectScript
 {
     public class BackoutPackage
     {

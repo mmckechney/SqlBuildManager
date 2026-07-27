@@ -1,9 +1,9 @@
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
-namespace SqlSync.SqlBuild.Status
+namespace SqlBuildManager.SqlBuild.Status
 {
     class StatusReportRunner
     {
@@ -55,7 +55,7 @@ namespace SqlSync.SqlBuild.Status
                     baseDatabase = databaseName;
 
                 ScriptStatusData dat = new ScriptStatusData();
-                connData = new SqlSync.Connection.ConnectionData(serverName, databaseName);
+                connData = new SqlBuildManager.Connection.ConnectionData(serverName, databaseName);
 
                 ScriptStatusType stat = StatusHelper.DetermineScriptRunStatus(dbUtil, script, connData, projectFilePath, true, dbOverrides, out commitDate, out serverChangeDate);
                 dat.Fill(script);

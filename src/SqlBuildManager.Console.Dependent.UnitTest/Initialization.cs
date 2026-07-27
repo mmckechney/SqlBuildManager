@@ -2,7 +2,7 @@ using SqlBuildManager.Test.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 namespace SqlBuildManager.Console.Dependent.UnitTest
 {
     class Initialization : IDisposable

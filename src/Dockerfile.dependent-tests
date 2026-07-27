@@ -17,55 +17,55 @@ COPY SqlBuildManager.Logging/SqlBuildManager.Logging.csproj SqlBuildManager.Logg
 COPY SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj SqlBuildManager.ScriptHandling.UnitTest/packages.lock.json SqlBuildManager.ScriptHandling.UnitTest/
 COPY SqlBuildManager.ScriptHandling/SqlBuildManager.ScriptHandling.csproj SqlBuildManager.ScriptHandling/packages.lock.json SqlBuildManager.ScriptHandling/
 COPY SqlBuildManager.Test.Common/SqlBuildManager.Test.Common.csproj SqlBuildManager.Test.Common/packages.lock.json SqlBuildManager.Test.Common/
-COPY SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.csproj SqlSync.Connection.Dependent.UnitTest/packages.lock.json SqlSync.Connection.Dependent.UnitTest/
-COPY SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj SqlSync.Connection.UnitTest/packages.lock.json SqlSync.Connection.UnitTest/
-COPY SqlSync.Connection/SqlSync.Connection.csproj SqlSync.Connection/packages.lock.json SqlSync.Connection/
-COPY SqlSync.Constants/SqlSync.Constants.csproj SqlSync.Constants/packages.lock.json SqlSync.Constants/
-COPY SqlSync.DbInformation.Dependent.UnitTest/SqlSync.DbInformation.Dependent.UnitTest.csproj SqlSync.DbInformation.Dependent.UnitTest/packages.lock.json SqlSync.DbInformation.Dependent.UnitTest/
-COPY SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.csproj SqlSync.DbInformation.UnitTest/packages.lock.json SqlSync.DbInformation.UnitTest/
-COPY SqlSync.DbInformation/SqlSync.DbInformation.csproj SqlSync.DbInformation/packages.lock.json SqlSync.DbInformation/
-COPY SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.UnitTest.csproj SqlSync.ObjectScript.Dependent.UnitTest/packages.lock.json SqlSync.ObjectScript.Dependent.UnitTest/
-COPY SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj SqlSync.ObjectScript.UnitTest/packages.lock.json SqlSync.ObjectScript.UnitTest/
-COPY SqlSync.ObjectScript/SqlSync.ObjectScript.csproj SqlSync.ObjectScript/packages.lock.json SqlSync.ObjectScript/
-COPY SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/packages.lock.json SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/
-COPY SqlSync.SqlBuild.Dependent.MySQL.UnitTest/SqlSync.SqlBuild.Dependent.MySQL.UnitTest.csproj SqlSync.SqlBuild.Dependent.MySQL.UnitTest/packages.lock.json SqlSync.SqlBuild.Dependent.MySQL.UnitTest/
-COPY SqlSync.SqlBuild.Dependent.TestBase/SqlSync.SqlBuild.Dependent.TestBase.csproj SqlSync.SqlBuild.Dependent.TestBase/packages.lock.json SqlSync.SqlBuild.Dependent.TestBase/
-COPY SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.csproj SqlSync.SqlBuild.Dependent.UnitTest/packages.lock.json SqlSync.SqlBuild.Dependent.UnitTest/
-COPY SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj SqlSync.SqlBuild.UnitTest/packages.lock.json SqlSync.SqlBuild.UnitTest/
-COPY SqlSync.SqlBuild/SqlSync.SqlBuild.csproj SqlSync.SqlBuild/packages.lock.json SqlSync.SqlBuild/
+COPY SqlBuildManager.Connection.Dependent.UnitTest/SqlBuildManager.Connection.Dependent.UnitTest.csproj SqlBuildManager.Connection.Dependent.UnitTest/packages.lock.json SqlBuildManager.Connection.Dependent.UnitTest/
+COPY SqlBuildManager.Connection.UnitTest/SqlBuildManager.Connection.UnitTest.csproj SqlBuildManager.Connection.UnitTest/packages.lock.json SqlBuildManager.Connection.UnitTest/
+COPY SqlBuildManager.Connection/SqlBuildManager.Connection.csproj SqlBuildManager.Connection/packages.lock.json SqlBuildManager.Connection/
+COPY SqlBuildManager.Constants/SqlBuildManager.Constants.csproj SqlBuildManager.Constants/packages.lock.json SqlBuildManager.Constants/
+COPY SqlBuildManager.DbInformation.Dependent.UnitTest/SqlBuildManager.DbInformation.Dependent.UnitTest.csproj SqlBuildManager.DbInformation.Dependent.UnitTest/packages.lock.json SqlBuildManager.DbInformation.Dependent.UnitTest/
+COPY SqlBuildManager.DbInformation.UnitTest/SqlBuildManager.DbInformation.UnitTest.csproj SqlBuildManager.DbInformation.UnitTest/packages.lock.json SqlBuildManager.DbInformation.UnitTest/
+COPY SqlBuildManager.DbInformation/SqlBuildManager.DbInformation.csproj SqlBuildManager.DbInformation/packages.lock.json SqlBuildManager.DbInformation/
+COPY SqlBuildManager.ObjectScript.Dependent.UnitTest/SqlBuildManager.ObjectScript.Dependent.UnitTest.csproj SqlBuildManager.ObjectScript.Dependent.UnitTest/packages.lock.json SqlBuildManager.ObjectScript.Dependent.UnitTest/
+COPY SqlBuildManager.ObjectScript.UnitTest/SqlBuildManager.ObjectScript.UnitTest.csproj SqlBuildManager.ObjectScript.UnitTest/packages.lock.json SqlBuildManager.ObjectScript.UnitTest/
+COPY SqlBuildManager.ObjectScript/SqlBuildManager.ObjectScript.csproj SqlBuildManager.ObjectScript/packages.lock.json SqlBuildManager.ObjectScript/
+COPY SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest/packages.lock.json SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest/
+COPY SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest.csproj SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest/packages.lock.json SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest/
+COPY SqlBuildManager.SqlBuild.Dependent.TestBase/SqlBuildManager.SqlBuild.Dependent.TestBase.csproj SqlBuildManager.SqlBuild.Dependent.TestBase/packages.lock.json SqlBuildManager.SqlBuild.Dependent.TestBase/
+COPY SqlBuildManager.SqlBuild.Dependent.UnitTest/SqlBuildManager.SqlBuild.Dependent.UnitTest.csproj SqlBuildManager.SqlBuild.Dependent.UnitTest/packages.lock.json SqlBuildManager.SqlBuild.Dependent.UnitTest/
+COPY SqlBuildManager.SqlBuild.UnitTest/SqlBuildManager.SqlBuild.UnitTest.csproj SqlBuildManager.SqlBuild.UnitTest/packages.lock.json SqlBuildManager.SqlBuild.UnitTest/
+COPY SqlBuildManager.SqlBuild/SqlBuildManager.SqlBuild.csproj SqlBuildManager.SqlBuild/packages.lock.json SqlBuildManager.SqlBuild/
 
-RUN dotnet restore SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.csproj --locked-mode && \
+RUN dotnet restore SqlBuildManager.SqlBuild.Dependent.UnitTest/SqlBuildManager.SqlBuild.Dependent.UnitTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.Console.Dependent.UnitTest/SqlBuildManager.Console.Dependent.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlSync.DbInformation.Dependent.UnitTest/SqlSync.DbInformation.Dependent.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.ObjectScript.Dependent.UnitTest/SqlBuildManager.ObjectScript.Dependent.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.DbInformation.Dependent.UnitTest/SqlBuildManager.DbInformation.Dependent.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.Connection.Dependent.UnitTest/SqlBuildManager.Connection.Dependent.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlSync.SqlBuild.Dependent.MySQL.UnitTest/SqlSync.SqlBuild.Dependent.MySQL.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.Console.Dependent.MySQL.UnitTest/SqlBuildManager.Console.Dependent.MySQL.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.SqlBuild.UnitTest/SqlBuildManager.SqlBuild.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.ObjectScript.UnitTest/SqlBuildManager.ObjectScript.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.Connection.UnitTest/SqlBuildManager.Connection.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.DbInformation.UnitTest/SqlBuildManager.DbInformation.UnitTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj --locked-mode
 
 FROM restore AS build
 COPY . .
-RUN dotnet build SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.SqlBuild.Dependent.UnitTest && \
+RUN dotnet build SqlBuildManager.SqlBuild.Dependent.UnitTest/SqlBuildManager.SqlBuild.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.SqlBuild.Dependent.UnitTest && \
     dotnet build SqlBuildManager.Console.Dependent.UnitTest/SqlBuildManager.Console.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.Dependent.UnitTest && \
-    dotnet build SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.ObjectScript.Dependent.UnitTest && \
-    dotnet build SqlSync.DbInformation.Dependent.UnitTest/SqlSync.DbInformation.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.DbInformation.Dependent.UnitTest && \
-    dotnet build SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.Connection.Dependent.UnitTest && \
-    dotnet build SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest && \
+    dotnet build SqlBuildManager.ObjectScript.Dependent.UnitTest/SqlBuildManager.ObjectScript.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.ObjectScript.Dependent.UnitTest && \
+    dotnet build SqlBuildManager.DbInformation.Dependent.UnitTest/SqlBuildManager.DbInformation.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.DbInformation.Dependent.UnitTest && \
+    dotnet build SqlBuildManager.Connection.Dependent.UnitTest/SqlBuildManager.Connection.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Connection.Dependent.UnitTest && \
+    dotnet build SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest && \
     dotnet build SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest && \
-    dotnet build SqlSync.SqlBuild.Dependent.MySQL.UnitTest/SqlSync.SqlBuild.Dependent.MySQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.SqlBuild.Dependent.MySQL.UnitTest && \
+    dotnet build SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest && \
     dotnet build SqlBuildManager.Console.Dependent.MySQL.UnitTest/SqlBuildManager.Console.Dependent.MySQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.Dependent.MySQL.UnitTest && \
-    dotnet build SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.SqlBuild.UnitTest && \
-    dotnet build SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.ObjectScript.UnitTest && \
-    dotnet build SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.Connection.UnitTest && \
-    dotnet build SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlSync.DbInformation.UnitTest && \
+    dotnet build SqlBuildManager.SqlBuild.UnitTest/SqlBuildManager.SqlBuild.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.SqlBuild.UnitTest && \
+    dotnet build SqlBuildManager.ObjectScript.UnitTest/SqlBuildManager.ObjectScript.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.ObjectScript.UnitTest && \
+    dotnet build SqlBuildManager.Connection.UnitTest/SqlBuildManager.Connection.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Connection.UnitTest && \
+    dotnet build SqlBuildManager.DbInformation.UnitTest/SqlBuildManager.DbInformation.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.DbInformation.UnitTest && \
     dotnet build SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.ScriptHandling.UnitTest && \
     dotnet build SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.UnitTest && \
     dotnet build SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Enterprise.UnitTest

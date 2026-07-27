@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
+using LoggingCommittedScript = SqlBuildManager.SqlBuild.SqlLogging.CommittedScript;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class RecordCommittedScriptsObsoleteTest
@@ -13,7 +13,7 @@ namespace SqlSync.SqlBuild.UnitTest
         [TestMethod]
         public void RecordCommittedScripts_UpdatesModel()
         {
-            var helper = new SqlBuildHelper(new SqlSync.Connection.ConnectionData());
+            var helper = new SqlBuildHelper(new SqlBuildManager.Connection.ConnectionData());
             var scriptId = Guid.NewGuid();
             var committed = new List<LoggingCommittedScript>
             {

@@ -4,13 +4,13 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using BuildModels = SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Models;
-using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
-using SqlSync.SqlBuild.Services;
+using BuildModels = SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
+using LoggingCommittedScript = SqlBuildManager.SqlBuild.SqlLogging.CommittedScript;
+using SqlBuildManager.SqlBuild.Services;
 using Moq;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class SqlBuildRunnerAsyncTests

@@ -10,7 +10,7 @@
 
 #pragma warning disable 1591
 
-namespace SqlSync.ObjectScript {
+namespace SqlBuildManager.ObjectScript {
     
     
     /// <summary>

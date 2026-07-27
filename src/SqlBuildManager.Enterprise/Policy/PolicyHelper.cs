@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Objects;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Objects;
 using System;
 using System.Collections.Generic;
 using System.IO;

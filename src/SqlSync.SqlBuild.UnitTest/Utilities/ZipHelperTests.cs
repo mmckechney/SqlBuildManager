@@ -5,10 +5,10 @@ using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Utilities;
+using SqlBuildManager.SqlBuild.Utilities;
 using IOZipFile = System.IO.Compression.ZipFile;
 
-namespace SqlSync.SqlBuild.UnitTest.Utilities
+namespace SqlBuildManager.SqlBuild.UnitTest.Utilities
 {
     [TestClass]
     public class ZipHelperTests
@@ -553,7 +553,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             }
 
             // Act
-            using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Read))
+            using (var archive = SqlBuildManager.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Read))
             {
                 // Assert
                 Assert.IsNotNull(archive);
@@ -568,7 +568,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             string zipPath = Path.Combine(_testDir, "new.zip");
 
             // Act
-            using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            using (var archive = SqlBuildManager.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
                 // Assert
                 Assert.IsNotNull(archive);
@@ -590,7 +590,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             }
 
             // Act
-            using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Update))
+            using (var archive = SqlBuildManager.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Update))
             {
                 // Assert
                 Assert.IsNotNull(archive);
@@ -606,7 +606,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
 
             // Act & Assert
             Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
-                SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, (ZipArchiveMode)99));
+                SqlBuildManager.SqlBuild.Utilities.ZipFile.Open(zipPath, (ZipArchiveMode)99));
         }
 
         #endregion
@@ -622,9 +622,9 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             string zipPath = Path.Combine(_testDir, "test.zip");
 
             // Act
-            using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            using (var archive = SqlBuildManager.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
-                var entry = SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, "file1.txt", CompressionLevel.Fastest);
+                var entry = SqlBuildManager.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, "file1.txt", CompressionLevel.Fastest);
 
                 // Assert
                 Assert.IsNotNull(entry);
@@ -641,7 +641,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
 
             // Act & Assert
             Assert.ThrowsExactly<ArgumentNullException>(() =>
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(null!, file1, "file1.txt", CompressionLevel.Fastest));
+                SqlBuildManager.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(null!, file1, "file1.txt", CompressionLevel.Fastest));
         }
 
         [TestMethod]
@@ -649,11 +649,11 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
         {
             // Arrange
             string zipPath = Path.Combine(_testDir, "test.zip");
-            using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            using (var archive = SqlBuildManager.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
                 // Act & Assert
                 Assert.ThrowsExactly<ArgumentNullException>(() =>
-                    SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, null!, "file1.txt", CompressionLevel.Fastest));
+                    SqlBuildManager.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, null!, "file1.txt", CompressionLevel.Fastest));
             }
         }
 
@@ -664,11 +664,11 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             string file1 = Path.Combine(_testDir, "file1.txt");
             File.WriteAllText(file1, "Content 1");
             string zipPath = Path.Combine(_testDir, "test.zip");
-            using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            using (var archive = SqlBuildManager.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
                 // Act & Assert
                 Assert.ThrowsExactly<ArgumentNullException>(() =>
-                    SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, null!, CompressionLevel.Fastest));
+                    SqlBuildManager.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, null!, CompressionLevel.Fastest));
             }
         }
 
@@ -679,18 +679,18 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             string file1 = Path.Combine(_testDir, "file1.txt");
             File.WriteAllText(file1, "Test Content");
             string zipPath = Path.Combine(_testDir, "test.zip");
-            using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            using (var archive = SqlBuildManager.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, "file1.txt", CompressionLevel.Fastest);
+                SqlBuildManager.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, "file1.txt", CompressionLevel.Fastest);
             }
 
             string extractPath = Path.Combine(_testDir, "extracted.txt");
 
             // Act
-            using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Read))
+            using (var archive = SqlBuildManager.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Read))
             {
                 var entry = archive.GetEntry("file1.txt");
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry!, extractPath);
+                SqlBuildManager.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry!, extractPath);
             }
 
             // Assert
@@ -705,19 +705,19 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             string file1 = Path.Combine(_testDir, "file1.txt");
             File.WriteAllText(file1, "New Content");
             string zipPath = Path.Combine(_testDir, "test.zip");
-            using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            using (var archive = SqlBuildManager.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, "file1.txt", CompressionLevel.Fastest);
+                SqlBuildManager.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, "file1.txt", CompressionLevel.Fastest);
             }
 
             string extractPath = Path.Combine(_testDir, "extracted.txt");
             File.WriteAllText(extractPath, "Old Content");
 
             // Act
-            using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Read))
+            using (var archive = SqlBuildManager.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Read))
             {
                 var entry = archive.GetEntry("file1.txt");
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry!, extractPath, overwrite: true);
+                SqlBuildManager.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry!, extractPath, overwrite: true);
             }
 
             // Assert
@@ -729,7 +729,7 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
         {
             // Act & Assert
             Assert.ThrowsExactly<ArgumentNullException>(() =>
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(null!, "test.txt"));
+                SqlBuildManager.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(null!, "test.txt"));
         }
 
         [TestMethod]
@@ -739,17 +739,17 @@ namespace SqlSync.SqlBuild.UnitTest.Utilities
             string file1 = Path.Combine(_testDir, "file1.txt");
             File.WriteAllText(file1, "Content");
             string zipPath = Path.Combine(_testDir, "test.zip");
-            using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
+            using (var archive = SqlBuildManager.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Create))
             {
-                SqlSync.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, "file1.txt", CompressionLevel.Fastest);
+                SqlBuildManager.SqlBuild.Utilities.ZipFileExtensions.CreateEntryFromFile(archive, file1, "file1.txt", CompressionLevel.Fastest);
             }
 
             // Act & Assert
-            using (var archive = SqlSync.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Read))
+            using (var archive = SqlBuildManager.SqlBuild.Utilities.ZipFile.Open(zipPath, ZipArchiveMode.Read))
             {
                 var entry = archive.GetEntry("file1.txt");
                 Assert.ThrowsExactly<ArgumentNullException>(() =>
-                    SqlSync.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry!, null!));
+                    SqlBuildManager.SqlBuild.Utilities.ZipFileExtensions.ExtractToFile(entry!, null!));
             }
         }
 

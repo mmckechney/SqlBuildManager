@@ -6,7 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Data.Common;
 
-namespace SqlSync.Connection
+namespace SqlBuildManager.Connection
 {
     /// <summary>
     /// PostgreSQL implementation of IDbConnectionFactory using Npgsql.

@@ -1,18 +1,18 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Npgsql;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using BuildModels = SqlSync.SqlBuild.Models;
-using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
+using BuildModels = SqlBuildManager.SqlBuild.Models;
+using LoggingCommittedScript = SqlBuildManager.SqlBuild.SqlLogging.CommittedScript;
 
-namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
+namespace SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest
 {
     /// <summary>
     /// Integration tests for the build engine running against PostgreSQL.

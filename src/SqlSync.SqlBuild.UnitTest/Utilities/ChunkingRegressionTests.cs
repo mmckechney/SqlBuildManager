@@ -1,9 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Utilities;
+using SqlBuildManager.SqlBuild.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SqlSync.SqlBuild.UnitTest.Utilities
+namespace SqlBuildManager.SqlBuild.UnitTest.Utilities
 {
     /// <summary>
     /// Regression tests for PERF-010: SplitIntoChunks single-materialization fix.

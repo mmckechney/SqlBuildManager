@@ -9,21 +9,21 @@
     <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\RegisteredServers_Good.xml" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="MSTest.TestAdapter" />
     <PackageReference Include="MSTest.TestFramework" />
+    <PackageReference Include="Npgsql" />
     <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
     <ProjectReference Include="..\SqlSync.Connection\SqlBuildManager.Connection.csproj" />
-    <ProjectReference Include="..\SqlSync.Constants\SqlBuildManager.Constants.csproj" />
-    <ProjectReference Include="..\SqlSync.DbInformation\SqlBuildManager.DbInformation.csproj" />
-    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
-    <ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj" />
-    <ProjectReference Include="..\SqlSync.SqlBuild\SqlBuildManager.SqlBuild.csproj" />
   </ItemGroup>
 </Project>

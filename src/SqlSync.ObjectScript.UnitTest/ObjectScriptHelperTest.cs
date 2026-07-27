@@ -1,13 +1,13 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.ObjectScript.Hash;
+using SqlBuildManager.Connection;
+using SqlBuildManager.ObjectScript.Hash;
 using System;
 using System.Collections.Specialized;
 using System.Text;
 
 #nullable enable
 
-namespace SqlSync.ObjectScript.UnitTest
+namespace SqlBuildManager.ObjectScript.UnitTest
 {
 
 

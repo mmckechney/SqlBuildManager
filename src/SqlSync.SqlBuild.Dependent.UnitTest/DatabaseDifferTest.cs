@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Synchronizer;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Synchronizer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild.Dependent.UnitTest
+namespace SqlBuildManager.SqlBuild.Dependent.UnitTest
 {
     /// <summary>
     /// Integration tests for DatabaseDiffer that require database access

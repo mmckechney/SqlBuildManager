@@ -1,8 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Constants;
+using SqlBuildManager.Constants;
 using System.IO;
 
-namespace SqlSync.ObjectScript.UnitTest
+namespace SqlBuildManager.ObjectScript.UnitTest
 {
     /// <summary>
     /// Unit tests for BackoutPackage class (non-database-dependent tests)
@@ -163,10 +163,10 @@ namespace SqlSync.ObjectScript.UnitTest
         [TestMethod]
         public void SetBackoutSourceDatabaseAndServer_WithValidList_ShouldUpdateAllItems()
         {
-            var list = new System.Collections.Generic.List<SqlSync.SqlBuild.Objects.ObjectUpdates>
+            var list = new System.Collections.Generic.List<SqlBuildManager.SqlBuild.Objects.ObjectUpdates>
             {
-                new SqlSync.SqlBuild.Objects.ObjectUpdates { SourceDatabase = "", SourceServer = "" },
-                new SqlSync.SqlBuild.Objects.ObjectUpdates { SourceDatabase = "", SourceServer = "" }
+                new SqlBuildManager.SqlBuild.Objects.ObjectUpdates { SourceDatabase = "", SourceServer = "" },
+                new SqlBuildManager.SqlBuild.Objects.ObjectUpdates { SourceDatabase = "", SourceServer = "" }
             };
             string serverName = "TestServer";
             string databaseName = "TestDatabase";
@@ -183,7 +183,7 @@ namespace SqlSync.ObjectScript.UnitTest
         [TestMethod]
         public void SetBackoutSourceDatabaseAndServer_WithEmptyList_ShouldNotThrow()
         {
-            var list = new System.Collections.Generic.List<SqlSync.SqlBuild.Objects.ObjectUpdates>();
+            var list = new System.Collections.Generic.List<SqlBuildManager.SqlBuild.Objects.ObjectUpdates>();
 
             BackoutPackage.SetBackoutSourceDatabaseAndServer(ref list, "Server", "Database");
 

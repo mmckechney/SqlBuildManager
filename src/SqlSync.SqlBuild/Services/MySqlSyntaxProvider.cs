@@ -1,4 +1,4 @@
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// MySQL implementation of IScriptSyntaxProvider.

@@ -5,17 +5,17 @@ using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using SqlSync.SqlBuild;
-using sqlB = SqlSync.SqlBuild;
-using sqlM = SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild;
+using sqlB = SqlBuildManager.SqlBuild;
+using sqlM = SqlBuildManager.SqlBuild.Models;
 using Cryptography = SqlBuildManager.Console.CommandLine.Cryptography;
 using System.Threading.Tasks;
 
@@ -141,7 +141,7 @@ namespace SqlBuildManager.Console
 
                 if (multiDbData == null)
                 {
-                    var runDataModel = new SqlSync.SqlBuild.Models.SqlBuildRunDataModel(
+                    var runDataModel = new SqlBuildManager.SqlBuild.Models.SqlBuildRunDataModel(
                         buildDataModel: sqlBuildRunData.BuildDataModel ?? buildModel,
                         buildType: sqlBuildRunData.BuildType,
                         server: sqlBuildRunData.Server,

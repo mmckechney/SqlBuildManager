@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 
-namespace SqlSync.SqlBuild.Dependent.UnitTest
+namespace SqlBuildManager.SqlBuild.Dependent.UnitTest
 {
     /// <summary>
     /// Assembly-wide test setup. The dependent tests run against a local SQL Express instance

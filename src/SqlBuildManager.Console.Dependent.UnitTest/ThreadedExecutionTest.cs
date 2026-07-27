@@ -2,7 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System;
 using System.Collections.Generic;
 using Microsoft.Data.SqlClient;

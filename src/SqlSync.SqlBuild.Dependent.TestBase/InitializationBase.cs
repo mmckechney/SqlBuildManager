@@ -1,14 +1,14 @@
 using SqlBuildManager.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SqlSync.SqlBuild.Dependent.TestBase
+namespace SqlBuildManager.SqlBuild.Dependent.TestBase
 {
     /// <summary>
     /// Base class for platform-specific test initialization helpers.

@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
+    <ProjectReference Include="..\SqlSync.SqlBuild\SqlBuildManager.SqlBuild.csproj" />
     <ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj" />
   </ItemGroup>

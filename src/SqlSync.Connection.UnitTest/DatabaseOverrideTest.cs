@@ -2,7 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Data;
 
-namespace SqlSync.Connection.UnitTest
+namespace SqlBuildManager.Connection.UnitTest
 {
     /// <summary>
     /// Unit tests for DatabaseOverride class

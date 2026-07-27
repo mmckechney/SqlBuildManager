@@ -1,6 +1,6 @@
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// Tracks build history by recording script runs and builds.

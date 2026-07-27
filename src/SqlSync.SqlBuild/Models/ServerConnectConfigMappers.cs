@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SqlSync.SqlBuild.Models
+namespace SqlBuildManager.SqlBuild.Models
 {
     public static class ServerConnectConfigMappers
     {

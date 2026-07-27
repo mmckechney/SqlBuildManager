@@ -1,7 +1,7 @@
 using System;
 using System.Data.Common;
 
-namespace SqlSync.SqlBuild.Models {
+namespace SqlBuildManager.SqlBuild.Models {
 
     
     

@@ -1,13 +1,13 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
-namespace SqlSync.SqlBuild.UnitTest.Services
+namespace SqlBuildManager.SqlBuild.UnitTest.Services
 {
     [TestClass]
     public class DefaultDatabaseUtilityTests
@@ -727,7 +727,7 @@ namespace SqlSync.SqlBuild.UnitTest.Services
                 projectFileName: "project.sbx",
                 buildZipFileName: "build.sbm");
 
-            var connData = new SqlSync.Connection.ConnectionData();
+            var connData = new SqlBuildManager.Connection.ConnectionData();
             var mockProgress = new Mock<IProgressReporter>();
             var mockProps = new Mock<ISqlBuildRunnerProperties>();
 

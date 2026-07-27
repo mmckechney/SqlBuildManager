@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlSync.SqlBuild.Models {
+namespace SqlBuildManager.SqlBuild.Models {
 
 
     [Serializable()]

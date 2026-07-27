@@ -2,12 +2,12 @@ using System;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.Models;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class XmlSerializerCompatibilityTest

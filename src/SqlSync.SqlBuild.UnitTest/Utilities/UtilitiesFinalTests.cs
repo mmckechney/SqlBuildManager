@@ -1,10 +1,10 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Utilities;
+using SqlBuildManager.SqlBuild.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SqlSync.SqlBuild.UnitTest.Utilities
+namespace SqlBuildManager.SqlBuild.UnitTest.Utilities
 {
     /// <summary>
     /// Final coverage tests for Utility classes

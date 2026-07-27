@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace SqlSync.SqlBuild.Models
+namespace SqlBuildManager.SqlBuild.Models
 {
     public class ClearScriptData
     {

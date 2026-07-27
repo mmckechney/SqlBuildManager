@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Services;
-namespace SqlSync.SqlBuild.UnitTest
+using SqlBuildManager.SqlBuild.Services;
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class DefaultSqlBuildFileHelperTests

@@ -43,5 +43,5 @@ using System.Reflection;
 [assembly: AssemblyKeyName("")]
 
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.Connection.UnitTest")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.Connection.Dependent.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.Connection.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.Connection.Dependent.UnitTest")]

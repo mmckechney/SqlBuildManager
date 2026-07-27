@@ -1,8 +1,8 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     internal class DefaultDatabaseUtility :IDatabaseUtility
     {
@@ -59,7 +59,7 @@ namespace SqlSync.SqlBuild.Services
                 return false;
             }
 
-            var conn = SqlSync.Connection.ConnectionHelper.GetDbConnection(new ConnectionData() { DatabaseName = databaseName, SQLServerName = cData.SQLServerName, UserId = cData.UserId, Password = cData.Password, AuthenticationType = cData.AuthenticationType, ScriptTimeout = 2, ManagedIdentityClientId = cData.ManagedIdentityClientId, DatabasePlatform = cData.DatabasePlatform });
+            var conn = SqlBuildManager.Connection.ConnectionHelper.GetDbConnection(new ConnectionData() { DatabaseName = databaseName, SQLServerName = cData.SQLServerName, UserId = cData.UserId, Password = cData.Password, AuthenticationType = cData.AuthenticationType, ScriptTimeout = 2, ManagedIdentityClientId = cData.ManagedIdentityClientId, DatabasePlatform = cData.DatabasePlatform });
             DbCommand cmd = conn.CreateCommand();
             cmd.CommandText = resourceProvider.GetHasBlockingSqlLogQuery();
             var param = cmd.CreateParameter();
@@ -113,13 +113,13 @@ namespace SqlSync.SqlBuild.Services
 
         /// <summary>
         /// PERF-003: Fetches blocking SQL log status for a batch of script IDs in one query per database.
-        /// Each script GUID maps to a <see cref="SqlSync.SqlBuild.Models.SqlLogStatus"/> with the newest-row hash/date
+        /// Each script GUID maps to a <see cref="SqlBuildManager.SqlBuild.Models.SqlLogStatus"/> with the newest-row hash/date
         /// and an any-row AllowScriptBlock flag, matching the semantics of <see cref="HasBlockingSqlLog"/>.
         /// </summary>
-        public IReadOnlyDictionary<Guid, SqlSync.SqlBuild.Models.SqlLogStatus> GetBatchBlockingSqlLog(
+        public IReadOnlyDictionary<Guid, SqlBuildManager.SqlBuild.Models.SqlLogStatus> GetBatchBlockingSqlLog(
             IReadOnlyList<Guid> scriptIds, ConnectionData cData, string databaseName)
         {
-            var result = new Dictionary<Guid, SqlSync.SqlBuild.Models.SqlLogStatus>();
+            var result = new Dictionary<Guid, SqlBuildManager.SqlBuild.Models.SqlLogStatus>();
 
             if (scriptIds == null || scriptIds.Count == 0 || string.IsNullOrWhiteSpace(databaseName))
                 return result;
@@ -150,9 +150,9 @@ namespace SqlSync.SqlBuild.Services
 
         private void QueryBatchChunk(
             IList<Guid> chunk, ConnectionData targetData,
-            Dictionary<Guid, SqlSync.SqlBuild.Models.SqlLogStatus> result)
+            Dictionary<Guid, SqlBuildManager.SqlBuild.Models.SqlLogStatus> result)
         {
-            using var conn = SqlSync.Connection.ConnectionHelper.GetDbConnection(targetData);
+            using var conn = SqlBuildManager.Connection.ConnectionHelper.GetDbConnection(targetData);
             using DbCommand cmd = conn.CreateCommand();
             cmd.CommandText = resourceProvider.GetBatchHasBlockingSqlLogQuery(chunk.Count);
             for (int i = 0; i < chunk.Count; i++)
@@ -192,7 +192,7 @@ namespace SqlSync.SqlBuild.Services
 
             foreach (var kvp in firstRows)
             {
-                result[kvp.Key] = new SqlSync.SqlBuild.Models.SqlLogStatus(
+                result[kvp.Key] = new SqlBuildManager.SqlBuild.Models.SqlLogStatus(
                     HasBlock: hasBlockSet.Contains(kvp.Key),
                     ScriptHash: kvp.Value.scriptHash,
                     ScriptTextHash: kvp.Value.scriptTextHash,
@@ -234,11 +234,11 @@ namespace SqlSync.SqlBuild.Services
         /// <param name="scriptId">Guid for the script in question</param>
         /// <param name="connData">The ConnectionData object for the target database</param>
         /// <returns>ScriptRunLog table containing the history</returns>
-        public IReadOnlyList<SqlSync.SqlBuild.Models.ScriptRunLogEntry> GetScriptRunLog(System.Guid scriptId, ConnectionData connData)
+        public IReadOnlyList<SqlBuildManager.SqlBuild.Models.ScriptRunLogEntry> GetScriptRunLog(System.Guid scriptId, ConnectionData connData)
         {
             try
             {
-                using var conn = SqlSync.Connection.ConnectionHelper.GetDbConnection(connData);
+                using var conn = SqlBuildManager.Connection.ConnectionHelper.GetDbConnection(connData);
                 conn.Open();
                 using var cmd = conn.CreateCommand();
                 cmd.CommandText = resourceProvider.GetScriptRunLogQuery();
@@ -246,7 +246,7 @@ namespace SqlSync.SqlBuild.Services
                 param.ParameterName = "@ScriptId";
                 param.Value = scriptId;
                 cmd.Parameters.Add(param);
-                var list = new List<SqlSync.SqlBuild.Models.ScriptRunLogEntry>();
+                var list = new List<SqlBuildManager.SqlBuild.Models.ScriptRunLogEntry>();
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -267,11 +267,11 @@ namespace SqlSync.SqlBuild.Services
         /// <param name="scriptId">Guid for the script in question</param>
         /// <param name="connData">The ConnectionData object for the target database</param>
         /// <returns>ScriptRunLog table containing the history</returns>
-        public IReadOnlyList<SqlSync.SqlBuild.Models.ScriptRunLogEntry> GetObjectRunHistoryLog(string objectFileName, ConnectionData connData)
+        public IReadOnlyList<SqlBuildManager.SqlBuild.Models.ScriptRunLogEntry> GetObjectRunHistoryLog(string objectFileName, ConnectionData connData)
         {
             try
             {
-                using var conn = SqlSync.Connection.ConnectionHelper.GetDbConnection(connData);
+                using var conn = SqlBuildManager.Connection.ConnectionHelper.GetDbConnection(connData);
                 conn.Open();
                 using var cmd = conn.CreateCommand();
                 cmd.CommandText = resourceProvider.GetObjectRunHistoryQuery();
@@ -279,7 +279,7 @@ namespace SqlSync.SqlBuild.Services
                 param.ParameterName = "@ScriptFileName";
                 param.Value = objectFileName;
                 cmd.Parameters.Add(param);
-                var list = new List<SqlSync.SqlBuild.Models.ScriptRunLogEntry>();
+                var list = new List<SqlBuildManager.SqlBuild.Models.ScriptRunLogEntry>();
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -293,7 +293,7 @@ namespace SqlSync.SqlBuild.Services
                 throw new ApplicationException("Error retrieving Script Run Log", e);
             }
         }
-        public SqlSync.SqlBuild.Models.ScriptRunLogEntry ReadScriptRunLogEntry(IDataRecord reader)
+        public SqlBuildManager.SqlBuild.Models.ScriptRunLogEntry ReadScriptRunLogEntry(IDataRecord reader)
         {
             Guid? TryGuid(string name)
             {
@@ -320,7 +320,7 @@ namespace SqlSync.SqlBuild.Services
                 try { var val = reader[name]; if (val == DBNull.Value) return null; return val.ToString(); } catch { return null; }
             }
 
-            return new SqlSync.SqlBuild.Models.ScriptRunLogEntry(
+            return new SqlBuildManager.SqlBuild.Models.ScriptRunLogEntry(
                 BuildFileName: TryString("BuildFileName"),
                 ScriptFileName: TryString("ScriptFileName"),
                 ScriptId: TryGuid("ScriptId"),

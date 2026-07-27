@@ -2,10 +2,10 @@ using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
-using SqlSync.SqlBuild.SqlLogging;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.SqlLogging;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,9 +13,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BuildModels = SqlSync.SqlBuild.Models;
-using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
-namespace SqlSync.SqlBuild.Dependent.UnitTest
+using BuildModels = SqlBuildManager.SqlBuild.Models;
+using LoggingCommittedScript = SqlBuildManager.SqlBuild.SqlLogging.CommittedScript;
+namespace SqlBuildManager.SqlBuild.Dependent.UnitTest
 {
 
 
@@ -979,7 +979,7 @@ namespace SqlSync.SqlBuild.Dependent.UnitTest
         {
             ConnectionData data = null!;
             SqlBuildHelper target = new SqlBuildHelper(data);
-            string resourceName = "SqlSync.SqlBuild.SqlLogging.LogScript.sql";
+            string resourceName = "SqlBuildManager.SqlBuild.SqlLogging.LogScript.sql";
             string expected = @"INSERT INTO SqlBuild_Logging([BuildFileName],[ScriptFileName],[ScriptId],[ScriptFileHash],[CommitDate],[Sequence],[UserId],[AllowScriptBlock],[ScriptText],[Tag],[TargetDatabase],[RunWithVersion],[BuildProjectHash],[BuildRequestedBy],[ScriptRunStart],[ScriptRunEnd],[Description])
 VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Sequence, @UserId, 1,@ScriptText,@Tag,@TargetDatabase,@RunWithVersion,@BuildProjectHash,@BuildRequestedBy, @ScriptRunStart, @ScriptRunEnd, @Description)";
             string actual;
@@ -991,7 +991,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
         {
             ConnectionData data = null!;
             SqlBuildHelper target = new SqlBuildHelper(data);
-            string resourceName = "SqlSync.SqlBuild.SqlLogging.NOT_HERE";
+            string resourceName = "SqlBuildManager.SqlBuild.SqlLogging.NOT_HERE";
             Assert.ThrowsExactly<System.ApplicationException>(() => target.GetFromResources(resourceName));
         }
         #endregion
@@ -1717,7 +1717,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
             init.AddPreRunScript(ref buildData, false);
             Guid scriptId = new Guid(init.PreRunScriptGuid);
             BuildConnectData connData = new BuildConnectData();
-            connData.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(init.connData);
+            connData.Connection = SqlBuildManager.Connection.ConnectionHelper.GetConnection(init.connData);
             connData.DatabaseName = init.connData.DatabaseName;
             connData.HasLoggingTable = true;
             connData.ServerName = init.serverName;

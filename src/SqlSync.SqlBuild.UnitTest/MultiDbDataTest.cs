@@ -2,11 +2,11 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 #nullable enable
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Models;
 using System.Collections.Generic;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
 
 

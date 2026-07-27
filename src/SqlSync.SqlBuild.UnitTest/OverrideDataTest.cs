@@ -1,10 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Models;
 using System.Collections.Generic;
 
 #nullable enable
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
 
 

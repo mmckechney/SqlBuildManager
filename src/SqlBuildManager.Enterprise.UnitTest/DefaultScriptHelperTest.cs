@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Enterprise.DefaultScripts;
-using SqlSync.SqlBuild.DefaultScripts;
+using SqlBuildManager.SqlBuild.DefaultScripts;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -311,7 +311,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             actual = DefaultScriptHelper.GetEnterpriseRegistrySetting(filePath);
             File.Delete(filePath);
             Assert.IsNotNull(actual);
-            Assert.IsInstanceOfType(actual, typeof(SqlSync.SqlBuild.DefaultScripts.DefaultScriptRegistry));
+            Assert.IsInstanceOfType(actual, typeof(SqlBuildManager.SqlBuild.DefaultScripts.DefaultScriptRegistry));
             Assert.IsNotNull(actual.Items);
             Assert.IsTrue(actual.Items.Length == 1);
         }
@@ -351,7 +351,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void SetEnterpriseDefaultScriptsTest_Successful()
         {
-            SqlSync.SqlBuild.SqlBuildFileHelper.DefaultScriptXmlFile = fileThree;
+            SqlBuildManager.SqlBuild.SqlBuildFileHelper.DefaultScriptXmlFile = fileThree;
 
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
             srFile1.ApplyToGroup = "MyGroup";
@@ -382,7 +382,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void SetEnterpriseDefaultScriptsTest_NoMatchingScriptRegistryFile()
         {
-            SqlSync.SqlBuild.SqlBuildFileHelper.DefaultScriptXmlFile = fileThree;
+            SqlBuildManager.SqlBuild.SqlBuildFileHelper.DefaultScriptXmlFile = fileThree;
 
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
             srFile1.ApplyToGroup = "ReallyNotMyGroup";
@@ -413,7 +413,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
         [TestMethod()]
         public void SetEnterpriseDefaultScriptsTest_NoItemsScriptRegistryFile()
         {
-            SqlSync.SqlBuild.SqlBuildFileHelper.DefaultScriptXmlFile = fileThree;
+            SqlBuildManager.SqlBuild.SqlBuildFileHelper.DefaultScriptXmlFile = fileThree;
 
             DefaultScriptRegistryFile srFile1 = new DefaultScriptRegistryFile();
             srFile1.ApplyToGroup = "MyGroup";

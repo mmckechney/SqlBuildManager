@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.SqlLogging;
-using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.SqlLogging;
+using LoggingCommittedScript = SqlBuildManager.SqlBuild.SqlLogging.CommittedScript;
+using SqlBuildManager.SqlBuild.Models;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class RecordCommittedScriptsModelTest
@@ -16,7 +16,7 @@ namespace SqlSync.SqlBuild.UnitTest
         {
             // Arrange
             var model = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
-            var conn = new SqlSync.Connection.ConnectionData();
+            var conn = new SqlBuildManager.Connection.ConnectionData();
             var helper = new SqlBuildHelper(conn);
             var scriptId = Guid.NewGuid();
             var hash = "HASH";

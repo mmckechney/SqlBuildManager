@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.Connection;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -228,7 +228,7 @@ namespace SqlBuildManager.Console.Threaded
                     //Get a full copy of the build data to work with (avoid threading sync issues)
                     SqlSyncBuildDataModel cloned = _context.BuildDataModel;
                     //Clear out any existing CommittedScript data.. just log what is relevant to this run.
-                    cloned.CommittedScript = new List<SqlSync.SqlBuild.Models.CommittedScript>();
+                    cloned.CommittedScript = new List<SqlBuildManager.SqlBuild.Models.CommittedScript>();
 
                     runDataModel.BuildDataModel = cloned;
                     runDataModel.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(_context.ProjectFileName));
@@ -251,7 +251,7 @@ namespace SqlBuildManager.Console.Threaded
                 connData.TrustServerCertificate = cmdArgs.AuthenticationArgs.TrustServerCertificate;
 
                 // For PostgreSQL/MySQL Entra auth, use identity name as UserId (database principal name)
-                if ((connData.DatabasePlatform == SqlSync.Connection.DatabasePlatform.PostgreSQL || connData.DatabasePlatform == SqlSync.Connection.DatabasePlatform.MySQL)
+                if ((connData.DatabasePlatform == SqlBuildManager.Connection.DatabasePlatform.PostgreSQL || connData.DatabasePlatform == SqlBuildManager.Connection.DatabasePlatform.MySQL)
                     && string.IsNullOrEmpty(connData.UserId)
                     && !string.IsNullOrEmpty(cmdArgs.IdentityArgs.IdentityName))
                 {

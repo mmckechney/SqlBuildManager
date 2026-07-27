@@ -40,4 +40,4 @@ using System.Reflection;
 [assembly: AssemblyDelaySign(false)]
 [assembly: AssemblyKeyFile("")]
 [assembly: AssemblyKeyName("")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.ObjectScript.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.ObjectScript.UnitTest")]

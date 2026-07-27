@@ -1,7 +1,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// PostgreSQL implementation of ISqlResourceProvider. Returns PostgreSQL-specific
@@ -13,7 +13,7 @@ namespace SqlSync.SqlBuild.Services
 
         private static string ReadEmbeddedResource(string resourceName)
         {
-            var fullName = $"SqlSync.SqlBuild.SqlLogging.{resourceName}";
+            var fullName = $"SqlBuildManager.SqlBuild.SqlLogging.{resourceName}";
             using var stream = _assembly.GetManifestResourceStream(fullName);
             if (stream == null)
                 throw new FileNotFoundException($"Embedded resource not found: {fullName}");

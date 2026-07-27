@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 
-namespace SqlSync.Connection.Dependent.UnitTest
+namespace SqlBuildManager.Connection.Dependent.UnitTest
 {
     [TestClass]
     public class RegistreredServerHelperTest

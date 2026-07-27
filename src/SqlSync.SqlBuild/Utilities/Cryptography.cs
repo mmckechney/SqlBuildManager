@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-namespace SqlSync.SqlBuild.Utilities
+namespace SqlBuildManager.SqlBuild.Utilities
 {
 
     /// <summary>

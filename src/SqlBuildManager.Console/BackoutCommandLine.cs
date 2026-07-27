@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System.Threading.Tasks;
 namespace SqlBuildManager.Console
 {
@@ -37,7 +37,7 @@ namespace SqlBuildManager.Console
                 connectionData.AuthenticationType = AuthenticationType.Windows;
             }
 
-            return await SqlSync.ObjectScript.BackoutPackage.CreateDefaultBackoutPackageAsync(connectionData, sourcePackageName, cmdLine.Server, cmdLine.Database).ConfigureAwait(false);
+            return await SqlBuildManager.ObjectScript.BackoutPackage.CreateDefaultBackoutPackageAsync(connectionData, sourcePackageName, cmdLine.Server, cmdLine.Database).ConfigureAwait(false);
         }
     }
 }

@@ -70,7 +70,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateUserNameAndPassword_UsesAuthenticationExitCode()
         {
             var commandLine = new CommandLineArgs();
-            commandLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.Password;
+            commandLine.AuthenticationArgs.AuthenticationType = SqlBuildManager.Connection.AuthenticationType.Password;
 
             int result = Validation.ValidateUserNameAndPassword(commandLine, out string[] errors);
 

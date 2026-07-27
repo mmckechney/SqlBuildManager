@@ -1,5 +1,5 @@
 using System;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 
 namespace SqlBuildManager.Test.Common
 {

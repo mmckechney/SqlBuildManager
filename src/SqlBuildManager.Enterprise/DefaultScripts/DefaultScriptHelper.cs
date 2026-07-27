@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Dac.Model;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using sqlB = SqlSync.SqlBuild.DefaultScripts;
+using sqlB = SqlBuildManager.SqlBuild.DefaultScripts;
 namespace SqlBuildManager.Enterprise.DefaultScripts
 {
     public class DefaultScriptHelper

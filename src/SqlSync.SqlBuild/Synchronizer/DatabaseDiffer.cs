@@ -1,11 +1,11 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System;
 using System.Data;
 using System.Linq;
 
-namespace SqlSync.SqlBuild.Synchronizer
+namespace SqlBuildManager.SqlBuild.Synchronizer
 {
     public class DatabaseDiffer
     {
@@ -63,7 +63,7 @@ namespace SqlSync.SqlBuild.Synchronizer
 
         public DatabaseRunHistory GetDatabaseRunHistory(ConnectionData dbConnData)
         {
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(dbConnData);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(dbConnData);
 
             //Get the latest run of all the unique build hashes along with the build file name...
             string sql = @"SELECT DISTINCT 
@@ -117,7 +117,7 @@ namespace SqlSync.SqlBuild.Synchronizer
         /// <returns></returns>
         internal DatabaseRunHistory GetDatabaseRunHistoryOldSqlServer(ConnectionData dbConnData)
         {
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(dbConnData);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(dbConnData);
 
             //Get the latest run of all the unique build hashes along with the build file name...
             string sql = @"SELECT BuildProjectHash, max(CommitDate) as CommitDate

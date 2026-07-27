@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Relay;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;

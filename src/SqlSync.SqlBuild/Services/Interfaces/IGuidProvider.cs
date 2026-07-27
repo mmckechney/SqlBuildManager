@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     public interface IGuidProvider
     {

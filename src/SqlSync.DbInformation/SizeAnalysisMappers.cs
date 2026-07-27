@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SqlSync.DbInformation.Models;
+using SqlBuildManager.DbInformation.Models;
 
 #nullable enable
 
-namespace SqlSync.DbInformation
+namespace SqlBuildManager.DbInformation
 {
     public static class SizeAnalysisMappers
     {

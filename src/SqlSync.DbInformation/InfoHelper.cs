@@ -1,8 +1,8 @@
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using SqlSync.Connection;
-using SqlSync.DbInformation.ChangeDates;
+using SqlBuildManager.Connection;
+using SqlBuildManager.DbInformation.ChangeDates;
 using System;
 using System.Collections;
 using System.Globalization;
@@ -11,7 +11,7 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Data;
 using System.Text.RegularExpressions;
-namespace SqlSync.DbInformation
+namespace SqlBuildManager.DbInformation
 {
     /// <summary>
     /// Summary description for InfoHelper.
@@ -43,7 +43,7 @@ namespace SqlSync.DbInformation
         {
             string schemaOwner;
             InfoHelper.ExtractNameAndSchema(tableName, out tableName, out schemaOwner);
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
             SqlCommand cmd = new SqlCommand("select column_name from INFORMATION_SCHEMA.COLUMNS where table_name= @TableName  AND table_schema = @Schema ORDER BY ordinal_position", conn);
             cmd.Parameters.AddWithValue("@TableName", tableName);
             cmd.Parameters.AddWithValue("@Schema", schemaOwner);
@@ -69,7 +69,7 @@ namespace SqlSync.DbInformation
             string schemaOwner;
             ExtractNameAndSchema(tableName, out tableName, out schemaOwner);
 
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
             SqlCommand cmd = new SqlCommand(@"select column_name,data_type,ISNULL(character_maximum_length,0) character_maximum_length from 
                             INFORMATION_SCHEMA.COLUMNS where table_name= @TableName  and table_schema = @Schema ORDER BY ordinal_position", conn);
             cmd.Parameters.AddWithValue("@TableName", tableName);
@@ -102,7 +102,7 @@ namespace SqlSync.DbInformation
         {
             string schemaOwner;
             ExtractNameAndSchema(tableName, out tableName, out schemaOwner);
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
             string command = @"select column_Name from information_schema.TABLE_CONSTRAINTS TC 
                                     INNER JOIN information_schema.CONSTRAINT_COLUMN_USAGE cc ON cc.constraint_name = tc.constraint_Name
 						            WHERE tc.CONSTRAINT_TYPE = 'PRIMARY KEY' and tc.TABLE_NAME = @TableName and tc.TABLE_SCHEMA = @Schema";
@@ -142,7 +142,7 @@ namespace SqlSync.DbInformation
         {
             try
             {
-                SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+                SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
                 SqlCommand cmd;
                 if (filter == string.Empty)
                     cmd = new SqlCommand("select Table_schema + '.'+ Table_Name from INFORMATION_SCHEMA.TABLES where table_catalog = @DatabaseName and  Table_Type = 'BASE TABLE' ORDER BY Table_schema, Table_Name", conn);
@@ -204,7 +204,7 @@ GROUP BY s.name, t.name
 ORDER BY s.name, t.name";
 
             List<TableSize> results = new List<TableSize>();
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(
                 connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password,
                 connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
             try
@@ -248,7 +248,7 @@ ORDER BY s.name, t.name";
             string createId = GetDelimitedListForSql(codeTableAuditCols.CreateIdColumns);
             string createDate = GetDelimitedListForSql(codeTableAuditCols.CreateDateColumns);
             string sql = "select TABLE_NAME, COLUMN_NAME, TABLE_SCHEMA  from INFORMATION_SCHEMA.COLUMNS where column_name IN ({0})  ORDER BY table_name";
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
             conn.Open();
 
             //Tables with Update ID columns
@@ -350,7 +350,7 @@ ORDER BY s.name, t.name";
         /// <returns>True if found, false if not</returns>
         public static bool DbContainsTable(string tableName, ConnectionData connData)
         {
-            string[] allTables = SqlSync.DbInformation.InfoHelper.GetDatabaseTableList(connData);
+            string[] allTables = SqlBuildManager.DbInformation.InfoHelper.GetDatabaseTableList(connData);
             return DbContainsTable(tableName, allTables);
         }
         public static bool DbContainsTable(string tableName, string[] allTables)
@@ -377,7 +377,7 @@ ORDER BY s.name, t.name";
 
         public static List<ObjectData> GetTableObjectList(ConnectionData connData)
         {
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
             SqlCommand cmd = new SqlCommand(@"select distinct table_name as ObjectName, 
 												'Table' as ObjectType,
 												refdate as AlteredDate, 
@@ -411,13 +411,13 @@ ORDER BY s.name, t.name";
             string dbName;
             DatabaseList dbList = new DatabaseList();
             //Add any manually entered databases
-            StringCollection manualDBs = SqlSync.DbInformation.Properties.Settings.Default.ManuallyEnteredDatabases;
+            StringCollection manualDBs = SqlBuildManager.DbInformation.Properties.Settings.Default.ManuallyEnteredDatabases;
             for (int i = 0; i < manualDBs.Count; i++)
             {
                 dbList.Add(manualDBs[i]!, true);
             }
 
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection("master", connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, 5, connData.ManagedIdentityClientId);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection("master", connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, 5, connData.ManagedIdentityClientId);
             SqlCommand cmd = new SqlCommand("select distinct [name] from dbo.sysdatabases ORDER BY [name]", conn);
 
             try
@@ -455,13 +455,13 @@ ORDER BY s.name, t.name";
             return dbList;
         }
 
-        public static SqlSync.DbInformation.Models.SizeAnalysisModel GetDatabaseSizeAnalysis(ConnectionData connData)
+        public static SqlBuildManager.DbInformation.Models.SizeAnalysisModel GetDatabaseSizeAnalysis(ConnectionData connData)
         {
-            var list = new List<SqlSync.DbInformation.Models.SizeAnalysis>();
+            var list = new List<SqlBuildManager.DbInformation.Models.SizeAnalysis>();
             try
             {
-                SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
-                SqlCommand cmd = new SqlCommand(new ResourceHelper().GetFromResources("SqlSync.DbInformation.SizeAnalysis.sql"));
+                SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData);
+                SqlCommand cmd = new SqlCommand(new ResourceHelper().GetFromResources("SqlBuildManager.DbInformation.SizeAnalysis.sql"));
                 cmd.Connection = conn;
                 conn.Open();
                 using var reader = cmd.ExecuteReader();
@@ -473,7 +473,7 @@ ORDER BY s.name, t.name";
                     var indexSize = Convert.ToInt32(reader["Index Size"], CultureInfo.InvariantCulture);
                     var unusedSize = Convert.ToInt32(reader["Unused Size"], CultureInfo.InvariantCulture);
                     var totalReserved = Convert.ToInt32(reader["Total Reserved Size"], CultureInfo.InvariantCulture);
-                    list.Add(new SqlSync.DbInformation.Models.SizeAnalysis(
+                    list.Add(new SqlBuildManager.DbInformation.Models.SizeAnalysis(
                         TableName: tableName,
                         RowCount: rowCount,
                         DataSize: dataSize,
@@ -490,18 +490,18 @@ ORDER BY s.name, t.name";
                 if (ex.ToString().IndexOf("does not exist in database") == -1)
                     throw;
             }
-            return new SqlSync.DbInformation.Models.SizeAnalysisModel(list, Array.Empty<SqlSync.DbInformation.Models.ServerSizeInfo>());
+            return new SqlBuildManager.DbInformation.Models.SizeAnalysisModel(list, Array.Empty<SqlBuildManager.DbInformation.Models.ServerSizeInfo>());
         }
 
-        public static SqlSync.DbInformation.Models.SizeAnalysisModel GetServerDatabaseInfo(ConnectionData connData)
+        public static SqlBuildManager.DbInformation.Models.SizeAnalysisModel GetServerDatabaseInfo(ConnectionData connData)
         {
             Regex nums = new Regex(@"\d{1,9}");
-            var data = new List<SqlSync.DbInformation.Models.ServerSizeInfo>();
+            var data = new List<SqlBuildManager.DbInformation.Models.ServerSizeInfo>();
             string location;
             Int64 dbSize;
             connData.DatabaseName = "master";
             DatabaseList dbList = GetDatabaseList(connData);
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData);
             string locationQuery = "select filename from {0}.dbo.sysfiles where filename like '%.mdf'";
             string sizeQuery = "{0}.dbo.sp_spaceused";
 
@@ -532,13 +532,13 @@ ORDER BY s.name, t.name";
                             reader.Read();
                             dbSize = Int64.Parse(nums.Match(reader[1].ToString()!).ToString());
                         }
-                        data.Add(new SqlSync.DbInformation.Models.ServerSizeInfo(dbName, location ?? string.Empty, dbSize, DateTime.MinValue));
+                        data.Add(new SqlBuildManager.DbInformation.Models.ServerSizeInfo(dbName, location ?? string.Empty, dbSize, DateTime.MinValue));
                     }
 
                 }
                 catch
                 {
-                    data.Add(new SqlSync.DbInformation.Models.ServerSizeInfo(dbName, string.Empty, 0, DateTime.MinValue));
+                    data.Add(new SqlBuildManager.DbInformation.Models.ServerSizeInfo(dbName, string.Empty, 0, DateTime.MinValue));
                 }
                 finally
                 {
@@ -548,18 +548,18 @@ ORDER BY s.name, t.name";
             }
 
             AddDatabaseCreateDate(data, connData);
-            return new SqlSync.DbInformation.Models.SizeAnalysisModel(Array.Empty<SqlSync.DbInformation.Models.SizeAnalysis>(), data);
+            return new SqlBuildManager.DbInformation.Models.SizeAnalysisModel(Array.Empty<SqlBuildManager.DbInformation.Models.SizeAnalysis>(), data);
 
 
         }
-        private static void AddDatabaseCreateDate(List<SqlSync.DbInformation.Models.ServerSizeInfo> sizeSummary, ConnectionData connData)
+        private static void AddDatabaseCreateDate(List<SqlBuildManager.DbInformation.Models.ServerSizeInfo> sizeSummary, ConnectionData connData)
         {
             string sql2000Cmd = "SELECT name, crdate FROM sysdatabases";
             string sql2005Cmd = "SELECT name, create_date FROM sys.databases";
 
             connData.DatabaseName = "master";
             SqlCommand cmd = new SqlCommand();
-            cmd.Connection = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
+            cmd.Connection = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData);
             cmd.CommandType = CommandType.Text;
             try
             {
@@ -623,7 +623,7 @@ ORDER BY s.name, t.name";
         #region .: Stored Procedure Data :.
         public static List<ObjectData> GetStoredProcedureList(ConnectionData connData)
         {
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
             SqlCommand cmd = new SqlCommand(@"SELECT Routine_Name as ObjectName,
 												'Stored Procedure' as ObjectType, 
 												Last_Altered as AlteredDate, 
@@ -639,7 +639,7 @@ ORDER BY s.name, t.name";
         #region .: Function Data :.
         public static List<ObjectData> GetFunctionList(ConnectionData connData)
         {
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
             SqlCommand cmd = new SqlCommand(@"Select Routine_Name as ObjectName,
 												'Function' as ObjectType, 
 												Last_Altered as AlteredDate, 
@@ -675,7 +675,7 @@ ORDER BY s.name, t.name";
         #region .: View Data :.
         public static List<ObjectData> GetViewList(ConnectionData connData)
         {
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, connData.ScriptTimeout, connData.ManagedIdentityClientId);
             SqlCommand cmd = new SqlCommand(@"select distinct v.table_name as ObjectName, 
 	'View' as ObjectType,
 	s.refdate as AlteredDate, 
@@ -717,7 +717,7 @@ ORDER BY s.name, t.name";
         {
             try
             {
-                SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
+                SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData);
                 SqlCommand cmd = new SqlCommand(@"
                     SELECT  o.name AS [trigger],  
                             t.name AS [table],  
@@ -745,7 +745,7 @@ ORDER BY s.name, t.name";
         public static List<ObjectData> GetTriggerObjectList(ConnectionData connData)
         {
 
-            SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData);
             SqlCommand cmd = new SqlCommand(@"
                     SELECT  t.name + ' - '+ o.name AS ObjectName,  
 	                        'Trigger' as ObjectType,
@@ -793,7 +793,7 @@ ORDER BY s.name, t.name";
                 DatabaseObject routines = ChangeDates.DatabaseObjectChangeDates.Servers[serverName][connData.DatabaseName];
 
                 //Set the connection timeout to be short so that we are not waiting in the UI for a bad connection
-                SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, 2, connData.ManagedIdentityClientId);
+                SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData.DatabaseName, connData.SQLServerName, connData.UserId, connData.Password, connData.AuthenticationType, 2, connData.ManagedIdentityClientId);
 
                 SqlCommand cmd = new SqlCommand(@"select routine_Name,  last_altered, routine_schema from information_schema.routines ORDER BY routine_Name ", conn);
                 //Get the information for Stored Procedures and Functions
@@ -989,7 +989,7 @@ ORDER BY s.name, t.name";
             SqlConnection conn = null!;
             try
             {
-                conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
+                conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData);
 
                 SqlCommand com = new SqlCommand();
                 com.Connection = conn;

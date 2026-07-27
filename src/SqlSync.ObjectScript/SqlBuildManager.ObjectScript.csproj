@@ -19,10 +19,10 @@
     <PackageReference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
-    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj" />
-    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
-    <ProjectReference Include="..\\SqlSync.SqlBuild\SqlSync.SqlBuild.csproj" />
+    <ProjectReference Include="..\SqlSync.Connection\SqlBuildManager.Connection.csproj" />
+    <ProjectReference Include="..\SqlSync.Constants\SqlBuildManager.Constants.csproj" />
+    <ProjectReference Include="..\SqlSync.DbInformation\SqlBuildManager.DbInformation.csproj" />
+    <ProjectReference Include="..\SqlSync.SqlBuild\SqlBuildManager.SqlBuild.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="AutoScriptingConfig.Designer.cs">

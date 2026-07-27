@@ -1,10 +1,10 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.DefaultScripts;
+using SqlBuildManager.SqlBuild.DefaultScripts;
 using System;
 using System.IO;
 using System.Xml.Serialization;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class DefaultScriptTests

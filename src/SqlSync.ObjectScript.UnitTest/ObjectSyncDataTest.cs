@@ -2,7 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 
-namespace SqlSync.ObjectScript.UnitTest
+namespace SqlBuildManager.ObjectScript.UnitTest
 {
     /// <summary>
     /// Unit tests for ObjectSyncData class

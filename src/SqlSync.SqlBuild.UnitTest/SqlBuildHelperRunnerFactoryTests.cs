@@ -1,18 +1,18 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.Connection;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using BuildModels = SqlSync.SqlBuild.Models;
-using SqlLogging = SqlSync.SqlBuild.SqlLogging;
+using BuildModels = SqlBuildManager.SqlBuild.Models;
+using SqlLogging = SqlBuildManager.SqlBuild.SqlLogging;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class SqlBuildHelperRunnerFactoryTests

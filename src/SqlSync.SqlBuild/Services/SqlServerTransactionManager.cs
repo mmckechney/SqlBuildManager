@@ -1,9 +1,9 @@
 using Microsoft.Data.SqlClient;
-using SqlSync.SqlBuild.SqlLogging;
+using SqlBuildManager.SqlBuild.SqlLogging;
 using System;
 using System.Data.Common;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// SQL Server implementation of ITransactionManager. Uses ADO.NET SqlTransaction

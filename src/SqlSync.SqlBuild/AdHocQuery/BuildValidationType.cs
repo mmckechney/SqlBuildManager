@@ -1,4 +1,4 @@
-﻿namespace SqlSync.SqlBuild.AdHocQuery
+﻿namespace SqlBuildManager.SqlBuild.AdHocQuery
 {
     public enum BuildValidationType
     {

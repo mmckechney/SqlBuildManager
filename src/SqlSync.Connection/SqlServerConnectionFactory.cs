@@ -2,7 +2,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using System.Data.Common;
 
-namespace SqlSync.Connection
+namespace SqlBuildManager.Connection
 {
     /// <summary>
     /// SQL Server implementation of IDbConnectionFactory wrapping existing ConnectionHelper logic.

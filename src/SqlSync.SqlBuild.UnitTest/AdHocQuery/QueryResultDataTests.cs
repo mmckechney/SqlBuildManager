@@ -1,10 +1,10 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.AdHocQuery;
-using SqlSync.Connection;
+using SqlBuildManager.SqlBuild.AdHocQuery;
+using SqlBuildManager.Connection;
 using System;
 using System.Collections.Generic;
 
-namespace SqlSync.SqlBuild.UnitTest.AdHocQuery
+namespace SqlBuildManager.SqlBuild.UnitTest.AdHocQuery
 {
     [TestClass]
     public class QueryResultDataTests

@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlSync.ObjectScript {
+namespace SqlBuildManager.ObjectScript {
 
     [Serializable()]
     [System.ComponentModel.ToolboxItem(true)]

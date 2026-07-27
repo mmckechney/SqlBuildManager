@@ -1,8 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 
 #nullable enable
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
 
 

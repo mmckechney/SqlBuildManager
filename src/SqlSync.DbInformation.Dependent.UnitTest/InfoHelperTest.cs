@@ -1,9 +1,9 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System.Data;
 using System.Linq;
 
-namespace SqlSync.DbInformation.Dependent.UnitTest
+namespace SqlBuildManager.DbInformation.Dependent.UnitTest
 {
     /// <summary>
     /// Integration tests for InfoHelper that require database access

@@ -1,4 +1,4 @@
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// Provides platform-specific SQL syntax information for batch delimiters,

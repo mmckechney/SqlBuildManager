@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.MultiDb;
 using SqlBuildManager.Interfaces.Console;
-using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
-using BuildModels = SqlSync.SqlBuild.Models;
+using LoggingCommittedScript = SqlBuildManager.SqlBuild.SqlLogging.CommittedScript;
+using BuildModels = SqlBuildManager.SqlBuild.Models;
 
-namespace SqlSync.SqlBuild.UnitTest.Services
+namespace SqlBuildManager.SqlBuild.UnitTest.Services
 {
     /// <summary>
     /// Tests covering remaining branch gaps in the ProcessBuildAsync call path.

@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Text;
 using System.Text.RegularExpressions;
-namespace SqlSync.ObjectScript
+namespace SqlBuildManager.ObjectScript
 {
     /// <summary>
     /// Code adapted from http://www.codeproject.com/useritems/validatingsql.asp
@@ -27,7 +27,7 @@ namespace SqlSync.ObjectScript
                 OBJECTPROPERTY(object_id, 'ExecIsAnsiNullsOn') as ansi_nulls_on, user_name(o.schema_id) owner, s.name as [schema], type 
                 from sys.objects o 
                 INNER JOIN sys.schemas s ON s.schema_id = o.schema_id where type in ('P', 'V', 'FN') order by type";
-            using SqlConnection conn = SqlSync.Connection.ConnectionHelper.GetConnection(connData);
+            using SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(connData);
             SqlCommand cmd = new SqlCommand(getObjSql, conn);
             SqlDataAdapter adapt = new SqlDataAdapter(cmd);
             DataTable table = new DataTable();
@@ -50,7 +50,7 @@ namespace SqlSync.ObjectScript
                     eW.Cancel = true;
                     return;
                 }
-                conn.ConnectionString = SqlSync.Connection.ConnectionHelper.GetConnectionString(connData);
+                conn.ConnectionString = SqlBuildManager.Connection.ConnectionHelper.GetConnectionString(connData);
                 string objectName = procRow["Name"].ToString()!.Sanitize();
                 string quoted_ident = Convert.ToBoolean(procRow["quoted_ident_on"]) ? "ON" : "OFF".Sanitize();
                 string ansi_nulls_on = Convert.ToBoolean(procRow["ansi_nulls_on"]) ? "ON" : "OFF".Sanitize();
@@ -141,7 +141,7 @@ namespace SqlSync.ObjectScript
 
                 #region << Check that the table references are valid >>
                 string dependsSQL = String.Format("sp_depends [{1}.{0}]", objectName, schema);
-                conn.ConnectionString = SqlSync.Connection.ConnectionHelper.GetConnectionString(connData);
+                conn.ConnectionString = SqlBuildManager.Connection.ConnectionHelper.GetConnectionString(connData);
                 cmd = new SqlCommand(dependsSQL, conn);
                 DataSet ds = new DataSet();
                 adapt.SelectCommand = cmd;

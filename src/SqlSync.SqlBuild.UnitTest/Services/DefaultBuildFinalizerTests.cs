@@ -1,16 +1,16 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
-using SqlSync.SqlBuild.SqlLogging;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.SqlLogging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
-using CommittedScript = SqlSync.SqlBuild.Models.CommittedScript;
+using LoggingCommittedScript = SqlBuildManager.SqlBuild.SqlLogging.CommittedScript;
+using CommittedScript = SqlBuildManager.SqlBuild.Models.CommittedScript;
 
-namespace SqlSync.SqlBuild.UnitTest.Services
+namespace SqlBuildManager.SqlBuild.UnitTest.Services
 {
     [TestClass]
     public class DefaultBuildFinalizerTests

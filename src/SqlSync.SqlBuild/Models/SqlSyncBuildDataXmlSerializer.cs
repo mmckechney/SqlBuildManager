@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild.Models
+namespace SqlBuildManager.SqlBuild.Models
 {
     /// <summary>
     /// POCO-based XML serializer/deserializer for SqlSyncBuildDataModel compatible with legacy SqlSyncBuildData DataSet XML.

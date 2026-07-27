@@ -4,8 +4,8 @@ using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Relay;
 using SqlBuildManager.Enterprise.Policy;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,9 +13,9 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using SqlSync.SqlBuild;
-using sqlB = SqlSync.SqlBuild;
-using sqlM = SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild;
+using sqlB = SqlBuildManager.SqlBuild;
+using sqlM = SqlBuildManager.SqlBuild.Models;
 using Cryptography = SqlBuildManager.Console.CommandLine.Cryptography;
 
 namespace SqlBuildManager.Console
@@ -88,7 +88,7 @@ namespace SqlBuildManager.Console
             string name;
             cmdLine.RootLoggingPath = Path.GetDirectoryName(cmdLine.OutputSbm)!;
 
-            (var status, name)= await Worker.GetSbmFromDacPacAsync(cmdLine, new SqlSync.SqlBuild.MultiDb.MultiDbData(), true);
+            (var status, name)= await Worker.GetSbmFromDacPacAsync(cmdLine, new SqlBuildManager.SqlBuild.MultiDb.MultiDbData(), true);
             if (status == sqlB.DacpacDeltasStatus.Success)
             {
                 File.Move(name, cmdLine.OutputSbm);
@@ -653,7 +653,7 @@ namespace SqlBuildManager.Console
                 Directory.CreateDirectory(dir);
             }
             bool success;
-            (success, dir, projectFilePath, projectFileName, result) = await SqlSync.SqlBuild.SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(package.FullName, dir, false, true).ConfigureAwait(false);
+            (success, dir, projectFilePath, projectFileName, result) = await SqlBuildManager.SqlBuild.SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(package.FullName, dir, false, true).ConfigureAwait(false);
             if (File.Exists(Path.Combine(dir, projectFileName)))
             {
                 var sbmName = Path.GetFileNameWithoutExtension(package.FullName) + ".sbx";

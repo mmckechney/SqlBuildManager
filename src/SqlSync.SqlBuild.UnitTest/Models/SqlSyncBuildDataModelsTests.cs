@@ -1,9 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 
-namespace SqlSync.SqlBuild.UnitTest.Models
+namespace SqlBuildManager.SqlBuild.UnitTest.Models
 {
     [TestClass]
     public class SqlSyncBuildDataModelsTests
@@ -430,7 +430,7 @@ namespace SqlSync.SqlBuild.UnitTest.Models
             // Arrange
             var buildDataModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
             var runItemIndexes = new List<double> { 1.0, 2.0 };
-            var overrides = new List<SqlSync.Connection.DatabaseOverride>();
+            var overrides = new List<SqlBuildManager.Connection.DatabaseOverride>();
 
             // Act
             var model = new SqlBuildRunDataModel(

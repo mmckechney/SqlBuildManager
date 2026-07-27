@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlSync.SqlBuild.SqlLogging
+namespace SqlBuildManager.SqlBuild.SqlLogging
 {
     public class CommittedScript
     {

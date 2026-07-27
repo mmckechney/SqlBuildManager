@@ -4,7 +4,7 @@ using Moq.Protected;
 using System;
 using System.Data.Common;
 
-namespace SqlSync.SqlBuild.UnitTest.Services
+namespace SqlBuildManager.SqlBuild.UnitTest.Services
 {
     [TestClass]
     public class PostgresTransactionManagerTests

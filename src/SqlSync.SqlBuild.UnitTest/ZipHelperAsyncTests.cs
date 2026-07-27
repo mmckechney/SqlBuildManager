@@ -3,11 +3,11 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Utilities;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.Utilities;
 using IOZipFile = System.IO.Compression.ZipFile;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class ZipHelperAsyncTests

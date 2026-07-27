@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.IO;
-using SqlSync.ObjectScript.Models;
+using SqlBuildManager.ObjectScript.Models;
 
-namespace SqlSync.ObjectScript
+namespace SqlBuildManager.ObjectScript
 {
     public static class AutoScriptingConfigPersistence
     {

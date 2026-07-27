@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlSync.SqlBuild
+namespace SqlBuildManager.SqlBuild
 {
     public delegate void ScriptRunProjectFileSavedEventHandler(object sender, bool saved);
 

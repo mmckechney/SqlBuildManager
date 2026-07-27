@@ -18,9 +18,9 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("0FAE0D51-8211-4D45-B986-02339851F9B8")]
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.SqlBuild.UnitTest")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.SqlBuild.Dependent.UnitTest")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.SqlBuild.Dependent.TestBase")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlSync.SqlBuild.Dependent.MySQL.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.Dependent.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.Dependent.TestBase")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]

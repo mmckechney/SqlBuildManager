@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 
-namespace SqlSync.Connection.UnitTest
+namespace SqlBuildManager.Connection.UnitTest
 {
 
 

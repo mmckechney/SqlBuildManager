@@ -1,7 +1,7 @@
 using System;
 using System.Data.Common;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// PostgreSQL implementation of ITransactionManager.

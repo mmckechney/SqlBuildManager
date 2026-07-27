@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-namespace SqlSync.DbInformation
+namespace SqlBuildManager.DbInformation
 {
     /// <summary>
     /// Summary description for ResourceHelper.

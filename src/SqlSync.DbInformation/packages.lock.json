@@ -327,6 +327,17 @@
         "resolved": "10.0.10",
         "contentHash": "BKt0SQgq2lq3ESE68jkeLwv95ypANrPDtkTOIFGcnhg2aRUeUUBDrQlkVDZctrg1WenVcvn5P5XZnuYI7q6rFQ=="
       },
+      "sqlbuildmanager.connection": {
+        "type": "Project",
+        "dependencies": {
+          "Azure.Identity": "[1.21.0, )",
+          "Microsoft.Data.SqlClient": "[7.0.2, )",
+          "Microsoft.Extensions.Logging": "[10.0.10, )",
+          "MySqlConnector": "[2.6.1, )",
+          "Npgsql": "[10.0.3, )",
+          "SqlBuildManager.Logging": "[1.0.0, )"
+        }
+      },
       "sqlbuildmanager.logging": {
         "type": "Project",
         "dependencies": {
@@ -346,17 +357,6 @@
           "Serilog.Sinks.AzureEventHub": "[6.0.0, )",
           "Serilog.Sinks.Console": "[6.1.1, )",
           "Serilog.Sinks.File": "[7.0.0, )"
-        }
-      },
-      "sqlsync.connection": {
-        "type": "Project",
-        "dependencies": {
-          "Azure.Identity": "[1.21.0, )",
-          "Microsoft.Data.SqlClient": "[7.0.2, )",
-          "Microsoft.Extensions.Logging": "[10.0.10, )",
-          "MySqlConnector": "[2.6.1, )",
-          "Npgsql": "[10.0.3, )",
-          "SqlBuildManager.Logging": "[1.0.0, )"
         }
       },
       "Azure.Core": {

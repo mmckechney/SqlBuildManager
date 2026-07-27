@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
-using SqlSync.Connection;
-using SqlSync.Constants;
-using SqlSync.DbInformation;
-using SqlSync.ObjectScript.Hash;
-using SqlSync.SqlBuild.Utilities;
+using SqlBuildManager.Connection;
+using SqlBuildManager.Constants;
+using SqlBuildManager.DbInformation;
+using SqlBuildManager.ObjectScript.Hash;
+using SqlBuildManager.SqlBuild.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-namespace SqlSync.ObjectScript
+namespace SqlBuildManager.ObjectScript
 {
     /// <summary>
     /// Summary description for ObjectScriptHelper.
@@ -217,17 +217,17 @@ namespace SqlSync.ObjectScript
 
         #endregion
 
-        public static List<SqlSync.SqlBuild.Objects.UpdatedObject> ScriptDatabaseObjects(List<SqlSync.SqlBuild.Objects.ObjectUpdates> objectsToUpdate, ConnectionData basicConnData)
+        public static List<SqlBuildManager.SqlBuild.Objects.UpdatedObject> ScriptDatabaseObjects(List<SqlBuildManager.SqlBuild.Objects.ObjectUpdates> objectsToUpdate, ConnectionData basicConnData)
         {
             BackgroundWorker bg = new BackgroundWorker();
             bg.WorkerReportsProgress = true;
             return ScriptDatabaseObjects(objectsToUpdate, basicConnData, ref bg);
         }
-        public static List<SqlSync.SqlBuild.Objects.UpdatedObject> ScriptDatabaseObjects(List<SqlSync.SqlBuild.Objects.ObjectUpdates> objectsToUpdate, ConnectionData basicConnData, ref BackgroundWorker bg)
+        public static List<SqlBuildManager.SqlBuild.Objects.UpdatedObject> ScriptDatabaseObjects(List<SqlBuildManager.SqlBuild.Objects.ObjectUpdates> objectsToUpdate, ConnectionData basicConnData, ref BackgroundWorker bg)
         {
             ObjectScriptHelper helper = new ObjectScriptHelper(basicConnData);
-            List<SqlSync.SqlBuild.Objects.UpdatedObject> lstScripts = new List<SqlBuild.Objects.UpdatedObject>();
-            foreach (SqlSync.SqlBuild.Objects.ObjectUpdates objUpdate in objectsToUpdate)
+            List<SqlBuildManager.SqlBuild.Objects.UpdatedObject> lstScripts = new List<SqlBuild.Objects.UpdatedObject>();
+            foreach (SqlBuildManager.SqlBuild.Objects.ObjectUpdates objUpdate in objectsToUpdate)
             {
                 bg.ReportProgress(-1, String.Format("Updating {0} from {1}", objUpdate.SourceObject, objUpdate.SourceServer));
 

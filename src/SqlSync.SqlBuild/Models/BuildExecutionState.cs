@@ -1,11 +1,11 @@
-using SqlSync.Connection;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.SqlLogging;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.SqlLogging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SqlSync.SqlBuild.Models
+namespace SqlBuildManager.SqlBuild.Models
 {
     /// <summary>
     /// Contains all mutable state for a build execution.

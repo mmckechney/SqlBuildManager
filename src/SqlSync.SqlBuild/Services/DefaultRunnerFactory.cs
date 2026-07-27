@@ -1,4 +1,4 @@
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// Default implementation of IRunnerFactory that creates SqlBuildRunner instances.

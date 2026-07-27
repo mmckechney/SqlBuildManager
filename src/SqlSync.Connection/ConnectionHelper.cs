@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-namespace SqlSync.Connection
+namespace SqlBuildManager.Connection
 {
     /// <summary>
     /// Summary description for ConnectionHelper.

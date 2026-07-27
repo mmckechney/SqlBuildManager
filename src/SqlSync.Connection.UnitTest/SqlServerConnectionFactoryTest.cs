@@ -1,7 +1,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace SqlSync.Connection.UnitTest
+namespace SqlBuildManager.Connection.UnitTest
 {
     [TestClass]
     public class SqlServerConnectionFactoryTest

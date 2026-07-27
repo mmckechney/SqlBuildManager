@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.MultiDb;
 
-namespace SqlSync.SqlBuild.UnitTest.MultiDb
+namespace SqlBuildManager.SqlBuild.UnitTest.MultiDb
 {
     [TestClass]
     public class MultiDbQueryConfigTests

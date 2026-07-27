@@ -1,15 +1,15 @@
-﻿using SqlSync.Connection;
-using SqlSync.Constants;
-using SqlSync.DbInformation;
-using SqlSync.DbInformation.ChangeDates;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
+﻿using SqlBuildManager.Connection;
+using SqlBuildManager.Constants;
+using SqlBuildManager.DbInformation;
+using SqlBuildManager.DbInformation.ChangeDates;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace SqlSync.SqlBuild.Status
+namespace SqlBuildManager.SqlBuild.Status
 {
     public class StatusHelper
     {

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using SqlSync.SqlBuild.Status;
+using SqlBuildManager.SqlBuild.Status;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     internal class DefaultProgressReporter : IProgressReporter
     {

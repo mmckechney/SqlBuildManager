@@ -1,8 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.DbInformation;
+using SqlBuildManager.DbInformation;
 using System.Collections.Generic;
 
-namespace SqlSync.SqlBuild.UnitTest.CodeTable
+namespace SqlBuildManager.SqlBuild.UnitTest.CodeTable
 {
     /// <summary>
     /// Unit tests for CodeTableAuditColumnList class

@@ -1,8 +1,8 @@
 using SqlBuildManager.Test.Common;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System;
 using System.Collections.Generic;
-namespace SqlSync.ObjectScript.Dependent.UnitTest
+namespace SqlBuildManager.ObjectScript.Dependent.UnitTest
 {
     class Initialization
     {

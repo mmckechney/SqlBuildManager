@@ -1,9 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Interfaces.ScriptHandling.Tags;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 using System.Collections.Generic;
 
-namespace SqlSync.SqlBuild.UnitTest.Models
+namespace SqlBuildManager.SqlBuild.UnitTest.Models
 {
     [TestClass]
     public class BulkAddDataTests

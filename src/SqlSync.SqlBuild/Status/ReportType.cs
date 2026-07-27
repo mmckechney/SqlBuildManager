@@ -1,4 +1,4 @@
-﻿namespace SqlSync.SqlBuild.Status
+﻿namespace SqlBuildManager.SqlBuild.Status
 {
     public enum ReportType
     {

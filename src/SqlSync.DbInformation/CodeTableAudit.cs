@@ -1,6 +1,6 @@
 using System;
 
-namespace SqlSync.DbInformation {
+namespace SqlBuildManager.DbInformation {
    
     [Serializable()]
     [System.ComponentModel.ToolboxItem(true)]

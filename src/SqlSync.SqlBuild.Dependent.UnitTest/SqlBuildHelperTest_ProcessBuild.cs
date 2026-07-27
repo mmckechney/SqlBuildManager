@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using SqlSync.SqlBuild.Models;
-namespace SqlSync.SqlBuild.Dependent.UnitTest
+using SqlBuildManager.SqlBuild.Models;
+namespace SqlBuildManager.SqlBuild.Dependent.UnitTest
 {
     [TestClass]
     public class SqlBuildHelperTest_ProcessBuild

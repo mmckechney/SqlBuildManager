@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-namespace SqlSync.SqlBuild
+namespace SqlBuildManager.SqlBuild
 {
     public enum DefaultScriptCopyStatus
     {

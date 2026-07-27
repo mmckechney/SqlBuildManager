@@ -2,7 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
-namespace SqlSync.Connection.UnitTest
+namespace SqlBuildManager.Connection.UnitTest
 {
 
 

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SqlSync.ObjectScript.Hash
+namespace SqlBuildManager.ObjectScript.Hash
 {
     public class ObjectScriptHashReportData
     {

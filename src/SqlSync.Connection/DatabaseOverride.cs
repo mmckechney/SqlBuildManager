@@ -4,7 +4,7 @@ using System.Data;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 
-namespace SqlSync.Connection
+namespace SqlBuildManager.Connection
 {
     public class DatabaseOverride
     {

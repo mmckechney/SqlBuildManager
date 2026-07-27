@@ -1,7 +1,7 @@
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 
-namespace SqlSync.SqlBuild.Status {
+namespace SqlBuildManager.SqlBuild.Status {
 
 
     
@@ -14,7 +14,7 @@ namespace SqlSync.SqlBuild.Status {
 
         public string ScriptId { get; set; } = string.Empty;
 
-        public SqlSync.SqlBuild.ScriptStatusType ScriptStatus { get; set; } = SqlSync.SqlBuild.ScriptStatusType.Unknown;
+        public SqlBuildManager.SqlBuild.ScriptStatusType ScriptStatus { get; set; } = SqlBuildManager.SqlBuild.ScriptStatusType.Unknown;
 
         public string ServerName { get; set; } = string.Empty;
 

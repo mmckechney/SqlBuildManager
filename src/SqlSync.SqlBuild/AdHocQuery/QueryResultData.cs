@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System;
 using System.Collections.Generic;
 using System.Text;
-namespace SqlSync.SqlBuild.AdHocQuery
+namespace SqlBuildManager.SqlBuild.AdHocQuery
 {
     [Serializable()]
     public class QueryResultData

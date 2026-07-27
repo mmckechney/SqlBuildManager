@@ -3,7 +3,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using Microsoft.Extensions.Logging;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.Relay;
 

@@ -1,10 +1,10 @@
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     public interface IBuildFinalizer
     {
@@ -13,7 +13,7 @@ namespace SqlSync.SqlBuild.Services
         bool RollbackBuild(IConnectionsService connectionsService, bool isTransactional);
         Task SaveBuildDataModelAsync(ISqlBuildRunnerProperties context, bool finalSave);
         public Task<(Build updatedBuild, SqlSyncBuildDataModel updatedModel, BuildResultStatus buildResult)> PerformRunScriptFinalizationAsync(ISqlBuildRunnerProperties context, IConnectionsService connectionsService, IBuildFinalizerContext finalizerContext, bool buildFailure, Build myBuild);
-        public SqlSyncBuildDataModel RecordCommittedScripts(List<SqlSync.SqlBuild.SqlLogging.CommittedScript> committedScripts, SqlSyncBuildDataModel buildDataModel);
+        public SqlSyncBuildDataModel RecordCommittedScripts(List<SqlBuildManager.SqlBuild.SqlLogging.CommittedScript> committedScripts, SqlSyncBuildDataModel buildDataModel);
         public BuildResultStatus CalculateFinalStatus(IList<BuildResultStatus> buildResults);
         public BuildResultStatus ConvertBuildItemStatusToResultStatus(BuildItemStatus? itemStatus, bool isTransactional, bool isTrialBuild);
     }

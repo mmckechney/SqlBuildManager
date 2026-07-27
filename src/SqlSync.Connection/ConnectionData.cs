@@ -1,5 +1,5 @@
 
-namespace SqlSync.Connection
+namespace SqlBuildManager.Connection
 {
     using System;
 

@@ -1,9 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Status;
+using SqlBuildManager.SqlBuild.Status;
 using System;
 using System.Data;
 
-namespace SqlSync.SqlBuild.UnitTest.Status
+namespace SqlBuildManager.SqlBuild.UnitTest.Status
 {
     [TestClass]
     public class ScriptStatusDataTests

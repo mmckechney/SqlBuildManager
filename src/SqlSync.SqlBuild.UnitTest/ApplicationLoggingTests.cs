@@ -4,7 +4,7 @@ using SqlBuildManager.Logging;
 using System;
 using System.IO;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     /// <summary>
     /// Tests for ApplicationLogging to improve code coverage

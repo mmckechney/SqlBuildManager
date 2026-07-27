@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SqlSync.SqlBuild.Models
+namespace SqlBuildManager.SqlBuild.Models
 {
     /// <summary>
     /// Result of preparing a build for execution. Contains filtered scripts,

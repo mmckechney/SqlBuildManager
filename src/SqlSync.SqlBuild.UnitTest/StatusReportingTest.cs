@@ -1,10 +1,10 @@
 ﻿using Microsoft.Build.Evaluation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Services;
-using SqlSync.SqlBuild.Status;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.Status;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +12,7 @@ using System.Xml.Serialization;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     /// <summary>
     /// This is a test class for StatusReportingTest and is intended

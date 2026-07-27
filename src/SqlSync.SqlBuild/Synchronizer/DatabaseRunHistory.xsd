@@ -28,4 +28,4 @@ xmlns:mstns="http://www.mckechney.com/DbRunHistory.xsd" xmlns:xs="http://www.w3.
   </xs:complexType>
 
 </xs:schema>
-<!-- xsd /c /out:Syncronizer /namespace:SqlSync.SqlBuild.Syncronizer Syncronizer/DatabaseRunHistory.xsd -->
+<!-- xsd /c /out:Syncronizer /namespace:SqlBuildManager.SqlBuild.Syncronizer Syncronizer/DatabaseRunHistory.xsd -->

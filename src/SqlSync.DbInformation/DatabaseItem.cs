@@ -1,4 +1,4 @@
-namespace SqlSync.DbInformation {
+namespace SqlBuildManager.DbInformation {
     using System;
     
     

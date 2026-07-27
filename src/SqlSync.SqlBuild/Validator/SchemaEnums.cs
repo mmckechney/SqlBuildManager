@@ -1,4 +1,4 @@
-namespace SqlSync.SqlBuild.Validator
+namespace SqlBuildManager.SqlBuild.Validator
 {
     /// <summary>
     /// Summary description for SchemaEnums.

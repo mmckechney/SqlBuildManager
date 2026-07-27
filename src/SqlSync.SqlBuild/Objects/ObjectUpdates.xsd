@@ -15,4 +15,4 @@
 	</xs:complexType>
 	<xs:element name="ObjectUpdates" type="ObjectUpdates"></xs:element>
 </xs:schema>
-<!-- xsd /c /namespace:SqlSync.SqlBuild.Objects ObjectUpdates.xsd -->
+<!-- xsd /c /namespace:SqlBuildManager.SqlBuild.Objects ObjectUpdates.xsd -->

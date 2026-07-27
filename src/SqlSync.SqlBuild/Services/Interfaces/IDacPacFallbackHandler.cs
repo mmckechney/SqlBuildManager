@@ -1,13 +1,13 @@
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// Handles DacPac fallback logic when a build fails and needs to sync via DACPAC.

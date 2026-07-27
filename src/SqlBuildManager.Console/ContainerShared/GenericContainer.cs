@@ -3,12 +3,12 @@ using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using sqlB = SqlSync.SqlBuild;
+using sqlB = SqlBuildManager.SqlBuild;
 
 namespace SqlBuildManager.Console.ContainerShared
 {

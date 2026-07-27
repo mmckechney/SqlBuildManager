@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Services;
-using SqlSync.SqlBuild.SqlLogging;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.SqlLogging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
 
     public sealed class NoopProgressReporter : IProgressReporter
@@ -73,7 +73,7 @@ namespace SqlSync.SqlBuild.UnitTest
 
         public string BuildFileName => "FakeBuildFileName.sbm";
 
-        public List<SqlSync.SqlBuild.SqlLogging.CommittedScript> CommittedScripts => new();
+        public List<SqlBuildManager.SqlBuild.SqlLogging.CommittedScript> CommittedScripts => new();
 
         public bool ErrorOccured { get => false; set => value = false; }
         public string SqlInfoMessage { get => string.Empty; set => value = string.Empty; }
@@ -135,7 +135,7 @@ namespace SqlSync.SqlBuild.UnitTest
         public string ProjectFilePath => _projectFilePath;
         public string ProjectFileName => "LocalFakeProject.xml";
         public string BuildFileName => "LocalFakeBuild.sbm";
-        public List<SqlSync.SqlBuild.SqlLogging.CommittedScript> CommittedScripts { get; } = new();
+        public List<SqlBuildManager.SqlBuild.SqlLogging.CommittedScript> CommittedScripts { get; } = new();
         public bool ErrorOccured { get; set; }
         public string SqlInfoMessage { get; set; } = string.Empty;
         public int DefaultScriptTimeout => 30;
@@ -195,7 +195,7 @@ namespace SqlSync.SqlBuild.UnitTest
             mock.Setup(x => x.ProjectFilePath).Returns("MOCK_PATH");
             mock.Setup(x => x.ProjectFileName).Returns("MockProject.xml");
             mock.Setup(x => x.BuildFileName).Returns("MockBuild.sbm");
-            mock.Setup(x => x.CommittedScripts).Returns(new List<SqlSync.SqlBuild.SqlLogging.CommittedScript>());
+            mock.Setup(x => x.CommittedScripts).Returns(new List<SqlBuildManager.SqlBuild.SqlLogging.CommittedScript>());
             mock.Setup(x => x.DefaultScriptTimeout).Returns(30);
             mock.Setup(x => x.BuildDataModel).Returns(SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel());
             mock.Setup(x => x.MultiDbRunData).Returns(new MultiDbData());

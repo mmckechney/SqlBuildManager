@@ -9,11 +9,11 @@ COPY SqlBuildManager.Enterprise/SqlBuildManager.Enterprise.csproj SqlBuildManage
 COPY SqlBuildManager.Interfaces/SqlBuildManager.Interfaces.csproj SqlBuildManager.Interfaces/packages.lock.json SqlBuildManager.Interfaces/
 COPY SqlBuildManager.Logging/SqlBuildManager.Logging.csproj SqlBuildManager.Logging/packages.lock.json SqlBuildManager.Logging/
 COPY SqlBuildManager.ScriptHandling/SqlBuildManager.ScriptHandling.csproj SqlBuildManager.ScriptHandling/packages.lock.json SqlBuildManager.ScriptHandling/
-COPY SqlSync.Connection/SqlSync.Connection.csproj SqlSync.Connection/packages.lock.json SqlSync.Connection/
-COPY SqlSync.Constants/SqlSync.Constants.csproj SqlSync.Constants/packages.lock.json SqlSync.Constants/
-COPY SqlSync.DbInformation/SqlSync.DbInformation.csproj SqlSync.DbInformation/packages.lock.json SqlSync.DbInformation/
-COPY SqlSync.ObjectScript/SqlSync.ObjectScript.csproj SqlSync.ObjectScript/packages.lock.json SqlSync.ObjectScript/
-COPY SqlSync.SqlBuild/SqlSync.SqlBuild.csproj SqlSync.SqlBuild/packages.lock.json SqlSync.SqlBuild/
+COPY SqlBuildManager.Connection/SqlBuildManager.Connection.csproj SqlBuildManager.Connection/packages.lock.json SqlBuildManager.Connection/
+COPY SqlBuildManager.Constants/SqlBuildManager.Constants.csproj SqlBuildManager.Constants/packages.lock.json SqlBuildManager.Constants/
+COPY SqlBuildManager.DbInformation/SqlBuildManager.DbInformation.csproj SqlBuildManager.DbInformation/packages.lock.json SqlBuildManager.DbInformation/
+COPY SqlBuildManager.ObjectScript/SqlBuildManager.ObjectScript.csproj SqlBuildManager.ObjectScript/packages.lock.json SqlBuildManager.ObjectScript/
+COPY SqlBuildManager.SqlBuild/SqlBuildManager.SqlBuild.csproj SqlBuildManager.SqlBuild/packages.lock.json SqlBuildManager.SqlBuild/
 RUN dotnet restore SqlBuildManager.Console/sbm.csproj --locked-mode
 
 FROM restore AS publish

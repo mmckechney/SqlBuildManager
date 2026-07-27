@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CommandLine;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -130,7 +130,7 @@ namespace SqlBuildManager.Console.ContainerShared
                 log.LogWarning($"Unable to read or parse environment variable {ContainerEnvVariables.AuthType}");
             }
 
-            if (Enum.TryParse<SqlSync.Connection.DatabasePlatform>(Environment.GetEnvironmentVariable(ContainerEnvVariables.DatabasePlatform), out SqlSync.Connection.DatabasePlatform dbPlatform))
+            if (Enum.TryParse<SqlBuildManager.Connection.DatabasePlatform>(Environment.GetEnvironmentVariable(ContainerEnvVariables.DatabasePlatform), out SqlBuildManager.Connection.DatabasePlatform dbPlatform))
             {
                 cmdLine.DatabasePlatform = dbPlatform;
             }

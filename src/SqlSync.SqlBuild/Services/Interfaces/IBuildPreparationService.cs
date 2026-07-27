@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     internal interface IBuildPreparationService
     {

@@ -1,14 +1,14 @@
-﻿using SqlSync.Connection;
+﻿using SqlBuildManager.Connection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild.MultiDb
+namespace SqlBuildManager.SqlBuild.MultiDb
 {
     public class MultiDbData : List<ServerData>
     {

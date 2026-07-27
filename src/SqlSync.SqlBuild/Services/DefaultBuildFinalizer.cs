@@ -1,16 +1,16 @@
 using Microsoft.Build.Execution;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
+using LoggingCommittedScript = SqlBuildManager.SqlBuild.SqlLogging.CommittedScript;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     public sealed class DefaultBuildFinalizer : IBuildFinalizer
     {
@@ -148,11 +148,11 @@ namespace SqlSync.SqlBuild.Services
             // Fast POCO path
             if (committedScripts != null)
             {
-                var list = new List<SqlSync.SqlBuild.Models.CommittedScript>(model.CommittedScript);
+                var list = new List<SqlBuildManager.SqlBuild.Models.CommittedScript>(model.CommittedScript);
                 var projectId = model.SqlSyncBuildProject.Count > 0 ? model.SqlSyncBuildProject[0].SqlSyncBuildProjectId : 0;
                 foreach (var cs in committedScripts)
                 {
-                    list.Add(new SqlSync.SqlBuild.Models.CommittedScript(
+                    list.Add(new SqlBuildManager.SqlBuild.Models.CommittedScript(
                         cs.ScriptId.ToString(),
                         cs.ServerName,
                         DateTime.Now,
@@ -353,12 +353,12 @@ namespace SqlSync.SqlBuild.Services
                 if (context.IsTransactional)
                 {
                     log.LogInformation("Build Failed and Rolled Back");
-                    finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK;
+                    finalBuildResult = SqlBuildManager.SqlBuild.BuildResultStatus.BUILD_FAILED_AND_ROLLED_BACK;
                 }
                 else
                 {
                     log.LogInformation("Build Failed. No Transaction Set.");
-                    finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_FAILED_NO_TRANSACTION;
+                    finalBuildResult = SqlBuildManager.SqlBuild.BuildResultStatus.BUILD_FAILED_NO_TRANSACTION;
                 }
 
             }
@@ -367,7 +367,7 @@ namespace SqlSync.SqlBuild.Services
                 if (context.RunScriptOnly)
                 {
                     log.LogInformation("Script Generation Complete");
-                    finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.SCRIPT_GENERATION_COMPLETE;
+                    finalBuildResult = SqlBuildManager.SqlBuild.BuildResultStatus.SCRIPT_GENERATION_COMPLETE;
                 }
                 else if (myBuild.FinalStatus == BuildItemStatus.RolledBack || myBuild.FinalStatus == BuildItemStatus.PendingRollBack)
                 {
@@ -384,19 +384,19 @@ namespace SqlSync.SqlBuild.Services
                     if (context.IsTrialBuild == false)
                     {
                         log.LogInformation("Build Committed");
-                        finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
+                        finalBuildResult = SqlBuildManager.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
                     }
                     else
                     {
                         if (context.IsTransactional)
                         {
                             log.LogInformation("Build Successful. Rolled back for Trial Build");
-                            finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL;
+                            finalBuildResult = SqlBuildManager.SqlBuild.BuildResultStatus.BUILD_SUCCESSFUL_ROLLED_BACK_FOR_TRIAL;
                         }
                         else
                         {
                             log.LogInformation("Build Successful. Committed with no transaction");
-                            finalBuildResult = SqlSync.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
+                            finalBuildResult = SqlBuildManager.SqlBuild.BuildResultStatus.BUILD_COMMITTED;
 
                         }
                     }

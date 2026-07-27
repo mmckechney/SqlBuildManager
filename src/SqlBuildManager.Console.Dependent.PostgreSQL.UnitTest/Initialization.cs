@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Npgsql;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 
 namespace SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest
 {

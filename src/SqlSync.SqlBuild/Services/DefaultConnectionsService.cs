@@ -1,9 +1,9 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Polly;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.SqlLogging;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.SqlLogging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     internal class DefaultConnectionsService : IConnectionsService
     {
@@ -24,7 +24,7 @@ namespace SqlSync.SqlBuild.Services
 
         public DefaultConnectionsService(IDbConnectionFactory connectionFactory = null!, ITransactionManager transactionManager = null!)
         {
-            _connectionFactory = connectionFactory ?? new SqlSync.Connection.SqlServerConnectionFactory();
+            _connectionFactory = connectionFactory ?? new SqlBuildManager.Connection.SqlServerConnectionFactory();
             _transactionManager = transactionManager ?? new SqlServerTransactionManager();
         }
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);

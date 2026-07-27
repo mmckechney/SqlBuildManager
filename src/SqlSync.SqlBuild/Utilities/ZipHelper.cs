@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.Utilities
+namespace SqlBuildManager.SqlBuild.Utilities
 {
     /// <summary>
     /// Summary description for ZipHelper.

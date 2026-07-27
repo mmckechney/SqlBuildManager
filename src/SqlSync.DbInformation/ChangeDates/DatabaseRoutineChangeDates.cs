@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SqlSync.DbInformation.ChangeDates
+namespace SqlBuildManager.DbInformation.ChangeDates
 {
     public static class DatabaseObjectChangeDates
     {

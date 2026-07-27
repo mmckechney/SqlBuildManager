@@ -2,7 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Npgsql;
 using System;
 
-namespace SqlSync.Connection.Dependent.UnitTest
+namespace SqlBuildManager.Connection.Dependent.UnitTest
 {
     /// <summary>
     /// Integration tests for PostgreSQL connectivity.

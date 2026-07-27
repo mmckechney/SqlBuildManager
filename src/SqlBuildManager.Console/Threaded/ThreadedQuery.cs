@@ -1,8 +1,8 @@
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.AdHocQuery;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.AdHocQuery;
+using SqlBuildManager.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,7 +13,7 @@ using System.IO;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.SqlBuild.Status;
+using SqlBuildManager.SqlBuild.Status;
 using Azure.Messaging.ServiceBus;
 
 namespace SqlBuildManager.Console.Threaded

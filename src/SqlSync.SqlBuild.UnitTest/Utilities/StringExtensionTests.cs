@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Utilities;
+using SqlBuildManager.SqlBuild.Utilities;
 
-namespace SqlSync.SqlBuild.UnitTest.Utilities
+namespace SqlBuildManager.SqlBuild.UnitTest.Utilities
 {
     [TestClass]
     public class StringExtensionTests

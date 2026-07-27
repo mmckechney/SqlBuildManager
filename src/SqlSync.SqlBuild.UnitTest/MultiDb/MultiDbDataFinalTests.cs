@@ -1,13 +1,13 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.CodeTable;
-using SqlSync.Connection;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.CodeTable;
+using SqlBuildManager.Connection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SqlSync.SqlBuild.UnitTest.MultiDb
+namespace SqlBuildManager.SqlBuild.UnitTest.MultiDb
 {
     /// <summary>
     /// Comprehensive tests for MultiDbData and related classes

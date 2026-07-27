@@ -31,9 +31,9 @@
   <ItemGroup>
     <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
-    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
-    <ProjectReference Include="..\SqlSync.Constants\SqlSync.Constants.csproj" />
-    <ProjectReference Include="..\SqlSync.DbInformation\SqlSync.DbInformation.csproj" />
+    <ProjectReference Include="..\SqlSync.Connection\SqlBuildManager.Connection.csproj" />
+    <ProjectReference Include="..\SqlSync.Constants\SqlBuildManager.Constants.csproj" />
+    <ProjectReference Include="..\SqlSync.DbInformation\SqlBuildManager.DbInformation.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CodeTable\" />

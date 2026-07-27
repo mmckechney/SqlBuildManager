@@ -1,4 +1,4 @@
-namespace SqlSync.SqlBuild.CodeTable
+namespace SqlBuildManager.SqlBuild.CodeTable
 {
     public class ScriptUpdates
     {

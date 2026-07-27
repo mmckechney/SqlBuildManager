@@ -3,10 +3,10 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SqlSync.SqlBuild.UnitTest")]
+[assembly: AssemblyTitle("SqlBuildManager.SqlBuild.UnitTest")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyProduct("SqlSync.SqlBuild.UnitTest")]
+[assembly: AssemblyProduct("SqlBuildManager.SqlBuild.UnitTest")]
 [assembly: AssemblyCulture("")]
 
 //[assembly: EnvironmentPermissionAttribute(SecurityAction.RequestMinimum)]

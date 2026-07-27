@@ -1,11 +1,11 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.DbInformation;
+using SqlBuildManager.DbInformation;
 using System.Collections.Generic;
 
-namespace SqlSync.SqlBuild.UnitTest.Status
+namespace SqlBuildManager.SqlBuild.UnitTest.Status
 {
     /// <summary>
-    /// Unit tests for DatabaseList class from SqlSync.DbInformation namespace
+    /// Unit tests for DatabaseList class from SqlBuildManager.DbInformation namespace
     /// </summary>
     [TestClass]
     public class DatabaseListTests

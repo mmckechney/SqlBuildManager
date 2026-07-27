@@ -1,10 +1,10 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Objects;
+using SqlBuildManager.SqlBuild.Objects;
 using System;
 using System.IO;
 using System.Xml.Serialization;
 
-namespace SqlSync.SqlBuild.UnitTest.Objects
+namespace SqlBuildManager.SqlBuild.UnitTest.Objects
 {
     [TestClass]
     public class ObjectUpdatesTests

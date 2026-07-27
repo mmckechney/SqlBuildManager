@@ -2,12 +2,12 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Polly;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.Connection;
-using SqlSync.Constants;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Services;
-using SqlSync.SqlBuild.SqlLogging;
+using SqlBuildManager.Connection;
+using SqlBuildManager.Constants;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.SqlLogging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,12 +19,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using BuildModels = SqlSync.SqlBuild.Models;
-using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
+using BuildModels = SqlBuildManager.SqlBuild.Models;
+using LoggingCommittedScript = SqlBuildManager.SqlBuild.SqlLogging.CommittedScript;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild
+namespace SqlBuildManager.SqlBuild
 {
     /// <summary>
     /// Summary description for SqlBuildHelper.

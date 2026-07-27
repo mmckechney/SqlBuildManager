@@ -1,8 +1,8 @@
 using System;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System.Collections.Generic;
 using System.Linq;
-namespace SqlSync.SqlBuild.Models
+namespace SqlBuildManager.SqlBuild.Models
 {
     #nullable enable
     public class SqlBuildRunData

@@ -1,9 +1,9 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 #nullable enable
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.MultiDb;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
 
 

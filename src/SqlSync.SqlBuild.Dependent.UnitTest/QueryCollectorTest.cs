@@ -1,15 +1,15 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.AdHocQuery;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Status;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.AdHocQuery;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Status;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.Dependent.UnitTest
+namespace SqlBuildManager.SqlBuild.Dependent.UnitTest
 {
     /// <summary>
     /// Integration tests for QueryCollector that require database access

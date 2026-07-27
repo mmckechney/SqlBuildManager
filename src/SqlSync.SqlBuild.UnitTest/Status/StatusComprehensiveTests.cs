@@ -1,9 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Services;
-using SqlSync.SqlBuild.Status;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.Status;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,7 +15,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild.UnitTest.Status
+namespace SqlBuildManager.SqlBuild.UnitTest.Status
 {
     /// <summary>
     /// Comprehensive tests for Status namespace classes - Final Round

@@ -1,14 +1,14 @@
 using Microsoft.Extensions.Logging;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using BuildModels = SqlSync.SqlBuild.Models;
+using BuildModels = SqlBuildManager.SqlBuild.Models;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     public interface ISqlBuildRunnerContext : ISqlBuildRunnerProperties
     {

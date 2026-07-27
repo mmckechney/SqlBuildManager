@@ -1,12 +1,12 @@
-﻿using SqlSync.Connection;
-using SqlSync.SqlBuild.Models;
+﻿using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// Managed the connections used during a build

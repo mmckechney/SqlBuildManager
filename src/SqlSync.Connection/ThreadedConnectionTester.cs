@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
-namespace SqlSync.Connection
+namespace SqlBuildManager.Connection
 {
     public class ThreadedConnectionTester
     {

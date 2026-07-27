@@ -1,5 +1,5 @@
-using SqlSync.Connection;
-namespace SqlSync.ObjectScript.Hash
+using SqlBuildManager.Connection;
+namespace SqlBuildManager.ObjectScript.Hash
 {
     public class HashCollectionRunner
     {

@@ -1,4 +1,4 @@
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     /// <summary>
     /// SQL Server implementation of ISqlResourceProvider. Returns SQL Server-specific

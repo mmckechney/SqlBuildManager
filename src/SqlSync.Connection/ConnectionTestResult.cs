@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SqlSync.Connection
+namespace SqlBuildManager.Connection
 {
     [Serializable]
     public class ConnectionTestResult
@@ -19,7 +19,7 @@ namespace SqlSync.Connection
         } = string.Empty;
 
 
-        private AuthenticationType authenticationType = SqlSync.Connection.AuthenticationType.Password;
+        private AuthenticationType authenticationType = SqlBuildManager.Connection.AuthenticationType.Password;
         public AuthenticationType AuthenticationType
         {
             get { return authenticationType; }

@@ -1,14 +1,14 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Npgsql;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.Dependent.TestBase;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Dependent.TestBase;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
 using System;
 using System.IO;
 
-namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
+namespace SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest
 {
     /// <summary>
     /// PostgreSQL-specific initialization helper. Extends the shared InitializationBase

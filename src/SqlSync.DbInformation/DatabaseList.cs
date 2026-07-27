@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SqlSync.DbInformation
+namespace SqlBuildManager.DbInformation
 {
 
     public class DatabaseList : System.Collections.Generic.List<DatabaseItem>

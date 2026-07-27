@@ -1,8 +1,8 @@
 using Microsoft.Build.Evaluation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.CodeTable;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Objects;
+using SqlBuildManager.SqlBuild.CodeTable;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Objects;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     /// <summary>
     /// Additional tests for SqlBuildFileHelper to increase coverage

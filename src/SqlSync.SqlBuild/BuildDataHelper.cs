@@ -1,8 +1,8 @@
 ﻿using System.Data;
 using System.Linq;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 
-namespace SqlSync.SqlBuild
+namespace SqlBuildManager.SqlBuild
 {
     public class BuildDataHelper
     {

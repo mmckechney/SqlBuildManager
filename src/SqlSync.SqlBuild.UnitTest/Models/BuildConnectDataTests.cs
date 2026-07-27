@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 
-namespace SqlSync.SqlBuild.UnitTest.Models
+namespace SqlBuildManager.SqlBuild.UnitTest.Models
 {
     [TestClass]
     public class BuildConnectDataTests

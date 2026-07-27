@@ -1,11 +1,11 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     [TestClass]
     public class SqlSyncBuildDataModelTest

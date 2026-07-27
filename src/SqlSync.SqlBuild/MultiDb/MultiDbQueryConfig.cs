@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SqlSync.SqlBuild.MultiDb
+namespace SqlBuildManager.SqlBuild.MultiDb
 {
     [Serializable()]
     public class MultiDbQueryConfig

@@ -1,6 +1,6 @@
 using System.Data.Common;
 
-namespace SqlSync.Connection
+namespace SqlBuildManager.Connection
 {
     /// <summary>
     /// Abstracts database connection creation so that both SQL Server and PostgreSQL

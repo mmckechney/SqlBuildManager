@@ -1,6 +1,6 @@
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Models;
 
-namespace SqlSync.SqlBuild.Services
+namespace SqlBuildManager.SqlBuild.Services
 {
     public interface IBuildRetryPolicy
     {

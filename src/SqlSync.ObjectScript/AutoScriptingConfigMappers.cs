@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SqlSync.ObjectScript.Models;
+using SqlBuildManager.ObjectScript.Models;
 
 #nullable enable
 
-namespace SqlSync.ObjectScript
+namespace SqlBuildManager.ObjectScript
 {
     public static class AutoScriptingConfigMappers
     {

@@ -7,16 +7,16 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Utilities;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Utilities;
 using System.Threading.Tasks;
 using System.Threading;
-using SqlSync.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.Services;
 using System.Net;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild
+namespace SqlBuildManager.SqlBuild
 {
     /// <summary>
     /// Summary description for SqlBuildFileHelper.
@@ -708,7 +708,7 @@ namespace SqlSync.SqlBuild
             if (File.Exists(localFile) == false)
                 return null;
 
-            SqlBuild.CodeTable.ScriptUpdates codeTableUpdate = new SqlSync.SqlBuild.CodeTable.ScriptUpdates();
+            SqlBuild.CodeTable.ScriptUpdates codeTableUpdate = new SqlBuildManager.SqlBuild.CodeTable.ScriptUpdates();
             codeTableUpdate.ShortFileName = baseFileName;
 
             using (StreamReader sr = File.OpenText(localFile))
@@ -758,7 +758,7 @@ namespace SqlSync.SqlBuild
             foreach (var script in model.Script)
             {
                 // Find the ".pop" populate scripts
-                if (!Path.GetExtension(script.FileName ?? "").Equals(SqlSync.Constants.DbObjectType.PopulateScript, StringComparison.OrdinalIgnoreCase))
+                if (!Path.GetExtension(script.FileName ?? "").Equals(SqlBuildManager.Constants.DbObjectType.PopulateScript, StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 var obj = GetFileDataForCodeTableUpdates(script.FileName ?? "", projFileName);
@@ -798,10 +798,10 @@ namespace SqlSync.SqlBuild
 
                 //Find the database objects that can be updated...SP, View, UDF, Trigger
                 var ext = Path.GetExtension(row.FileName).ToUpper();
-                if (ext != SqlSync.Constants.DbObjectType.StoredProcedure &&
-                    ext != SqlSync.Constants.DbObjectType.View &&
-                    ext != SqlSync.Constants.DbObjectType.UserDefinedFunction &&
-                    ext != SqlSync.Constants.DbObjectType.Trigger)
+                if (ext != SqlBuildManager.Constants.DbObjectType.StoredProcedure &&
+                    ext != SqlBuildManager.Constants.DbObjectType.View &&
+                    ext != SqlBuildManager.Constants.DbObjectType.UserDefinedFunction &&
+                    ext != SqlBuildManager.Constants.DbObjectType.Trigger)
                 {
                     canNotUpdate.Add(row.FileName);
                 }

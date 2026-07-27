@@ -1,4 +1,4 @@
-﻿namespace SqlSync.SqlBuild.Objects
+﻿namespace SqlBuildManager.SqlBuild.Objects
 {
     public class UpdatedObject
     {

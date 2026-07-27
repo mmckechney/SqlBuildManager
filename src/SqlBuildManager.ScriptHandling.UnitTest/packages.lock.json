@@ -506,6 +506,32 @@
         "resolved": "8.0.0",
         "contentHash": "Obg3a90MkOw9mYKxrardLpY2u0axDMrSmy4JCdq2cYbelM2cUwmUir5Bomvd1yxmPL9h5LVHU1tuKBZpUjfASg=="
       },
+      "sqlbuildmanager.connection": {
+        "type": "Project",
+        "dependencies": {
+          "Azure.Identity": "[1.21.0, )",
+          "Microsoft.Data.SqlClient": "[7.0.2, )",
+          "Microsoft.Extensions.Logging": "[10.0.10, )",
+          "MySqlConnector": "[2.6.1, )",
+          "Npgsql": "[10.0.3, )",
+          "SqlBuildManager.Logging": "[1.0.0, )"
+        }
+      },
+      "sqlbuildmanager.constants": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Logging": "[10.0.10, )",
+          "SqlBuildManager.Logging": "[1.0.0, )"
+        }
+      },
+      "sqlbuildmanager.dbinformation": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Logging": "[10.0.10, )",
+          "SqlBuildManager.Connection": "[1.0.0, )",
+          "System.Configuration.ConfigurationManager": "[10.0.10, )"
+        }
+      },
       "sqlbuildmanager.interfaces": {
         "type": "Project",
         "dependencies": {
@@ -539,47 +565,21 @@
           "Microsoft.Extensions.Logging": "[10.0.10, )",
           "SqlBuildManager.Interfaces": "[1.0.0, )",
           "SqlBuildManager.Logging": "[1.0.0, )",
-          "SqlSync.SqlBuild": "[1.0.0, )"
+          "SqlBuildManager.SqlBuild": "[1.0.0, )"
         }
       },
-      "sqlsync.connection": {
-        "type": "Project",
-        "dependencies": {
-          "Azure.Identity": "[1.21.0, )",
-          "Microsoft.Data.SqlClient": "[7.0.2, )",
-          "Microsoft.Extensions.Logging": "[10.0.10, )",
-          "MySqlConnector": "[2.6.1, )",
-          "Npgsql": "[10.0.3, )",
-          "SqlBuildManager.Logging": "[1.0.0, )"
-        }
-      },
-      "sqlsync.constants": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.Extensions.Logging": "[10.0.10, )",
-          "SqlBuildManager.Logging": "[1.0.0, )"
-        }
-      },
-      "sqlsync.dbinformation": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.Extensions.Logging": "[10.0.10, )",
-          "SqlSync.Connection": "[1.0.0, )",
-          "System.Configuration.ConfigurationManager": "[10.0.10, )"
-        }
-      },
-      "sqlsync.sqlbuild": {
+      "sqlbuildmanager.sqlbuild": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Data.SqlClient": "[7.0.2, )",
           "Microsoft.Extensions.Logging": "[10.0.10, )",
           "Microsoft.SqlServer.DacFx": "[170.4.83, )",
           "Polly": "[8.7.0, )",
+          "SqlBuildManager.Connection": "[1.0.0, )",
+          "SqlBuildManager.Constants": "[1.0.0, )",
+          "SqlBuildManager.DbInformation": "[1.0.0, )",
           "SqlBuildManager.Interfaces": "[1.0.0, )",
           "SqlBuildManager.Logging": "[1.0.0, )",
-          "SqlSync.Connection": "[1.0.0, )",
-          "SqlSync.Constants": "[1.0.0, )",
-          "SqlSync.DbInformation": "[1.0.0, )",
           "System.Configuration.ConfigurationManager": "[10.0.10, )"
         }
       },

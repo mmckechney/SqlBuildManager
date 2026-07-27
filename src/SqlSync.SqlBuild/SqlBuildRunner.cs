@@ -8,13 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
 using Microsoft.Extensions.Logging;
-using static SqlSync.SqlBuild.SqlBuildHelper;
-using BuildModels = SqlSync.SqlBuild.Models;
-using LoggingCommittedScript = SqlSync.SqlBuild.SqlLogging.CommittedScript;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.Services;
+using static SqlBuildManager.SqlBuild.SqlBuildHelper;
+using BuildModels = SqlBuildManager.SqlBuild.Models;
+using LoggingCommittedScript = SqlBuildManager.SqlBuild.SqlLogging.CommittedScript;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.Services;
 
-namespace SqlSync.SqlBuild
+namespace SqlBuildManager.SqlBuild
 {
 
     internal sealed record SqlExecutionResult(bool Success, string Results, bool TimeoutDetected = false);

@@ -1,6 +1,6 @@
-using SqlSync.Connection;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Status;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Status;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.XPath;
 using System.Xml.Xsl;
-namespace SqlSync.ObjectScript.Hash
+namespace SqlBuildManager.ObjectScript.Hash
 {
     public class HashCollector
     {

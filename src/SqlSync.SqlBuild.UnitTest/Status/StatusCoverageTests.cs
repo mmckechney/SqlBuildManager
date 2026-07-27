@@ -1,17 +1,17 @@
 using Microsoft.Build.Evaluation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using SqlSync.SqlBuild.Models;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Services;
-using SqlSync.SqlBuild.Status;
+using SqlBuildManager.SqlBuild.Models;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Services;
+using SqlBuildManager.SqlBuild.Status;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Xml.Serialization;
 
-namespace SqlSync.SqlBuild.UnitTest.Status
+namespace SqlBuildManager.SqlBuild.UnitTest.Status
 {
     /// <summary>
     /// Extended tests for StatusReporting and related classes to improve code coverage

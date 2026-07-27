@@ -1,6 +1,6 @@
-﻿using SqlSync.Connection;
+﻿using SqlBuildManager.Connection;
 using System.Collections.Generic;
-namespace SqlSync.SqlBuild.MultiDb
+namespace SqlBuildManager.SqlBuild.MultiDb
 {
     class MultiDbDataSorter : IComparer<KeyValuePair<string, List<DatabaseOverride>>>
     {

@@ -1,7 +1,7 @@
-namespace SqlSync.SqlBuild
+namespace SqlBuildManager.SqlBuild
 {
     /// <summary>
-    /// This is closely tied to the image index for the Icon in the SqlSync.SqlBuild.SqlBuildForm.
+    /// This is closely tied to the image index for the Icon in the SqlBuildManager.SqlBuild.SqlBuildForm.
     /// Before updating ensure that they are aligned.
     /// </summary>
     public enum ScriptStatusType

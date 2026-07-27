@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 
 #nullable enable
 
-namespace SqlSync.SqlBuild.Models
+namespace SqlBuildManager.SqlBuild.Models
 {
     public sealed class SqlSyncBuildProject
     {

@@ -6,6 +6,6 @@
     <Deterministic>false</Deterministic>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlSync.Connection\SqlSync.Connection.csproj" />
+    <ProjectReference Include="..\SqlSync.Connection\SqlBuildManager.Connection.csproj" />
   </ItemGroup>
 </Project>

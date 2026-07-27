@@ -2,7 +2,7 @@
 using System.Xml.Serialization;
 
 ///  Code courtesy of Paul Welter @ http://weblogs.asp.net/pwelter34/archive/2006/05/03/444961.aspx
-namespace SqlSync.SqlBuild.AdHocQuery
+namespace SqlBuildManager.SqlBuild.AdHocQuery
 {
 
 

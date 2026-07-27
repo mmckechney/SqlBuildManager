@@ -4,10 +4,10 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SqlSync.ObjectScript.UnitTest")]
+[assembly: AssemblyTitle("SqlBuildManager.ObjectScript.UnitTest")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyProduct("SqlSync.ObjectScript.UnitTest")]
+[assembly: AssemblyProduct("SqlBuildManager.ObjectScript.UnitTest")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 

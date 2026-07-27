@@ -1,8 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlSync.SqlBuild.SqlLogging;
+using SqlBuildManager.SqlBuild.SqlLogging;
 using System;
 
-namespace SqlSync.SqlBuild.UnitTest
+namespace SqlBuildManager.SqlBuild.UnitTest
 {
     /// <summary>
     /// Tests for CommittedScript (SqlLogging version)
