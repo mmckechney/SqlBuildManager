@@ -5,7 +5,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:ed034a8bf0b24ded0cbbac07e17825d8e9
 WORKDIR /src
 
 COPY Directory.Build.props Directory.Packages.props ./
-COPY SqlBuildManager.Console.ExternalTest/SqlBuildManager.Console.ExternalTest.csproj SqlBuildManager.Console.ExternalTest/packages.lock.json SqlBuildManager.Console.ExternalTest/
+COPY SqlBuildManager.Console.SqlServer.ExternalTest/SqlBuildManager.Console.SqlServer.ExternalTest.csproj SqlBuildManager.Console.SqlServer.ExternalTest/packages.lock.json SqlBuildManager.Console.SqlServer.ExternalTest/
 COPY SqlBuildManager.Console.PostgreSQL.ExternalTest/SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj SqlBuildManager.Console.PostgreSQL.ExternalTest/packages.lock.json SqlBuildManager.Console.PostgreSQL.ExternalTest/
 COPY SqlBuildManager.Console.MySQL.ExternalTest/SqlBuildManager.Console.MySQL.ExternalTest.csproj SqlBuildManager.Console.MySQL.ExternalTest/packages.lock.json SqlBuildManager.Console.MySQL.ExternalTest/
 COPY SqlBuildManager.Console/sbm.csproj SqlBuildManager.Console/packages.lock.json SqlBuildManager.Console/
@@ -18,13 +18,13 @@ COPY SqlBuildManager.Constants/SqlBuildManager.Constants.csproj SqlBuildManager.
 COPY SqlBuildManager.DbInformation/SqlBuildManager.DbInformation.csproj SqlBuildManager.DbInformation/packages.lock.json SqlBuildManager.DbInformation/
 COPY SqlBuildManager.ObjectScript/SqlBuildManager.ObjectScript.csproj SqlBuildManager.ObjectScript/packages.lock.json SqlBuildManager.ObjectScript/
 COPY SqlBuildManager.SqlBuild/SqlBuildManager.SqlBuild.csproj SqlBuildManager.SqlBuild/packages.lock.json SqlBuildManager.SqlBuild/
-RUN dotnet restore SqlBuildManager.Console.ExternalTest/SqlBuildManager.Console.ExternalTest.csproj --locked-mode && \
+RUN dotnet restore SqlBuildManager.Console.SqlServer.ExternalTest/SqlBuildManager.Console.SqlServer.ExternalTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.Console.PostgreSQL.ExternalTest/SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.Console.MySQL.ExternalTest/SqlBuildManager.Console.MySQL.ExternalTest.csproj --locked-mode
 
 FROM restore AS build
 COPY . .
-RUN dotnet build SqlBuildManager.Console.ExternalTest/SqlBuildManager.Console.ExternalTest.csproj \
+RUN dotnet build SqlBuildManager.Console.SqlServer.ExternalTest/SqlBuildManager.Console.SqlServer.ExternalTest.csproj \
       --configuration Release --framework net10.0 --no-restore --output /tests && \
     dotnet build SqlBuildManager.Console.PostgreSQL.ExternalTest/SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj \
       --configuration Release --framework net10.0 --no-restore --output /tests && \
@@ -67,4 +67,4 @@ WORKDIR /tests
 COPY --from=build /tests .
 ENV DOTNET_ENVIRONMENT=Production
 ENV AZURE_CLIENT_ID=""
-ENTRYPOINT ["dotnet", "vstest", "SqlBuildManager.Console.ExternalTest.dll", "--logger:trx;LogFileName=TestResults.trx", "--logger:console;verbosity=detailed"]
+ENTRYPOINT ["dotnet", "vstest", "SqlBuildManager.Console.SqlServer.ExternalTest.dll", "--logger:trx;LogFileName=TestResults.trx", "--logger:console;verbosity=detailed"]

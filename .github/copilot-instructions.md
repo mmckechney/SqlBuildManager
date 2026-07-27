@@ -10,9 +10,9 @@ dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f
 dotnet test ./src/SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj
 dotnet test ./src/SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj
 dotnet test ./src/SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj
-dotnet test ./src/SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj
-dotnet test ./src/SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj
-dotnet test ./src/SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj
+dotnet test ./src/SqlBuildManager.Connection.UnitTest/SqlBuildManager.Connection.UnitTest.csproj
+dotnet test ./src/SqlBuildManager.ObjectScript.UnitTest/SqlBuildManager.ObjectScript.UnitTest.csproj
+dotnet test ./src/SqlBuildManager.SqlBuild.UnitTest/SqlBuildManager.SqlBuild.UnitTest.csproj
 
 # Run a single test by name
 dotnet test ./src/SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj --filter "FullyQualifiedName~TestMethodName"
@@ -24,9 +24,9 @@ dotnet publish ./src/SqlBuildManager.Console/sbm.csproj -r linux-x64 --configura
 
 ### Test Types
 - `*.UnitTest.csproj` - True unit tests with no external dependencies
-- `*.Dependent.UnitTest.csproj` - Require local SQL Express (SQL Server) or local PostgreSQL; run `SqlSync.SqlBuild.Dependent.UnitTest` first on new machines to create databases
+- `*.Dependent.UnitTest.csproj` - Require local SQL Express (SQL Server) or local PostgreSQL; run `SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest` first on new machines to create databases
 - `*.Dependent.PostgreSQL.UnitTest.csproj` - PostgreSQL-specific dependent tests (require PostgreSQL instance)
-- `SqlBuildManager.Console.ExternalTest` - Integration tests for SQL Server requiring Azure resources (run `azd up` first to provision resources)
+- `SqlBuildManager.Console.SqlServer.ExternalTest` - Integration tests for SQL Server requiring Azure resources (run `azd up` first to provision resources)
 - `SqlBuildManager.Console.PostgreSQL.ExternalTest` - Integration tests for PostgreSQL requiring Azure resources
 - External tests run in ACI containers via `scripts/tests/run_all_sqlserver_external_tests_in_aci.ps1` and `scripts/tests/run_all_postgres_external_tests_in_aci.ps1` using `src/Dockerfile.tests`
 
@@ -54,11 +54,11 @@ SqlBuildManager.ScriptHandling          ← Script parsing/handling
 SqlBuildManager.Logging                 ← Serilog-based logging
 SqlBuildManager.Interfaces              ← Shared interfaces
     ↓
-SqlSync.SqlBuild                        ← Core build/package logic
-SqlSync.Connection                      ← Database connections (SqlServer + PostgreSQL)
-SqlSync.DbInformation                   ← Database metadata
-SqlSync.ObjectScript                    ← SQL object scripting
-SqlSync.Constants                       ← Shared constants
+SqlBuildManager.SqlBuild                        ← Core build/package logic
+SqlBuildManager.Connection                      ← Database connections (SqlServer + PostgreSQL)
+SqlBuildManager.DbInformation                   ← Database metadata
+SqlBuildManager.ObjectScript                    ← SQL object scripting
+SqlBuildManager.Constants                       ← Shared constants
 ```
 
 ### Console Application Pattern

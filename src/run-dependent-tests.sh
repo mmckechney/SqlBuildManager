@@ -45,24 +45,24 @@ mkdir -p /tests/TestResults
 
 # Run test DLLs in order:
 # 1. Pure unit tests (no external dependencies)
-# 2. SQL Server dependent tests - SqlSync.SqlBuild first (creates databases)
+# 2. SQL Server dependent tests - SqlBuildManager.SqlBuild first (creates databases)
 # 3. PostgreSQL and MySQL dependent tests
 TEST_DLLS=(
-    "SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.dll"
-    "SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.dll"
-    "SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.dll"
-    "SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.dll"
+    "SqlBuildManager.SqlBuild.UnitTest/SqlBuildManager.SqlBuild.UnitTest.dll"
+    "SqlBuildManager.ObjectScript.UnitTest/SqlBuildManager.ObjectScript.UnitTest.dll"
+    "SqlBuildManager.Connection.UnitTest/SqlBuildManager.Connection.UnitTest.dll"
+    "SqlBuildManager.DbInformation.UnitTest/SqlBuildManager.DbInformation.UnitTest.dll"
     "SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.dll"
     "SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.dll"
     "SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.dll"
-    "SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.dll"
-    "SqlBuildManager.Console.Dependent.UnitTest/SqlBuildManager.Console.Dependent.UnitTest.dll"
-    "SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.UnitTest.dll"
-    "SqlSync.DbInformation.Dependent.UnitTest/SqlSync.DbInformation.Dependent.UnitTest.dll"
-    "SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.dll"
-    "SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.dll"
+    "SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest/SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest.dll"
+    "SqlBuildManager.Console.Dependent.SqlServer.UnitTest/SqlBuildManager.Console.Dependent.SqlServer.UnitTest.dll"
+    "SqlBuildManager.ObjectScript.Dependent.UnitTest/SqlBuildManager.ObjectScript.Dependent.UnitTest.dll"
+    "SqlBuildManager.DbInformation.Dependent.UnitTest/SqlBuildManager.DbInformation.Dependent.UnitTest.dll"
+    "SqlBuildManager.Connection.Dependent.UnitTest/SqlBuildManager.Connection.Dependent.UnitTest.dll"
+    "SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest.dll"
     "SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.dll"
-    "SqlSync.SqlBuild.Dependent.MySQL.UnitTest/SqlSync.SqlBuild.Dependent.MySQL.UnitTest.dll"
+    "SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest.dll"
     "SqlBuildManager.Console.Dependent.MySQL.UnitTest/SqlBuildManager.Console.Dependent.MySQL.UnitTest.dll"
 )
 

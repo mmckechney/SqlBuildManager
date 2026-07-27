@@ -14,7 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
-    <ProjectReference Include="..\SqlSync.SqlBuild\SqlBuildManager.SqlBuild.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.SqlBuild\SqlBuildManager.SqlBuild.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

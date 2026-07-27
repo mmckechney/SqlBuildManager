@@ -26,5 +26,5 @@ jobs:
       - name: Audit locked dependency graph
         run: |
           dotnet restore ./src/SqlBuildManager-console.sln --locked-mode -p:ContinuousIntegrationBuild=true
-          dotnet restore ./src/SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.csproj --locked-mode -p:ContinuousIntegrationBuild=true
-          dotnet restore ./src/SqlSync.SqlBuild.Benchmarks/SqlSync.SqlBuild.Benchmarks.csproj --locked-mode -p:ContinuousIntegrationBuild=true
+          dotnet restore ./src/SqlBuildManager.DbInformation.UnitTest/SqlBuildManager.DbInformation.UnitTest.csproj --locked-mode -p:ContinuousIntegrationBuild=true
+          dotnet restore ./src/SqlBuildManager.SqlBuild.Benchmarks/SqlBuildManager.SqlBuild.Benchmarks.csproj --locked-mode -p:ContinuousIntegrationBuild=true

@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
-using SqlBuildManager.Console.ExternalTest;
+using SqlBuildManager.Console.TestBase.AzureTest;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;

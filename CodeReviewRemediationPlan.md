@@ -52,7 +52,7 @@ The review did not include live penetration testing, deployment to Azure, databa
 
 ### Cross-Runtime Risk Multipliers
 
-- `SqlSync.SqlBuild`, `SqlSync.Connection`, `SqlBuildManager.Logging`, and portions of `SqlBuildManager.Console` are reused by local, container, and Azure Batch workloads.
+- `SqlBuildManager.SqlBuild`, `SqlBuildManager.Connection`, `SqlBuildManager.Logging`, and portions of `SqlBuildManager.Console` are reused by local, container, and Azure Batch workloads.
 - Per-target or per-script inefficiencies multiply by scripts x databases x workers.
 - Static logging and worker state are especially risky under in-process threaded execution.
 - Batch package and container build defects propagate to every worker instance using the artifact.
@@ -87,7 +87,7 @@ The review did not include live penetration testing, deployment to Azure, databa
 **Confidence:** High  
 **Affected surfaces:** Shared settings serialization, CLI, containers, Batch
 
-`src/SqlSync.SqlBuild/Utilities/Cryptography.cs:37-54` catches every encryption exception and returns the original input. Callers can then serialize a secret to a settings file without knowing encryption failed.
+`src/SqlBuildManager.SqlBuild/Utilities/Cryptography.cs:37-54` catches every encryption exception and returns the original input. Callers can then serialize a secret to a settings file without knowing encryption failed.
 
 **Remediation**
 
@@ -106,7 +106,7 @@ The review did not include live penetration testing, deployment to Azure, databa
 **Confidence:** Medium  
 **Affected surfaces:** Shared build-package validation
 
-`src/SqlSync.SqlBuild/Validator/SchemaValidator.cs:44-52` creates `XmlTextReader` without explicitly setting `DtdProcessing.Prohibit` and `XmlResolver = null`. Current .NET defaults mitigate external entity resolution, but the security contract is implicit.
+`src/SqlBuildManager.SqlBuild/Validator/SchemaValidator.cs:44-52` creates `XmlTextReader` without explicitly setting `DtdProcessing.Prohibit` and `XmlResolver = null`. Current .NET defaults mitigate external entity resolution, but the security contract is implicit.
 
 **Remediation**
 
@@ -334,7 +334,7 @@ PostgreSQL-specific managed-identity user mapping is duplicated in `Worker.Local
 **Effort:** Small immediate fix; XL decomposition  
 **Affected surfaces:** Object scripting across all execution models
 
-`src/SqlSync.ObjectScript/ObjectScriptHelper.cs:1055-1134` directly configures SMO and recursively calls `ConnectToServer()` on retry without a bounded depth. The class also combines connection, scripting, file I/O, and progress reporting.
+`src/SqlBuildManager.ObjectScript/ObjectScriptHelper.cs:1055-1134` directly configures SMO and recursively calls `ConnectToServer()` on retry without a bounded depth. The class also combines connection, scripting, file I/O, and progress reporting.
 
 **Remediation**
 
@@ -348,7 +348,7 @@ PostgreSQL-specific managed-identity user mapping is duplicated in `Worker.Local
 **Effort:** Large  
 **Affected surfaces:** Shared metadata and scripting workflows
 
-`src/SqlSync.DbInformation/InfoHelper.cs` contains multiple `GetDatabaseTableList` implementations, direct `SqlConnection` construction, legacy `ArrayList`, broad catches, and no provider abstraction.
+`src/SqlBuildManager.DbInformation/InfoHelper.cs` contains multiple `GetDatabaseTableList` implementations, direct `SqlConnection` construction, legacy `ArrayList`, broad catches, and no provider abstraction.
 
 **Remediation**
 
@@ -491,7 +491,7 @@ AlmaLinux 8 Gen1 container pool with the default `Standard_D2s_v3` VM size.
 **Confidence:** High  
 **Affected surfaces:** Shared SQL Server/PostgreSQL access across all runtimes
 
-`src/SqlSync.Connection/SqlServerConnectionFactory.cs:43-52`, `ConnectionHelper.cs:115`, and `PostgresConnectionFactory.cs:64` set pooling to false.
+`src/SqlBuildManager.Connection/SqlServerConnectionFactory.cs:43-52`, `ConnectionHelper.cs:115`, and `PostgresConnectionFactory.cs:64` set pooling to false.
 
 **Remediation**
 
@@ -507,7 +507,7 @@ AlmaLinux 8 Gen1 container pool with the default `Standard_D2s_v3` VM size.
 **Confidence:** High  
 **Affected surfaces:** Core build engine, fleet-multiplied
 
-`src/SqlSync.SqlBuild/Status/StatusHelper.cs:34-45` can call `HasBlockingSqlLog` twice with identical inputs. The utility opens a new connection and performs a synchronous query per call.
+`src/SqlBuildManager.SqlBuild/Status/StatusHelper.cs:34-45` can call `HasBlockingSqlLog` twice with identical inputs. The utility opens a new connection and performs a synchronous query per call.
 
 **Remediation**
 
@@ -575,7 +575,7 @@ Policy classes and `src/SqlBuildManager.ScriptHandling/ScriptOptimization.cs:46-
 **Confidence:** High  
 **Affected surfaces:** Core executor across all runtimes
 
-`src/SqlSync.SqlBuild/SqlBuildRunner.cs:166-170` repeatedly concatenates result strings and republishes the full accumulated result for every batch.
+`src/SqlBuildManager.SqlBuild/SqlBuildRunner.cs:166-170` repeatedly concatenates result strings and republishes the full accumulated result for every batch.
 
 **Remediation**
 
@@ -590,7 +590,7 @@ Policy classes and `src/SqlBuildManager.ScriptHandling/ScriptOptimization.cs:46-
 **Confidence:** High  
 **Affected surfaces:** Shared build preparation
 
-`src/SqlSync.SqlBuild/Services/DefaultScriptBatcher.cs` rebuilds regexes, repeatedly checks comments by rescanning scripts, performs duplicate matches, and replaces full strings per `USE` statement.
+`src/SqlBuildManager.SqlBuild/Services/DefaultScriptBatcher.cs` rebuilds regexes, repeatedly checks comments by rescanning scripts, performs duplicate matches, and replaces full strings per `USE` statement.
 
 **Remediation:** Build a comment-span map once, cache regexes, and perform single-pass transformations.
 
@@ -600,7 +600,7 @@ Policy classes and `src/SqlBuildManager.ScriptHandling/ScriptOptimization.cs:46-
 **Confidence:** High  
 **Affected surfaces:** Large threaded/distributed target fleets
 
-`src/SqlSync.SqlBuild/Utilities/CustomExtensionMethods.cs:16-65` calls `list.Count()` and `list.ToList()` repeatedly inside chunk construction.
+`src/SqlBuildManager.SqlBuild/Utilities/CustomExtensionMethods.cs:16-65` calls `list.Count()` and `list.ToList()` repeatedly inside chunk construction.
 
 **Remediation:** Materialize once and use indexed slices or `Enumerable.Chunk`.
 
@@ -610,7 +610,7 @@ Policy classes and `src/SqlBuildManager.ScriptHandling/ScriptOptimization.cs:46-
 **Confidence:** Medium  
 **Affected surfaces:** Large builds
 
-`src/SqlSync.SqlBuild/Services/DefaultSqlLoggingService.cs:325-437` uses approximately 17 parameters per row. A large batch can exceed SQL Server's 2100-parameter limit and fall back to one insert per script.
+`src/SqlBuildManager.SqlBuild/Services/DefaultSqlLoggingService.cs:325-437` uses approximately 17 parameters per row. A large batch can exceed SQL Server's 2100-parameter limit and fall back to one insert per script.
 
 **Remediation:** Chunk below the limit or use `SqlBulkCopy`/platform-equivalent bulk loading.
 
@@ -620,7 +620,7 @@ Policy classes and `src/SqlBuildManager.ScriptHandling/ScriptOptimization.cs:46-
 **Confidence:** High  
 **Affected surfaces:** PostgreSQL managed-identity workloads
 
-`src/SqlSync.Connection/PostgresConnectionFactory.cs:78-139` constructs credentials and synchronously obtains a token per connection, unlike the cached SQL Server authentication provider.
+`src/SqlBuildManager.Connection/PostgresConnectionFactory.cs:78-139` constructs credentials and synchronously obtains a token per connection, unlike the cached SQL Server authentication provider.
 
 **Remediation:** Cache `TokenCredential`, asynchronously refresh tokens shortly before expiry, and avoid embedding volatile tokens in a way that fragments pools.
 
@@ -630,7 +630,7 @@ Policy classes and `src/SqlBuildManager.ScriptHandling/ScriptOptimization.cs:46-
 **Confidence:** High  
 **Affected surfaces:** SQL Server database information workflows
 
-`src/SqlSync.DbInformation/InfoHelper.cs:190-226` executes `sp_spaceused` sequentially for every table.
+`src/SqlBuildManager.DbInformation/InfoHelper.cs:190-226` executes `sp_spaceused` sequentially for every table.
 
 **Remediation:** Replace with one set-based query using catalog/partition metadata.
 
@@ -640,7 +640,7 @@ Policy classes and `src/SqlBuildManager.ScriptHandling/ScriptOptimization.cs:46-
 **Confidence:** High  
 **Affected surfaces:** SQL Server object validation
 
-`src/SqlSync.ObjectScript/ObjectValidator.cs:46-112` performs multiple commands per object. `:100` disposes the shared connection inside the loop, making the next iteration susceptible to `ObjectDisposedException`.
+`src/SqlBuildManager.ObjectScript/ObjectValidator.cs:46-112` performs multiple commands per object. `:100` disposes the shared connection inside the loop, making the next iteration susceptible to `ObjectDisposedException`.
 
 **Remediation**
 
@@ -737,7 +737,7 @@ No BenchmarkDotNet project, representative load test, connection/round-trip budg
 
 | Item | Status | Evidence |
 |---:|---|---|
-| 1 | Complete | Added scheduled/manual/labeled dependent-test workflow and scheduled/manual/tagged external SQL Server/PostgreSQL workflows with OIDC, generated credentials, cleanup, and artifact collection. Added the missing `SqlSync.DbInformation.UnitTest` project to pull-request CI. |
+| 1 | Complete | Added scheduled/manual/labeled dependent-test workflow and scheduled/manual/tagged external SQL Server/PostgreSQL workflows with OIDC, generated credentials, cleanup, and artifact collection. Added the missing `SqlBuildManager.DbInformation.UnitTest` project to pull-request CI. |
 | 2 | Complete for code/runtime defects | Added or confirmed regression coverage and fixes for fail-closed encryption, ACI unknown errors, Event Hub elapsed time, ObjectValidator connection scope, Release Batch packaging, connection pooling, and Batch cleanup. Cloud-dependent behavior is exercised by the scheduled dependent/external tiers. SEC-001's PostgreSQL network-posture change remains a Phase 0 infrastructure prerequisite and was not broadened into this Phase 1 execution. |
 | 3 | Complete | Added BenchmarkDotNet baselines for policy checks, regex caching, and target chunking plus a scheduled/manual/labeled workflow and result artifacts. |
 | 4 | Complete | Added set-based, parameterized status prefetch grouped by target database and replaced per-table `sp_spaceused` calls with one catalog/partition query. |

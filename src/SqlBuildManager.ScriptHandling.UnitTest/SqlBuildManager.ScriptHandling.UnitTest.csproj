@@ -19,11 +19,11 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlSync.Connection\SqlBuildManager.Connection.csproj" />
-    <ProjectReference Include="..\SqlSync.Constants\SqlBuildManager.Constants.csproj" />
-    <ProjectReference Include="..\SqlSync.DbInformation\SqlBuildManager.DbInformation.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Connection\SqlBuildManager.Connection.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Constants\SqlBuildManager.Constants.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.DbInformation\SqlBuildManager.DbInformation.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
     <ProjectReference Include="..\SqlBuildManager.ScriptHandling\SqlBuildManager.ScriptHandling.csproj" />
-    <ProjectReference Include="..\SqlSync.SqlBuild\SqlBuildManager.SqlBuild.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.SqlBuild\SqlBuildManager.SqlBuild.csproj" />
   </ItemGroup>
 </Project>

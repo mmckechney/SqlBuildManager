@@ -21,11 +21,11 @@ using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console.Aci
 {
-    class AciManager
+    public class AciManager
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
-        internal static async Task<string> DeployNetworkProfile(CommandLineArgs cmdLine)
+        public static async Task<string> DeployNetworkProfile(CommandLineArgs cmdLine)
         {
             var rgResourceId = ResourceGroupResource.CreateResourceIdentifier(cmdLine.AciArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup);
             var rgResourceGroup = ArmHelper.SbmArmClient.GetResourceGroupResource(rgResourceId).Get().Value;
@@ -295,7 +295,7 @@ namespace SqlBuildManager.Console.Aci
             }
         }
 
-        internal static async Task<bool> DeleteAciResources(
+        public static async Task<bool> DeleteAciResources(
             string subscriptionId,
             string resourceGroupName,
             string aciName)

@@ -121,8 +121,8 @@ There are three types of Tests included in the solution:
 
 1. True unit tests with no external dependency - found in the  `~UnitTest.csproj` projects
 2. Those that are dependent on a local SQLEXPRESS database - found in the `~.Dependent.UnitTest.csproj` projects. If you want to be able to run the database dependent tests, you will need to install SQL Express as per the next section. \
-**IMPORTANT**: If running the SQLEXPRESS dependent tests for the first time on your local machine, you need to run the tests in the `SqlSync.SqlBuild.Dependent.UnitTest.csproj` _first_. This project has the scripts to create the necessary SQLEXPRESS databases.
-3. Integration tests that leverage Azure resources for Batch and Kubernetes. These are found in `SqlBuildManager.Console.ExternalTest.csproj`, `SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj`, and `SqlBuildManager.Console.MySQL.ExternalTest.csproj`. To run these tests, first run `azd up` from the repo root (see [Setting Up an Azure Environment](setup_azure_environment.md)) with the default test database count of 10. This will create the necessary resources and test config files (in `/src/TestConfig` folder) needed to run the tests.
+**IMPORTANT**: If running the SQLEXPRESS dependent tests for the first time on your local machine, you need to run the tests in the `SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest.csproj` _first_. This project has the scripts to create the necessary SQLEXPRESS databases.
+3. Integration tests that leverage Azure resources for Batch and Kubernetes. These are found in `SqlBuildManager.Console.SqlServer.ExternalTest.csproj`, `SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj`, and `SqlBuildManager.Console.MySQL.ExternalTest.csproj`. To run these tests, first run `azd up` from the repo root (see [Setting Up an Azure Environment](setup_azure_environment.md)) with the default test database count of 10. This will create the necessary resources and test config files (in `/src/TestConfig` folder) needed to run the tests.
 
 ## SQL Express
 

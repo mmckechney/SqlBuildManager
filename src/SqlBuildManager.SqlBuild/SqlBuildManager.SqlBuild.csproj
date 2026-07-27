@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AdHocQuery\Xml\QueryResult_html.xslt" />
+    <EmbeddedResource Include="SqlLogging\LoggingTable.sql" />
+    <EmbeddedResource Include="SqlLogging\LoggingTable.PostgreSQL.sql" />
+    <EmbeddedResource Include="SqlLogging\LoggingTable.MySQL.sql" />
+    <EmbeddedResource Include="SqlLogging\LoggingTableCommitCheckIndex.sql" />
+    <EmbeddedResource Include="SqlLogging\LoggingTableCommitCheckIndex.PostgreSQL.sql" />
+    <EmbeddedResource Include="SqlLogging\LoggingTableCommitCheckIndex.MySQL.sql" />
+    <EmbeddedResource Include="SqlLogging\LogScript.sql" />
+    <EmbeddedResource Include="SqlLogging\LogScript.PostgreSQL.sql" />
+    <EmbeddedResource Include="SqlLogging\LogScript.MySQL.sql" />
+    <EmbeddedResource Include="SqlLogging\VersionsInsert.sql" />
+    <EmbeddedResource Include="Status\Xml\ServerReport_csv.xslt" />
+    <EmbeddedResource Include="Status\Xml\ServerReport_html.xslt" />
+    <EmbeddedResource Include="Status\Xml\ServerReport_summary.xslt" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.SqlServer.DacFx" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Connection\SqlBuildManager.Connection.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Constants\SqlBuildManager.Constants.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.DbInformation\SqlBuildManager.DbInformation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CodeTable\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Legacy\ServerConnectConfig.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Legacy\SQLSyncBuildProject.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+  <PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>false</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>1701;1702;CA2100</NoWarn>
+  </PropertyGroup>
+</Project>

@@ -21,12 +21,9 @@
     <PackageReference Include="System.CommandLine" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\SqlBuildManager.Console.ExternalTest\AciTestResourceTracker.cs" Link="AciTestResourceTracker.cs" />
-    <Compile Include="..\SqlBuildManager.Console.ExternalTest\BlobLogValidator.cs" Link="BlobLogValidator.cs" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\SqlBuildManager.Console.TestBase.AzureTest\SqlBuildManager.Console.TestBase.AzureTest.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Console\sbm.csproj" />
-    <ProjectReference Include="..\SqlSync.SqlBuild\SqlBuildManager.SqlBuild.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.SqlBuild\SqlBuildManager.SqlBuild.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\TestConfig\**\*.*">

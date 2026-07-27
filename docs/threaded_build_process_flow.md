@@ -425,12 +425,12 @@ graph TD
 |-------|------|----------------|
 | `ThreadedManager` | `Threaded/ThreadedManager.cs` | Orchestrates entire threaded build |
 | `ThreadedRunner` | `Threaded/ThreadedRunner.cs` | Executes build for single server/database set |
-| `SqlBuildHelper` | `SqlSync.SqlBuild/SqlBuildHelper.cs` | Entry point for build execution |
-| `SqlBuildOrchestrator` | `SqlSync.SqlBuild/SqlBuildOrchestrator.cs` | Handles timeout retries |
-| `SqlBuildRunner` | `SqlSync.SqlBuild/SqlBuildRunner.cs` | Iterates through scripts |
-| `SqlCommandExecutor` | `SqlSync.SqlBuild/SqlCommandExecutor.cs` | ADO.NET command execution |
-| `DefaultBuildFinalizer` | `SqlSync.SqlBuild/Services/DefaultBuildFinalizer.cs` | Commit/rollback transactions, record scripts |
-| `DefaultSqlLoggingService` | `SqlSync.SqlBuild/Services/DefaultSqlLoggingService.cs` | Database logging to SqlBuild_Logging table |
+| `SqlBuildHelper` | `SqlBuildManager.SqlBuild/SqlBuildHelper.cs` | Entry point for build execution |
+| `SqlBuildOrchestrator` | `SqlBuildManager.SqlBuild/SqlBuildOrchestrator.cs` | Handles timeout retries |
+| `SqlBuildRunner` | `SqlBuildManager.SqlBuild/SqlBuildRunner.cs` | Iterates through scripts |
+| `SqlCommandExecutor` | `SqlBuildManager.SqlBuild/SqlCommandExecutor.cs` | ADO.NET command execution |
+| `DefaultBuildFinalizer` | `SqlBuildManager.SqlBuild/Services/DefaultBuildFinalizer.cs` | Commit/rollback transactions, record scripts |
+| `DefaultSqlLoggingService` | `SqlBuildManager.SqlBuild/Services/DefaultSqlLoggingService.cs` | Database logging to SqlBuild_Logging table |
 | `QueueManager` | `Queue/QueueManager.cs` | Service Bus message handling |
 | `Concurrency` | `Threaded/Concurrency.cs` | Concurrency bucket calculation |
 | `DacPacHelper` | `DacPac/DacPacHelper.cs` | DACPAC extraction and delta generation |

@@ -37,7 +37,7 @@
 
 .PARAMETER testFilter
     Optional test filter (e.g., "FullyQualifiedName~ContainerApp" or "TestCategory=Integration").
-    If not specified, runs all tests in SqlBuildManager.Console.ExternalTest.
+    If not specified, runs all tests in SqlBuildManager.Console.SqlServer.ExternalTest.
 
 .PARAMETER imageTag
     The container image tag to use (default: test-runner).
@@ -203,7 +203,7 @@ if ($testFilter -like "*PostgreSQL.ExternalTest*") {
 } elseif ($testFilter -like "*MySQL.ExternalTest*") {
     $testDll = "SqlBuildManager.Console.MySQL.ExternalTest.dll"
 } else {
-    $testDll = "SqlBuildManager.Console.ExternalTest.dll"
+    $testDll = "SqlBuildManager.Console.SqlServer.ExternalTest.dll"
 }
 
 if ($testFilter) {
