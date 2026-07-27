@@ -32,7 +32,7 @@ flowchart TD
 ```
 
 The pre-provision and post-provision hooks run on the machine invoking `azd up`. The database
-bootstrap container runs in Azure because SQL Server and PostgreSQL are private-endpoint-only and
+bootstrap container runs in Azure because SQL Server, PostgreSQL, and MySQL are private-endpoint-only and
 cannot be reached directly from a normal developer workstation.
 
 ## Phase 1: Pre-provision hook
@@ -49,7 +49,7 @@ The script retrieves the caller's public IP from `api.ipify.org` and saves it as
 CURRENT_IP_ADDRESS
 ```
 
-SQL Server and PostgreSQL no longer use this value because their public network access is disabled.
+SQL Server, PostgreSQL, and MySQL no longer use this value because their public network access is disabled.
 Other modules can still use it when those services are configured with public network access and
 IP-based network rules.
 
@@ -75,6 +75,7 @@ On the first run for an azd environment, the hook prompts for:
 - Azure Kubernetes Service
 - SQL Server
 - PostgreSQL
+- MySQL
 
 The selections are stored under `.azure/<environment>/.env` as values such as:
 
@@ -85,6 +86,7 @@ DEPLOY_CONTAINERAPP
 DEPLOY_AKS
 DEPLOY_SQLSERVER
 DEPLOY_POSTGRESQL
+DEPLOY_MYSQL
 ```
 
 Later runs reuse the saved selections. Change them with `azd env set` or by editing the environment
@@ -106,13 +108,23 @@ Consequently, the runtime/test container images are rebuilt during each `azd up`
 values to `false` before `azd up` is not persistent because the pre-provision hook writes them back
 to `true`.
 
-### Generate the PostgreSQL local administrator password
+### Generate the PostgreSQL and MySQL local administrator passwords
 
 When PostgreSQL is selected, the hook generates `PG_ADMIN_PASSWORD` if it does not already exist.
-The value is saved in the azd environment and passed to Bicep as a secure parameter.
+When MySQL is selected, the hook generates `MYSQL_ADMIN_PASSWORD` if it does not already exist.
+The values are saved in the azd environment and passed to Bicep as secure parameters.
 
-The private bootstrap container does not receive this password. It connects to PostgreSQL with a
-managed identity access token.
+The private bootstrap container does not receive these passwords. It connects with managed-identity
+tokens for SQL/PostgreSQL operations, and for MySQL when `MYSQL_AUTH_MODE=ManagedIdentity`.
+
+MySQL deployment also stores:
+
+```text
+MYSQL_ADMIN_USER
+MYSQL_AUTH_MODE
+```
+
+`MYSQL_AUTH_MODE` defaults to `Password` and can be set to `ManagedIdentity` for Entra-based MySQL runtime authentication paths.
 
 ## Phase 2: Bicep deployment
 
@@ -132,7 +144,7 @@ The deployment includes:
 - Azure Container Registry.
 - Storage, Event Hubs, Service Bus, and Log Analytics.
 - Selected compute platforms.
-- Selected SQL Server and PostgreSQL resources.
+- Selected SQL Server, PostgreSQL, and MySQL resources.
 
 ### Runtime managed identity
 
@@ -192,7 +204,7 @@ a second end-to-end token validation layer inside the proxy.
 
 ### Database networking
 
-SQL Server and PostgreSQL both have:
+SQL Server, PostgreSQL, and MySQL all have:
 
 - Public network access disabled.
 - No current-IP firewall rule.
@@ -220,6 +232,14 @@ PostgreSQL supports multiple Microsoft Entra administrators. Bicep adds both:
 - The post-provision managed identity.
 
 This allows PostgreSQL initialization without removing the deploying user's access.
+
+MySQL servers are created with:
+
+- A local administrator (`MYSQL_ADMIN_USER` / `MYSQL_ADMIN_PASSWORD`).
+- The post-provision managed identity as the Microsoft Entra administrator.
+
+When `MYSQL_AUTH_MODE=ManagedIdentity`, post-provision also performs MySQL Entra user provisioning for
+the runtime identity.
 
 ### Outputs returned to azd
 
@@ -263,7 +283,7 @@ infra/postprovision/run-private-postprovision.ps1
 
 ### Why a container is required
 
-Creating the Azure SQL and PostgreSQL server resources is an ARM control-plane operation. Creating a
+Creating the Azure SQL, PostgreSQL, and MySQL server resources is an ARM control-plane operation. Creating a
 database user and granting database roles is a database data-plane operation.
 
 With public access disabled, a local post-provision hook can still call ARM but cannot open a database
@@ -290,6 +310,7 @@ The hook creates a minimal temporary build context containing:
 - The container entry script.
 - SQL Server permission-grant script.
 - PostgreSQL permission-grant script.
+- MySQL permission-grant script.
 - Shared resource-name script.
 
 It then runs:
@@ -316,6 +337,7 @@ The image contains:
 - Microsoft ODBC Driver for SQL Server
 - `SqlServer` PowerShell module
 - PostgreSQL `psql`
+- MySQL `mysql` client
 - The private initialization scripts
 
 ### Temporary SQL Server administrator swap
@@ -360,7 +382,7 @@ Inside the container, the entry script runs:
 az login --identity --client-id <post-provision-client-id>
 ```
 
-No client secret, registry password, SQL password, or PostgreSQL password is passed to the container.
+No client secret, registry password, SQL password, PostgreSQL password, or MySQL password is passed to the container.
 
 ### SQL Server initialization
 
@@ -401,6 +423,34 @@ For both PostgreSQL servers, the script:
 The PostgreSQL role uses the runtime identity's object/principal ID and type `service`. Explicit OID
 mapping avoids a Microsoft Graph lookup.
 
+### MySQL initialization
+
+Script:
+
+```text
+scripts/Database/grant_mysql_identity_permissions.ps1
+```
+
+This step runs only when:
+
+```text
+DEPLOY_MYSQL=true
+MYSQL_AUTH_MODE=ManagedIdentity
+```
+
+For both MySQL servers, the script:
+
+1. Gets an `oss-rdbms` access token for the post-provision identity.
+2. Connects with `mysql` through the MySQL private endpoint.
+3. Creates an Entra-backed MySQL user for `<prefix>identity`.
+4. Grants privileges on each test database.
+
+Managed-identity MySQL initialization requires Graph directory-read permissions for MySQL's Entra user resolution path. The local post-provision step can grant those permissions with:
+
+```text
+scripts/Database/grant_mysql_graph_permissions.ps1
+```
+
 ### Completion and failure handling
 
 The local hook polls ACI for up to 30 minutes.
@@ -415,7 +465,7 @@ The container group remains deployed in its terminated state for inspection. The
 deletes and replaces it.
 
 The SQL administrator restoration runs in a `finally` block whether image deployment, ACI execution,
-SQL initialization, or PostgreSQL initialization succeeds or fails. Restoration is retried five
+SQL initialization, PostgreSQL initialization, or MySQL initialization succeeds or fails. Restoration is retried five
 times for every SQL server that was successfully switched.
 
 If restoration cannot be completed, the hook fails and reports the affected server. The bootstrap
@@ -510,7 +560,7 @@ sbm storage download `
 Blob names use `/` separators even on Windows. The download command prints each local file path
 after it is saved.
 
-### Managed-identity settings files
+### Managed-identity and MySQL password settings files
 
 The hook runs:
 
@@ -526,6 +576,14 @@ src/TestConfig
 
 Although the log message describes this as optional, the conditional guard is currently commented
 out, so settings generation runs on every `azd up`.
+
+When MySQL is deployed with `MYSQL_AUTH_MODE=Password`, the hook also runs:
+
+```text
+scripts/create_all_settingsfiles_mysql_password.ps1
+```
+
+This generates MySQL password-auth settings files (for example `settingsfile-aci-mysql-password.json`).
 
 ### SQL Server target files
 
@@ -552,6 +610,18 @@ scripts/Database/create_pg_database_override_files.ps1
 It uses PostgreSQL ARM commands to enumerate servers and databases and writes PostgreSQL test target
 files and `pg-server.txt`.
 
+### MySQL target files
+
+The hook runs:
+
+```text
+scripts/Database/create_mysql_database_override_files.ps1
+```
+
+It uses MySQL ARM commands to enumerate servers and databases and writes MySQL test target files,
+including `mysql-databasetargets.cfg`, `mysql-clientdbtargets.cfg`, `mysql-clientdbtargets-doubledb.cfg`,
+and `mysql-server.txt`.
+
 ### Generated local secrets and keys
 
 `scripts/key_file_names.ps1` creates or reuses:
@@ -567,6 +637,13 @@ The PostgreSQL target generator can also write:
 ```text
 pg-un.txt
 pg-pw.txt
+```
+
+The MySQL target generator can also write:
+
+```text
+mysql-un.txt
+mysql-pw.txt
 ```
 
 These files support local and integration-test configuration. `src/TestConfig` is excluded by
@@ -613,9 +690,9 @@ immutable.
 
 | Identity | Purpose | Database privilege |
 |---|---|---|
-| Deploying user | Runs `azd up`, receives RBAC, remains final SQL/PG administrator | SQL/PG administrator |
-| `<prefix>identity` | Runtime identity used by SQL Build Manager workloads | `db_owner` in SQL test databases and explicit PostgreSQL grants |
-| `<prefix>postprovision` | Runs the private bootstrap ACI | Temporary SQL administrator; additional PostgreSQL administrator |
+| Deploying user | Runs `azd up`, receives RBAC, remains final SQL/PG administrator | SQL/PG administrator (MySQL local admin remains `MYSQL_ADMIN_USER` unless explicitly changed) |
+| `<prefix>identity` | Runtime identity used by SQL Build Manager workloads | `db_owner` in SQL test databases, explicit PostgreSQL grants, and optional MySQL grants when `MYSQL_AUTH_MODE=ManagedIdentity` |
+| `<prefix>postprovision` | Runs the private bootstrap ACI | Temporary SQL administrator; additional PostgreSQL administrator; MySQL Entra administrator |
 | `<prefix>relayproxy` | Runs the Relay listener for private Blob, Event Hub, and test SQL operations | None; restricted SQL uses the runtime identity |
 
 ## Rerunning `azd up`
@@ -625,6 +702,7 @@ The deployment is designed to be rerunnable:
 - Bicep resource deployment is incremental.
 - Database users and role memberships are checked before creation.
 - PostgreSQL principal mapping tolerates an existing role.
+- MySQL principal mapping tolerates existing local users and recreates as Entra users when needed.
 - The bootstrap image is rebuilt.
 - The previous bootstrap ACI is deleted and recreated.
 - Generated local configuration files are refreshed.
@@ -675,11 +753,13 @@ After Bicep outputs are available in the azd environment:
 
 ```powershell
 .\scripts\ContainerRegistry\run_private_postprovision_container.ps1 `
-  -prefix <prefix> `
+  -envName <env-name> `
   -resourceGroupName <prefix>-rg `
   -repoRoot $PWD `
   -deploySqlServer $true `
-  -deployPostgreSQL $true
+  -deployPostgreSQL $true `
+  -deployMySQL $true `
+  -mySqlUseManagedIdentityAuth $false
 ```
 
 This rebuilds the bootstrap image, recreates ACI, reruns database initialization, and restores the
@@ -695,6 +775,7 @@ SQL administrator.
 | `infra/modules/network.bicep` | VNET, delegated compute subnets, and private endpoint subnet |
 | `infra/modules/database.bicep` | Private SQL Server resources, databases, DNS, and private endpoints |
 | `infra/modules/postgresql.bicep` | Private PostgreSQL resources, administrators, DNS, and private endpoints |
+| `infra/modules/mysql.bicep` | Private MySQL resources, administrators, DNS, and private endpoints |
 | `infra/modules/postprovisionidentity.bicep` | Bootstrap managed identity and RBAC |
 | `infra/modules/relayproxy.bicep` | Relay, proxy identity, private endpoint, and scoped RBAC |
 | `infra/postprovision/Dockerfile` | Bootstrap container image |
@@ -705,5 +786,8 @@ SQL administrator.
 | `src/SqlBuildManager.RelayProxy` | Managed-identity Relay listener and restricted private-service operation handler |
 | `scripts/Database/grant_identity_permissions.ps1` | SQL contained-user creation and role assignment |
 | `scripts/Database/grant_pg_identity_permissions.ps1` | PostgreSQL principal mapping and grants |
+| `scripts/Database/grant_mysql_identity_permissions.ps1` | MySQL Entra user creation and grants (ManagedIdentity mode) |
+| `scripts/Database/grant_mysql_graph_permissions.ps1` | Graph app-role assignment for MySQL Entra resolution prerequisites |
 | `scripts/Database/create_database_override_files.ps1` | Local SQL test target generation |
 | `scripts/Database/create_pg_database_override_files.ps1` | Local PostgreSQL test target generation |
+| `scripts/Database/create_mysql_database_override_files.ps1` | Local MySQL test target generation |

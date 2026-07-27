@@ -2,7 +2,7 @@
 
 # SQL Build Manager
 
-SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases (both SQL Server and PostgreSQL). It provides a comprehensive set of command line options for the management from one to many thousands of databases.
+SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle of your databases (SQL Server, PostgreSQL, and MySQL). It provides a comprehensive set of command line options for the management from one to many thousands of databases.
 
 ![.NET Core Build](https://github.com/mmckechney/SqlBuildManager/workflows/.NET%20Core%20Build/badge.svg)
 
@@ -12,11 +12,15 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 
 
 ---
-### **Highlighted feature update, v16+: PostgreSQL Support**
+### **Highlighted feature update, v16+: PostgreSQL and MySQL Support**
 
-SQL Build Manager now supports **PostgreSQL** as an alternative database target alongside Microsoft SQL Server. Use `--platform PostgreSQL` in any build command to target PostgreSQL databases. See the [PostgreSQL documentation](docs/postgresql.md) for full details.
+SQL Build Manager supports **PostgreSQL** and **MySQL** as alternative database targets alongside Microsoft SQL Server. Use `--platform PostgreSQL` or `--platform MySQL` in any build command to target those databases.
 
-Features **not yet available** for PostgreSQL:
+See:
+- [PostgreSQL documentation](docs/postgresql.md)
+- [MySQL documentation](docs/mysql.md)
+
+Features **not yet available** for PostgreSQL/MySQL:
 - DACPAC operations (extract, compare, `create fromdacpacs` / `create fromdacpacdiff`)
 - Object scripting (SMO-based)
 - Some SQL Server-specific script policies (`WithNoLockPolicy`, `QualifiedNamesPolicy`)
@@ -37,7 +41,7 @@ With this update, it significantly reduces the the need to save and manage secre
 
 - [SQL Build Manager](#sql-build-manager)
       - [_Be sure to review the change log for the latest updates, enhancements and bug fixes_](#be-sure-to-review-the-change-log-for-the-latest-updates-enhancements-and-bug-fixes)
-    - [**Highlighted feature update, v16+: PostgreSQL Support**](#highlighted-feature-update-v16-postgresql-support)
+    - [**Highlighted feature update, v16+: PostgreSQL and MySQL Support**](#highlighted-feature-update-v16-postgresql-and-mysql-support)
     - [**Key feature enhancement with Version 14.4+: Expanded use of Azure User Assigned Managed Identity**](#key-feature-enhancement-with-version-144-expanded-use-of-azure-user-assigned-managed-identity)
   - [Contents](#contents)
   - [Important Concepts](#important-concepts)
@@ -60,6 +64,7 @@ With this update, it significantly reduces the the need to save and manage secre
     - [Threaded](#threaded-1)
     - [Batch, Kubernetes and ACI](#batch-kubernetes-and-aci)
   - [Command Line Reference](docs/commandline.md) - Full command reference with runtime options
+  - [MySQL Platform Guide](docs/mysql.md)
   - [Execution Options and Exit Codes](docs/execution-options-and-exit-codes.md)
   - [Dependency and Supply-Chain Policy](docs/dependency-management.md)
   - [Detailed Process Flow](docs/threaded_build_process_flow.md)
@@ -107,7 +112,7 @@ SQL Build Manager is an operator-run tool that handles connection strings, accou
 ## Key Features
 
 - Packaging of all of your update scripts and runtime meta-data into a single .sbm (zip file) or leverage data-tier application ([DACPAC](https://docs.microsoft.com/en-us/sql/relational-databases/data-tier-applications/deploy-a-data-tier-application)) deployment across your entire database fleet.
-- **Supports both Microsoft SQL Server and PostgreSQL** — select the target platform at runtime with `--platform SqlServer` or `--platform PostgreSQL`
+- **Supports Microsoft SQL Server, PostgreSQL, and MySQL** — select the target platform at runtime with `--platform SqlServer`, `--platform PostgreSQL`, or `--platform MySQL`
 - Massively parallel execution across thousands of databases utilizing local threading or an [Azure Batch, Kubernetes, Container Apps or Container Instance remote execution](docs/massively_parallel.md)
 - Single transaction handling. If any one script fails, the entire package is rolled back, leaving the database unchanged.
 - Handle multiple database updates in one package - seamlessly update all your databases with local threading or massively parallel remote processing.

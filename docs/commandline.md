@@ -30,7 +30,7 @@ These options are available across all commands:
 | Option | Description |
 |--------|-------------|
 | `--loglevel` | Logging level for console and log file. Values: `Trace`, `Debug`, `Information` (default), `Warning`, `Error`, `Critical` |
-| `--platform` / `--databaseplatform` | Target database platform: `SqlServer` (default) or `PostgreSQL`. See [PostgreSQL docs](postgresql.md) |
+| `--platform` / `--databaseplatform` | Target database platform: `SqlServer` (default), `PostgreSQL`, or `MySQL`. See [PostgreSQL docs](postgresql.md) and [MySQL docs](mysql.md) |
 
 ----
 
@@ -284,7 +284,7 @@ When running as a container worker (Kubernetes, ACI, or Container Apps), runtime
 | `Sbm_ServiceBusTopicConnectionString` | Service Bus connection string |
 | `Sbm_EventHubConnectionString` | Event Hub connection string |
 | `Sbm_AuthType` | Authentication type |
-| `Sbm_DatabasePlatform` | Target platform (`SqlServer` or `PostgreSQL`) |
+| `Sbm_DatabasePlatform` | Target platform (`SqlServer`, `PostgreSQL`, or `MySQL`) |
 | `Sbm_EventHubLogging` | Pipe-delimited logging flags (e.g. `EssentialOnly\|ScriptErrors`) |
 | `Sbm_AllowObjectDelete` | Allow object deletion in DACPAC comparisons |
 | `Sbm_UserName` | Database username (when not using Key Vault) |
