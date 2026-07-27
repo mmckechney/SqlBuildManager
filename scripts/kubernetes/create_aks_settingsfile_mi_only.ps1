@@ -6,7 +6,12 @@ param
     [string] $sbmExe = "sbm.exe",
     [string] $path,
     [string] $resourceGroupName,
-    [int] $podCount = 2
+    [int] $podCount = 2,
+    [ValidateSet("AzureADDefault", "Password")]
+    [string] $databaseAuthType = "AzureADDefault",
+    [string] $databaseUserName = "",
+    [string] $databasePassword = "",
+    [string] $settingsFileSuffix = "mi-only"
 )
 
 <#
@@ -70,6 +75,10 @@ $path = Resolve-Path $path
 Write-Host "Output path: $path" -ForegroundColor DarkGreen
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 
+if ($databaseAuthType -eq "Password" -and ([string]::IsNullOrWhiteSpace($databaseUserName) -or [string]::IsNullOrWhiteSpace($databasePassword))) {
+    throw "databaseUserName and databasePassword are required when databaseAuthType is Password."
+}
+
 # Get resource information
 $subscriptionId = az account show --query id --output tsv
 $tenantId = az account show -o tsv --query tenantId
@@ -85,7 +94,7 @@ Write-Host "Using Service Account: $serviceAccountName" -ForegroundColor DarkGre
 $eventHubName = az eventhubs eventhub list --resource-group $resourceGroupName --namespace-name $eventHubNamespaceName -o tsv --query "[0].name"
 
 # Output file path
-$settingsFileName = Join-Path $path "settingsfile-k8s-mi-only.json"
+$settingsFileName = Join-Path $path "settingsfile-k8s-$settingsFileSuffix.json"
 
 # Settings file key
 $keyFile = Join-Path $path "settingsfilekey.txt"
@@ -127,7 +136,11 @@ $params += @("-sb", $serviceBusNamespaceName)
 
 # Set auth type to Managed Identity
 
-$params += @("--authtype", "AzureADDefault") #use this for local testing, will be overridden to ManagedIdentity in ACI
+$params += @("--authtype", $databaseAuthType)
+if ($databaseAuthType -eq "Password") {
+    $params += @("--username", $databaseUserName)
+    $params += @("--password", $databasePassword)
+}
 
 # Output file
 $params += @("--settingsfile", $settingsFileName)

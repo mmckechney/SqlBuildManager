@@ -9,6 +9,15 @@ param mySqlAdminUser string
 @description('Administrator password for MySQL Flexible Server')
 param mySqlAdminPassword string
 
+@description('Object ID (GUID) of the managed identity used as the MySQL Entra administrator')
+param postProvisionAdminObjectId string
+
+@description('Login name of the managed identity used as the MySQL Entra administrator')
+param postProvisionAdminName string
+
+@description('Resource ID of the user-assigned identity used by MySQL Entra authentication')
+param postProvisionIdentityResourceId string
+
 @description('Number of test databases to create per server')
 param testDbCountPerServer int = 10
 
@@ -26,6 +35,12 @@ var prefixes = loadJsonContent('../resourcetypes.json')
 resource mySqlFlexServerA 'Microsoft.DBforMySQL/flexibleServers@2023-12-30' = {
   name: mySqlServerNameA
   location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${postProvisionIdentityResourceId}': {}
+    }
+  }
   sku: {
     name: 'Standard_B1ms'
     tier: 'Burstable'
@@ -52,10 +67,25 @@ resource mySqlFlexServerA 'Microsoft.DBforMySQL/flexibleServers@2023-12-30' = {
   }
 }
 
+resource mySqlAadAdminA 'Microsoft.DBforMySQL/flexibleServers/administrators@2023-12-30' = {
+  parent: mySqlFlexServerA
+  name: 'ActiveDirectory'
+  properties: {
+    administratorType: 'ActiveDirectory'
+    identityResourceId: postProvisionIdentityResourceId
+    login: postProvisionAdminName
+    sid: postProvisionAdminObjectId
+    tenantId: subscription().tenantId
+  }
+}
+
 @batchSize(1)
 resource mySqlDatabasesA 'Microsoft.DBforMySQL/flexibleServers/databases@2023-12-30' = [for i in range(1, testDbCountPerServer): {
   parent: mySqlFlexServerA
   name: 'sbm_mysql_test${i}'
+  dependsOn: [
+    mySqlAadAdminA
+  ]
   properties: {
     charset: 'utf8mb4'
     collation: 'utf8mb4_0900_ai_ci'
@@ -65,6 +95,12 @@ resource mySqlDatabasesA 'Microsoft.DBforMySQL/flexibleServers/databases@2023-12
 resource mySqlFlexServerB 'Microsoft.DBforMySQL/flexibleServers@2023-12-30' = {
   name: mySqlServerNameB
   location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${postProvisionIdentityResourceId}': {}
+    }
+  }
   sku: {
     name: 'Standard_B1ms'
     tier: 'Burstable'
@@ -91,10 +127,25 @@ resource mySqlFlexServerB 'Microsoft.DBforMySQL/flexibleServers@2023-12-30' = {
   }
 }
 
+resource mySqlAadAdminB 'Microsoft.DBforMySQL/flexibleServers/administrators@2023-12-30' = {
+  parent: mySqlFlexServerB
+  name: 'ActiveDirectory'
+  properties: {
+    administratorType: 'ActiveDirectory'
+    identityResourceId: postProvisionIdentityResourceId
+    login: postProvisionAdminName
+    sid: postProvisionAdminObjectId
+    tenantId: subscription().tenantId
+  }
+}
+
 @batchSize(1)
 resource mySqlDatabasesB 'Microsoft.DBforMySQL/flexibleServers/databases@2023-12-30' = [for i in range(1, testDbCountPerServer): {
   parent: mySqlFlexServerB
   name: 'sbm_mysql_test${i}'
+  dependsOn: [
+    mySqlAadAdminB
+  ]
   properties: {
     charset: 'utf8mb4'
     collation: 'utf8mb4_0900_ai_ci'

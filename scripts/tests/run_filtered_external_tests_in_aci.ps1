@@ -135,6 +135,14 @@ Write-Debug "Using Container Registry: $acrLoginServer"
 #############################################
 # Build and push test image if requested
 #############################################
+# if (-not $buildImage -and $testFilter -like "*MySQL.ExternalTest*") {
+#     $mySqlAuthMode = azd env get-value MYSQL_AUTH_MODE 2>$null
+#     if ($LASTEXITCODE -eq 0 -and $mySqlAuthMode -eq "Password") {
+#         Write-Host "MYSQL_AUTH_MODE=Password detected for MySQL external tests; enabling -buildImage to avoid stale ManagedIdentity test image reuse." -ForegroundColor Yellow
+#         $buildImage = $true
+#     }
+# }
+
 if ($buildImage) {
     Write-Host "========================================" -ForegroundColor Cyan
     Write-Host "Building Test Container Image" -ForegroundColor Cyan

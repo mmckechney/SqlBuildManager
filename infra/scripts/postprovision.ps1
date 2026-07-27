@@ -51,9 +51,33 @@ write-Host "SBM Executable: $sbmExe" -ForegroundColor DarkGreen
 $sqlServerDeployed = Get-AzdEnvValue "DEPLOY_SQLSERVER"
 $pgDeployed = Get-AzdEnvValue "DEPLOY_POSTGRESQL"
 $mySqlDeployed = Get-AzdEnvValue "DEPLOY_MYSQL"
+$mySqlAuthMode = Get-AzdEnvValue "MYSQL_AUTH_MODE"
+if ([string]::IsNullOrWhiteSpace($mySqlAuthMode)) {
+    $mySqlAuthMode = "Password"
+}
+$useMySqlManagedIdentityAuth = ($mySqlDeployed -eq "true" -and $mySqlAuthMode -eq "ManagedIdentity")
 $privateInitializationScript = Join-Path $repoRoot "scripts\ContainerRegistry\run_private_postprovision_container.ps1"
 if (-not (Test-Path $privateInitializationScript)) {
     throw "Private initialization script not found at '$privateInitializationScript'."
+}
+
+if ($useMySqlManagedIdentityAuth) {
+    Write-Host ""
+    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host "Post-Provision: MySQL Graph Permissions" -ForegroundColor Cyan
+    Write-Host "========================================" -ForegroundColor Cyan
+
+    $mySqlGraphPermissionScript = Join-Path $repoRoot "scripts\Database\grant_mysql_graph_permissions.ps1"
+    if (-not (Test-Path $mySqlGraphPermissionScript)) {
+        throw "MySQL Graph permission script not found at '$mySqlGraphPermissionScript'."
+    }
+
+    & $mySqlGraphPermissionScript `
+        -envName $envName `
+        -resourceGroupName $resourceGroupName
+}
+elseif ($mySqlDeployed -eq "true") {
+    Write-Host "MySQL auth mode is '$mySqlAuthMode' - skipping MySQL Graph permission assignment." -ForegroundColor DarkGray
 }
 
 & $privateInitializationScript `
@@ -62,7 +86,8 @@ if (-not (Test-Path $privateInitializationScript)) {
     -repoRoot $repoRoot `
     -deploySqlServer ($sqlServerDeployed -ne "false") `
     -deployPostgreSQL ($pgDeployed -eq "true") `
-    -deployMySQL ($mySqlDeployed -eq "true")
+    -deployMySQL ($mySqlDeployed -eq "true") `
+    -mySqlUseManagedIdentityAuth $useMySqlManagedIdentityAuth
 
 $relayProxyDeployed = Get-AzdEnvValue "DEPLOY_RELAY_PROXY"
 if ($relayProxyDeployed -eq "true") {
@@ -139,6 +164,15 @@ metadata:
     } else {
         Write-Host "Settings script not found at: $settingsScriptPath" -ForegroundColor Yellow
         Write-Host "Run manually: .\scripts\create_all_settingsfiles_mi_only.ps1 -envName $envName" -ForegroundColor Yellow
+    }
+
+    if ($mySqlDeployed -eq "true" -and -not $useMySqlManagedIdentityAuth) {
+        $mySqlPasswordSettingsScriptPath = Join-Path $repoRoot "scripts\create_all_settingsfiles_mysql_password.ps1"
+        if (Test-Path $mySqlPasswordSettingsScriptPath) {
+            & $mySqlPasswordSettingsScriptPath -envName $envName -resourceGroupName $resourceGroupName -path $outputPath -sbmExe $sbmExe
+        } else {
+            Write-Host "MySQL password settings script not found at: $mySqlPasswordSettingsScriptPath" -ForegroundColor Yellow
+        }
     }
 # } else {
 #     Write-Host ""
@@ -304,6 +338,7 @@ Write-Host "  - Event Hub: RBAC roles (EventHubsDataReceiver/EventHubsDataSender
 Write-Host "  - Service Bus: RBAC role (ServiceBusDataOwner)" -ForegroundColor Cyan
 Write-Host "  - Storage: RBAC role (StorageBlobDataContributor)" -ForegroundColor Cyan
 Write-Host "  - Container Registry: RBAC role (AcrPull)" -ForegroundColor Cyan
+Write-Host "  - MySQL database auth mode: $mySqlAuthMode" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Application code should use DefaultAzureCredential for authentication." -ForegroundColor Yellow
 Write-Host ""

@@ -39,10 +39,10 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
         {
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
         [TestMethod]
-        public async Task ContainerApp_PG_Run_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ContainerApp_MySQL_Run_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
@@ -102,9 +102,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public async Task ContainerApp_PG_StepWise_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ContainerApp_MySQL_StepWise_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
@@ -191,9 +191,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public async Task ContainerApp_PG_Queue_ManagedIdentity_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ContainerApp_MySQL_Queue_ManagedIdentity_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
@@ -282,9 +282,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public async Task ContainerApp_PG_Run_DoubleDbConfig_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ContainerApp_MySQL_Run_DoubleDbConfig_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {

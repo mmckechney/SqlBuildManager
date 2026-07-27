@@ -12,6 +12,8 @@
 .PARAMETER testGroups
     Optional test groups to run. Valid values are aci, batch, containerapp, and aks.
     Omit to run every group whose required platform is deployed.
+.PARAMETER buildImage
+    Rebuilds and pushes the external test runner image before running tests.
 .EXAMPLE
     .\run_all_mysql_external_tests_in_aci.ps1 -envName myenv -testGroups aci,batch
 #>
@@ -22,7 +24,10 @@ param (
 
     [Parameter()]
     [ValidateSet('aci', 'batch', 'containerapp', 'aks')]
-    [string[]] $testGroups = @()
+    [string[]] $testGroups = @(),
+
+    [Parameter()]
+    [switch] $buildImage
 )
 
 Set-StrictMode -Version Latest
@@ -89,6 +94,7 @@ $hasBatch        = Test-DeployFlag 'DEPLOY_BATCH_ACCOUNT', 'DEPLOY_BATCH'
 $hasContainerApp = Test-DeployFlag 'DEPLOY_CONTAINERAPP_ENV', 'DEPLOY_CONTAINERAPP'
 $hasAks          = Test-DeployFlag 'DEPLOY_AKS'
 $hasMySQL        = Test-DeployFlag 'DEPLOY_MYSQL'
+$mySqlAuthMode   = if ($azdConfig.ContainsKey('MYSQL_AUTH_MODE')) { $azdConfig['MYSQL_AUTH_MODE'] } else { '' }
 $requestedTestGroups = if ($testGroups.Count -eq 0) {
     @('aci', 'batch', 'containerapp', 'aks')
 } else {
@@ -102,8 +108,16 @@ Write-Host "  ACI:            $(if ($hasAci)           { 'Deployed' } else { 'No
 Write-Host "  Batch:          $(if ($hasBatch)         { 'Deployed' } else { 'Not deployed' })" -ForegroundColor $(if ($hasBatch)         { 'Green' } else { 'DarkGray' })
 Write-Host "  Container Apps: $(if ($hasContainerApp)  { 'Deployed' } else { 'Not deployed' })" -ForegroundColor $(if ($hasContainerApp)  { 'Green' } else { 'DarkGray' })
 Write-Host "  AKS:            $(if ($hasAks)           { 'Deployed' } else { 'Not deployed' })" -ForegroundColor $(if ($hasAks)           { 'Green' } else { 'DarkGray' })
+if (-not [string]::IsNullOrWhiteSpace($mySqlAuthMode)) {
+    Write-Host "  MYSQL_AUTH_MODE: $mySqlAuthMode" -ForegroundColor DarkGreen
+}
 Write-Host "  Test groups:    $($requestedTestGroups -join ', ')" -ForegroundColor DarkGreen
 Write-Host ""
+
+# if (-not $buildImage -and $mySqlAuthMode -eq 'Password') {
+#     Write-Host "MYSQL_AUTH_MODE=Password detected; enabling -buildImage to avoid stale ManagedIdentity test image reuse." -ForegroundColor Yellow
+#     $buildImage = $true
+# }
 
 #############################################
 # MySQL tests (requires MySQL + dynamically filters by available compute)
@@ -157,7 +171,7 @@ if (-not $hasMySQL) {
 
     if ($mySqlFilters.Count -gt 0) {
         $mySqlTestFilter = $mySqlFilters -join '|'
-        & (Join-Path $PSScriptRoot 'run_filtered_external_tests_in_aci.ps1') -envName $envName -customName mysql -testFilter $mySqlTestFilter -timeoutMinutes 300 -timestamp $timestamp
+        & (Join-Path $PSScriptRoot 'run_filtered_external_tests_in_aci.ps1') -envName $envName -customName mysql -testFilter $mySqlTestFilter -timeoutMinutes 300 -timestamp $timestamp -buildImage:$buildImage
         $exitCode += $LASTEXITCODE
     } else {
         Write-Host "SKIPPING [mysql]: None of the requested test groups are available" -ForegroundColor Yellow

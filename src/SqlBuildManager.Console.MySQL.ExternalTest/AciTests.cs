@@ -41,9 +41,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             await aciResources.CleanupAsync();
         }
 
-        [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public async Task ACI_Queue_Run_PG_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ACI_Queue_Run_MySQL_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
@@ -58,13 +58,14 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 var rootCommand = CommandLineBuilder.SetUp();
-                string jobName = aciResources.Track(MySqlTestHelper.GetUniqueJobName("aci-pg"), settingsFile);
+                string jobName = aciResources.Track(MySqlTestHelper.GetUniqueJobName("aci-mysql"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 var args = new string[]{
                     "--loglevel", "debug",
                     "aci", "run",
                     "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--aciname", jobName,
                     "--packagename", sbmFileName,
@@ -102,9 +103,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public async Task ACI_Queue_PG_SBMSource_ManagedIdentity_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ACI_Queue_MySQL_SBMSource_ManagedIdentity_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
@@ -119,13 +120,14 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = aciResources.Track(MySqlTestHelper.GetUniqueJobName("aci-pg"), settingsFile);
+                string jobName = aciResources.Track(MySqlTestHelper.GetUniqueJobName("aci-mysql"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 // Prep
                 var args = new string[]{
                     "aci", "prep",
                     "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--packagename", sbmFileName,
                     "--override", overrideFile,
@@ -141,6 +143,7 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
                 args = new string[]{
                     "aci", "enqueue",
                     "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", overrideFile
@@ -155,6 +158,7 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
                     "--loglevel", "debug",
                     "aci", "deploy",
                     "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--packagename", sbmFileName,
                     "--jobname", jobName,
                     "--aciname", jobName,
@@ -191,9 +195,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public async Task ACI_Queue_PG_DoubleDbConfig_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ACI_Queue_MySQL_DoubleDbConfig_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
@@ -208,13 +212,14 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = aciResources.Track(MySqlTestHelper.GetUniqueJobName("aci-pg"), settingsFile);
+                string jobName = aciResources.Track(MySqlTestHelper.GetUniqueJobName("aci-mysql"), settingsFile);
                 string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
 
                 // Prep
                 var args = new string[]{
                     "aci", "prep",
                     "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--packagename", sbmFileName
                 };
@@ -228,6 +233,7 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
                 args = new string[]{
                     "aci", "enqueue",
                     "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--concurrencytype", concurrencyType.ToString(),
                     "--override", overrideFile
@@ -242,6 +248,7 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
                     "--loglevel", "debug",
                     "aci", "deploy",
                     "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--packagename", sbmFileName,
                     "--jobname", jobName,
                     "--aciname", jobName,
@@ -279,9 +286,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-aci-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
-        public async Task ACI_Queue_PG_Query_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        public async Task ACI_Queue_MySQL_Query_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
             try
@@ -297,12 +304,13 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = aciResources.Track(MySqlTestHelper.GetUniqueJobName("aci-pg"), settingsFile);
+                string jobName = aciResources.Track(MySqlTestHelper.GetUniqueJobName("aci-mysql"), settingsFile);
 
                 var args = new string[]{
                     "--loglevel", "debug",
                     "aci", "query",
                     "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
                     "--jobname", jobName,
                     "--aciname", jobName,
                     "--override", overrideFile,

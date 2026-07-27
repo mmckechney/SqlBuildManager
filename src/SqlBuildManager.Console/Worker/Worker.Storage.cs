@@ -117,6 +117,60 @@ namespace SqlBuildManager.Console
             }
         }
 
+        internal static async Task<int> DownloadAllRelayBlobFilesAsync(
+            CommandLineArgs cmdLine,
+            string containerName,
+            DirectoryInfo outputPath,
+            CancellationToken cancellationToken)
+        {
+            if (!InitializeRelayStorageCommand(cmdLine))
+            {
+                return 1;
+            }
+
+            try
+            {
+                var files = await StorageManager.EnumerateBlobFilesThroughRelayAsync(
+                    containerName,
+                    string.Empty,
+                    cancellationToken).ConfigureAwait(false);
+                if (files.Count == 0)
+                {
+                    System.Console.WriteLine($"No blobs were found in container '{containerName}'.");
+                    return 0;
+                }
+
+                var destinationPath = GetDownloadAllDestinationPath(outputPath, containerName);
+                var downloadedFiles = await StorageManager.DownloadBlobFilesThroughRelayAsync(
+                    containerName,
+                    files.Select(file => file.Name),
+                    destinationPath,
+                    cancellationToken).ConfigureAwait(false);
+                foreach (var downloadedFile in downloadedFiles)
+                {
+                    System.Console.WriteLine(downloadedFile);
+                }
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                log.LogError(
+                    $"Unable to download all blobs from container '{containerName}': {ex.Message}");
+                return 1;
+            }
+        }
+
+        internal static string GetDownloadAllDestinationPath(DirectoryInfo outputPath, string containerName)
+        {
+            ArgumentNullException.ThrowIfNull(outputPath);
+            if (string.IsNullOrWhiteSpace(containerName))
+            {
+                throw new ArgumentException("A container name is required.", nameof(containerName));
+            }
+
+            return Path.Combine(outputPath.FullName, containerName.Trim());
+        }
+
         private static bool InitializeRelayStorageCommand(CommandLineArgs cmdLine)
         {
             var (success, initializedArgs) = Init(cmdLine);

@@ -13,7 +13,9 @@ param
 
     [bool] $deployPostgreSQL,
 
-    [bool] $deployMySQL
+    [bool] $deployMySQL,
+
+    [bool] $mySqlUseManagedIdentityAuth = $false
 )
 
 Set-StrictMode -Version Latest
@@ -148,6 +150,7 @@ try {
         "DEPLOY_SQLSERVER=$($deploySqlServer.ToString().ToLowerInvariant())",
         "DEPLOY_POSTGRESQL=$($deployPostgreSQL.ToString().ToLowerInvariant())",
         "DEPLOY_MYSQL=$($deployMySQL.ToString().ToLowerInvariant())",
+        "MYSQL_AUTH_MODE=$(if ($mySqlUseManagedIdentityAuth) { 'ManagedIdentity' } else { 'Password' })",
         "MYSQL_ADMIN_PASSWORD=$mySqlAdminPassword",
         '--output', 'none'
     )

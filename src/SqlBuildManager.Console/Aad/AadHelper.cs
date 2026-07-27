@@ -98,7 +98,10 @@ namespace SqlBuildManager.Console.Aad
                             pwshOpts.TenantId = AadHelper.TenantId;
                         }
 
-                        _tokenCred = new ChainedTokenCredential( new ManagedIdentityCredential(ManagedIdentityClientId = AadHelper.ManagedIdentityClientId), new AzureCliCredential(cliOpts),new AzurePowerShellCredential(pwshOpts));
+                        _tokenCred = new ChainedTokenCredential(
+                            new ManagedIdentityFallbackTokenCredential(AadHelper.ManagedIdentityClientId),
+                            new AzureCliCredential(cliOpts),
+                            new AzurePowerShellCredential(pwshOpts));
                         log.LogInformation($"Creating ChainedTokenCredential with ManagedIdentityClientId of: '{AadHelper.ManagedIdentityClientId}'");
                     }
                 }

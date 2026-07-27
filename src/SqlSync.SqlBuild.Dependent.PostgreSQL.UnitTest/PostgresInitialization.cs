@@ -197,7 +197,13 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
                 {
                     using var conn = new NpgsqlConnection(GetConnectionString(dbName));
                     conn.Open();
-                    using var cmd = new NpgsqlCommand("DELETE FROM sqlbuild_logging WHERE buildfilename LIKE 'SqlSyncTest-%' OR commitdate < @cutoff", conn);
+                    using var cmd = new NpgsqlCommand(
+                        "DELETE FROM sqlbuild_logging " +
+                        "WHERE buildfilename LIKE 'SqlSyncTest-%' " +
+                        "OR buildfilename LIKE 'SqlBuildManagerTest-%' " +
+                        "OR buildfilename = 'PreRunEntry' " +
+                        "OR commitdate < @cutoff",
+                        conn);
                     cmd.Parameters.AddWithValue("@cutoff", DateTime.Now.AddHours(-1));
                     cmd.ExecuteNonQuery();
                 }

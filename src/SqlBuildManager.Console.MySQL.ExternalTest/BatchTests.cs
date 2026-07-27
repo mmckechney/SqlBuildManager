@@ -34,7 +34,7 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
         public void ConfigureProcessInfo()
         {
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<BatchTests>("SqlBuildManager.Console.log", Path.GetTempPath());
-            settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux-mi-only.json");
+            settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux-mysql-password.json");
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
             overrideFilePath = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
 
@@ -87,11 +87,11 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
 
         #endregion
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.Count, 10)]
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.Server, 2)]
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.MaxPerServer, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.MaxPerServer, 2)]
         [TestMethod]
-        public async Task Batch_PG_Override_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_MySQL_Override_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
             settingsFile = Path.GetFullPath(settingsFile);
@@ -135,9 +135,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.Count, 10)]
         [TestMethod]
-        public async Task Batch_PG_Override_SBMSource_ManagedIdentity_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_MySQL_Override_SBMSource_ManagedIdentity_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
             settingsFile = Path.GetFullPath(settingsFile);
@@ -180,10 +180,10 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.Count, 10)]
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-password.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-password.json", ConcurrencyType.Server, 2)]
         [TestMethod]
-        public async Task Batch_PG_Queue_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_MySQL_Queue_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
@@ -242,9 +242,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
-        [DataRow("query", "TestConfig/settingsfile-batch-linux-mi-only.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux-mysql-password.json")]
         [TestMethod]
-        public async Task Batch_PG_Query_Override_SelectSuccess(string batchMethod, string settingsFile)
+        public async Task Batch_MySQL_Query_Override_SelectSuccess(string batchMethod, string settingsFile)
         {
             string outputFile = Path.GetFullPath($"{Guid.NewGuid()}.csv");
             try
@@ -301,9 +301,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             }
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json")]
         [TestMethod]
-        public void Batch_PG_Override_SBMSource_RunWithError_MissingPackage(string batchMethod, string settingsFile)
+        public void Batch_MySQL_Override_SBMSource_RunWithError_MissingPackage(string batchMethod, string settingsFile)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             string jobName = GetUniqueBatchJobName("batch-pg-err");
@@ -330,9 +330,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             Assert.IsTrue(result != 0);
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-password.json", ConcurrencyType.Count, 10)]
         [TestMethod]
-        public async Task Batch_PG_Queue_SBMSource_ManagedIdentity_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_MySQL_Queue_SBMSource_ManagedIdentity_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();

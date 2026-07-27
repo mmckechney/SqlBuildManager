@@ -22,17 +22,3 @@ CREATE TABLE IF NOT EXISTS sqlbuild_logging (
     KEY ix_sqlbuild_logging_2 (scriptid),
     KEY ix_sqlbuild_logging_commitcheck (scriptid, commitdate DESC)
 );
-
-ALTER TABLE sqlbuild_logging ADD COLUMN IF NOT EXISTS scripttext LONGTEXT NULL;
-ALTER TABLE sqlbuild_logging ADD COLUMN IF NOT EXISTS tag VARCHAR(200) NULL;
-ALTER TABLE sqlbuild_logging ADD COLUMN IF NOT EXISTS targetdatabase VARCHAR(200) NULL;
-ALTER TABLE sqlbuild_logging ADD COLUMN IF NOT EXISTS runwithversion VARCHAR(50) NULL;
-ALTER TABLE sqlbuild_logging ADD COLUMN IF NOT EXISTS buildprojecthash VARCHAR(100) NULL;
-ALTER TABLE sqlbuild_logging ADD COLUMN IF NOT EXISTS buildrequestedby VARCHAR(256) NULL;
-ALTER TABLE sqlbuild_logging ADD COLUMN IF NOT EXISTS scriptrunstart DATETIME(6) NULL;
-ALTER TABLE sqlbuild_logging ADD COLUMN IF NOT EXISTS scriptrunend DATETIME(6) NULL;
-ALTER TABLE sqlbuild_logging ADD COLUMN IF NOT EXISTS description VARCHAR(500) NULL;
-ALTER TABLE sqlbuild_logging ADD COLUMN IF NOT EXISTS allowblockupdateid VARCHAR(200) NULL;
-
-ALTER TABLE sqlbuild_logging MODIFY COLUMN buildrequestedby VARCHAR(256) NULL;
-ALTER TABLE sqlbuild_logging MODIFY COLUMN description VARCHAR(500) NULL;

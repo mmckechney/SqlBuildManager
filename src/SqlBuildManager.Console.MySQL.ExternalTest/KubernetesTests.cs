@@ -39,9 +39,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
         {
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json")]
         [TestMethod]
-        public async Task Kubernetes_PG_Run_Queue_SBMSource_Success(string settingsFile)
+        public async Task Kubernetes_MySQL_Run_Queue_SBMSource_Success(string settingsFile)
         {
             try
             {
@@ -103,9 +103,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json")]
         [TestMethod]
-        public async Task Kubernetes_PG_Run_Queue_DoubleDbConfig_SBMSource_Success(string settingsFile)
+        public async Task Kubernetes_MySQL_Run_Queue_DoubleDbConfig_SBMSource_Success(string settingsFile)
         {
             try
             {
@@ -165,11 +165,11 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-mi-only.json", ConcurrencyType.Count, 5)]
-        [DataRow("TestConfig/settingsfile-k8s-mi-only.json", ConcurrencyType.Server, 5)]
-        [DataRow("TestConfig/settingsfile-k8s-mi-only.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json", ConcurrencyType.Count, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json", ConcurrencyType.Server, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json", ConcurrencyType.MaxPerServer, 5)]
         [TestMethod]
-        public async Task Kubernetes_PG_Run_Queue_Concurrency_SBMSource_Success(string settingsFile, ConcurrencyType concurType, int concurrencyCount)
+        public async Task Kubernetes_MySQL_Run_Queue_Concurrency_SBMSource_Success(string settingsFile, ConcurrencyType concurType, int concurrencyCount)
         {
             try
             {
@@ -232,9 +232,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json")]
         [TestMethod]
-        public async Task Kubernetes_PG_Query_Queue_SBMSource_Success(string settingsFile)
+        public async Task Kubernetes_MySQL_Query_Queue_SBMSource_Success(string settingsFile)
         {
             string outputFile = Path.GetFullPath($"{Guid.NewGuid()}.csv");
             try
@@ -304,9 +304,9 @@ namespace SqlBuildManager.Console.MySQL.ExternalTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-mi-only.json")]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json")]
         [TestMethod]
-        public async Task Kubernetes_PG_Run_LongRunning_Queue_SBMSource_Success(string settingsFile)
+        public async Task Kubernetes_MySQL_Run_LongRunning_Queue_SBMSource_Success(string settingsFile)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");

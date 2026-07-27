@@ -109,7 +109,12 @@ namespace SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest
                         using var conn = new NpgsqlConnection($"Host={lastInit.serverName};Database={dbName};Username={lastInit.pgUser};Password={lastInit.pgPassword};Timeout=20");
                         conn.Open();
 
-                        using (var cmd = new NpgsqlCommand("DELETE FROM sqlbuild_logging WHERE buildfilename LIKE 'SqlSyncTest-%'", conn))
+                        using (var cmd = new NpgsqlCommand(
+                            "DELETE FROM sqlbuild_logging " +
+                            "WHERE buildfilename LIKE 'SqlSyncTest-%' " +
+                            "OR buildfilename LIKE 'SqlBuildManagerTest-%' " +
+                            "OR buildfilename = 'PreRunEntry'",
+                            conn))
                             cmd.ExecuteNonQuery();
 
                         using (var cmd = new NpgsqlCommand("DELETE FROM transactiontest WHERE message = 'INSERT TEST'", conn))

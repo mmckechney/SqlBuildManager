@@ -109,7 +109,12 @@ namespace SqlSync.SqlBuild.Dependent.MySQL.UnitTest
                         using var conn = new MySqlConnection($"Host={lastInit.serverName};Database={dbName};Username={lastInit.mySqlUser};Password={lastInit.mySqlPassword};Connection Timeout=20");
                         conn.Open();
 
-                        using (var cmd = new MySqlCommand("DELETE FROM sqlbuild_logging WHERE buildfilename LIKE 'SqlSyncTest-%'", conn))
+                        using (var cmd = new MySqlCommand(
+                            "DELETE FROM sqlbuild_logging " +
+                            "WHERE buildfilename LIKE 'SqlSyncTest-%' " +
+                            "OR buildfilename LIKE 'SqlBuildManagerTest-%' " +
+                            "OR buildfilename = 'PreRunEntry'",
+                            conn))
                             cmd.ExecuteNonQuery();
 
                         using (var cmd = new MySqlCommand("DELETE FROM transactiontest WHERE message = 'INSERT TEST'", conn))
