@@ -1,8 +1,8 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using SqlBuildManager.Console.CommandLine;
 using System;
 using System.Collections.Generic;
-namespace SqlBuildManager.Console.Dependent.SqlServer.UnitTest
+namespace SqlBuildManager.Console.SqlServer.IntegrationTest
 {
     class DatabaseHelper
     {

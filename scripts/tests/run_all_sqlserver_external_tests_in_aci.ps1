@@ -148,42 +148,42 @@ function Invoke-TestIfAvailable {
 #############################################
 
 $exitCode += Invoke-TestIfAvailable -customName "aci" `
-    -testFilter "FullyQualifiedName~SqlBuildManager.Console.SqlServer.ExternalTest.AciTests" `
+    -testFilter "FullyQualifiedName~SqlBuildManager.Console.SqlServer.AzureTest.AciTests" `
     -computeLabel "ACI" -computeAvailable $hasAci `
     -computeDeployFlags "DEPLOY_ACI" `
     -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
     -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "containerapp" `
-    -testFilter "FullyQualifiedName~SqlBuildManager.Console.SqlServer.ExternalTest.ContainerAppTests" `
+    -testFilter "FullyQualifiedName~SqlBuildManager.Console.SqlServer.AzureTest.ContainerAppTests" `
     -computeLabel "Container Apps" -computeAvailable $hasContainerApp `
     -computeDeployFlags "DEPLOY_CONTAINERAPP_ENV/DEPLOY_CONTAINERAPP" `
     -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
     -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "batchqueue" `
-    -testFilter "FullyQualifiedName~SqlBuildManager.Console.SqlServer.ExternalTest.BatchTests.Batch_Queue" `
+    -testFilter "FullyQualifiedName~SqlBuildManager.Console.SqlServer.AzureTest.BatchTests.Batch_Queue" `
     -computeLabel "Batch" -computeAvailable $hasBatch `
     -computeDeployFlags "DEPLOY_BATCH_ACCOUNT/DEPLOY_BATCH" `
     -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
     -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "aks" `
-    -testFilter "FullyQualifiedName~SqlBuildManager.Console.SqlServer.ExternalTest.KubernetesTests" `
+    -testFilter "FullyQualifiedName~SqlBuildManager.Console.SqlServer.AzureTest.KubernetesTests" `
     -computeLabel "AKS" -computeAvailable $hasAks `
     -computeDeployFlags "DEPLOY_AKS" `
     -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
     -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "batchoverride" `
-    -testFilter "FullyQualifiedName~SqlBuildManager.Console.SqlServer.ExternalTest.BatchTests.Batch_Override" `
+    -testFilter "FullyQualifiedName~SqlBuildManager.Console.SqlServer.AzureTest.BatchTests.Batch_Override" `
     -computeLabel "Batch" -computeAvailable $hasBatch `
     -computeDeployFlags "DEPLOY_BATCH_ACCOUNT/DEPLOY_BATCH" `
     -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `
     -databaseDeployFlags "DEPLOY_SQLSERVER"
 
 $exitCode += Invoke-TestIfAvailable -customName "batchquery" `
-    -testFilter "FullyQualifiedName~SqlBuildManager.Console.SqlServer.ExternalTest.BatchTests.Batch_Query" `
+    -testFilter "FullyQualifiedName~SqlBuildManager.Console.SqlServer.AzureTest.BatchTests.Batch_Query" `
     -computeLabel "Batch" -computeAvailable $hasBatch `
     -computeDeployFlags "DEPLOY_BATCH_ACCOUNT/DEPLOY_BATCH" `
     -databaseLabel "SQL Server" -databaseAvailable $hasSqlServer `

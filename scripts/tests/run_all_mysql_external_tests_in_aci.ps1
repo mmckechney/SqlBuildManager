@@ -133,28 +133,28 @@ if (-not $hasMySQL) {
             Label = 'ACI'
             Available = $hasAci
             DeployFlags = 'DEPLOY_ACI'
-            Filter = 'FullyQualifiedName~SqlBuildManager.Console.MySQL.ExternalTest.AciTests'
+            Filter = 'FullyQualifiedName~SqlBuildManager.Console.MySQL.AzureTest.AciTests'
         },
         @{
             Name = 'batch'
             Label = 'Batch'
             Available = $hasBatch
             DeployFlags = 'DEPLOY_BATCH_ACCOUNT/DEPLOY_BATCH'
-            Filter = 'FullyQualifiedName~SqlBuildManager.Console.MySQL.ExternalTest.BatchTests'
+            Filter = 'FullyQualifiedName~SqlBuildManager.Console.MySQL.AzureTest.BatchTests'
         },
         @{
             Name = 'containerapp'
             Label = 'Container Apps'
             Available = $hasContainerApp
             DeployFlags = 'DEPLOY_CONTAINERAPP_ENV/DEPLOY_CONTAINERAPP'
-            Filter = 'FullyQualifiedName~SqlBuildManager.Console.MySQL.ExternalTest.ContainerAppTests'
+            Filter = 'FullyQualifiedName~SqlBuildManager.Console.MySQL.AzureTest.ContainerAppTests'
         },
         @{
             Name = 'aks'
             Label = 'AKS'
             Available = $hasAks
             DeployFlags = 'DEPLOY_AKS'
-            Filter = 'FullyQualifiedName~SqlBuildManager.Console.MySQL.ExternalTest.KubernetesTests'
+            Filter = 'FullyQualifiedName~SqlBuildManager.Console.MySQL.AzureTest.KubernetesTests'
         }
     )
 

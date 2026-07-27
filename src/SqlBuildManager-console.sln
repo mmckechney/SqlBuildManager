@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.1.11304.174
@@ -51,41 +51,41 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.Un
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dependent", "dependent", "{AB0F2CD6-9914-C1DA-674C-FC411EB553D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.Dependent.SqlServer.UnitTest", "SqlBuildManager.Console.Dependent.SqlServer.UnitTest\SqlBuildManager.Console.Dependent.SqlServer.UnitTest.csproj", "{BE54267D-6387-48C2-AB69-189E255B41B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.SqlServer.IntegrationTest", "SqlBuildManager.Console.SqlServer.IntegrationTest\SqlBuildManager.Console.SqlServer.IntegrationTest.csproj", "{BE54267D-6387-48C2-AB69-189E255B41B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest", "SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest\SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj", "{87F12FD0-6EEE-4E71-A3F9-A9B8D016D02A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.PostgreSQL.IntegrationTest", "SqlBuildManager.Console.PostgreSQL.IntegrationTest\SqlBuildManager.Console.PostgreSQL.IntegrationTest.csproj", "{87F12FD0-6EEE-4E71-A3F9-A9B8D016D02A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Connection.Dependent.UnitTest", "SqlBuildManager.Connection.Dependent.UnitTest\SqlBuildManager.Connection.Dependent.UnitTest.csproj", "{61368752-DD18-4DC8-A75F-E087AF50665A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Connection.IntegrationTest", "SqlBuildManager.Connection.IntegrationTest\SqlBuildManager.Connection.IntegrationTest.csproj", "{61368752-DD18-4DC8-A75F-E087AF50665A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.DbInformation.Dependent.UnitTest", "SqlBuildManager.DbInformation.Dependent.UnitTest\SqlBuildManager.DbInformation.Dependent.UnitTest.csproj", "{CFD4441C-D8C2-4DAC-AFFD-38D773B853AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.DbInformation.IntegrationTest", "SqlBuildManager.DbInformation.IntegrationTest\SqlBuildManager.DbInformation.IntegrationTest.csproj", "{CFD4441C-D8C2-4DAC-AFFD-38D773B853AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.ObjectScript.Dependent.UnitTest", "SqlBuildManager.ObjectScript.Dependent.UnitTest\SqlBuildManager.ObjectScript.Dependent.UnitTest.csproj", "{6DE00331-81B0-41A6-AF28-82D57FFCE31F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.ObjectScript.IntegrationTest", "SqlBuildManager.ObjectScript.IntegrationTest\SqlBuildManager.ObjectScript.IntegrationTest.csproj", "{6DE00331-81B0-41A6-AF28-82D57FFCE31F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest", "SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest\SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj", "{ACF29F74-3E29-4B26-8638-3CFD7F866B74}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest", "SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest\SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest.csproj", "{ACF29F74-3E29-4B26-8638-3CFD7F866B74}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.Dependent.TestBase", "SqlBuildManager.SqlBuild.Dependent.TestBase\SqlBuildManager.SqlBuild.Dependent.TestBase.csproj", "{341863DE-8403-4976-9B50-897A620C6348}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.IntegrationTest.TestBase", "SqlBuildManager.SqlBuild.IntegrationTest.TestBase\SqlBuildManager.SqlBuild.IntegrationTest.TestBase.csproj", "{341863DE-8403-4976-9B50-897A620C6348}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{525D8F67-DF9B-D7CA-6D99-9BAF2C1FB094}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.SqlServer.ExternalTest", "SqlBuildManager.Console.SqlServer.ExternalTest\SqlBuildManager.Console.SqlServer.ExternalTest.csproj", "{BD656E28-7DCD-45F3-A5D6-FCA3689E1A51}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.SqlServer.AzureTest", "SqlBuildManager.Console.SqlServer.AzureTest\SqlBuildManager.Console.SqlServer.AzureTest.csproj", "{BD656E28-7DCD-45F3-A5D6-FCA3689E1A51}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.PostgreSQL.ExternalTest", "SqlBuildManager.Console.PostgreSQL.ExternalTest\SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj", "{6C0A83D9-B31D-436B-892C-E9CA37F6BE93}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.PostgreSQL.AzureTest", "SqlBuildManager.Console.PostgreSQL.AzureTest\SqlBuildManager.Console.PostgreSQL.AzureTest.csproj", "{6C0A83D9-B31D-436B-892C-E9CA37F6BE93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest", "SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest\SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest.csproj", "{7B78FEC7-26D6-4CDC-8E71-4E117DFDEAB2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.SqlServer.IntegrationTest", "SqlBuildManager.SqlBuild.SqlServer.IntegrationTest\SqlBuildManager.SqlBuild.SqlServer.IntegrationTest.csproj", "{7B78FEC7-26D6-4CDC-8E71-4E117DFDEAB2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.ScriptHandling.UnitTest", "SqlBuildManager.ScriptHandling.UnitTest\SqlBuildManager.ScriptHandling.UnitTest.csproj", "{9A20DC27-236E-BED6-8477-82FF331E0435}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.RelayProxy", "SqlBuildManager.RelayProxy\SqlBuildManager.RelayProxy.csproj", "{01D17E49-51D5-458D-8A85-1E254DCD1473}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.Dependent.MySQL.UnitTest", "SqlBuildManager.Console.Dependent.MySQL.UnitTest\SqlBuildManager.Console.Dependent.MySQL.UnitTest.csproj", "{8E925F50-208A-4435-8F70-BCFE72787152}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.MySQL.IntegrationTest", "SqlBuildManager.Console.MySQL.IntegrationTest\SqlBuildManager.Console.MySQL.IntegrationTest.csproj", "{8E925F50-208A-4435-8F70-BCFE72787152}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlBuildManager.Console", "SqlBuildManager.Console", "{0AF3C493-1589-3DED-6052-1911F6ADB1E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest", "SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest\SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest.csproj", "{4FE11F15-79B8-410F-A784-DCDB4D97EFAF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.MySQL.IntegrationTest", "SqlBuildManager.SqlBuild.MySQL.IntegrationTest\SqlBuildManager.SqlBuild.MySQL.IntegrationTest.csproj", "{4FE11F15-79B8-410F-A784-DCDB4D97EFAF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.MySQL.ExternalTest", "SqlBuildManager.Console.MySQL.ExternalTest\SqlBuildManager.Console.MySQL.ExternalTest.csproj", "{AEA271D2-47ED-46C9-B7E6-3E8FA51B7764}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.MySQL.AzureTest", "SqlBuildManager.Console.MySQL.AzureTest\SqlBuildManager.Console.MySQL.AzureTest.csproj", "{AEA271D2-47ED-46C9-B7E6-3E8FA51B7764}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.TestBase.AzureTest", "SqlBuildManager.Console.TestBase.AzureTest\SqlBuildManager.Console.TestBase.AzureTest.csproj", "{9D05533C-AC7C-4DDC-979C-9C181D22BC77}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.AzureTest.TestBase", "SqlBuildManager.Console.AzureTest.TestBase\SqlBuildManager.Console.AzureTest.TestBase.csproj", "{9D05533C-AC7C-4DDC-979C-9C181D22BC77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

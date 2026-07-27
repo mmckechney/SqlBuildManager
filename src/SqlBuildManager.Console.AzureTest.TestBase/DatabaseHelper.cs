@@ -1,0 +1,193 @@
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
+using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.Relay;
+using SqlBuildManager.Connection;
+using System;
+using System.Collections.Generic;
+using System.CommandLine;
+
+using System.IO;
+using static SqlBuildManager.Console.CommandLine.CommandLineArgs;
+
+namespace SqlBuildManager.Console.AzureTest.TestBase
+{
+    public class DatabaseHelper
+    {
+        public static (string, string) ExtractServerAndDbFromLine(string overrideLine)
+        {
+            string server = overrideLine.Split(":")[0];
+            string database = overrideLine.Split(":")[1].Split(",")[1];
+
+            return (server, database);
+        }
+        public static List<string> ModifyTargetList(List<string> original, int removeCount)
+        {
+            var trimmed = original.GetRange(removeCount, original.Count - removeCount);
+            List<string> clientized = new List<string>();
+
+            trimmed.ForEach(t => clientized.Add(t.Replace(":SqlBuildTest,", ":client,")));
+
+            return clientized;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cmdLine"></param>
+        /// <param name="overrideLines">Assumes that the line is a delmited list of:   SERVER:overide,target</param>
+        /// <returns></returns>
+        public static string CreateRandomTable(CommandLineArgs cmdLine, string overrideLine)
+        {
+            return CreateRandomTable(cmdLine, new List<string>(new string[] { overrideLine }));
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cmdLine"></param>
+        /// <param name="overrideLines">Assumes that the line is a delmited list of:   SERVER:overide,target</param>
+        /// <returns></returns>
+        public static string CreateRandomTable(CommandLineArgs cmdLine, List<string> overrideLines)
+        {
+            SqlServerAuthenticationProvider.Register();
+
+            string server, database;
+            string randomTableName = "R" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10);
+            string randomColumnName = "R" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10);
+            string createTable = $"CREATE TABLE {randomTableName} ( {randomColumnName} VARCHAR(10) ) ";
+
+            //var connStr = new SqlConnectionStringBuilder()
+            //{
+            //    UserID = cmdLine.AuthenticationArgs.UserName,
+            //    Password = cmdLine.AuthenticationArgs.Password,
+            //};
+            var connStr = new SqlConnectionStringBuilder()
+            {
+                Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault,
+            };
+
+            foreach (var line in overrideLines)
+            {
+                (server, database) = ExtractServerAndDbFromLine(line);
+                connStr.DataSource = server;
+                connStr.InitialCatalog = database;
+
+                try
+                {
+                    using (SqlConnection conn = new SqlConnection(connStr.ConnectionString))
+                    {
+                        SqlCommand cmd = new SqlCommand(createTable, conn);
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                        conn.Close();
+                    }
+                }
+                catch (SqlException exe) when (
+                    !string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.RelayProxyEndpoint) &&
+                    RelayProxyClient.IsSqlPrivateNetworkDenial(exe))
+                {
+                    System.Console.WriteLine(
+                        $"Direct SQL access to {server}/{database} is blocked; creating the test table through Azure Relay.");
+                    new RelayProxyClient(cmdLine.ConnectionArgs.RelayProxyEndpoint)
+                        .CreateSqlTestTableAsync(
+                            server,
+                            database,
+                            randomTableName,
+                            randomColumnName)
+                        .GetAwaiter()
+                        .GetResult();
+                }
+                catch (Exception exe)
+                {
+                    throw new Exception($"Unable to create random table in {server}: {database}\r\n{exe.ToString()}");
+                }
+            }
+
+            return string.Empty;
+        }
+
+        public static string CreateDacpac(CommandLineArgs cmdLine, string server, string database)
+        {
+            var log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<DatabaseHelper>("SqlBuildManager.Console.log", Path.GetTempPath());
+            log.LogInformation("Creating DACPAC for tests");
+            string fullname = Path.GetFullPath($"TestConfig/{database}.dacpac");
+            if (RequiresSqlRelay(cmdLine, server, database))
+            {
+                log.LogInformation($"Extracting DACPAC for {server}/{database} through Azure Relay");
+                new RelayProxyClient(cmdLine.ConnectionArgs.RelayProxyEndpoint)
+                    .ExtractSqlTestDacpacAsync(server, database, fullname)
+                    .GetAwaiter()
+                    .GetResult();
+                return fullname;
+            }
+
+            var args = new string[]{
+                "dacpac",
+                "--authtype" , AuthenticationType.AzureADDefault.ToString(),
+                //"--username", cmdLine.AuthenticationArgs.UserName,
+                //"--password", cmdLine.AuthenticationArgs.Password,
+                "--dacpacname", fullname,
+                "--database", database,
+                "--server", server };
+
+            RootCommand rootCommand = CommandLineBuilder.SetUp();
+            var val = rootCommand.Parse(args).InvokeAsync();
+            val.Wait();
+            var result = val.Result;
+
+            if (result == 0)
+            {
+                return fullname;
+            }
+            else
+            {
+                return null!;
+            }
+
+        }
+
+        public static void ConfigureRelayEndpoint(
+            CommandLineArgs cmdLine,
+            string settingsFilePath,
+            string settingsFileKeyPath)
+        {
+            var settingsArgs = new CommandLineArgs
+            {
+                FileInfoSettingsFile = new FileInfo(settingsFilePath),
+                SettingsFileKey = settingsFileKeyPath
+            };
+            var (_, decrypted) = Cryptography.DecryptSensitiveFields(settingsArgs);
+            cmdLine.RelayProxyEndpoint = decrypted.ConnectionArgs.RelayProxyEndpoint;
+        }
+
+        public static bool RequiresSqlRelay(
+            CommandLineArgs cmdLine,
+            string server,
+            string database)
+        {
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.RelayProxyEndpoint))
+            {
+                return false;
+            }
+
+            var connStr = new SqlConnectionStringBuilder
+            {
+                Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault,
+                DataSource = server,
+                InitialCatalog = database,
+                ConnectTimeout = 15
+            };
+            try
+            {
+                using var connection = new SqlConnection(connStr.ConnectionString);
+                connection.Open();
+                return false;
+            }
+            catch (SqlException exe) when (RelayProxyClient.IsSqlPrivateNetworkDenial(exe))
+            {
+                return true;
+            }
+        }
+
+
+    }
+}

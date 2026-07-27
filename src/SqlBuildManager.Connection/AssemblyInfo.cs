@@ -44,4 +44,4 @@ using System.Reflection;
 
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.Connection.UnitTest")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.Connection.Dependent.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.Connection.IntegrationTest")]

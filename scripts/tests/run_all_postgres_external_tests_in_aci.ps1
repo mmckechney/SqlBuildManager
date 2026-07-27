@@ -119,28 +119,28 @@ if (-not $hasPostgreSQL) {
             Label = 'ACI'
             Available = $hasAci
             DeployFlags = 'DEPLOY_ACI'
-            Filter = 'FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.ExternalTest.AciTests'
+            Filter = 'FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.AzureTest.AciTests'
         },
         @{
             Name = 'batch'
             Label = 'Batch'
             Available = $hasBatch
             DeployFlags = 'DEPLOY_BATCH_ACCOUNT/DEPLOY_BATCH'
-            Filter = 'FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.ExternalTest.BatchTests'
+            Filter = 'FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.AzureTest.BatchTests'
         },
         @{
             Name = 'containerapp'
             Label = 'Container Apps'
             Available = $hasContainerApp
             DeployFlags = 'DEPLOY_CONTAINERAPP_ENV/DEPLOY_CONTAINERAPP'
-            Filter = 'FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.ExternalTest.ContainerAppTests'
+            Filter = 'FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.AzureTest.ContainerAppTests'
         },
         @{
             Name = 'aks'
             Label = 'AKS'
             Available = $hasAks
             DeployFlags = 'DEPLOY_AKS'
-            Filter = 'FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.ExternalTest.KubernetesTests'
+            Filter = 'FullyQualifiedName~SqlBuildManager.Console.PostgreSQL.AzureTest.KubernetesTests'
         }
     )
 

@@ -5,9 +5,9 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:ed034a8bf0b24ded0cbbac07e17825d8e9
 WORKDIR /src
 
 COPY Directory.Build.props Directory.Packages.props ./
-COPY SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/packages.lock.json SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/
-COPY SqlBuildManager.Console.Dependent.MySQL.UnitTest/SqlBuildManager.Console.Dependent.MySQL.UnitTest.csproj SqlBuildManager.Console.Dependent.MySQL.UnitTest/packages.lock.json SqlBuildManager.Console.Dependent.MySQL.UnitTest/
-COPY SqlBuildManager.Console.Dependent.SqlServer.UnitTest/SqlBuildManager.Console.Dependent.SqlServer.UnitTest.csproj SqlBuildManager.Console.Dependent.SqlServer.UnitTest/packages.lock.json SqlBuildManager.Console.Dependent.SqlServer.UnitTest/
+COPY SqlBuildManager.Console.PostgreSQL.IntegrationTest/SqlBuildManager.Console.PostgreSQL.IntegrationTest.csproj SqlBuildManager.Console.PostgreSQL.IntegrationTest/packages.lock.json SqlBuildManager.Console.PostgreSQL.IntegrationTest/
+COPY SqlBuildManager.Console.MySQL.IntegrationTest/SqlBuildManager.Console.MySQL.IntegrationTest.csproj SqlBuildManager.Console.MySQL.IntegrationTest/packages.lock.json SqlBuildManager.Console.MySQL.IntegrationTest/
+COPY SqlBuildManager.Console.SqlServer.IntegrationTest/SqlBuildManager.Console.SqlServer.IntegrationTest.csproj SqlBuildManager.Console.SqlServer.IntegrationTest/packages.lock.json SqlBuildManager.Console.SqlServer.IntegrationTest/
 COPY SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj SqlBuildManager.Console.UnitTest/packages.lock.json SqlBuildManager.Console.UnitTest/
 COPY SqlBuildManager.Console/sbm.csproj SqlBuildManager.Console/packages.lock.json SqlBuildManager.Console/
 COPY SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj SqlBuildManager.Enterprise.UnitTest/packages.lock.json SqlBuildManager.Enterprise.UnitTest/
@@ -17,32 +17,32 @@ COPY SqlBuildManager.Logging/SqlBuildManager.Logging.csproj SqlBuildManager.Logg
 COPY SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj SqlBuildManager.ScriptHandling.UnitTest/packages.lock.json SqlBuildManager.ScriptHandling.UnitTest/
 COPY SqlBuildManager.ScriptHandling/SqlBuildManager.ScriptHandling.csproj SqlBuildManager.ScriptHandling/packages.lock.json SqlBuildManager.ScriptHandling/
 COPY SqlBuildManager.Test.Common/SqlBuildManager.Test.Common.csproj SqlBuildManager.Test.Common/packages.lock.json SqlBuildManager.Test.Common/
-COPY SqlBuildManager.Connection.Dependent.UnitTest/SqlBuildManager.Connection.Dependent.UnitTest.csproj SqlBuildManager.Connection.Dependent.UnitTest/packages.lock.json SqlBuildManager.Connection.Dependent.UnitTest/
+COPY SqlBuildManager.Connection.IntegrationTest/SqlBuildManager.Connection.IntegrationTest.csproj SqlBuildManager.Connection.IntegrationTest/packages.lock.json SqlBuildManager.Connection.IntegrationTest/
 COPY SqlBuildManager.Connection.UnitTest/SqlBuildManager.Connection.UnitTest.csproj SqlBuildManager.Connection.UnitTest/packages.lock.json SqlBuildManager.Connection.UnitTest/
 COPY SqlBuildManager.Connection/SqlBuildManager.Connection.csproj SqlBuildManager.Connection/packages.lock.json SqlBuildManager.Connection/
 COPY SqlBuildManager.Constants/SqlBuildManager.Constants.csproj SqlBuildManager.Constants/packages.lock.json SqlBuildManager.Constants/
-COPY SqlBuildManager.DbInformation.Dependent.UnitTest/SqlBuildManager.DbInformation.Dependent.UnitTest.csproj SqlBuildManager.DbInformation.Dependent.UnitTest/packages.lock.json SqlBuildManager.DbInformation.Dependent.UnitTest/
+COPY SqlBuildManager.DbInformation.IntegrationTest/SqlBuildManager.DbInformation.IntegrationTest.csproj SqlBuildManager.DbInformation.IntegrationTest/packages.lock.json SqlBuildManager.DbInformation.IntegrationTest/
 COPY SqlBuildManager.DbInformation.UnitTest/SqlBuildManager.DbInformation.UnitTest.csproj SqlBuildManager.DbInformation.UnitTest/packages.lock.json SqlBuildManager.DbInformation.UnitTest/
 COPY SqlBuildManager.DbInformation/SqlBuildManager.DbInformation.csproj SqlBuildManager.DbInformation/packages.lock.json SqlBuildManager.DbInformation/
-COPY SqlBuildManager.ObjectScript.Dependent.UnitTest/SqlBuildManager.ObjectScript.Dependent.UnitTest.csproj SqlBuildManager.ObjectScript.Dependent.UnitTest/packages.lock.json SqlBuildManager.ObjectScript.Dependent.UnitTest/
+COPY SqlBuildManager.ObjectScript.IntegrationTest/SqlBuildManager.ObjectScript.IntegrationTest.csproj SqlBuildManager.ObjectScript.IntegrationTest/packages.lock.json SqlBuildManager.ObjectScript.IntegrationTest/
 COPY SqlBuildManager.ObjectScript.UnitTest/SqlBuildManager.ObjectScript.UnitTest.csproj SqlBuildManager.ObjectScript.UnitTest/packages.lock.json SqlBuildManager.ObjectScript.UnitTest/
 COPY SqlBuildManager.ObjectScript/SqlBuildManager.ObjectScript.csproj SqlBuildManager.ObjectScript/packages.lock.json SqlBuildManager.ObjectScript/
-COPY SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest/packages.lock.json SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest/
-COPY SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest.csproj SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest/packages.lock.json SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest/
-COPY SqlBuildManager.SqlBuild.Dependent.TestBase/SqlBuildManager.SqlBuild.Dependent.TestBase.csproj SqlBuildManager.SqlBuild.Dependent.TestBase/packages.lock.json SqlBuildManager.SqlBuild.Dependent.TestBase/
-COPY SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest/SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest.csproj SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest/packages.lock.json SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest/
+COPY SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest/SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest.csproj SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest/packages.lock.json SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest/
+COPY SqlBuildManager.SqlBuild.MySQL.IntegrationTest/SqlBuildManager.SqlBuild.MySQL.IntegrationTest.csproj SqlBuildManager.SqlBuild.MySQL.IntegrationTest/packages.lock.json SqlBuildManager.SqlBuild.MySQL.IntegrationTest/
+COPY SqlBuildManager.SqlBuild.IntegrationTest.TestBase/SqlBuildManager.SqlBuild.IntegrationTest.TestBase.csproj SqlBuildManager.SqlBuild.IntegrationTest.TestBase/packages.lock.json SqlBuildManager.SqlBuild.IntegrationTest.TestBase/
+COPY SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/SqlBuildManager.SqlBuild.SqlServer.IntegrationTest.csproj SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/packages.lock.json SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/
 COPY SqlBuildManager.SqlBuild.UnitTest/SqlBuildManager.SqlBuild.UnitTest.csproj SqlBuildManager.SqlBuild.UnitTest/packages.lock.json SqlBuildManager.SqlBuild.UnitTest/
 COPY SqlBuildManager.SqlBuild/SqlBuildManager.SqlBuild.csproj SqlBuildManager.SqlBuild/packages.lock.json SqlBuildManager.SqlBuild/
 
-RUN dotnet restore SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest/SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlBuildManager.Console.Dependent.SqlServer.UnitTest/SqlBuildManager.Console.Dependent.SqlServer.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlBuildManager.ObjectScript.Dependent.UnitTest/SqlBuildManager.ObjectScript.Dependent.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlBuildManager.DbInformation.Dependent.UnitTest/SqlBuildManager.DbInformation.Dependent.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlBuildManager.Connection.Dependent.UnitTest/SqlBuildManager.Connection.Dependent.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlBuildManager.Console.Dependent.MySQL.UnitTest/SqlBuildManager.Console.Dependent.MySQL.UnitTest.csproj --locked-mode && \
+RUN dotnet restore SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/SqlBuildManager.SqlBuild.SqlServer.IntegrationTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.Console.SqlServer.IntegrationTest/SqlBuildManager.Console.SqlServer.IntegrationTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.ObjectScript.IntegrationTest/SqlBuildManager.ObjectScript.IntegrationTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.DbInformation.IntegrationTest/SqlBuildManager.DbInformation.IntegrationTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.Connection.IntegrationTest/SqlBuildManager.Connection.IntegrationTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest/SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.Console.PostgreSQL.IntegrationTest/SqlBuildManager.Console.PostgreSQL.IntegrationTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.SqlBuild.MySQL.IntegrationTest/SqlBuildManager.SqlBuild.MySQL.IntegrationTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.Console.MySQL.IntegrationTest/SqlBuildManager.Console.MySQL.IntegrationTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.SqlBuild.UnitTest/SqlBuildManager.SqlBuild.UnitTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.ObjectScript.UnitTest/SqlBuildManager.ObjectScript.UnitTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.Connection.UnitTest/SqlBuildManager.Connection.UnitTest.csproj --locked-mode && \
@@ -53,15 +53,15 @@ RUN dotnet restore SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest/SqlBuil
 
 FROM restore AS build
 COPY . .
-RUN dotnet build SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest/SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest && \
-    dotnet build SqlBuildManager.Console.Dependent.SqlServer.UnitTest/SqlBuildManager.Console.Dependent.SqlServer.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.Dependent.SqlServer.UnitTest && \
-    dotnet build SqlBuildManager.ObjectScript.Dependent.UnitTest/SqlBuildManager.ObjectScript.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.ObjectScript.Dependent.UnitTest && \
-    dotnet build SqlBuildManager.DbInformation.Dependent.UnitTest/SqlBuildManager.DbInformation.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.DbInformation.Dependent.UnitTest && \
-    dotnet build SqlBuildManager.Connection.Dependent.UnitTest/SqlBuildManager.Connection.Dependent.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Connection.Dependent.UnitTest && \
-    dotnet build SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest && \
-    dotnet build SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest && \
-    dotnet build SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest/SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest && \
-    dotnet build SqlBuildManager.Console.Dependent.MySQL.UnitTest/SqlBuildManager.Console.Dependent.MySQL.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.Dependent.MySQL.UnitTest && \
+RUN dotnet build SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/SqlBuildManager.SqlBuild.SqlServer.IntegrationTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.SqlBuild.SqlServer.IntegrationTest && \
+    dotnet build SqlBuildManager.Console.SqlServer.IntegrationTest/SqlBuildManager.Console.SqlServer.IntegrationTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.SqlServer.IntegrationTest && \
+    dotnet build SqlBuildManager.ObjectScript.IntegrationTest/SqlBuildManager.ObjectScript.IntegrationTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.ObjectScript.IntegrationTest && \
+    dotnet build SqlBuildManager.DbInformation.IntegrationTest/SqlBuildManager.DbInformation.IntegrationTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.DbInformation.IntegrationTest && \
+    dotnet build SqlBuildManager.Connection.IntegrationTest/SqlBuildManager.Connection.IntegrationTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Connection.IntegrationTest && \
+    dotnet build SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest/SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest && \
+    dotnet build SqlBuildManager.Console.PostgreSQL.IntegrationTest/SqlBuildManager.Console.PostgreSQL.IntegrationTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.PostgreSQL.IntegrationTest && \
+    dotnet build SqlBuildManager.SqlBuild.MySQL.IntegrationTest/SqlBuildManager.SqlBuild.MySQL.IntegrationTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.SqlBuild.MySQL.IntegrationTest && \
+    dotnet build SqlBuildManager.Console.MySQL.IntegrationTest/SqlBuildManager.Console.MySQL.IntegrationTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.MySQL.IntegrationTest && \
     dotnet build SqlBuildManager.SqlBuild.UnitTest/SqlBuildManager.SqlBuild.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.SqlBuild.UnitTest && \
     dotnet build SqlBuildManager.ObjectScript.UnitTest/SqlBuildManager.ObjectScript.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.ObjectScript.UnitTest && \
     dotnet build SqlBuildManager.Connection.UnitTest/SqlBuildManager.Connection.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Connection.UnitTest && \

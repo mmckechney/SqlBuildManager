@@ -1,0 +1,347 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.AzureTest.TestBase;
+using System;
+using System.Collections.Generic;
+using System.CommandLine;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SqlBuildManager.Console.MySQL.AzureTest
+{
+    /// <summary>
+    /// Azure Container App integration tests for MySQL targets.
+    /// Requires Azure environment provisioned via azd up with deployMySQL=true and Container Apps deployed.
+    /// Note: DACPAC/Platinum tests are not applicable to MySQL.
+    /// </summary>
+    [TestClass]
+    public class ContainerAppTests
+    {
+        public TestContext TestContext { get; set; }
+
+        private string settingsFileKeyPath = string.Empty;
+        private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
+
+        [TestInitialize]
+        public void ConfigureProcessInfo()
+        {
+            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ContainerAppTests>("SqlBuildManager.Console.log", Path.GetTempPath());
+            settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
+
+            System.Console.SetOut(new StringWriter(ConsoleOutput));
+            ConsoleOutput.Clear();
+        }
+
+        [TestCleanup]
+        public void CleanUp()
+        {
+        }
+
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
+        [TestMethod]
+        public async Task ContainerApp_MySQL_Run_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
+                if (!File.Exists(overrideFile))
+                {
+                    Assert.Inconclusive("MySQL database targets config file not found.");
+                }
+
+                var sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
+                int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = MySqlTestHelper.GetUniqueJobName("ca-pg");
+
+                var args = new string[]{
+                    "--loglevel", "Debug",
+                    "containerapp", "run",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "-P", sbmFileName,
+                    "--override", overrideFile,
+                    "--jobname", jobName,
+                    "--platform", "MySQL",
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--maxcontainers", containerCount.ToString(),
+                    "--imagetag", imageTag,
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream", "true",
+                    "--deletewhendone", "true"
+                };
+
+                var val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs agree with Container App PG test result
+                var logFileContents = MySqlTestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+            }
+        }
+
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
+        public async Task ContainerApp_MySQL_StepWise_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
+                if (!File.Exists(overrideFile))
+                {
+                    Assert.Inconclusive("MySQL database targets config file not found.");
+                }
+
+                var sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
+                int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = MySqlTestHelper.GetUniqueJobName("ca-pg");
+
+                // Prep
+                var args = new string[]{
+                    "containerapp", "prep",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--packagename", sbmFileName
+                };
+
+                var val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                // Enqueue
+                args = new string[]{
+                    "containerapp", "enqueue",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--override", overrideFile
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                // Deploy + Monitor
+                args = new string[]{
+                    "containerapp", "deploy",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "-P", sbmFileName,
+                    "--override", overrideFile,
+                    "--jobname", jobName,
+                    "--platform", "MySQL",
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--maxcontainers", containerCount.ToString(),
+                    "--imagetag", imageTag,
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream", "true",
+                    "--deletewhendone", "true"
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs
+                var logFileContents = MySqlTestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+            }
+        }
+
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
+        public async Task ContainerApp_MySQL_Queue_ManagedIdentity_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
+                if (!File.Exists(overrideFile))
+                {
+                    Assert.Inconclusive("MySQL database targets config file not found.");
+                }
+
+                var sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
+                int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = MySqlTestHelper.GetUniqueJobName("ca-pg");
+
+                // Prep
+                var args = new string[]{
+                    "containerapp", "prep",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--packagename", sbmFileName
+                };
+
+                var val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                // Enqueue
+                args = new string[]{
+                    "containerapp", "enqueue",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--override", overrideFile
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                // Deploy + Monitor
+                args = new string[]{
+                    "--loglevel", "Debug",
+                    "containerapp", "deploy",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "-P", sbmFileName,
+                    "--override", overrideFile,
+                    "--jobname", jobName,
+                    "--platform", "MySQL",
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--maxcontainers", containerCount.ToString(),
+                    "--imagetag", imageTag,
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream", "true",
+                    "--deletewhendone", "false"
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                TestContext.WriteLine(ConsoleOutput.ToString());
+                Assert.AreEqual(0, result);
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs
+                var logFileContents = MySqlTestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+            }
+        }
+
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
+        public async Task ContainerApp_MySQL_Run_DoubleDbConfig_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/mysql-clientdbtargets-doubledb.cfg");
+                if (!File.Exists(overrideFile))
+                {
+                    Assert.Inconclusive("MySQL double-client database targets config file not found.");
+                }
+
+                var sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectDoubleClientSbm();
+                int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = MySqlTestHelper.GetUniqueJobName("ca-pg");
+
+                var args = new string[]{
+                    "--loglevel", "Debug",
+                    "containerapp", "run",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "-P", sbmFileName,
+                    "--override", overrideFile,
+                    "--jobname", jobName,
+                    "--platform", "MySQL",
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--maxcontainers", containerCount.ToString(),
+                    "--imagetag", imageTag,
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream", "true",
+                    "--deletewhendone", "true"
+                };
+
+                var val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs
+                var logFileContents = MySqlTestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+            }
+        }
+    }
+}

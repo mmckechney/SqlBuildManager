@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
@@ -19,8 +19,8 @@ using System.Runtime.InteropServices;
 [assembly: Guid("0FAE0D51-8211-4D45-B986-02339851F9B8")]
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.UnitTest")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.Dependent.TestBase")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.Dependent.PostgreSQL.UnitTest")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.Dependent.MySQL.UnitTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.SqlServer.IntegrationTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.IntegrationTest.TestBase")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlBuildManager.SqlBuild.MySQL.IntegrationTest")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]

@@ -1,0 +1,117 @@
+using Microsoft.Data.SqlClient;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.Synchronizer;
+using System;
+using System.Threading.Tasks;
+
+#nullable enable
+
+namespace SqlBuildManager.SqlBuild.SqlServer.IntegrationTest
+{
+
+
+    /// <summary>
+    ///This is a test class for DatabaseSyncerTest and is intended
+    ///to contain all DatabaseSyncerTest Unit Tests
+    ///</summary>
+    [TestClass()]
+    public class DatabaseSyncerTest
+    {
+        private static Initialization _init = null!;
+
+        [ClassInitialize()]
+        public static void Initilize(TestContext testContext)
+        {
+            _init = new Initialization();
+        }
+        public TestContext TestContext { get; set; } = null!;
+
+        #region Additional test attributes
+        // 
+        //You can use the following additional attributes as you write your tests:
+        //
+        //Use ClassInitialize to run code before running the first test in the class
+        //[ClassInitialize()]
+        //public static void MyClassInitialize(TestContext testContext)
+        //{
+        //}
+        //
+        //Use ClassCleanup to run code after all tests in a class have run
+        //[ClassCleanup()]
+        //public static void MyClassCleanup()
+        //{
+        //}
+        //
+        //Use TestInitialize to run code before running each test
+        //[TestInitialize()]
+        //public void MyTestInitialize()
+        //{
+        //}
+        //
+        //Use TestCleanup to run code after each test has run
+        //[TestCleanup()]
+        //public void MyTestCleanup()
+        //{
+        //}
+        //
+        #endregion
+
+
+        /// <summary>
+        ///A test for SyncronizeDatabases
+        ///</summary>
+        [TestMethod()]
+        public async Task SyncronizeDatabasesTest_SyncWorked()
+        {
+            DatabaseSyncer target = new DatabaseSyncer();
+            ConnectionData gold = _init.CreateConnectionData("SqlBuildTest_SyncTest1");
+            ConnectionData toUpdate = _init.CreateConnectionData("SqlBuildTest_SyncTest2");
+            target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
+            bool success = await target.SyncronizeDatabasesAsync(gold, toUpdate, false);
+
+            CleanUpSyncTest2();
+
+            Assert.IsTrue(true);
+        }
+
+        [TestMethod()]
+        [Ignore("Flaky since history was not found")]
+        public async Task SyncronizeDatabasesTest_SyncWorkedAndSticks()
+        {
+            DatabaseSyncer target = new DatabaseSyncer();
+            ConnectionData gold = _init.CreateConnectionData("SqlBuildTest_SyncTest1");
+            ConnectionData toUpdate = _init.CreateConnectionData("SqlBuildTest_SyncTest2");
+            target.SyncronizationInfoEvent += new DatabaseSyncer.SyncronizationInfoEventHandler(target_SyncronizationInfoEvent);
+            bool success = await target.SyncronizeDatabasesAsync(gold, toUpdate, false);
+
+            DatabaseDiffer differ = new DatabaseDiffer();
+            var history = differ.GetDatabaseHistoryDifference(gold, toUpdate);
+
+            CleanUpSyncTest2();
+
+            Assert.AreEqual(0, history.BuildFileHistory.Count);
+
+        }
+
+        void target_SyncronizationInfoEvent(string message)
+        {
+            Console.WriteLine(message);
+        }
+
+        internal static void CleanUpSyncTest2()
+        {
+
+            string sql = "DELETE FROM [SqlBuildTest_SyncTest2].[dbo].[SqlBuild_Logging]";
+            ConnectionData sync2Conn = _init.CreateConnectionData("SqlBuildTest_SyncTest2");
+            SqlConnection conn = SqlBuildManager.Connection.ConnectionHelper.GetConnection(sync2Conn);
+            conn.Open();
+            using (SqlCommand cmd = new SqlCommand(sql, conn))
+            {
+                cmd.ExecuteNonQuery();
+                conn.Close();
+            }
+
+        }
+    }
+}

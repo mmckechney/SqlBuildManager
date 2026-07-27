@@ -37,7 +37,7 @@
 
 .PARAMETER testFilter
     Optional test filter (e.g., "FullyQualifiedName~ContainerApp" or "TestCategory=Integration").
-    If not specified, runs all tests in SqlBuildManager.Console.SqlServer.ExternalTest.
+    If not specified, runs all tests in SqlBuildManager.Console.SqlServer.AzureTest.
 
 .PARAMETER imageTag
     The container image tag to use (default: test-runner).
@@ -199,11 +199,11 @@ $blobPath = "$timestamp/$testContainerName"
 
 # Determine which test DLL to run based on the filter
 if ($testFilter -like "*PostgreSQL.ExternalTest*") {
-    $testDll = "SqlBuildManager.Console.PostgreSQL.ExternalTest.dll"
+    $testDll = "SqlBuildManager.Console.PostgreSQL.AzureTest.dll"
 } elseif ($testFilter -like "*MySQL.ExternalTest*") {
-    $testDll = "SqlBuildManager.Console.MySQL.ExternalTest.dll"
+    $testDll = "SqlBuildManager.Console.MySQL.AzureTest.dll"
 } else {
-    $testDll = "SqlBuildManager.Console.SqlServer.ExternalTest.dll"
+    $testDll = "SqlBuildManager.Console.SqlServer.AzureTest.dll"
 }
 
 if ($testFilter) {

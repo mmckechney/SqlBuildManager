@@ -38,7 +38,7 @@
     4. Test runner - runs the Dependent.UnitTest projects against all three sidecars
     
     The test runner waits for database sidecars to be ready, then runs all Dependent.UnitTest
-    projects. SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest runs first to create the test databases.
+    projects. SqlBuildManager.SqlBuild.SqlServer.IntegrationTest runs first to create the test databases.
     
     Environment variables SBM_TEST_SQL_SERVER, SBM_TEST_SQL_USER, and SBM_TEST_SQL_PASSWORD
     are set automatically to connect to the sidecar SQL Server instance.
