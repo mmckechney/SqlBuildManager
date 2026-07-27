@@ -26,11 +26,12 @@ namespace SqlSync.Connection.UnitTest
         public void BuildConnectionString_PasswordAuth_ShouldContainCredentials()
         {
             string connStr = factory.BuildConnectionString("mydb", "localhost", "mysqluser", "mysqlpass", AuthenticationType.Password, 30, "");
+            var builder = new MySqlConnectionStringBuilder(connStr);
 
             Assert.IsTrue(connStr.Contains("Server=localhost"), "Should contain Server");
             Assert.IsTrue(connStr.Contains("Database=mydb"), "Should contain Database");
             Assert.IsTrue(connStr.Contains("User ID=mysqluser"), "Should contain User ID");
-            Assert.IsTrue(connStr.Contains("******"), "Should contain Password");
+            Assert.AreEqual("mysqlpass", builder.Password, "Should contain Password");
         }
 
         [TestMethod]
