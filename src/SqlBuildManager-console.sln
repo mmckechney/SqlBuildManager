@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.1.11304.174
@@ -49,7 +49,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.ObjectScrip
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.UnitTest", "SqlBuildManager.SqlBuild.UnitTest\SqlBuildManager.SqlBuild.UnitTest.csproj", "{09226601-C1C5-4297-9BDB-9D5D302DA67E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dependent", "dependent", "{AB0F2CD6-9914-C1DA-674C-FC411EB553D7}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration", "integration", "{AB0F2CD6-9914-C1DA-674C-FC411EB553D7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.SqlServer.IntegrationTest", "SqlBuildManager.Console.SqlServer.IntegrationTest\SqlBuildManager.Console.SqlServer.IntegrationTest.csproj", "{BE54267D-6387-48C2-AB69-189E255B41B1}"
 EndProject
@@ -65,7 +65,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.Po
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.IntegrationTest.TestBase", "SqlBuildManager.SqlBuild.IntegrationTest.TestBase\SqlBuildManager.SqlBuild.IntegrationTest.TestBase.csproj", "{341863DE-8403-4976-9B50-897A620C6348}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{525D8F67-DF9B-D7CA-6D99-9BAF2C1FB094}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "azure", "azure", "{525D8F67-DF9B-D7CA-6D99-9BAF2C1FB094}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.SqlServer.AzureTest", "SqlBuildManager.Console.SqlServer.AzureTest\SqlBuildManager.Console.SqlServer.AzureTest.csproj", "{BD656E28-7DCD-45F3-A5D6-FCA3689E1A51}"
 EndProject
@@ -78,8 +78,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.RelayProxy", "SqlBuildManager.RelayProxy\SqlBuildManager.RelayProxy.csproj", "{01D17E49-51D5-458D-8A85-1E254DCD1473}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.Console.MySQL.IntegrationTest", "SqlBuildManager.Console.MySQL.IntegrationTest\SqlBuildManager.Console.MySQL.IntegrationTest.csproj", "{8E925F50-208A-4435-8F70-BCFE72787152}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlBuildManager.Console", "SqlBuildManager.Console", "{0AF3C493-1589-3DED-6052-1911F6ADB1E1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.MySQL.IntegrationTest", "SqlBuildManager.SqlBuild.MySQL.IntegrationTest\SqlBuildManager.SqlBuild.MySQL.IntegrationTest.csproj", "{4FE11F15-79B8-410F-A784-DCDB4D97EFAF}"
 EndProject
