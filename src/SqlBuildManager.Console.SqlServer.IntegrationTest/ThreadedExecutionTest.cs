@@ -24,6 +24,7 @@ namespace SqlBuildManager.Console.SqlServer.IntegrationTest
     ///to contain all ThreadedExecutionTest Unit Tests
     ///</summary>
     [TestClass()]
+    [DoNotParallelize]
     public class ThreadedExecutionTest
     {
 
