@@ -102,12 +102,12 @@
       },
       "Azure.ResourceManager.EventHubs": {
         "type": "Direct",
-        "requested": "[1.2.1, )",
-        "resolved": "1.2.1",
-        "contentHash": "ZZqNzMJC6Rc1h1lGB1s1QfQfECBU+N3+1ki93r7ZFNup1ivfk71h7bzp/3yxraiO+stUCCbgRce4KnRn1ACtEw==",
+        "requested": "[1.3.0, )",
+        "resolved": "1.3.0",
+        "contentHash": "+NSsK4+oBrYcNwwzx46t9dW+e+Qi4a4Qfz7xncCDnw2AxOpYPx1C9ief5QmYkG64zzne8hH4+Oh6qb2j88YTew==",
         "dependencies": {
-          "Azure.Core": "1.47.3",
-          "Azure.ResourceManager": "1.13.2"
+          "Azure.Core": "1.60.0",
+          "Azure.ResourceManager": "1.14.0"
         }
       },
       "Azure.ResourceManager.Network": {
