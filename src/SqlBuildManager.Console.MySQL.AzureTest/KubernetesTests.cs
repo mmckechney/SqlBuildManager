@@ -54,7 +54,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 }
 
                 var sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
-                string jobName = MySqlTestHelper.GetUniqueJobName("k8s-pg");
+                string jobName = MySqlTestHelper.GetUniqueJobName("k8s-mysql");
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -87,7 +87,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
 
-                // Validate blob storage logs agree with K8s PG test result
+                // Validate blob storage logs agree with K8s MySQL test result
                 var logFileContents = MySqlTestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
                 BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
@@ -118,7 +118,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 }
 
                 var sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectDoubleClientSbm();
-                string jobName = MySqlTestHelper.GetUniqueJobName("k8s-pg");
+                string jobName = MySqlTestHelper.GetUniqueJobName("k8s-mysql");
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -182,7 +182,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 }
 
                 var sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
-                string jobName = MySqlTestHelper.GetUniqueJobName("k8s-pg");
+                string jobName = MySqlTestHelper.GetUniqueJobName("k8s-mysql");
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -248,7 +248,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 }
 
                 var queryFile = MySqlTestHelper.GetMySqlSelectQueryFile();
-                string jobName = MySqlTestHelper.GetUniqueJobName("k8s-pg");
+                string jobName = MySqlTestHelper.GetUniqueJobName("k8s-mysql");
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
@@ -321,7 +321,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             {
                 var prc = new ProcessHelper();
                 var sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
-                string jobName = MySqlTestHelper.GetUniqueJobName("k8s-pg-long");
+                string jobName = MySqlTestHelper.GetUniqueJobName("k8s-mysql-long");
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();

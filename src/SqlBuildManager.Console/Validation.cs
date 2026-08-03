@@ -556,6 +556,13 @@ namespace SqlBuildManager.Console
         {
 
             List<string> messages = new List<string>(ExecutionOptionValidator.ValidateContainerApp(cmdLine));
+            if (!ExecutionOptionValidator.TryValidateContainerAppJobName(
+                cmdLine.JobName,
+                required: false,
+                out string jobNameError))
+            {
+                messages.Add(jobNameError);
+            }
             if (String.IsNullOrEmpty(cmdLine.ContainerAppArgs.EnvironmentName))
             {
                 messages.Add("--environmentname is required in command line or --settingsfile");

@@ -57,7 +57,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = MySqlTestHelper.GetUniqueJobName("ca-pg");
+                string jobName = MySqlTestHelper.GetUniqueJobName("ca-mysql");
 
                 var args = new string[]{
                     "--loglevel", "Debug",
@@ -86,7 +86,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
 
-                // Validate blob storage logs agree with Container App PG test result
+                // Validate blob storage logs agree with Container App MySQL test result
                 var logFileContents = MySqlTestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
                 BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
@@ -119,7 +119,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = MySqlTestHelper.GetUniqueJobName("ca-pg");
+                string jobName = MySqlTestHelper.GetUniqueJobName("ca-mysql");
 
                 // Prep
                 var args = new string[]{
@@ -208,7 +208,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = MySqlTestHelper.GetUniqueJobName("ca-pg");
+                string jobName = MySqlTestHelper.GetUniqueJobName("ca-mysql");
 
                 // Prep
                 var args = new string[]{
@@ -299,7 +299,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 RootCommand rootCommand = CommandLineBuilder.SetUp();
-                string jobName = MySqlTestHelper.GetUniqueJobName("ca-pg");
+                string jobName = MySqlTestHelper.GetUniqueJobName("ca-mysql");
 
                 var args = new string[]{
                     "--loglevel", "Debug",

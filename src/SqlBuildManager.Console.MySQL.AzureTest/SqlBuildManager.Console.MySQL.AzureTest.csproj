@@ -32,12 +32,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Resources\PG_SimpleSelect_DoubleClient.sbm" />
+    <None Remove="Resources\MySQL_SimpleSelect_DoubleClient.sbm" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\PG_SimpleSelect.sbm" />
-    <EmbeddedResource Include="Resources\PG_SimpleSelect_DoubleClient.sbm" />
-    <EmbeddedResource Include="Resources\pg_selectquery.sql" />
+    <EmbeddedResource Include="Resources\MySQL_SimpleSelect.sbm" />
+    <EmbeddedResource Include="Resources\MySQL_SimpleSelect_DoubleClient.sbm" />
+    <EmbeddedResource Include="Resources\mysql_selectquery.sql" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

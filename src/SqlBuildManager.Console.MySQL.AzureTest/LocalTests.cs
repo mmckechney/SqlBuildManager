@@ -64,7 +64,7 @@
 //        #endregion
 
 //        [TestMethod]
-//        public void LocalThreaded_PG_SBMSource_Success()
+//        public void LocalThreaded_MySQL_SBMSource_Success()
 //        {
 //            string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
 //            int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
@@ -85,12 +85,12 @@
 
 //            var logFileContents = MySqlTestHelper.RelevantLogFileContents(startingLine);
 //            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-//            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "The threaded PG run should have completed successfully");
+//            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "The threaded MySQL run should have completed successfully");
 //            Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count}"), $"Should have run against {overrideFileContents.Count} databases");
 //        }
 
 //        [TestMethod]
-//        public void LocalSingleRun_PG_SBMSource_Success()
+//        public void LocalSingleRun_MySQL_SBMSource_Success()
 //        {
 //            string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
 //            int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
@@ -112,11 +112,11 @@
 
 //            var logFileContents = MySqlTestHelper.RelevantLogFileContents(startingLine);
 //            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-//            Assert.IsTrue(logFileContents.Contains("Committing transaction for"), "The single PG build should have committed successfully");
+//            Assert.IsTrue(logFileContents.Contains("Committing transaction for"), "The single MySQL build should have committed successfully");
 //        }
 
 //        [TestMethod]
-//        public void LocalThreaded_PG_DoubleClient_SBMSource_Success()
+//        public void LocalThreaded_MySQL_DoubleClient_SBMSource_Success()
 //        {
 //            var doubleClientOverridePath = Path.GetFullPath("TestConfig/mysql-clientdbtargets-doubledb.cfg");
 //            if (!File.Exists(doubleClientOverridePath))
@@ -145,11 +145,11 @@
 
 //            var logFileContents = MySqlTestHelper.RelevantLogFileContents(startingLine);
 //            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-//            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "The double-client PG run should have completed successfully");
+//            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "The double-client MySQL run should have completed successfully");
 //        }
 
 //        [TestMethod]
-//        public void LocalThreaded_PG_SBMSource_Concurrency_MaxPerServer_Success()
+//        public void LocalThreaded_MySQL_SBMSource_Concurrency_MaxPerServer_Success()
 //        {
 //            string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
 //            int startingLine = MySqlTestHelper.LogFileCurrentLineCount();

@@ -66,6 +66,7 @@ if ($batch) {
             -path $path `
             -resourceGroupName $resourceGroupName `
             -databaseAuthType Password `
+            -databasePlatform MySQL `
             -databaseUserName $mySqlUser `
             -databasePassword $mySqlPassword `
             -settingsFileSuffix "mysql-password"
@@ -85,6 +86,7 @@ if ($aks) {
             -path $path `
             -resourceGroupName $resourceGroupName `
             -databaseAuthType Password `
+            -databasePlatform MySQL `
             -databaseUserName $mySqlUser `
             -databasePassword $mySqlPassword `
             -settingsFileSuffix "mysql-password"
@@ -104,6 +106,7 @@ if ($aci) {
             -path $path `
             -resourceGroupName $resourceGroupName `
             -databaseAuthType Password `
+            -databasePlatform MySQL `
             -databaseUserName $mySqlUser `
             -databasePassword $mySqlPassword `
             -settingsFileSuffix "mysql-password"
@@ -123,6 +126,7 @@ if ($containerApp) {
             -path $path `
             -resourceGroupName $resourceGroupName `
             -databaseAuthType Password `
+            -databasePlatform MySQL `
             -databaseUserName $mySqlUser `
             -databasePassword $mySqlPassword `
             -settingsFileSuffix "mysql-password"

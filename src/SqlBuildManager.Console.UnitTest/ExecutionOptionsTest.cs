@@ -104,6 +104,36 @@ namespace SqlBuildManager.Console.UnitTest
         }
 
         [TestMethod]
+        public void TryValidateContainerAppJobName_AllowsNameThatFitsWithSbmPrefix()
+        {
+            var jobName = new string('a', ExecutionOptions.ContainerAppJobNameMaxLength);
+
+            bool valid = ExecutionOptionValidator.TryValidateContainerAppJobName(
+                jobName,
+                required: true,
+                out string error);
+
+            Assert.IsTrue(valid, error);
+            Assert.AreEqual(
+                ExecutionOptions.ContainerAppNameMaxLength,
+                ExecutionOptions.ContainerAppNamePrefix.Length + jobName.Length);
+        }
+
+        [TestMethod]
+        public void TryValidateContainerAppJobName_RejectsNameThatExceedsAzureLimit()
+        {
+            var jobName = new string('a', ExecutionOptions.ContainerAppJobNameMaxLength + 1);
+
+            bool valid = ExecutionOptionValidator.TryValidateContainerAppJobName(
+                jobName,
+                required: true,
+                out string error);
+
+            Assert.IsFalse(valid);
+            StringAssert.Contains(error, ExecutionOptions.ContainerAppJobNameMaxLength.ToString());
+        }
+
+        [TestMethod]
         public void ExecutionReturn_AllValuesHaveOperatorDescriptions()
         {
             foreach (ExecutionReturn value in Enum.GetValues<ExecutionReturn>())

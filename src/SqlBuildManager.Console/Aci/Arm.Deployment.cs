@@ -14,6 +14,9 @@ namespace SqlBuildManager.Console.Aci.Arm
 
         [JsonPropertyName("detailStatus")]
         public string DetailStatus { get; set; } = string.Empty;
+
+        [JsonPropertyName("exitCode")]
+        public int? ExitCode { get; set; }
     }
 
     public class Event
@@ -151,4 +154,3 @@ namespace SqlBuildManager.Console.Aci.Arm
 
 
 }
-

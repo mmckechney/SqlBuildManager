@@ -11,7 +11,9 @@ param
     [string] $databaseAuthType = "AzureADDefault",
     [string] $databaseUserName = "",
     [string] $databasePassword = "",
-    [string] $settingsFileSuffix = "mi-only"
+    [string] $settingsFileSuffix = "mi-only",
+    [ValidateSet("SqlServer", "PostgreSQL", "MySQL")]
+    [string] $databasePlatform = "SqlServer"
 )
 
 <#
@@ -117,6 +119,7 @@ $params += @("--identityname", $identityName)
 $params += @("--clientid", $identity.clientId)
 $params += @("--idrg", $resourceGroupName)
 $params += @("--force")
+$params += @("--settingsfilekey", $keyFile)
 $params += @("--podcount", $podCount)
 $params += @("--eventhublogging", "ScriptErrors")
 $params += @("--ehrg", $resourceGroupName)
@@ -134,8 +137,8 @@ $params += @("-eh", $ehValue)
 # Service Bus (namespace only, no connection string)
 $params += @("-sb", $serviceBusNamespaceName)
 
-# Set auth type to Managed Identity
-
+# Set auth type / platform
+$params += @("--platform", $databasePlatform)
 $params += @("--authtype", $databaseAuthType)
 if ($databaseAuthType -eq "Password") {
     $params += @("--username", $databaseUserName)

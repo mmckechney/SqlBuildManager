@@ -1,5 +1,6 @@
 using Azure;
 using Azure.Core;
+using Azure.Identity;
 using Microsoft.Data.SqlClient;
 using SqlBuildManager.Console.Aad;
 using System;
@@ -19,6 +20,7 @@ namespace SqlBuildManager.Console.Relay
 {
     public sealed class RelayProxyClient
     {
+        internal const int MaxEventMonitorAuthenticationRecoveryAttempts = 6;
         private static readonly HttpClient HttpClient = new(new HttpClientHandler
         {
             AllowAutoRedirect = false
@@ -355,11 +357,16 @@ namespace SqlBuildManager.Console.Relay
 
         public static bool IsFallbackEligible(Exception exception) =>
             GetExceptions(exception).Any(candidate =>
-                candidate is HttpRequestException or TaskCanceledException ||
+                candidate is HttpRequestException or TaskCanceledException or CredentialUnavailableException ||
+                candidate is AuthenticationFailedException authenticationFailed &&
+                    ManagedIdentityFallbackTokenCredential.IsManagedIdentityUnavailableForFallback(authenticationFailed) ||
                 candidate is RequestFailedException requestFailed &&
                     (requestFailed.Status == 0 ||
                      requestFailed.Status == (int)HttpStatusCode.Forbidden ||
                      requestFailed.ErrorCode == "AuthorizationFailure"));
+
+        internal static bool IsTransientAuthenticationFailure(Exception exception) =>
+            RetryingTokenCredential.IsTransientAuthenticationFailure(exception);
 
         public static bool IsSqlPrivateNetworkDenial(Exception exception) =>
             GetExceptions(exception)
@@ -399,9 +406,7 @@ namespace SqlBuildManager.Console.Relay
             HttpContent? content,
             CancellationToken cancellationToken)
         {
-            var token = await AadHelper.TokenCredential.GetTokenAsync(
-                new TokenRequestContext(["https://relay.azure.net/.default"]),
-                cancellationToken).ConfigureAwait(false);
+            var token = await GetRelayAccessTokenAsync(cancellationToken).ConfigureAwait(false);
             using var request = new HttpRequestMessage(method, new Uri(endpoint, relativePath))
             {
                 Content = content
@@ -425,6 +430,14 @@ namespace SqlBuildManager.Console.Relay
                     statusCode);
             }
             return response;
+        }
+
+        private static async Task<AccessToken> GetRelayAccessTokenAsync(CancellationToken cancellationToken)
+        {
+            var requestContext = new TokenRequestContext(["https://relay.azure.net/.default"]);
+            return await AadHelper.TokenCredential.GetTokenAsync(
+                requestContext,
+                cancellationToken).ConfigureAwait(false);
         }
 
         private static async Task<string> ReadUrlAsync(

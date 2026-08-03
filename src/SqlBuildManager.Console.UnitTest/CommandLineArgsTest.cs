@@ -101,6 +101,52 @@ namespace SqlBuildManager.Console.UnitTest
         }
 
         [TestMethod]
+        public void WorkerInit_success_with_plaintext_sensitive_values_and_keyfile()
+        {
+            var tmpJsonFile = Path.GetTempFileName();
+            var tmpSecretFile = Path.GetTempFileName();
+            try
+            {
+                var settingsJson = @"{
+  ""AuthenticationArgs"": {
+    ""UserName"": ""mysql_admin_user"",
+    ""Password"": ""NotBase64Password!123"",
+    ""AuthenticationType"": ""Password""
+  },
+  ""ConnectionArgs"": {
+    ""ServiceBusTopicConnectionString"": ""sbns-test"",
+    ""EventHubConnectionString"": ""evhns-test|evh-test"",
+    ""StorageAccountName"": ""sttest""
+  }
+}";
+
+                File.WriteAllText(tmpJsonFile, settingsJson);
+                File.WriteAllText(tmpSecretFile, Properties.Resources.settingsfilekey);
+
+                var cmdLine = new CommandLineArgs
+                {
+                    SettingsFileKey = tmpSecretFile,
+                    SettingsFile = tmpJsonFile
+                };
+
+                (bool success, cmdLine) = Worker.Init(cmdLine, false);
+
+                Assert.IsTrue(success);
+                Assert.IsTrue(cmdLine.Decrypted);
+                Assert.AreEqual("mysql_admin_user", cmdLine.AuthenticationArgs.UserName);
+                Assert.AreEqual("NotBase64Password!123", cmdLine.AuthenticationArgs.Password);
+            }
+            finally
+            {
+                if (File.Exists(tmpJsonFile))
+                    File.Delete(tmpJsonFile);
+
+                if (File.Exists(tmpSecretFile))
+                    File.Delete(tmpSecretFile);
+            }
+        }
+
+        [TestMethod]
         public void WorkerInit_fail_with_bad_keyfile()
         {
             var tmpJsonFile = Path.GetTempFileName();

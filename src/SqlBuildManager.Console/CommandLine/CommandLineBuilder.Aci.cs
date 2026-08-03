@@ -91,6 +91,7 @@ namespace SqlBuildManager.Console.CommandLine
                     forceOption,
 
                     settingsfileExistingOption,
+                    settingsfileKeyOption,
                     aciIResourceGroupNameNotReqOption,
                     aciInstanceNameNotReqOption,
                     aciContainerCountOption,
@@ -245,6 +246,7 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("enqueue", "Sends database override targets to Service Bus Topic")
                 {
                     settingsfileExistingOption,
+                    settingsfileKeyOption,
                     jobnameRequiredOption,
                     threadedConcurrencyRequiredOption,
                     overrideRequiredOption
@@ -270,6 +272,7 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("deploy", "Deploy the ACI instance and start containers")
                 {
                     settingsfileExistingOption,
+                    settingsfileKeyOption,
                     aciIResourceGroupNameNotReqOption,
                     aciInstanceNameNotReqOption,
                     aciContainerCountOption,
@@ -299,7 +302,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.SetGroupedHelp(
                     new OptionGroup("Build Options", new List<Option> { jobnameRequiredOption, packagenameAsFileToUploadOption, overrideOption, platinumdacpacFileInfoOption, allowForObjectDeletionOption, aciMonitorOption }),
                     new OptionGroup("ACI", new List<Option> { aciIResourceGroupNameNotReqOption, aciInstanceNameNotReqOption, aciContainerCountOption }),
-                    new OptionGroup("Settings File", new List<Option> { settingsfileExistingOption }),
+                    new OptionGroup("Settings File", new List<Option> { settingsfileExistingOption, settingsfileKeyOption }),
                     new OptionGroup("Event Hub", EventHubResourceOptions),
                     new OptionGroup("VNET", VnetOptions),
                     new OptionGroup("Container Registry", ContainerRegistryAndImageOptions),
@@ -332,6 +335,7 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("monitor", "Poll the Service Bus Topic to see how many messages are left to be processed and watch the Event Hub for build outcomes (commits & errors)")
                 {
                     settingsfileExistingOption,
+                    settingsfileKeyOption,
                     jobnameOption,
                     overrideOption,
                     threadedConcurrencyTypeOption,
@@ -363,6 +367,7 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("dequeue", "Careful! Removes the Service Bus Topic subscription and deletes the messages and deadletters without processing them")
                 {
                     settingsfileExistingOption,
+                    settingsfileKeyOption,
                     jobnameRequiredOption,
                     threadedConcurrencyTypeOption
                 };

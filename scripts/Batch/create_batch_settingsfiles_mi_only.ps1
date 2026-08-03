@@ -10,7 +10,9 @@ param
     [string] $databaseAuthType = "AzureADDefault",
     [string] $databaseUserName = "",
     [string] $databasePassword = "",
-    [string] $settingsFileSuffix = "mi-only"
+    [string] $settingsFileSuffix = "mi-only",
+    [ValidateSet("SqlServer", "PostgreSQL", "MySQL")]
+    [string] $databasePlatform = "SqlServer"
 )
 
 <#
@@ -130,6 +132,7 @@ $baseParams += @("--imagename", "sqlbuildmanager")
 $baseParams += @("--imagetag", "latest-vNext")
 
 $baseParams += @("--authtype", $databaseAuthType)
+$baseParams += @("--platform", $databasePlatform)
 if ($databaseAuthType -eq "Password") {
     $baseParams += @("--username", $databaseUserName)
     $baseParams += @("--password", $databasePassword)

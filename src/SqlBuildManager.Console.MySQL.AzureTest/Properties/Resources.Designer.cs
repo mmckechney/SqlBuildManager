@@ -64,18 +64,18 @@ namespace SqlBuildManager.Console.MySQL.AzureTest.Properties {
         ///   Looks up a localized string similar to SELECT version()
         ///.
         /// </summary>
-        internal static string pg_selectquery {
+        internal static string mysql_selectquery {
             get {
-                return ResourceManager.GetString("pg_selectquery", resourceCulture);
+                return ResourceManager.GetString("mysql_selectquery", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] PG_SimpleSelect {
+        internal static byte[] MySQL_SimpleSelect {
             get {
-                object obj = ResourceManager.GetObject("PG_SimpleSelect", resourceCulture);
+                object obj = ResourceManager.GetObject("MySQL_SimpleSelect", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -83,9 +83,9 @@ namespace SqlBuildManager.Console.MySQL.AzureTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] PG_SimpleSelect_DoubleClient {
+        internal static byte[] MySQL_SimpleSelect_DoubleClient {
             get {
-                object obj = ResourceManager.GetObject("PG_SimpleSelect_DoubleClient", resourceCulture);
+                object obj = ResourceManager.GetObject("MySQL_SimpleSelect_DoubleClient", resourceCulture);
                 return ((byte[])(obj));
             }
         }

@@ -59,7 +59,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <!-- Legacy PG_* resource names are retained, but the referenced package contents are MySQL-specific. -->
   <data name="dbconfig" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\dbconfig.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -72,19 +71,19 @@
   <data name="dbconfig_doubledb" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\dbconfig-doubledb.cfg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="PG_SimpleSelect" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PG_SimpleSelect.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="MySQL_SimpleSelect" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MySQL_SimpleSelect.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="PG_SimpleSelect_client" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PG_SimpleSelect_client.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="MySQL_SimpleSelect_client" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MySQL_SimpleSelect_client.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="PG_SimpleSelect_DoubleClient" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PG_SimpleSelect_DoubleClient.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="MySQL_SimpleSelect_DoubleClient" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MySQL_SimpleSelect_DoubleClient.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="PG_InsertForThreadedTest" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PG_InsertForThreadedTest.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="MySQL_InsertForThreadedTest" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MySQL_InsertForThreadedTest.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="PG_SyntaxError" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PG_SyntaxError.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="MySQL_SyntaxError" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MySQL_SyntaxError.sbm;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

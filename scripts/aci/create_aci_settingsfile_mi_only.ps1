@@ -11,7 +11,9 @@ param
     [string] $databaseAuthType = "AzureADDefault",
     [string] $databaseUserName = "",
     [string] $databasePassword = "",
-    [string] $settingsFileSuffix = "mi-only"
+    [string] $settingsFileSuffix = "mi-only",
+    [ValidateSet("SqlServer", "PostgreSQL", "MySQL")]
+    [string] $databasePlatform = "SqlServer"
 )
 
 <#
@@ -114,6 +116,7 @@ if ($false -eq (Test-Path $keyFile)) {
 # Build parameters (NO KEYS!)
 $params = @("aci", "savesettings")
 $params += @("--settingsfile", $settingsAci)
+$params += @("--settingsfilekey", $keyFile)
 # Note: ACI CLI requires -kv but we use a placeholder since MI mode doesn't need it
 #$params += @("-kv", "placeholder-not-used-with-mi")
 $params += @("--aciname", $aciName)
@@ -147,6 +150,7 @@ if ($vnet -ne "" -and $aciSubnet -ne "") {
 }
 
 # Auth type
+$params += @("--platform", $databasePlatform)
 $params += @("--authtype", $databaseAuthType)
 if ($databaseAuthType -eq "Password") {
     $params += @("--username", $databaseUserName)

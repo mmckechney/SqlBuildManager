@@ -220,6 +220,14 @@ namespace SqlBuildManager.Console.Aci
                 cmdLine.AuthenticationArgs.AuthenticationType = SqlBuildManager.Connection.AuthenticationType.ManagedIdentity;
             }
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.AuthType) { Value = cmdLine.AuthenticationArgs.AuthenticationType.ToString() });
+            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
+            {
+                lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.UserName) { Value = cmdLine.AuthenticationArgs.UserName });
+            }
+            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
+            {
+                lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.Password) { Value = cmdLine.AuthenticationArgs.Password });
+            }
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.ConcurrencyType) { Value = cmdLine.ConcurrencyType.ToString() });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.AllowObjectDelete) { Value = cmdLine.AllowObjectDelete.ToString() });
             lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.IdentityClientId) { Value = cmdLine.IdentityArgs.ClientId.ToString() });
@@ -339,12 +347,19 @@ namespace SqlBuildManager.Console.Aci
 
         internal static async Task<bool> AciIsInErrorState(string subscriptionId, string resourceGroupName, string aciName)
         {
+            var state = await GetAciRuntimeState(subscriptionId, resourceGroupName, aciName);
+            return state.IsInErrorState;
+        }
 
+        internal static async Task<(bool IsInErrorState, bool HasCompletedSuccessfully)> GetAciRuntimeState(
+            string subscriptionId,
+            string resourceGroupName,
+            string aciName)
+        {
             var aciResult = await GetAciInstanceData(subscriptionId, resourceGroupName, aciName);
-            var containerCount = aciResult.Properties.Containers.Count;
-            var status = aciResult.Properties.Containers.Where(c => c.Properties.InstanceView.CurrentState.DetailStatus.ToLower() == "error").Count();
-
-            return status == containerCount;
+            return (
+                IsAciInErrorState(aciResult),
+                IsAciSuccessfullyCompleted(aciResult));
         }
 
         private static async Task<Aci.Arm.Deployment> GetAciInstanceData(string subscriptionId, string resourceGroupName, string aciName)
@@ -368,6 +383,33 @@ namespace SqlBuildManager.Console.Aci
         {
             if (httpStatus == 404) return false;   // definitive "not found"
             return null;                             // non-404: cannot determine — caller must throw
+        }
+
+        internal static bool IsAciInErrorState(Aci.Arm.Deployment deployment)
+        {
+            var containers = deployment.Properties?.Containers;
+            return containers is { Count: > 0 } &&
+                containers.All(container =>
+                    string.Equals(
+                        container.Properties?.InstanceView?.CurrentState?.DetailStatus,
+                        "error",
+                        StringComparison.OrdinalIgnoreCase));
+        }
+
+        internal static bool IsAciSuccessfullyCompleted(Aci.Arm.Deployment deployment)
+        {
+            var containers = deployment.Properties?.Containers;
+            // With RestartPolicy=Never, Terminated/Completed is observed only after
+            // the worker process returns, including its final log consolidation.
+            return containers is { Count: > 0 } &&
+                containers.All(container =>
+                {
+                    var state = container.Properties?.InstanceView?.CurrentState;
+                    return state != null &&
+                        string.Equals(state.State, "Terminated", StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(state.DetailStatus, "Completed", StringComparison.OrdinalIgnoreCase) &&
+                        (!state.ExitCode.HasValue || state.ExitCode.Value == 0);
+                });
         }
 
         #region Container Worker Methods

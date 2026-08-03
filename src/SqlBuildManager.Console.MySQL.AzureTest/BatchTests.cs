@@ -95,7 +95,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
         {
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
             settingsFile = Path.GetFullPath(settingsFile);
-            string jobName = GetUniqueBatchJobName("batch-pg");
+            string jobName = GetUniqueBatchJobName("batch-mysql");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
             var args = new string[]{
@@ -122,7 +122,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "Batch PG run should have completed successfully");
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "Batch MySQL run should have completed successfully");
             Assert.IsTrue(logFileContents.Contains("Batch complete"), "Should indicate a batch job");
 
             // Validate blob storage logs agree with local test result
@@ -141,7 +141,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
         {
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
             settingsFile = Path.GetFullPath(settingsFile);
-            string jobName = GetUniqueBatchJobName("batch-pg-mi");
+            string jobName = GetUniqueBatchJobName("batch-mysql-mi");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
             var args = new string[]{
@@ -168,7 +168,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "Batch PG MI run should have completed successfully");
+            Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "Batch MySQL MI run should have completed successfully");
 
             // Validate blob storage logs
             BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
@@ -187,7 +187,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
         {
             settingsFile = Path.GetFullPath(settingsFile);
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
-            string jobName = GetUniqueBatchJobName("batch-pg-q");
+            string jobName = GetUniqueBatchJobName("batch-mysql-q");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
             // Enqueue
@@ -251,7 +251,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             {
                 settingsFile = Path.GetFullPath(settingsFile);
                 var queryFile = MySqlTestHelper.GetMySqlSelectQueryFile();
-                string jobName = GetUniqueBatchJobName("batch-pg-qry");
+                string jobName = GetUniqueBatchJobName("batch-mysql-qry");
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
                 var args = new string[]{
@@ -306,7 +306,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
         public void Batch_MySQL_Override_SBMSource_RunWithError_MissingPackage(string batchMethod, string settingsFile)
         {
             settingsFile = Path.GetFullPath(settingsFile);
-            string jobName = GetUniqueBatchJobName("batch-pg-err");
+            string jobName = GetUniqueBatchJobName("batch-mysql-err");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
             var args = new string[]{
@@ -336,7 +336,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
         {
             settingsFile = Path.GetFullPath(settingsFile);
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
-            string jobName = GetUniqueBatchJobName("batch-pg-mi-q");
+            string jobName = GetUniqueBatchJobName("batch-mysql-mi-q");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
             // Enqueue

@@ -1,7 +1,11 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.Aci;
+using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.ContainerShared;
+using SqlBuildManager.Connection;
 using System;
 using System.Diagnostics;
+using System.Linq;
 
 namespace SqlBuildManager.Console.UnitTest
 {
@@ -99,6 +103,141 @@ namespace SqlBuildManager.Console.UnitTest
             Assert.AreEqual(
                 0.75,
                 deployment.Properties.Containers[0].Properties.Resources.Requests.Cpu);
+        }
+
+        [TestMethod]
+        public void AciManager_IsAciSuccessfullyCompleted_AllContainersTerminatedWithZeroExitCode_ReturnsTrue()
+        {
+            const string responseJson =
+                """
+                {
+                  "properties": {
+                    "containers": [
+                      {
+                        "properties": {
+                          "instanceView": {
+                            "currentState": {
+                              "state": "Terminated",
+                              "detailStatus": "Completed",
+                              "exitCode": 0
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "properties": {
+                          "instanceView": {
+                            "currentState": {
+                              "state": "Terminated",
+                              "detailStatus": "Completed",
+                              "exitCode": 0
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+                """;
+
+            var deployment = AciManager.ParseAciDeployment(responseJson);
+
+            Assert.IsTrue(AciManager.IsAciSuccessfullyCompleted(deployment));
+        }
+
+        [TestMethod]
+        public void AciManager_IsAciSuccessfullyCompleted_NonZeroExitCode_ReturnsFalse()
+        {
+            const string responseJson =
+                """
+                {
+                  "properties": {
+                    "containers": [
+                      {
+                        "properties": {
+                          "instanceView": {
+                            "currentState": {
+                              "state": "Terminated",
+                              "detailStatus": "Completed",
+                              "exitCode": 1
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+                """;
+
+            var deployment = AciManager.ParseAciDeployment(responseJson);
+
+            Assert.IsFalse(AciManager.IsAciSuccessfullyCompleted(deployment));
+        }
+
+        [TestMethod]
+        public void AciManager_IsAciSuccessfullyCompleted_WhileContainerIsRunning_ReturnsFalse()
+        {
+            const string responseJson =
+                """
+                {
+                  "properties": {
+                    "containers": [
+                      {
+                        "properties": {
+                          "instanceView": {
+                            "currentState": {
+                              "state": "Terminated",
+                              "detailStatus": "Completed",
+                              "exitCode": 0
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "properties": {
+                          "instanceView": {
+                            "currentState": {
+                              "state": "Running",
+                              "detailStatus": "Running"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+                """;
+
+            var deployment = AciManager.ParseAciDeployment(responseJson);
+
+            Assert.IsFalse(AciManager.IsAciSuccessfullyCompleted(deployment));
+        }
+
+        [TestMethod]
+        public void AciManager_GetContainerEnvironmentVariables_PasswordAuth_IncludesDatabaseCredentials()
+        {
+            var cmdLine = new CommandLineArgs
+            {
+                JobName = "job-name",
+                BuildFileName = "package.sbm",
+                Concurrency = 2,
+                ConcurrencyType = ConcurrencyType.Count
+            };
+            cmdLine.ConnectionArgs.EventHubConnectionString = "evhns-test|evh-test";
+            cmdLine.ConnectionArgs.ServiceBusTopicConnectionString = "sbns-test";
+            cmdLine.ConnectionArgs.StorageAccountName = "sttest";
+            cmdLine.IdentityArgs.ClientId = "client-id";
+            cmdLine.AuthenticationArgs.AuthenticationType = AuthenticationType.Password;
+            cmdLine.AuthenticationArgs.DatabasePlatform = DatabasePlatform.MySQL;
+            cmdLine.AuthenticationArgs.UserName = "mysql-user";
+            cmdLine.AuthenticationArgs.Password = "mysql-password";
+
+            var envVars = AciManager.GetContainerEnvironmentVariables(cmdLine);
+
+            Assert.IsTrue(envVars.Any(v => v.Name == ContainerEnvVariables.AuthType && v.Value == AuthenticationType.Password.ToString()));
+            Assert.IsTrue(envVars.Any(v => v.Name == ContainerEnvVariables.UserName && v.Value == "mysql-user"));
+            Assert.IsTrue(envVars.Any(v => v.Name == ContainerEnvVariables.Password && v.Value == "mysql-password"));
+            Assert.IsTrue(envVars.Any(v => v.Name == ContainerEnvVariables.DatabasePlatform && v.Value == DatabasePlatform.MySQL.ToString()));
         }
 
         // ── PERF-007: Elapsed.TotalSeconds vs Elapsed.Seconds ────────────────────

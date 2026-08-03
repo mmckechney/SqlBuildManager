@@ -293,9 +293,11 @@ namespace SqlBuildManager.Console
 
         #region ServiceBus and EventHub Monitoring
         private static bool activeServiceBusMonitoring = true;
+        private static volatile bool aciHasCompletedSuccessfully;
         internal static async Task<int> MonitorServiceBusRuntimeProgress(CommandLineArgs cmdLine, bool stream, DateTime? utcStartDate, bool unittest = false, bool checkAciState = false)
         {
             Worker.activeServiceBusMonitoring = true;
+            aciHasCompletedSuccessfully = false;
             var workersConfigured = GetWorkerCount(cmdLine);
             CancellationTokenSource ehCancellationSource = new CancellationTokenSource();
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName) && string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
@@ -465,6 +467,15 @@ namespace SqlBuildManager.Console
                     {
                         System.Console.WriteLine($"Received status on {targets} databases. Complete!");
                         System.Console.WriteLine($"All {workersCompleted} workers have completed.");
+                        break;
+                    }
+                    else if (checkAciState && aciHasCompletedSuccessfully)
+                    {
+                        // WorkerCompleted remains the normal completion signal. This
+                        // fallback is safe only after ACI reports every container
+                        // terminated successfully, which includes post-DB work.
+                        System.Console.WriteLine($"Received status on {targets} databases. Complete!");
+                        System.Console.WriteLine("The ACI container group completed successfully.");
                         break;
                     }
                     else if(workersCompleted > 0 && workersCompleted < workersConfigured && zeroMessageCounter >= 25 && !string.IsNullOrWhiteSpace(cmdLine.ContainerAppArgs.EnvironmentName)) //Special case for Container Apps which may have not needed to go to max scale...

@@ -103,9 +103,9 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] PG_InsertForThreadedTest {
+        public static byte[] MySQL_InsertForThreadedTest {
             get {
-                object obj = ResourceManager.GetObject("PG_InsertForThreadedTest", resourceCulture);
+                object obj = ResourceManager.GetObject("MySQL_InsertForThreadedTest", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -113,9 +113,9 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] PG_SimpleSelect {
+        public static byte[] MySQL_SimpleSelect {
             get {
-                object obj = ResourceManager.GetObject("PG_SimpleSelect", resourceCulture);
+                object obj = ResourceManager.GetObject("MySQL_SimpleSelect", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -123,9 +123,9 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] PG_SimpleSelect_client {
+        public static byte[] MySQL_SimpleSelect_client {
             get {
-                object obj = ResourceManager.GetObject("PG_SimpleSelect_client", resourceCulture);
+                object obj = ResourceManager.GetObject("MySQL_SimpleSelect_client", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -133,9 +133,9 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] PG_SimpleSelect_DoubleClient {
+        public static byte[] MySQL_SimpleSelect_DoubleClient {
             get {
-                object obj = ResourceManager.GetObject("PG_SimpleSelect_DoubleClient", resourceCulture);
+                object obj = ResourceManager.GetObject("MySQL_SimpleSelect_DoubleClient", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -143,9 +143,9 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] PG_SyntaxError {
+        public static byte[] MySQL_SyntaxError {
             get {
-                object obj = ResourceManager.GetObject("PG_SyntaxError", resourceCulture);
+                object obj = ResourceManager.GetObject("MySQL_SyntaxError", resourceCulture);
                 return ((byte[])(obj));
             }
         }

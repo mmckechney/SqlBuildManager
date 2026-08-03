@@ -57,7 +57,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.PG_InsertForThreadedTest);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_InsertForThreadedTest);
             init.CopyDbConfigFile4ToTestPath();
 
             string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
@@ -119,7 +119,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.PG_InsertForThreadedTest);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_InsertForThreadedTest);
             init.CopyDbConfigFile4ToTestPath();
 
             string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
@@ -177,7 +177,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.PG_InsertForThreadedTest);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_InsertForThreadedTest);
             init.CopyDbConfigFile8ToTestPath();
 
             string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
@@ -234,7 +234,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.PG_InsertForThreadedTest);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_InsertForThreadedTest);
             init.CopyDbConfigFile4ToTestPath();
 
             string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
@@ -291,7 +291,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.PG_InsertForThreadedTest);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_InsertForThreadedTest);
             init.CopyDbConfigFile4ToTestPath();
 
             string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
@@ -350,7 +350,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         public async Task MySQL_ExecuteTest_CommitWithoutUsingRetries()
         {
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.PG_InsertForThreadedTest);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_InsertForThreadedTest);
 
             string cfgContents = $"localhost:sbm_mysql_test,sbm_mysql_test\nlocalhost:sbm_mysql_test,sbm_mysql_test1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".cfg";
@@ -416,7 +416,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         public async Task MySQL_ExecuteTest_SuccessWithoutTransactionsNoRetries()
         {
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.PG_InsertForThreadedTest);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_InsertForThreadedTest);
 
             string cfgContents = $"localhost:sbm_mysql_test,sbm_mysql_test\nlocalhost:sbm_mysql_test,sbm_mysql_test1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".cfg";

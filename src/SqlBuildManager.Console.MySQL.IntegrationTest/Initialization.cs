@@ -104,7 +104,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
 
         public void CopySbmFileToTestPath()
         {
-            File.WriteAllBytes(SqlBuildZipFileName, Properties.Resources.PG_SimpleSelect);
+            File.WriteAllBytes(SqlBuildZipFileName, Properties.Resources.MySQL_SimpleSelect);
         }
 
         public void CopyDbConfigFileToTestPath()

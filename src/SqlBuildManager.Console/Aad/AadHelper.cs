@@ -73,12 +73,13 @@ namespace SqlBuildManager.Console.Aad
                         if (!string.IsNullOrEmpty(AadHelper.TenantId))
                         {
                             log.LogInformation($"Creating DefaultAzureCredential for Tenant starting with'{AadHelper.TenantId.Substring(0, 8)}...', no ManagedIdentityClientId specified");
-                            _tokenCred = new DefaultAzureCredential(new DefaultAzureCredentialOptions() { TenantId = AadHelper.TenantId });
+                            _tokenCred = new RetryingTokenCredential(
+                                new DefaultAzureCredential(new DefaultAzureCredentialOptions() { TenantId = AadHelper.TenantId }));
                         }
                         else
                         {
                             log.LogInformation("Creating DefaultAzureCredential, no ManagedIdentityClientId specified");
-                            _tokenCred = new DefaultAzureCredential();
+                            _tokenCred = new RetryingTokenCredential(new DefaultAzureCredential());
                         }
 
                     }
@@ -98,10 +99,11 @@ namespace SqlBuildManager.Console.Aad
                             pwshOpts.TenantId = AadHelper.TenantId;
                         }
 
-                        _tokenCred = new ChainedTokenCredential(
-                            new ManagedIdentityFallbackTokenCredential(AadHelper.ManagedIdentityClientId),
-                            new AzureCliCredential(cliOpts),
-                            new AzurePowerShellCredential(pwshOpts));
+                        _tokenCred = new RetryingTokenCredential(
+                            new ChainedTokenCredential(
+                                new ManagedIdentityFallbackTokenCredential(AadHelper.ManagedIdentityClientId),
+                                new AzureCliCredential(cliOpts),
+                                new AzurePowerShellCredential(pwshOpts)));
                         log.LogInformation($"Creating ChainedTokenCredential with ManagedIdentityClientId of: '{AadHelper.ManagedIdentityClientId}'");
                     }
                 }

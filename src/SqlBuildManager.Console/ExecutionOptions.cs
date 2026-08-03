@@ -22,6 +22,9 @@ namespace SqlBuildManager.Console
         internal const int BatchJobNameMinLength = 3;
         internal const int BatchJobNameMaxLength = 41;
         internal const string BatchJobNamePattern = @"^[a-z0-9]+(-[a-z0-9]+)*$";
+        internal const string ContainerAppNamePrefix = "sbm";
+        internal const int ContainerAppNameMaxLength = 32;
+        internal const int ContainerAppJobNameMaxLength = ContainerAppNameMaxLength - 3;
 
         internal const int SasClockSkewHours = 1;
         internal const int SasWriteDurationHours = 4;
@@ -87,19 +90,44 @@ namespace SqlBuildManager.Console
 
         internal static bool TryValidateBatchJobName(string? batchJobName, bool required, out string error)
         {
-            if (string.IsNullOrWhiteSpace(batchJobName))
+            return TryValidateJobName(
+                batchJobName,
+                required,
+                ExecutionOptions.BatchJobNameMaxLength,
+                "job",
+                out error);
+        }
+
+        internal static bool TryValidateContainerAppJobName(string? jobName, bool required, out string error)
+        {
+            return TryValidateJobName(
+                jobName,
+                required,
+                ExecutionOptions.ContainerAppJobNameMaxLength,
+                "Container App job",
+                out error);
+        }
+
+        private static bool TryValidateJobName(
+            string? jobName,
+            bool required,
+            int maxLength,
+            string nameDescription,
+            out string error)
+        {
+            if (string.IsNullOrWhiteSpace(jobName))
             {
                 error = required
-                    ? $"The job name is required and must be {ExecutionOptions.BatchJobNameMinLength} to {ExecutionOptions.BatchJobNameMaxLength} lowercase alphanumeric or dash characters."
+                    ? $"The {nameDescription} name is required and must be {ExecutionOptions.BatchJobNameMinLength} to {maxLength} lowercase alphanumeric or dash characters."
                     : string.Empty;
                 return !required;
             }
 
-            if (batchJobName.Length < ExecutionOptions.BatchJobNameMinLength ||
-                batchJobName.Length > ExecutionOptions.BatchJobNameMaxLength ||
-                !BatchJobNameRegex.IsMatch(batchJobName))
+            if (jobName.Length < ExecutionOptions.BatchJobNameMinLength ||
+                jobName.Length > maxLength ||
+                !BatchJobNameRegex.IsMatch(jobName))
             {
-                error = $"The job name must be lowercase, between {ExecutionOptions.BatchJobNameMinLength} and {ExecutionOptions.BatchJobNameMaxLength} characters, and contain only letters, numbers, or single dashes. Value provided: '{batchJobName}'.";
+                error = $"The {nameDescription} name must be lowercase, between {ExecutionOptions.BatchJobNameMinLength} and {maxLength} characters, and contain only letters, numbers, or single dashes. Value provided: '{jobName}'.";
                 return false;
             }
 

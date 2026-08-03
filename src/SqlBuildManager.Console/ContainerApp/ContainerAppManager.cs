@@ -29,14 +29,15 @@ namespace SqlBuildManager.Console.ContainerApp
 
         internal static async Task<bool> DeleteContainerApp(CommandLineArgs cmdLine)
         {
-            if (await ArmHelper.DeleteResource(cmdLine.ContainerAppArgs.SubscriptionId, cmdLine.ContainerAppArgs.ResourceGroup, $"sbm{cmdLine.JobName}"))
+            string containerAppName = $"{ExecutionOptions.ContainerAppNamePrefix}{cmdLine.JobName}";
+            if (await ArmHelper.DeleteResource(cmdLine.ContainerAppArgs.SubscriptionId, cmdLine.ContainerAppArgs.ResourceGroup, containerAppName))
             {
-                log.LogInformation($"Successfully deleted ContainerApp: sbm{cmdLine.JobName}");
+                log.LogInformation($"Successfully deleted ContainerApp: {containerAppName}");
                 return true;
             }
             else
             {
-                log.LogError($"Unable to delete ContainerApp: sbm{cmdLine.JobName}");
+                log.LogError($"Unable to delete ContainerApp: {containerAppName}");
                 return false;
             }
         }
@@ -168,11 +169,11 @@ namespace SqlBuildManager.Console.ContainerApp
 
         internal static async Task<bool> DeployContainerApp(CommandLineArgs cmdLine, string logLevel)
         {
-            string containerAppName = $"sbm{cmdLine.JobName}";
+            string containerAppName = $"{ExecutionOptions.ContainerAppNamePrefix}{cmdLine.JobName}";
             var containerAppEnvId = ContainerAppManagedEnvironmentResource.CreateResourceIdentifier(cmdLine.ContainerAppArgs.SubscriptionId, cmdLine.ContainerAppArgs.ResourceGroup, cmdLine.ContainerAppArgs.EnvironmentName);
             var containerAppEnv = (await ArmHelper.SbmArmClient.GetContainerAppManagedEnvironmentResource(containerAppEnvId).GetAsync()).Value;
 
-            var containerAppId = ContainerAppResource.CreateResourceIdentifier(cmdLine.ContainerAppArgs.SubscriptionId, cmdLine.ContainerAppArgs.ResourceGroup, $"sbm{cmdLine.JobName}");
+            var containerAppId = ContainerAppResource.CreateResourceIdentifier(cmdLine.ContainerAppArgs.SubscriptionId, cmdLine.ContainerAppArgs.ResourceGroup, containerAppName);
             var containerApp = ArmHelper.SbmArmClient.GetContainerAppResource(containerAppId);
 
             var containerAppData = new ContainerAppData(containerAppEnv.Data.Location);

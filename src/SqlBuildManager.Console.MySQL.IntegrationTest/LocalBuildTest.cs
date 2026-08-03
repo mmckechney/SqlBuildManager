@@ -36,7 +36,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
-            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<LocalBuildTest>("SqlBuildManager.Console.PG.log", Path.GetTempPath());
+            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<LocalBuildTest>("SqlBuildManager.Console.MySQL.log", Path.GetTempPath());
             System.Console.SetOut(new StringWriter(ConsoleOutput));
             ConsoleOutput.Clear();
         }
@@ -56,7 +56,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.PG_SimpleSelect);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_SimpleSelect);
 
             string loggingPath = Path.GetTempPath() + Guid.NewGuid().ToString();
 
@@ -113,7 +113,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.PG_SimpleSelect_client);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_SimpleSelect_client);
 
             string loggingPath = Path.GetTempPath() + Guid.NewGuid().ToString();
 
@@ -170,7 +170,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.PG_SimpleSelect_DoubleClient);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_SimpleSelect_DoubleClient);
 
             string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
             init.CopyDoubleDbConfigFileToTestPath();
@@ -229,7 +229,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.PG_SimpleSelect);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_SimpleSelect);
 
             string multiDbOverrideSettingFileName = Initialization.DbConfigFileName;
             init.CopyDbConfigFileToTestPath();
@@ -290,7 +290,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.PG_SimpleSelect);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_SimpleSelect);
 
             string loggingPath = Path.GetTempPath() + Guid.NewGuid().ToString();
 
@@ -345,7 +345,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         {
             Initialization init = GetInitializationObject();
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
-            File.WriteAllBytes(sbmFileName, Properties.Resources.PG_SyntaxError);
+            File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_SyntaxError);
 
             string loggingPath = Path.GetTempPath() + Guid.NewGuid().ToString();
 

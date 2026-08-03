@@ -5,6 +5,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:ed034a8bf0b24ded0cbbac07e17825d8e9
 WORKDIR /src
 
 COPY Directory.Build.props Directory.Packages.props ./
+COPY SqlBuildManager.Console.AzureTest.TestBase/SqlBuildManager.Console.AzureTest.TestBase.csproj SqlBuildManager.Console.AzureTest.TestBase/packages.lock.json SqlBuildManager.Console.AzureTest.TestBase/
 COPY SqlBuildManager.Console.SqlServer.AzureTest/SqlBuildManager.Console.SqlServer.AzureTest.csproj SqlBuildManager.Console.SqlServer.AzureTest/packages.lock.json SqlBuildManager.Console.SqlServer.AzureTest/
 COPY SqlBuildManager.Console.PostgreSQL.AzureTest/SqlBuildManager.Console.PostgreSQL.AzureTest.csproj SqlBuildManager.Console.PostgreSQL.AzureTest/packages.lock.json SqlBuildManager.Console.PostgreSQL.AzureTest/
 COPY SqlBuildManager.Console.MySQL.AzureTest/SqlBuildManager.Console.MySQL.AzureTest.csproj SqlBuildManager.Console.MySQL.AzureTest/packages.lock.json SqlBuildManager.Console.MySQL.AzureTest/

@@ -85,7 +85,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 int result = val.Result;
                 Assert.AreEqual(0, result);
 
-                // Validate blob storage logs agree with ACI PG test result
+                // Validate blob storage logs agree with ACI MySQL test result
                 var logFileContents = MySqlTestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
                 WriteCommandExecutionLog();

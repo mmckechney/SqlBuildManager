@@ -419,18 +419,48 @@ namespace SqlBuildManager.Console.Events
             try
             {
                 _eventRelayClient = new ccR.RelayProxyClient(ccR.RelayProxyManager.Endpoint);
-                _eventRelaySessionId = await _eventRelayClient.StartEventMonitorAsync(
-                    eventhubNamespace,
-                    eventHub,
-                    consumerGroup,
-                    utcMonitorStart,
-                    cancellationToken).ConfigureAwait(false);
-
+                var authenticationRecoveryAttempts = 0;
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var eventBodies = await _eventRelayClient.PollEventMonitorAsync(
-                        _eventRelaySessionId,
-                        cancellationToken).ConfigureAwait(false);
+                    IReadOnlyList<byte[]> eventBodies;
+                    try
+                    {
+                        if (string.IsNullOrWhiteSpace(_eventRelaySessionId))
+                        {
+                            _eventRelaySessionId = await _eventRelayClient.StartEventMonitorAsync(
+                                eventhubNamespace,
+                                eventHub,
+                                consumerGroup,
+                                utcMonitorStart,
+                                cancellationToken).ConfigureAwait(false);
+                        }
+
+                        eventBodies = await _eventRelayClient.PollEventMonitorAsync(
+                            _eventRelaySessionId,
+                            cancellationToken).ConfigureAwait(false);
+                        authenticationRecoveryAttempts = 0;
+                    }
+                    catch (Exception exception) when (
+                        !cancellationToken.IsCancellationRequested &&
+                        ccR.RelayProxyClient.IsTransientAuthenticationFailure(exception))
+                    {
+                        authenticationRecoveryAttempts++;
+                        if (authenticationRecoveryAttempts >= ccR.RelayProxyClient.MaxEventMonitorAuthenticationRecoveryAttempts)
+                        {
+                            throw;
+                        }
+
+                        log.LogWarning(
+                            "Relay authentication temporarily failed while monitoring Event Hub. " +
+                            "Retrying ({Attempt}/{Maximum})...",
+                            authenticationRecoveryAttempts,
+                            ccR.RelayProxyClient.MaxEventMonitorAuthenticationRecoveryAttempts);
+                        await Task.Delay(
+                            TimeSpan.FromSeconds(Math.Min(authenticationRecoveryAttempts * 5, 30)),
+                            cancellationToken).ConfigureAwait(false);
+                        continue;
+                    }
+
                     foreach (var eventBody in eventBodies)
                     {
                         await ProcessEventData(new EventData(new BinaryData(eventBody))).ConfigureAwait(false);
