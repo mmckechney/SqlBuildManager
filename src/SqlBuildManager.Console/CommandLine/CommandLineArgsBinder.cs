@@ -184,6 +184,7 @@ namespace SqlBuildManager.Console.CommandLine
             // Job name
             _registry.Register(CommandLineBuilder.jobnameOption, (args, v) => args.JobName = v);
             _registry.Register(CommandLineBuilder.jobnameRequiredOption, (args, v) => args.JobName = v);
+            _registry.Register(CommandLineBuilder.utilJobName, (args, v) => args.JobName = v);
 
             // Query and output files
             _registry.Register(CommandLineBuilder.queryFileOption, (args, v) => args.QueryFile = v);
@@ -192,6 +193,7 @@ namespace SqlBuildManager.Console.CommandLine
             _registry.Register(CommandLineBuilder.outputFileRequiredOption, (args, v) => args.OutputFile = v);
 
             // Directory
+            _registry.Register(CommandLineBuilder.directoryOption, (args, v) => args.Directory = v);
             _registry.Register(CommandLineBuilder.unpackDirectoryOption, (args, v) => args.Directory = v?.FullName!);
 
             // DACPAC name
@@ -199,6 +201,9 @@ namespace SqlBuildManager.Console.CommandLine
 
             // Scripts list
             _registry.Register(CommandLineBuilder.scriptListOption, (args, v) => args.Scripts = v);
+
+            // Settings state
+            _registry.Register(CommandLineBuilder.decryptedOption, (args, v) => args.Decrypted = v);
 
             // AllowObjectDelete
             _registry.Register(CommandLineBuilder.allowForObjectDeletionOption, (args, v) => args.AllowObjectDelete = v);
@@ -328,6 +333,7 @@ namespace SqlBuildManager.Console.CommandLine
             _registry.Register(CommandLineBuilder.containerAppEnvironmentOption, (args, v) => args.EnvironmentName = v);
             _registry.Register(CommandLineBuilder.containerAppLocationOption, (args, v) => args.Location = v);
             _registry.Register(CommandLineBuilder.containerAppResourceGroupOption, (args, v) => args.ResourceGroup = v);
+            _registry.Register(CommandLineBuilder.containerAppEnvOnly, (args, v) => args.EnvironmentVariablesOnly = v);
             _registry.Register(CommandLineBuilder.containerAppMaxContainerCount, (args, v) => args.MaxContainers = v);
             // Note: DeleteContainerAppWhenDone doesn't have a direct setter property, handle in handler
         }

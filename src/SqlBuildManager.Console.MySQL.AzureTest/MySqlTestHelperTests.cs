@@ -10,15 +10,15 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
     public class MySqlTestHelperTests
     {
         [TestMethod]
-        public void GeneratedPackagesUseMySqlDefaultDatabase()
+        public void GeneratedPackagesUseMySqlDatabaseMetadata()
         {
             var simplePackage = MySqlTestHelper.GetMySqlSimpleSelectSbm();
             var doubleClientPackage = MySqlTestHelper.GetMySqlSimpleSelectDoubleClientSbm();
 
             try
             {
-                AssertPackageUsesMySqlDatabase(simplePackage);
-                AssertPackageUsesMySqlDatabase(doubleClientPackage);
+                AssertPackageUsesDatabases(simplePackage, "sbm_mysql_test");
+                AssertPackageUsesDatabases(doubleClientPackage, "Client", "Client2");
 
                 using var archive = ZipFile.OpenRead(doubleClientPackage);
                 var sqlContents = string.Join(
@@ -48,7 +48,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        private static void AssertPackageUsesMySqlDatabase(string packagePath)
+        private static void AssertPackageUsesDatabases(string packagePath, params string[] expectedDatabases)
         {
             using var archive = ZipFile.OpenRead(packagePath);
             var projectEntry = archive.Entries.Single(entry =>
@@ -56,7 +56,11 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             using var reader = new StreamReader(projectEntry.Open(), Encoding.UTF8);
             var projectXml = reader.ReadToEnd();
 
-            StringAssert.Contains(projectXml, "Database=\"sbm_mysql_test\"");
+            foreach (var expectedDatabase in expectedDatabases)
+            {
+                StringAssert.Contains(projectXml, $"Database=\"{expectedDatabase}\"");
+            }
+
             Assert.IsFalse(projectXml.Contains("sbm_pg_test", System.StringComparison.OrdinalIgnoreCase));
         }
     }
