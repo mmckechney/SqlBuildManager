@@ -23,6 +23,7 @@ namespace SqlBuildManager.Console.CommandLine
                 var cmd = new Command("savesettings", "Saves settings file for Azure Container Instances container deployments")
                 {
                     settingsfileNewOption,
+                    settingsfileKeyOption,
                     aciIResourceGroupNameOption,
                     aciInstanceNameOption,
                     subscriptionIdOption,
@@ -50,7 +51,7 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.AddRange(IdentityArgumentsForContainerApp);
                 cmd.AddRange(ContainerRegistryAndImageOptions);
                 cmd.SetGroupedHelp(
-                    new OptionGroup("Settings File", new List<Option> { settingsfileNewOption }),
+                    new OptionGroup("Settings File", new List<Option> { settingsfileNewOption, settingsfileKeyOption }),
                     new OptionGroup("ACI", new List<Option> { aciIResourceGroupNameOption, aciInstanceNameOption, subscriptionIdOption }),
                     new OptionGroup("Execution", new List<Option> { sectionPlaceholderOption, defaultscripttimeoutOption, timeoutretrycountOption, silentOption, cleartextOption }),
                     new OptionGroup("Connections & Secrets", new List<Option> { keyVaultNameOption, storageaccountnameOption, storageaccountkeyOption, eventhubconnectionOption, serviceBusconnectionOption }),

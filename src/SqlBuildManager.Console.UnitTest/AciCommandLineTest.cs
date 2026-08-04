@@ -29,6 +29,30 @@ namespace SqlBuildManager.Console.UnitTest
         }
 
         [TestMethod]
+        public void AciSaveSettings_SettingsFileKey_Parses()
+        {
+            string[] args =
+            [
+                "aci",
+                "savesettings",
+                "--settingsfile",
+                "settings.json",
+                "--settingsfilekey",
+                "settingsfilekey.txt",
+                "--aciresourcegroup",
+                "resource-group",
+                "--aciname",
+                "aci-name"
+            ];
+
+            var result = CommandLineBuilder.Parse(args);
+            Assert.IsEmpty(result.Errors);
+
+            var cmdLine = CommandLineBuilder.ParseArguments(args);
+            Assert.AreEqual("settingsfilekey.txt", cmdLine.SettingsFileKey);
+        }
+
+        [TestMethod]
         public void AciRun_SettingsFileKey_Parses()
         {
             var result = CommandLineBuilder.Parse(

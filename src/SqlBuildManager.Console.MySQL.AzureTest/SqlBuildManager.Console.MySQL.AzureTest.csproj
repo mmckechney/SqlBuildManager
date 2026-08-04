@@ -35,7 +35,6 @@
     <None Remove="Resources\MySQL_SimpleSelect_DoubleClient.sbm" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\MySQL_SimpleSelect.sbm" />
     <EmbeddedResource Include="Resources\MySQL_SimpleSelect_DoubleClient.sbm" />
     <EmbeddedResource Include="Resources\mysql_selectquery.sql" />
   </ItemGroup>
