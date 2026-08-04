@@ -70,17 +70,24 @@ namespace SqlBuildManager.Console.Aad
 
                     if (string.IsNullOrWhiteSpace(AadHelper.ManagedIdentityClientId))
                     {
+                        var defaultCredentialOptions = new DefaultAzureCredentialOptions
+                        {
+                            ExcludeManagedIdentityCredential = true
+                        };
                         if (!string.IsNullOrEmpty(AadHelper.TenantId))
                         {
-                            log.LogInformation($"Creating DefaultAzureCredential for Tenant starting with'{AadHelper.TenantId.Substring(0, 8)}...', no ManagedIdentityClientId specified");
-                            _tokenCred = new RetryingTokenCredential(
-                                new DefaultAzureCredential(new DefaultAzureCredentialOptions() { TenantId = AadHelper.TenantId }));
+                            defaultCredentialOptions.TenantId = AadHelper.TenantId;
+                            log.LogInformation($"Creating developer credential chain for Tenant starting with'{AadHelper.TenantId.Substring(0, 8)}...', no ManagedIdentityClientId specified");
                         }
                         else
                         {
-                            log.LogInformation("Creating DefaultAzureCredential, no ManagedIdentityClientId specified");
-                            _tokenCred = new RetryingTokenCredential(new DefaultAzureCredential());
+                            log.LogInformation("Creating developer credential chain, no ManagedIdentityClientId specified");
                         }
+
+                        _tokenCred = new RetryingTokenCredential(
+                            new ChainedTokenCredential(
+                                new DefaultAzureCredential(defaultCredentialOptions),
+                                new ManagedIdentityFallbackTokenCredential(string.Empty)));
 
                     }
                     else

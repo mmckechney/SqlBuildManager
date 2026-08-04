@@ -20,5 +20,3 @@ namespace SqlBuildManager.Connection
         AzureADDefault
     }
 }
-
-

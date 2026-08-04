@@ -17,13 +17,17 @@ namespace SqlBuildManager.Console.Batch
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
 
         /// <summary>
-        /// Creates a BatchClient using either Managed Identity (preferred) or shared key credentials (fallback)
+        /// Creates a BatchClient using either Managed Identity or shared key credentials.
         /// </summary>
         private static BatchClient GetBatchClient(CommandLineArgs cmdLine)
         {
-            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey))
+            if (string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
             {
-                // Legacy: Use shared key if provided
+                if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey))
+                {
+                    throw new ArgumentException("--batchaccountkey is required when a Batch managed identity is not configured.", nameof(cmdLine));
+                }
+
                 log.LogDebug("Creating BatchClient with shared key credentials");
                 var cred = new BatchSharedKeyCredentials(
                     cmdLine.ConnectionArgs.BatchAccountUrl,
@@ -31,14 +35,11 @@ namespace SqlBuildManager.Console.Batch
                     cmdLine.ConnectionArgs.BatchAccountKey);
                 return BatchClient.Open(cred);
             }
-            else
-            {
-                // Use Managed Identity via Azure.Identity
-                log.LogInformation("Creating BatchClient with Managed Identity (token credentials)");
-                Func<Task<string>> tokenProvider = async () => await AadHelper.GetBatchTokenString();
-                var cred = new BatchTokenCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, tokenProvider);
-                return BatchClient.Open(cred);
-            }
+
+            log.LogInformation("Creating BatchClient with Managed Identity (token credentials)");
+            Func<Task<string>> tokenProvider = async () => await AadHelper.GetBatchTokenString();
+            var tokenCred = new BatchTokenCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, tokenProvider);
+            return BatchClient.Open(tokenCred);
         }
 
         public static int DeleteAllCompletedJobs(CommandLineArgs cmdLine)
