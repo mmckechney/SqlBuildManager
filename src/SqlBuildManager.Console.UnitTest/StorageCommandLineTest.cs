@@ -102,5 +102,38 @@ namespace SqlBuildManager.Console.UnitTest
 
             Assert.IsTrue(result.Errors.Any(error => error.Message.Contains("--prefix")));
         }
+
+        [TestMethod]
+        public void StorageDownloadAll_RequiredArguments_Parses()
+        {
+            var outputPath = Path.GetTempPath();
+            var result = CommandLineBuilder.Parse(
+            [
+                "storage",
+                "download-all",
+                "--container",
+                "testresults",
+                "--outputpath",
+                outputPath
+            ]);
+
+            Assert.IsEmpty(result.Errors);
+            Assert.AreEqual("testresults", result.GetValue(CommandLineBuilder.storageContainerOption));
+            Assert.AreEqual(outputPath, result.GetValue(CommandLineBuilder.storageOutputPathOption)?.FullName);
+        }
+
+        [TestMethod]
+        public void StorageDownloadAll_WithoutOutputPath_ReturnsParseError()
+        {
+            var result = CommandLineBuilder.Parse(
+            [
+                "storage",
+                "download-all",
+                "--container",
+                "testresults"
+            ]);
+
+            Assert.IsTrue(result.Errors.Any(error => error.Message.Contains("--outputpath")));
+        }
     }
 }

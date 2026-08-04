@@ -6,8 +6,8 @@ using SqlBuildManager.Console.ContainerApp.Internal;
 using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.CommandLine.Parsing;
@@ -319,6 +319,59 @@ namespace SqlBuildManager.Console.UnitTest
                     File.Delete(tmpCfg);
                 }
             }
+        }
+
+        [TestMethod]
+        public void Package_Directory_BindsToCommandLineArgs()
+        {
+            var directory = Path.Combine(Path.GetTempPath(), "sbm-package-test");
+
+            var cmdLine = CommandLineBuilder.ParseArguments(new[]
+            {
+                "pack",
+                "--directory", directory
+            });
+
+            Assert.AreEqual(directory, cmdLine.Directory);
+        }
+
+        [TestMethod]
+        public void Utility_JobName_BindsToCommandLineArgs()
+        {
+            var cmdLine = CommandLineBuilder.ParseArguments(new[]
+            {
+                "utility", "eventhub",
+                "--jobname", "test-job"
+            });
+
+            Assert.AreEqual("test-job", cmdLine.JobName);
+        }
+
+        [TestMethod]
+        public void Decrypted_BindsToCommandLineArgs()
+        {
+            var cmdLine = CommandLineBuilder.ParseArguments(new[]
+            {
+                "containerapp", "monitor",
+                "--jobname", "test-job",
+                "--decrypted"
+            });
+
+            Assert.IsTrue(cmdLine.Decrypted);
+        }
+
+        [TestMethod]
+        public void ContainerApp_EnvironmentVariablesOnly_BindsToCommandLineArgs()
+        {
+            var cmdLine = CommandLineBuilder.ParseArguments(new[]
+            {
+                "containerapp", "run",
+                "--buildfilename", "test.sbm",
+                "--jobname", "test-job",
+                "--environmentvariablesonly"
+            });
+
+            Assert.IsTrue(cmdLine.ContainerAppArgs.EnvironmentVariablesOnly);
         }
     }
 }

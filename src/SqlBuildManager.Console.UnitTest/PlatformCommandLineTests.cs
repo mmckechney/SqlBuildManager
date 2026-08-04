@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CommandLine;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 
 namespace SqlBuildManager.Console.UnitTest
 {
@@ -84,6 +84,21 @@ namespace SqlBuildManager.Console.UnitTest
             Assert.AreEqual(AuthenticationType.Password, cmdLine.AuthenticationArgs.AuthenticationType);
             Assert.AreEqual("pguser", cmdLine.AuthenticationArgs.UserName);
             Assert.AreEqual("pgpass", cmdLine.AuthenticationArgs.Password);
+        }
+
+        [TestMethod]
+        public void ParseArguments_PlatformMySQL_SetsDatabasePlatform()
+        {
+            string[] args = new string[] {
+                "build",
+                "--server", "localhost",
+                "--database", "mydb",
+                "--packagename", "test.sbm",
+                "--platform", "MySQL"
+            };
+
+            var cmdLine = CommandLineBuilder.ParseArguments(args);
+            Assert.AreEqual(DatabasePlatform.MySQL, cmdLine.AuthenticationArgs.DatabasePlatform);
         }
     }
 }

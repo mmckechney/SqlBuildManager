@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
-using sqlB = SqlSync.SqlBuild.Utilities;
+using sqlB = SqlBuildManager.SqlBuild.Utilities;
 namespace SqlBuildManager.Console.CommandLine
 {
 
@@ -12,6 +12,10 @@ namespace SqlBuildManager.Console.CommandLine
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private static readonly string keyEnvronmentVariableName = "sbm-settingsfilekey";
+        private const byte V1FormatVersion = 0x01;
+        private const int V1HeaderSize = 33; // version(1) + salt(16) + iv(16)
+        private const int V1HmacSize = 32;
+        private const int V1MinPayloadLength = V1HeaderSize + 16 + V1HmacSize;
 
         public static CommandLineArgs EncryptSensitiveFields(CommandLineArgs cmdLine)
         {
@@ -68,8 +72,8 @@ namespace SqlBuildManager.Console.CommandLine
         private static bool _entraIdLogShown = false;
         public static (bool, CommandLineArgs) DecryptSensitiveFields(CommandLineArgs cmdLine, bool suppressLog = false)
         {
-            if(cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity ||
-                cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault)
+            if(cmdLine.AuthenticationArgs.AuthenticationType == SqlBuildManager.Connection.AuthenticationType.ManagedIdentity ||
+                cmdLine.AuthenticationArgs.AuthenticationType == SqlBuildManager.Connection.AuthenticationType.AzureADDefault)
             {
                 if (!_entraIdLogShown)
                 {
@@ -113,30 +117,30 @@ namespace SqlBuildManager.Console.CommandLine
 
             if (cmdLine.ContainerRegistryArgs != null && !string.IsNullOrWhiteSpace(cmdLine.ContainerRegistryArgs.RegistryPassword))
             {
-                (success, cmdLine.ContainerRegistryArgs.RegistryPassword) = sqlB.Cryptography.DecryptText(cmdLine.ContainerRegistryArgs.RegistryPassword, key, "--registrypassword", suppressLog);
+                (success, cmdLine.ContainerRegistryArgs.RegistryPassword) = DecryptIfEncrypted(cmdLine.ContainerRegistryArgs.RegistryPassword, key, "--registrypassword", suppressLog);
                 consolidated = consolidated & success;
             }
 
-            if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId)) //if there is a managed Id then we not need to decrypt the user name
+            if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))// && string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId)) //if there is a managed Id then we not need to decrypt the user name
             {
-                (success, cmdLine.AuthenticationArgs.UserName) = sqlB.Cryptography.DecryptText(cmdLine.AuthenticationArgs.UserName, key, "--username", suppressLog);
+                (success, cmdLine.AuthenticationArgs.UserName) = DecryptIfEncrypted(cmdLine.AuthenticationArgs.UserName, key, "--username", suppressLog);
                 consolidated = consolidated & success;
             }
             if (cmdLine.AuthenticationArgs != null && !string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
             {
-                (success, cmdLine.AuthenticationArgs.Password) = sqlB.Cryptography.DecryptText(cmdLine.AuthenticationArgs.Password, key, "--password", suppressLog);
+                (success, cmdLine.AuthenticationArgs.Password) = DecryptIfEncrypted(cmdLine.AuthenticationArgs.Password, key, "--password", suppressLog);
                 consolidated = consolidated & success;
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey))
             {
-                (success, cmdLine.ConnectionArgs.BatchAccountKey) = sqlB.Cryptography.DecryptText(cmdLine.ConnectionArgs.BatchAccountKey, key, "--batchaccountkey", suppressLog);
+                (success, cmdLine.ConnectionArgs.BatchAccountKey) = DecryptIfEncrypted(cmdLine.ConnectionArgs.BatchAccountKey, key, "--batchaccountkey", suppressLog);
                 consolidated = consolidated & success;
             }
 
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountKey))
             {
-                (success, cmdLine.ConnectionArgs.StorageAccountKey) = sqlB.Cryptography.DecryptText(cmdLine.ConnectionArgs.StorageAccountKey, key, "--storageaccountkey", suppressLog);
+                (success, cmdLine.ConnectionArgs.StorageAccountKey) = DecryptIfEncrypted(cmdLine.ConnectionArgs.StorageAccountKey, key, "--storageaccountkey", suppressLog);
                 consolidated = consolidated & success;
             }
 
@@ -144,12 +148,12 @@ namespace SqlBuildManager.Console.CommandLine
             //Ignore possible decryption errors from EH and SB. They may be just the plain text namesspaces 
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
             {
-                (success, cmdLine.ConnectionArgs.EventHubConnectionString) = sqlB.Cryptography.DecryptText(cmdLine.ConnectionArgs.EventHubConnectionString, key, "--eventhubconnection", suppressLog);
+                (success, cmdLine.ConnectionArgs.EventHubConnectionString) = DecryptIfEncrypted(cmdLine.ConnectionArgs.EventHubConnectionString, key, "--eventhubconnection", suppressLog);
                 // consolidated = consolidated & success;
             }
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
             {
-                (success, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) = sqlB.Cryptography.DecryptText(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, key, "--servicebustopicconnection", suppressLog);
+                (success, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString) = DecryptIfEncrypted(cmdLine.ConnectionArgs.ServiceBusTopicConnectionString, key, "--servicebustopicconnection", suppressLog);
                 //consolidated = consolidated & success;
             }
 
@@ -159,6 +163,40 @@ namespace SqlBuildManager.Console.CommandLine
                 cmdLine.Decrypted = true;
             }
             return (consolidated, cmdLine);
+        }
+
+        private static (bool success, string output) DecryptIfEncrypted(string value, string key, string description, bool suppressLog = false)
+        {
+            if (!LooksLikeEncryptedPayload(value))
+            {
+                return (true, value);
+            }
+
+            return sqlB.Cryptography.DecryptText(value, key, description, suppressLog);
+        }
+
+        private static bool LooksLikeEncryptedPayload(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            try
+            {
+                byte[] bytes = Convert.FromBase64String(value);
+                bool isV1 = bytes.Length >= V1MinPayloadLength
+                    && bytes[0] == V1FormatVersion
+                    && (bytes.Length - V1HeaderSize - V1HmacSize) % 16 == 0;
+
+                // Legacy payloads are raw AES-CBC ciphertext and always a multiple of block size.
+                bool isLegacy = bytes.Length >= 16 && bytes.Length % 16 == 0;
+                return isV1 || isLegacy;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
         }
 
 

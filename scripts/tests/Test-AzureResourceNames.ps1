@@ -36,6 +36,9 @@ $expectedNames = @{
     pgServerNameA           = "psql-dev-01-a"
     pgServerNameB           = "psql-dev-01-b"
     pgAdminUser             = "pgadmindev01"
+    mySqlServerNameA        = "mysql-dev-01-a"
+    mySqlServerNameB        = "mysql-dev-01-b"
+    mySqlAdminUser          = "myaddev01"
 }
 
 $expectedPrefixes = @{

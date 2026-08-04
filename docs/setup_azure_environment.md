@@ -43,7 +43,7 @@ The simplest way to provision all Azure resources is using the [Azure Developer 
 ### What happens during `azd up`
 
 #### Pre-provision Hook (`infra/scripts/preprovision.ps1`)
-- Captures your current IP address (for SQL firewall rules)
+- Captures your current IP address for deployment metadata
 - Retrieves your Azure AD user info (for RBAC and SQL admin)
 - Sets default environment variables for post-provision steps
 
@@ -62,6 +62,7 @@ Creates the following Azure resources using the prefixes defined in `infra/resou
 - **Container App Environment** (`cae-{env}`)
 - **Azure SQL Servers** (`sql-{env}-a` and `sql-{env}-b`) - Each with test databases
 - **PostgreSQL Flexible Servers** (`psql-{env}-a` and `psql-{env}-b`) - Each with test databases
+- **MySQL Flexible Servers** (`mysql-{env}-a` and `mysql-{env}-b`) - Each with test databases
 
 #### Post-provision Hook (`infra/scripts/postprovision.ps1`)
 - Grants managed identity SQL permissions on all test databases
@@ -81,9 +82,13 @@ azd env set DEPLOY_BATCH_ACCOUNT true       # Deploy Azure Batch (default: true)
 azd env set DEPLOY_CONTAINER_REGISTRY true  # Deploy ACR (default: true)
 azd env set DEPLOY_CONTAINERAPP_ENV true    # Deploy Container Apps (default: true)
 azd env set DEPLOY_AKS true                 # Deploy AKS (default: true)
+azd env set DEPLOY_SQLSERVER true           # Deploy SQL Server databases
+azd env set DEPLOY_POSTGRESQL true          # Deploy PostgreSQL databases
+azd env set DEPLOY_MYSQL true               # Deploy MySQL databases
 
 # Database settings
 azd env set TEST_DB_COUNT_PER_SERVER 10     # Test databases per server (default: 10)
+azd env set MYSQL_AUTH_MODE Password        # MySQL test auth mode: Password or ManagedIdentity
 
 # Post-provision options
 azd env set BUILD_CONTAINER_IMAGES true     # Build and push Docker images
@@ -100,9 +105,12 @@ After successful deployment, the following files are generated in `src/TestConfi
 - `settingsfile-aci-*.json` - ACI settings 
 - `settingsfile-containerapp-*.json` - Container App settings
 - `settingsfile-k8s-*.json` - Kubernetes settings
+- `settingsfile-*-mysql-password.json` - MySQL password-auth settings for external tests
 - `settingsfilekey.txt` - Encryption key for settings files
 - `databasetargets.cfg` - Database listing for SBM file integration tests
 - `clientdbtargets.cfg` - Database listing for DACPAC integration tests
+- `mysql-databasetargets.cfg` - MySQL database listing for SBM integration tests
+- `mysql-clientdbtargets.cfg` - MySQL client target mapping
 
 ---
 ## Notes on Unit Testing
@@ -113,8 +121,8 @@ There are three types of Tests included in the solution:
 
 1. True unit tests with no external dependency - found in the  `~UnitTest.csproj` projects
 2. Those that are dependent on a local SQLEXPRESS database - found in the `~.Dependent.UnitTest.csproj` projects. If you want to be able to run the database dependent tests, you will need to install SQL Express as per the next section. \
-**IMPORTANT**: If running the SQLEXPRESS dependent tests for the first time on your local machine, you need to run the tests in the `SqlSync.SqlBuild.Dependent.UnitTest.csproj` _first_. This project has the scripts to create the necessary SQLEXPRESS databases.
-3. Integration tests that leverage Azure resources for Batch and Kubernetes. These are found in the `SqlBuildManager.Console.ExternalTest.csproj` project. To run these tests, first run `azd up` from the repo root (see [Setting Up an Azure Environment](setup_azure_environment.md)) with the default test database count of 10. This will create the necessary resources and test config files (in `/src/TestConfig` folder) needed to run the tests.
+**IMPORTANT**: If running the SQLEXPRESS dependent tests for the first time on your local machine, you need to run the tests in the `SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest.csproj` _first_. This project has the scripts to create the necessary SQLEXPRESS databases.
+3. Integration tests that leverage Azure resources for Batch and Kubernetes. These are found in `SqlBuildManager.Console.SqlServer.ExternalTest.csproj`, `SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj`, and `SqlBuildManager.Console.MySQL.ExternalTest.csproj`. To run these tests, first run `azd up` from the repo root (see [Setting Up an Azure Environment](setup_azure_environment.md)) with the default test database count of 10. This will create the necessary resources and test config files (in `/src/TestConfig` folder) needed to run the tests.
 
 ## SQL Express
 

@@ -34,7 +34,7 @@ namespace SqlBuildManager.Console.CommandLine
         }
 
         [JsonIgnore]
-        public virtual SqlSync.Connection.AuthenticationType AuthenticationType
+        public virtual SqlBuildManager.Connection.AuthenticationType AuthenticationType
         {
             set 
             { 
@@ -44,7 +44,7 @@ namespace SqlBuildManager.Console.CommandLine
         }
 
         [JsonIgnore]
-        public virtual SqlSync.Connection.DatabasePlatform DatabasePlatform
+        public virtual SqlBuildManager.Connection.DatabasePlatform DatabasePlatform
         {
             set
             {
@@ -71,12 +71,12 @@ namespace SqlBuildManager.Console.CommandLine
             public virtual string Password { get; set; } = string.Empty;
 
             [JsonConverter(typeof(JsonStringEnumConverter))]
-            [DefaultValue(SqlSync.Connection.AuthenticationType.Password)]
-            public SqlSync.Connection.AuthenticationType AuthenticationType { get; set; } = SqlSync.Connection.AuthenticationType.Password;
+            [DefaultValue(SqlBuildManager.Connection.AuthenticationType.Password)]
+            public SqlBuildManager.Connection.AuthenticationType AuthenticationType { get; set; } = SqlBuildManager.Connection.AuthenticationType.Password;
 
             [JsonConverter(typeof(JsonStringEnumConverter))]
-            [DefaultValue(SqlSync.Connection.DatabasePlatform.SqlServer)]
-            public SqlSync.Connection.DatabasePlatform DatabasePlatform { get; set; } = SqlSync.Connection.DatabasePlatform.SqlServer;
+            [DefaultValue(SqlBuildManager.Connection.DatabasePlatform.SqlServer)]
+            public SqlBuildManager.Connection.DatabasePlatform DatabasePlatform { get; set; } = SqlBuildManager.Connection.DatabasePlatform.SqlServer;
 
             [DefaultValue(false)]
             public bool TrustServerCertificate { get; set; } = false;

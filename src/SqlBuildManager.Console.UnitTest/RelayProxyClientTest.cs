@@ -1,4 +1,5 @@
 using Azure;
+using Azure.Identity;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.Relay;
 using System;
@@ -59,6 +60,45 @@ namespace SqlBuildManager.Console.UnitTest
         public void IsFallbackEligible_NetworkFailure_ReturnsTrue()
         {
             Assert.IsTrue(RelayProxyClient.IsFallbackEligible(new HttpRequestException("Network unavailable.")));
+        }
+
+        [TestMethod]
+        public void IsFallbackEligible_ManagedIdentityUnavailableAuthenticationFailure_ReturnsTrue()
+        {
+            var exception = new AuthenticationFailedException(
+                "All Managed Identity sources are unavailable. IMDSv2 probe failed. " +
+                "A socket operation was attempted to an unreachable network. (169.254.169.254:80)");
+
+            Assert.IsTrue(RelayProxyClient.IsFallbackEligible(exception));
+        }
+
+        [TestMethod]
+        public void IsFallbackEligible_CredentialUnavailable_ReturnsTrue()
+        {
+            Assert.IsTrue(RelayProxyClient.IsFallbackEligible(
+                new CredentialUnavailableException("Managed identity is unavailable in the current environment.")));
+        }
+
+        [TestMethod]
+        public void IsTransientAuthenticationFailure_AzureCliTimeout_ReturnsTrue()
+        {
+            Assert.IsTrue(RelayProxyClient.IsTransientAuthenticationFailure(
+                new AuthenticationFailedException(
+                    "The ChainedTokenCredential failed due to an unhandled exception: Azure CLI authentication timed out.")));
+        }
+
+        [TestMethod]
+        public void IsTransientAuthenticationFailure_InvalidCredential_ReturnsFalse()
+        {
+            Assert.IsFalse(RelayProxyClient.IsTransientAuthenticationFailure(
+                new AuthenticationFailedException("Azure CLI authentication failed because the account is not logged in.")));
+        }
+
+        [TestMethod]
+        public void IsTransientAuthenticationFailure_TimeoutException_ReturnsTrue()
+        {
+            Assert.IsTrue(RelayProxyClient.IsTransientAuthenticationFailure(
+                new TimeoutException("Credential process timed out.")));
         }
 
         [TestMethod]

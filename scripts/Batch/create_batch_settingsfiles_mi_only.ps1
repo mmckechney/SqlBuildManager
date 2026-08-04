@@ -5,7 +5,14 @@ param
 
     [string] $sbmExe = "sbm.exe",
     [string] $path,
-    [string] $resourceGroupName
+    [string] $resourceGroupName,
+    [ValidateSet("AzureADDefault", "Password")]
+    [string] $databaseAuthType = "AzureADDefault",
+    [string] $databaseUserName = "",
+    [string] $databasePassword = "",
+    [string] $settingsFileSuffix = "mi-only",
+    [ValidateSet("SqlServer", "PostgreSQL", "MySQL")]
+    [string] $databasePlatform = "SqlServer"
 )
 
 <#
@@ -67,6 +74,10 @@ $path = Resolve-Path $path
 Write-Host "Output path: $path" -ForegroundColor DarkGreen
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 
+if ($databaseAuthType -eq "Password" -and ([string]::IsNullOrWhiteSpace($databaseUserName) -or [string]::IsNullOrWhiteSpace($databasePassword))) {
+    throw "databaseUserName and databasePassword are required when databaseAuthType is Password."
+}
+
 # Get resource information
 $batchAcctEndpoint = az batch account show --name $batchAccountName --resource-group $resourceGroupName -o tsv --query "accountEndpoint"
 $registryServer = az acr show --name $containerRegistryName --resource-group $resourceGroupName -o tsv --query "loginServer"
@@ -82,8 +93,8 @@ Write-Host "Using Managed Identity: $identityName (ClientId: $($identity.clientI
 Write-Host "Using Batch Container Image: $registryServer/sqlbuildmanager:latest-vNext" -ForegroundColor DarkGreen
 
 # Output file paths
-$settingsJsonLinuxMiOnly = Join-Path $path "settingsfile-batch-linux-mi-only.json"
-$settingsJsonLinuxQueueMiOnly = Join-Path $path "settingsfile-batch-linux-queue-mi-only.json"
+$settingsJsonLinuxMiOnly = Join-Path $path "settingsfile-batch-linux-$settingsFileSuffix.json"
+$settingsJsonLinuxQueueMiOnly = Join-Path $path "settingsfile-batch-linux-queue-$settingsFileSuffix.json"
 
 # Settings file key
 $keyFile = Join-Path $path "settingsfilekey.txt"
@@ -120,7 +131,12 @@ $baseParams += @("--registryserver", $registryServer)
 $baseParams += @("--imagename", "sqlbuildmanager")
 $baseParams += @("--imagetag", "latest-vNext")
 
-$baseParams += @("--authtype", "AzureADDefault") #use this for local testing, will be overridden to ManagedIdentity in ACI
+$baseParams += @("--authtype", $databaseAuthType)
+$baseParams += @("--platform", $databasePlatform)
+if ($databaseAuthType -eq "Password") {
+    $baseParams += @("--username", $databaseUserName)
+    $baseParams += @("--password", $databasePassword)
+}
 $baseParams += @("--silent")
 $baseParams += @("--eventhublogging", "ScriptErrors")
 $baseParams += @("--ehrg", $resourceGroupName)

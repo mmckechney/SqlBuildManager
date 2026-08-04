@@ -1,8 +1,8 @@
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
-using SqlSync.Connection;
-using SqlSync.SqlBuild.AdHocQuery;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild.AdHocQuery;
+using SqlBuildManager.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,7 +13,7 @@ using System.IO;
 using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.SqlBuild.Status;
+using SqlBuildManager.SqlBuild.Status;
 using Azure.Messaging.ServiceBus;
 
 namespace SqlBuildManager.Console.Threaded
@@ -40,8 +40,8 @@ namespace SqlBuildManager.Console.Threaded
 
             var query = File.ReadAllText(cmdLine.QueryFile.FullName);
             var connData = new ConnectionData() { UserId = cmdLine.AuthenticationArgs.UserName, Password = cmdLine.AuthenticationArgs.Password, AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType, ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId, DatabasePlatform = cmdLine.AuthenticationArgs.DatabasePlatform, TrustServerCertificate = cmdLine.AuthenticationArgs.TrustServerCertificate };
-            // For PG MI auth, use identity name as UserId (PG role name)
-            if (connData.DatabasePlatform == DatabasePlatform.PostgreSQL
+            // For PostgreSQL/MySQL Entra auth, use identity name as UserId (database principal name)
+            if ((connData.DatabasePlatform == DatabasePlatform.PostgreSQL || connData.DatabasePlatform == DatabasePlatform.MySQL)
                 && string.IsNullOrEmpty(connData.UserId)
                 && !string.IsNullOrEmpty(cmdLine.IdentityArgs.IdentityName))
             {

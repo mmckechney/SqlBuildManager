@@ -29,27 +29,41 @@ for i in $(seq 1 $RETRIES); do
     sleep 5
 done
 
+echo "Waiting for MySQL to be ready..."
+for i in $(seq 1 $RETRIES); do
+    if timeout 2 bash -c "echo > /dev/tcp/localhost/3306" 2>/dev/null; then
+        echo "MySQL port is open, waiting for initialization to complete..."
+        sleep 10
+        echo "MySQL should be ready."
+        break
+    fi
+    echo "  Attempt $i/$RETRIES - MySQL not ready yet..."
+    sleep 5
+done
+
 mkdir -p /tests/TestResults
 
 # Run test DLLs in order:
 # 1. Pure unit tests (no external dependencies)
-# 2. SQL Server dependent tests - SqlSync.SqlBuild first (creates databases)
-# 3. PostgreSQL dependent tests
+# 2. SQL Server dependent tests - SqlBuildManager.SqlBuild first (creates databases)
+# 3. PostgreSQL and MySQL dependent tests
 TEST_DLLS=(
-    "SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.dll"
-    "SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.dll"
-    "SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.dll"
-    "SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.dll"
+    "SqlBuildManager.SqlBuild.UnitTest/SqlBuildManager.SqlBuild.UnitTest.dll"
+    "SqlBuildManager.ObjectScript.UnitTest/SqlBuildManager.ObjectScript.UnitTest.dll"
+    "SqlBuildManager.Connection.UnitTest/SqlBuildManager.Connection.UnitTest.dll"
+    "SqlBuildManager.DbInformation.UnitTest/SqlBuildManager.DbInformation.UnitTest.dll"
     "SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.dll"
     "SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.dll"
     "SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.dll"
-    "SqlSync.SqlBuild.Dependent.UnitTest/SqlSync.SqlBuild.Dependent.UnitTest.dll"
-    "SqlBuildManager.Console.Dependent.UnitTest/SqlBuildManager.Console.Dependent.UnitTest.dll"
-    "SqlSync.ObjectScript.Dependent.UnitTest/SqlSync.ObjectScript.Dependent.UnitTest.dll"
-    "SqlSync.DbInformation.Dependent.UnitTest/SqlSync.DbInformation.Dependent.UnitTest.dll"
-    "SqlSync.Connection.Dependent.UnitTest/SqlSync.Connection.Dependent.UnitTest.dll"
-    "SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest/SqlSync.SqlBuild.Dependent.PostgreSQL.UnitTest.dll"
-    "SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest/SqlBuildManager.Console.Dependent.PostgreSQL.UnitTest.dll"
+    "SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/SqlBuildManager.SqlBuild.SqlServer.IntegrationTest.dll"
+    "SqlBuildManager.Console.SqlServer.IntegrationTest/SqlBuildManager.Console.SqlServer.IntegrationTest.dll"
+    "SqlBuildManager.ObjectScript.IntegrationTest/SqlBuildManager.ObjectScript.IntegrationTest.dll"
+    "SqlBuildManager.DbInformation.IntegrationTest/SqlBuildManager.DbInformation.IntegrationTest.dll"
+    "SqlBuildManager.Connection.IntegrationTest/SqlBuildManager.Connection.IntegrationTest.dll"
+    "SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest/SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest.dll"
+    "SqlBuildManager.Console.PostgreSQL.IntegrationTest/SqlBuildManager.Console.PostgreSQL.IntegrationTest.dll"
+    "SqlBuildManager.SqlBuild.MySQL.IntegrationTest/SqlBuildManager.SqlBuild.MySQL.IntegrationTest.dll"
+    "SqlBuildManager.Console.MySQL.IntegrationTest/SqlBuildManager.Console.MySQL.IntegrationTest.dll"
 )
 
 OVERALL_EXIT=0

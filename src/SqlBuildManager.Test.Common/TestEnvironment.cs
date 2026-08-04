@@ -1,5 +1,5 @@
 using System;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 
 namespace SqlBuildManager.Test.Common
 {
@@ -27,6 +27,11 @@ namespace SqlBuildManager.Test.Common
         public static string PostgresServer { get; } = Environment.GetEnvironmentVariable("SBM_TEST_POSTGRES_SERVER") ?? "localhost";
         public static string PostgresUser { get; } = Environment.GetEnvironmentVariable("SBM_TEST_POSTGRES_USER") ?? "postgres";
         public static string PostgresPassword { get; } = Environment.GetEnvironmentVariable("SBM_TEST_POSTGRES_PASSWORD") ?? "P0stSqlAdm1n";
+
+        // MySQL settings
+        public static string MySqlServer { get; } = Environment.GetEnvironmentVariable("SBM_TEST_MYSQL_SERVER") ?? "localhost";
+        public static string MySqlUser { get; } = Environment.GetEnvironmentVariable("SBM_TEST_MYSQL_USER") ?? "root";
+        public static string MySqlPassword { get; } = Environment.GetEnvironmentVariable("SBM_TEST_MYSQL_PASSWORD") ?? "MySq1Adm!n";
 
         /// <summary>
         /// Build a SQL Server connection string with placeholder {0} for the database name.
@@ -85,6 +90,27 @@ namespace SqlBuildManager.Test.Common
         public static string[] GetPostgresPlatformArgs()
         {
             return new[] { "--platform", DatabasePlatform.PostgreSQL.ToString() };
+        }
+
+        /// <summary>
+        /// CLI auth arguments for MySQL tests.
+        /// </summary>
+        public static string[] GetMySqlAuthArgs()
+        {
+            return new[]
+            {
+                "--authtype", AuthenticationType.Password.ToString(),
+                "--username", MySqlUser,
+                "--password", MySqlPassword
+            };
+        }
+
+        /// <summary>
+        /// CLI platform arguments for MySQL tests.
+        /// </summary>
+        public static string[] GetMySqlPlatformArgs()
+        {
+            return new[] { "--platform", DatabasePlatform.MySQL.ToString() };
         }
     }
 }

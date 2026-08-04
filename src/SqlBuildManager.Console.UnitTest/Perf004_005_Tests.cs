@@ -2,7 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Console.Threaded;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.MultiDb;
 using System;
 using System.IO;
 using System.Threading.Tasks;

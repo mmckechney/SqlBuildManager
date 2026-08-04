@@ -20,7 +20,7 @@ Each of the remote execution options allows for varying use of Azure Managed Ide
  
 ## Managed Identity to Compute Assignment
 
-Examples of each of these can be generated for you by running `azd up` (see [Setting up an Azure Environment](setup_azure_environment.md)) which will create sample Azure resources (including a user assigned Managed Identity) as well as sample settings files with various options that are used in the test cases. You can also review the test methods in [SqlBuildManager.Console.ExternalTest](../src/SqlBuildManager.Console.ExternalTest/) to see working examples of various compute options and settings.
+Examples of each of these can be generated for you by running `azd up` (see [Setting up an Azure Environment](setup_azure_environment.md)) which will create sample Azure resources (including a user assigned Managed Identity) as well as sample settings files with various options that are used in the test cases. You can also review the test methods in [SqlBuildManager.Console.SqlServer.ExternalTest](../src/SqlBuildManager.Console.SqlServer.ExternalTest/) to see working examples of various compute options and settings.
 
 ### Azure Batch
 

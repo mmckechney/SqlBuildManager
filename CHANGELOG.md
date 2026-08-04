@@ -1,13 +1,21 @@
 # SQL Build Manager Change Log
 
-### Unreleased — Security hardening
+### [Version 16.1.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v16.1.0)
+- *NEW:* Added MySQL as a first-class database platform alongside SQL Server and PostgreSQL, including MySQL connection, transaction, resource, and script syntax providers.
+- *NEW:* Added MySQL support to command-line platform selection, settings files, local integration tests, Azure-targeted tests, and test configuration.
+- *NEW:* Added Azure MySQL infrastructure provisioning and managed identity/password authentication support through the existing `azd up` deployment workflow.
+- *UPDATED:* Extended Docker test images and PowerShell test orchestration to build and run MySQL unit, local integration, and Azure-targeted test suites.
+- *UPDATED:* Added MySQL-specific database scripting, identifier quoting, batching, database metadata, and query execution behavior while preserving SQL Server and PostgreSQL support.
+- *UPDATED:* Major refactoring consolidated the legacy `SqlSync` projects and namespaces under the newer `SqlBuildManager` naming, including assemblies, solution/project references, tests, Docker images, scripts, workflows, and documentation.
+- *UPDATED:* Renamed dependent and external test projects to `IntegrationTest` and `AzureTest` and updated the related solution, Docker, and test-orchestration references.
+- *NEW:* Added new scripts [/scripts/tests](scripts/tests) to run all unit tests, local integration tests and external (Azure targeted) tests in Azure Container Instance Linux containers. There area additional new scripts in [scripts/ContainerRegistry](scripts/ContainerRegistry) to build two new containers (one for Unit and Local tests and one for External tests). The underlying tests were updated to run on both Linux and Windows.
+
+### [Version 16.0.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v16.0.0)
 - **SECURITY:** Secrets are now masked in all log output. Account/SAS/shared-access **keys** are shown as their first 4 characters with the remainder replaced by `x`; **passwords** show only their first and last character; **connection strings** have their embedded secrets masked the same way. The Batch storage **SAS token** is no longer logged at all (only the storage account name is). This prevents credential leakage through Log Analytics, Batch node logs, and support bundles.
 - **SECURITY (breaking default):** New `--trustservercertificate` / `--trustcert` flag (SQL Server only, default **`false`**). Previously SQL Server connections **always** trusted the server certificate, which allowed man-in-the-middle attacks. TLS certificates are now validated by default; set the flag (or `TrustServerCertificate: true` in the settings file under `AuthenticationArgs`) to opt back in when connecting to servers with self-signed/dev certificates. PostgreSQL is unaffected (it uses `SslMode`).
 - **SECURITY:** Settings-file encryption strengthened. New values use a random salt and IV per encryption (non-deterministic output), PBKDF2-SHA256 with 100,000 iterations, and an HMAC-SHA256 authentication tag (encrypt-then-MAC) so tampering and wrong passwords are reliably detected. **Existing encrypted settings files remain readable** and are transparently upgraded to the new format the next time they are saved.
+- *NEW:* Major update to support PostgreSQL database in addition to SQL Server
 
-### [Version 16.0.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v16.0.0)
-- *NEW:* Major updated to support PostgreSQL database in addition to SQL Server
-- *NEW:* Added new scripts [/scripts/tests](scripts/tests) to run all unit tests, local integration tests and external (Azure targeted) tests in Azure Container Instance Linux containers. There area additional new scripts in [scripts/ContainerRegistry](scripts/ContainerRegistry) to build two new containers (one for Unit and Local tests and one for External tests). The underlying tests were updated to run on both Linux and Windows.
 -  *NEW:* Test/Demo environment fully deployable with [Azure Developer CLI](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) via `azd up`. In first run you will be prompted with what type of compute and database platforms you want to deploy (or all!). You can add more later by modifying the `DEPLOY_*` environment variable in the `.azure\<env name>\.env` file
 -  *NEW:* Full end-to-end Managed Identity support. Solution no longer requires and keys or connection strings. Test environment bicep and scripts demonstrates both the infrastructure deployment and the database permissions and RBAC role settings
 - **DEPRECATED:** The `SQL Build Manager.exe` windows app has been deprecated and is no longer part of this project. If you need to use it, please use the last release version `15.6.2`. The projects created via the Windows app are compatible with the newly enhanced console app

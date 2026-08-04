@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console.Queue;
 using SqlBuildManager.Console.Threaded;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.MultiDb;
 using System.IO;
 namespace SqlBuildManager.Console.UnitTest
 {

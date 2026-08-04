@@ -15,10 +15,10 @@ using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Relay;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.Connection;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Utilities;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -70,15 +70,19 @@ namespace SqlBuildManager.Console.Batch
         }
 
         /// <summary>
-        /// Creates a BatchClient using either Managed Identity (preferred) or shared key credentials (fallback)
+        /// Creates a BatchClient using either Managed Identity or shared key credentials.
         /// </summary>
         /// <param name="cmdLine">Command line arguments containing batch connection info</param>
         /// <returns>Configured BatchClient instance</returns>
         private static BatchClient GetBatchClient(CommandLineArgs cmdLine)
         {
-            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey))
+            if (string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
             {
-                // Legacy: Use shared key if provided
+                if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountKey))
+                {
+                    throw new ArgumentException("--batchaccountkey is required when a Batch managed identity is not configured.", nameof(cmdLine));
+                }
+
                 log.LogDebug("Creating BatchClient with shared key credentials");
                 var cred = new BatchSharedKeyCredentials(
                     cmdLine.ConnectionArgs.BatchAccountUrl,
@@ -86,14 +90,11 @@ namespace SqlBuildManager.Console.Batch
                     cmdLine.ConnectionArgs.BatchAccountKey);
                 return BatchClient.Open(cred);
             }
-            else
-            {
-                // Use Managed Identity via Azure.Identity
-                log.LogInformation("Creating BatchClient with Managed Identity (token credentials)");
-                Func<Task<string>> tokenProvider = async () => await AadHelper.GetBatchTokenString();
-                var cred = new BatchTokenCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, tokenProvider);
-                return BatchClient.Open(cred);
-            }
+
+            log.LogInformation("Creating BatchClient with Managed Identity (token credentials)");
+            Func<Task<string>> tokenProvider = async () => await AadHelper.GetBatchTokenString();
+            var tokenCred = new BatchTokenCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, tokenProvider);
+            return BatchClient.Open(tokenCred);
         }
 
         public async Task<(int retval, string readOnlySas)> StartBatch(bool stream = false, bool unittest = false)
@@ -183,7 +184,7 @@ namespace SqlBuildManager.Console.Batch
                 string outputContainerUrl;
                 ComputeNodeIdentityReference storageIdentity = null!;
 
-                if (cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.ManagedIdentity || cmdLine.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.AzureADDefault)
+                if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
                 {
                     log.LogDebug($"Preparing Entra-authenticated container '{storageContainerName}'");
                     storageSvcClient = new BlobServiceClient(new Uri($"https://{cmdLine.ConnectionArgs.StorageAccountName}.blob.core.windows.net"), Aad.AadHelper.TokenCredential);
@@ -419,7 +420,7 @@ namespace SqlBuildManager.Console.Batch
                     if (isDebug)
                     {
                         log.LogDebug("Standard out:");
-                        log.LogDebug(task.GetNodeFile(Constants.StandardOutFileName).ReadAsString());
+                        log.LogDebug(task.GetNodeFile("stdout.txt").ReadAsString());
                     }
                     if (task.ExecutionInformation.ExitCode != 0)
                     {

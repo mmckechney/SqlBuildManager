@@ -29,7 +29,9 @@ sbm threaded run ^
     --platform PostgreSQL
 ```
 
-The `--platform` option accepts either `SqlServer` (default) or `PostgreSQL`.
+The `--platform` option accepts `SqlServer` (default), `PostgreSQL`, or `MySQL`.
+
+For MySQL-specific platform behavior and examples, see [MySQL support](mysql.md).
 
 ---
 
@@ -68,7 +70,7 @@ When writing SQL scripts for PostgreSQL targets, keep these syntax differences i
 | `TOP(n)` | `LIMIT n` |
 | `+` (string concat) | `\|\|` |
 
-> **Tip**: If your database fleet includes both SQL Server and PostgreSQL targets, you will need to maintain separate script packages (`.sbm` files) with platform-appropriate SQL syntax for each target.
+> **Tip**: If your database fleet includes SQL Server, PostgreSQL, and/or MySQL targets, maintain separate script packages (`.sbm` files) with platform-appropriate SQL syntax for each target.
 
 ---
 

@@ -6,7 +6,14 @@ param
     [string] $sbmExe = "sbm.exe",
     [string] $path,
     [string] $resourceGroupName,
-    [string] $imageTag = "latest-vNext"
+    [string] $imageTag = "latest-vNext",
+    [ValidateSet("AzureADDefault", "Password")]
+    [string] $databaseAuthType = "AzureADDefault",
+    [string] $databaseUserName = "",
+    [string] $databasePassword = "",
+    [string] $settingsFileSuffix = "mi-only",
+    [ValidateSet("SqlServer", "PostgreSQL", "MySQL")]
+    [string] $databasePlatform = "SqlServer"
 )
 
 <#
@@ -70,6 +77,10 @@ $path = Resolve-Path $path
 Write-Host "Output path: $path" -ForegroundColor DarkGreen
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 
+if ($databaseAuthType -eq "Password" -and ([string]::IsNullOrWhiteSpace($databaseUserName) -or [string]::IsNullOrWhiteSpace($databasePassword))) {
+    throw "databaseUserName and databasePassword are required when databaseAuthType is Password."
+}
+
 # Get resource information
 $subscriptionId = az account show --query id --output tsv
 $tenantId = az account show -o tsv --query tenantId
@@ -91,7 +102,7 @@ $eventHubName = az eventhubs eventhub list --resource-group $resourceGroupName -
 $acrServerName = az acr show -g $resourceGroupName --name $containerRegistryName -o tsv --query loginServer
 
 # Output file path
-$settingsAci = Join-Path $path "settingsfile-aci-mi-only.json"
+$settingsAci = Join-Path $path "settingsfile-aci-$settingsFileSuffix.json"
 
 # Settings file key
 $keyFile = Join-Path $path "settingsfilekey.txt"
@@ -105,6 +116,7 @@ if ($false -eq (Test-Path $keyFile)) {
 # Build parameters (NO KEYS!)
 $params = @("aci", "savesettings")
 $params += @("--settingsfile", $settingsAci)
+$params += @("--settingsfilekey", $keyFile)
 # Note: ACI CLI requires -kv but we use a placeholder since MI mode doesn't need it
 #$params += @("-kv", "placeholder-not-used-with-mi")
 $params += @("--aciname", $aciName)
@@ -138,7 +150,12 @@ if ($vnet -ne "" -and $aciSubnet -ne "") {
 }
 
 # Auth type
-$params += @("--authtype", "AzureADDefault") #use this for local testing, will be overridden to ManagedIdentity in ACI
+$params += @("--platform", $databasePlatform)
+$params += @("--authtype", $databaseAuthType)
+if ($databaseAuthType -eq "Password") {
+    $params += @("--username", $databaseUserName)
+    $params += @("--password", $databasePassword)
+}
 
 # Event Hub (namespace only, no connection string)
 $ehValue = "$($eventHubNamespaceName)|$($eventHubName)"

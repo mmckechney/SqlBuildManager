@@ -88,7 +88,7 @@ namespace SqlBuildManager.Console.CommandLine
 			}
 		}
 
-		private static Option<string> directoryOption = new Option<string>("--directory", "--dir") { Description = "Directory containing 1 or more SBX files to package into SBM zip files" , Required = true };
+		internal static Option<string> directoryOption = new Option<string>("--directory", "--dir") { Description = "Directory containing 1 or more SBX files to package into SBM zip files" , Required = true };
 		/// <summary>
 		/// Create an SBM package from and SBX and script files
 		/// </summary>
@@ -217,7 +217,7 @@ namespace SqlBuildManager.Console.CommandLine
 			}
 		}
 
-		private static Option utilJobName = new Option<string>("--jobname", "-j") { Description = "Name of job run to query" , Required = true };
+		internal static Option<string> utilJobName = new Option<string>("--jobname", "-j") { Description = "Name of job run to query" , Required = true };
 		/// <summary>
 		/// Retrieve the number of messages currently in a Service Bus Topic Subscription
 		/// </summary>

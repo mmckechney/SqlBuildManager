@@ -8,12 +8,12 @@
 .PARAMETER path
     Path to the TestConfig directory. Default: ../../src/TestConfig.
 .PARAMETER testPath
-    Path to the ExternalTest project directory. Default: ../../src/SqlBuildManager.Console.ExternalTest.
+    Path to the ExternalTest project directory. Default: ../../src/SqlBuildManager.Console.SqlServer.AzureTest.
 #>
 param
 (
     [string] $path = "..\..\src\TestConfig",
-    [string] $testPath = "..\..\src\SqlBuildManager.Console.ExternalTest\"
+    [string] $testPath = "..\..\src\SqlBuildManager.Console.SqlServer.AzureTest\"
 )
 
 $testSettingsFiles = Get-ChildItem $path

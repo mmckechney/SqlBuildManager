@@ -365,8 +365,8 @@ namespace SqlBuildManager.Console.CommandLine
         }
         internal static Option<string> usernameOption = new Option<string>("--username", "-u") { Description = "The username to authenticate against the database if not using integrated or Managed Identity auth" };
         internal static Option<string> passwordOption = new Option<string>("--password", "-p") { Description = "The password to authenticate against the database if not using integrated or Managed Identity auth" };
-        internal static Option<SqlSync.Connection.AuthenticationType> authtypeOption = new Option<SqlSync.Connection.AuthenticationType>("--authtype") { Description = "SQL Authentication type to use."  };
-        internal static Option<SqlSync.Connection.DatabasePlatform> platformOption = new Option<SqlSync.Connection.DatabasePlatform>("--platform", "--databaseplatform") { Description = "Target database platform (default: SqlServer)." };
+        internal static Option<SqlBuildManager.Connection.AuthenticationType> authtypeOption = new Option<SqlBuildManager.Connection.AuthenticationType>("--authtype") { Description = "SQL Authentication type to use."  };
+        internal static Option<SqlBuildManager.Connection.DatabasePlatform> platformOption = new Option<SqlBuildManager.Connection.DatabasePlatform>("--platform", "--databaseplatform") { Description = "Target database platform (default: SqlServer)." };
         internal static Option<bool> trustServerCertificateOption = new Option<bool>("--trustservercertificate", "--trustcert") { Description = "SQL Server only. When set, skips TLS certificate validation (TrustServerCertificate=true). Default is false (the server certificate is validated). Only enable for trusted networks or self-signed certificates you control." };
 
         /// <summary>

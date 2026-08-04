@@ -11,7 +11,11 @@ param
 
     [bool] $deploySqlServer,
 
-    [bool] $deployPostgreSQL
+    [bool] $deployPostgreSQL,
+
+    [bool] $deployMySQL,
+
+    [bool] $mySqlUseManagedIdentityAuth = $false
 )
 
 Set-StrictMode -Version Latest
@@ -48,6 +52,7 @@ $postProvisionClientId = Get-AzdValue 'POSTPROVISION_IDENTITY_CLIENT_ID'
 $postProvisionPrincipalId = Get-AzdValue 'POSTPROVISION_IDENTITY_PRINCIPAL_ID'
 $targetIdentityName = Get-AzdValue 'MANAGED_IDENTITY_NAME'
 $subscriptionId = az account show --query id -o tsv
+$mySqlAdminPassword = if ($deployMySQL) { Get-AzdValue 'MYSQL_ADMIN_PASSWORD' } else { '' }
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($subscriptionId)) {
     throw 'Unable to determine the active Azure subscription.'
 }
@@ -71,6 +76,7 @@ try {
     Copy-Item (Join-Path $repoRoot 'scripts/prefix_resource_names.ps1') (Join-Path $tempBuildContext 'scripts/prefix_resource_names.ps1')
     Copy-Item (Join-Path $repoRoot 'scripts/Database/grant_identity_permissions.ps1') (Join-Path $tempBuildContext 'scripts/Database/grant_identity_permissions.ps1')
     Copy-Item (Join-Path $repoRoot 'scripts/Database/grant_pg_identity_permissions.ps1') (Join-Path $tempBuildContext 'scripts/Database/grant_pg_identity_permissions.ps1')
+    Copy-Item (Join-Path $repoRoot 'scripts/Database/grant_mysql_identity_permissions.ps1') (Join-Path $tempBuildContext 'scripts/Database/grant_mysql_identity_permissions.ps1')
 
     Write-Host "Building private post-provision image remotely in ACR..." -ForegroundColor Cyan
     Push-Location $tempBuildContext
@@ -143,6 +149,9 @@ try {
         "TARGET_IDENTITY_NAME=$targetIdentityName",
         "DEPLOY_SQLSERVER=$($deploySqlServer.ToString().ToLowerInvariant())",
         "DEPLOY_POSTGRESQL=$($deployPostgreSQL.ToString().ToLowerInvariant())",
+        "DEPLOY_MYSQL=$($deployMySQL.ToString().ToLowerInvariant())",
+        "MYSQL_AUTH_MODE=$(if ($mySqlUseManagedIdentityAuth) { 'ManagedIdentity' } else { 'Password' })",
+        "MYSQL_ADMIN_PASSWORD=$mySqlAdminPassword",
         '--output', 'none'
     )
 

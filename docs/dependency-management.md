@@ -22,16 +22,16 @@ Refresh locks after an intentional dependency change:
 
 ```powershell
 dotnet restore .\src\SqlBuildManager-console.sln --force-evaluate
-dotnet restore .\src\SqlSync.DbInformation.UnitTest\SqlSync.DbInformation.UnitTest.csproj --force-evaluate
-dotnet restore .\src\SqlSync.SqlBuild.Benchmarks\SqlSync.SqlBuild.Benchmarks.csproj --force-evaluate
+dotnet restore .\src\SqlBuildManager.DbInformation.UnitTest\SqlBuildManager.DbInformation.UnitTest.csproj --force-evaluate
+dotnet restore .\src\SqlBuildManager.SqlBuild.Benchmarks\SqlBuildManager.SqlBuild.Benchmarks.csproj --force-evaluate
 ```
 
 Verify the committed graph:
 
 ```powershell
 dotnet restore .\src\SqlBuildManager-console.sln --locked-mode
-dotnet restore .\src\SqlSync.DbInformation.UnitTest\SqlSync.DbInformation.UnitTest.csproj --locked-mode
-dotnet restore .\src\SqlSync.SqlBuild.Benchmarks\SqlSync.SqlBuild.Benchmarks.csproj --locked-mode
+dotnet restore .\src\SqlBuildManager.DbInformation.UnitTest\SqlBuildManager.DbInformation.UnitTest.csproj --locked-mode
+dotnet restore .\src\SqlBuildManager.SqlBuild.Benchmarks\SqlBuildManager.SqlBuild.Benchmarks.csproj --locked-mode
 ```
 
 `Directory.Build.props` enables NuGet auditing for direct and transitive packages. CI treats high

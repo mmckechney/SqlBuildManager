@@ -40,12 +40,19 @@ param usePrivateEndpoint bool = false
 @description('Whether to deploy Azure Database for PostgreSQL Flexible Server')
 param deployPostgreSQL bool = true
 
+@description('Whether to deploy Azure Database for MySQL Flexible Server')
+param deployMySQL bool = true
+
 @description('Whether to deploy the ACI Relay proxy for private service access')
 param deployRelayProxy bool = true
 
 @secure()
 @description('Administrator password for PostgreSQL Flexible Server')
 param pgAdminPassword string = ''
+
+@secure()
+@description('Administrator password for MySQL Flexible Server')
+param mySqlAdminPassword string = ''
 
 @allowed([
   'Basic'
@@ -225,6 +232,26 @@ module postgresql './modules/postgresql.bicep' = if(deployPostgreSQL && userIdGu
   }
 }
 
+// MySQL Flexible Server
+module mysql './modules/mysql.bicep' = if(deployMySQL){
+  name: 'mysql'
+  scope: rg
+  params: {
+    mySqlServerNameA: resourceNames.outputs.mySqlServerNameA
+    mySqlServerNameB: resourceNames.outputs.mySqlServerNameB
+    mySqlAdminUser: resourceNames.outputs.mySqlAdminUser
+    envName: resourceEnvName
+    testDbCountPerServer: testDbCountPerServer
+    location: location
+    mySqlAdminPassword: mySqlAdminPassword
+    postProvisionAdminObjectId: postProvisionIdentity.outputs.principalId
+    postProvisionAdminName: postProvisionIdentity.outputs.name
+    postProvisionIdentityResourceId: postProvisionIdentity.outputs.id
+    vnetId: networkResource.outputs.vnetId
+    privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
+  }
+}
+
 // Batch Account
 module batchAccount './modules/batch.bicep' = if(deployBatchAccount){
   name: 'batchAccount'
@@ -353,9 +380,10 @@ output DEPLOY_SQLSERVER bool = deploySqlServer
 output TEST_DB_COUNT_PER_SERVER int = testDbCountPerServer
 output EVENTHUB_SKU string = eventhubSku
 output SERVICEBUS_SKU string = serviceBusSku
-output SKU_CAPACITY int = skuCapacity
+output EVENTHUB_SKU_CAPACITY int = skuCapacity
 output USE_PRIVATE_ENDPOINT bool = usePrivateEndpoint
 output DEPLOY_POSTGRESQL bool = deployPostgreSQL
+output DEPLOY_MYSQL bool = deployMySQL
 output DEPLOY_RELAY_PROXY bool = deployRelayProxy
 
 // Resource outputs
@@ -383,31 +411,31 @@ output POSTPROVISION_IDENTITY_PRINCIPAL_ID string = postProvisionIdentity.output
 output RELAY_PROXY_ENDPOINT string = deployRelayProxy ? relayProxy!.outputs.endpoint : ''
 
 output STORAGE_ACCOUNT_NAME string = storageAccountResource.outputs.name
-output STORAGE_ACCOUNT_ID string = storageAccountResource.outputs.id
+// output STORAGE_ACCOUNT_ID string = storageAccountResource.outputs.id
 
 output LOG_ANALYTICS_WORKSPACE_NAME string = logAnalyticsWorkspaceResource.outputs.name
 output LOG_ANALYTICS_WORKSPACE_ID string = logAnalyticsWorkspaceResource.outputs.id
 output LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = logAnalyticsWorkspaceResource.outputs.customerId
 
 output EVENTHUB_NAMESPACE_NAME string = eventHubNamespaceResource.outputs.namespaceName
-output EVENTHUB_NAMESPACE_ID string = eventHubNamespaceResource.outputs.namespaceId
+// output EVENTHUB_NAMESPACE_ID string = eventHubNamespaceResource.outputs.namespaceId
 output EVENTHUB_NAME string = eventHubNamespaceResource.outputs.eventHubName
 
 output SERVICEBUS_NAMESPACE_NAME string = serviceBusResource.outputs.namespaceName
-output SERVICEBUS_NAMESPACE_ID string = serviceBusResource.outputs.namespaceId
+// output SERVICEBUS_NAMESPACE_ID string = serviceBusResource.outputs.namespaceId
 
 output CONTAINER_REGISTRY_NAME string = containerRegistry.outputs.name
-output CONTAINER_REGISTRY_ID string = containerRegistry.outputs.id
+// output CONTAINER_REGISTRY_ID string = containerRegistry.outputs.id
 output CONTAINER_REGISTRY_LOGIN_SERVER string = containerRegistry.outputs.loginServer
 
 output CONTAINERAPP_ENVIRONMENT_NAME string = deployContainerAppEnv ? containerAppEnv!.outputs.name : ''
-output CONTAINERAPP_ENVIRONMENT_ID string = deployContainerAppEnv ? containerAppEnv!.outputs.id : ''
+// output CONTAINERAPP_ENVIRONMENT_ID string = deployContainerAppEnv ? containerAppEnv!.outputs.id : ''
 
 output BATCH_ACCOUNT_NAME string = deployBatchAccount ? batchAccount!.outputs.name : ''
-output BATCH_ACCOUNT_ID string = deployBatchAccount ? batchAccount!.outputs.id : ''
+// output BATCH_ACCOUNT_ID string = deployBatchAccount ? batchAccount!.outputs.id : ''
 
 output AKS_CLUSTER_NAME string = deployAks ? aks!.outputs.clusterName : ''
-output AKS_CLUSTER_ID string = deployAks ? aks!.outputs.clusterId : ''
+// output AKS_CLUSTER_ID string = deployAks ? aks!.outputs.clusterId : ''
 output AKS_FEDERATED_IDENTITY_NAME string = deployAks ? aks!.outputs.federatedIdName : ''
 output AKS_SERVICE_ACCOUNT_NAME string = deployAks ? aks!.outputs.serviceAccountName : ''
 
@@ -422,3 +450,10 @@ output PG_SERVER_NAME_B string = deployPostgreSQL && pgAdminPassword != '' ? pos
 output PG_SERVER_FQDN_B string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerFqdnB : ''
 output PG_ADMIN_USER string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgAdminUser : ''
 output PG_DATABASE_COUNT_PER_SERVER int = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgDatabaseCountPerServer : 0
+
+output MYSQL_SERVER_NAME_A string = deployMySQL ? mysql!.outputs.mySqlServerNameA : ''
+output MYSQL_SERVER_FQDN_A string = deployMySQL ? mysql!.outputs.mySqlServerFqdnA : ''
+output MYSQL_SERVER_NAME_B string = deployMySQL ? mysql!.outputs.mySqlServerNameB : ''
+output MYSQL_SERVER_FQDN_B string = deployMySQL ? mysql!.outputs.mySqlServerFqdnB : ''
+output MYSQL_ADMIN_USER string = deployMySQL ? mysql!.outputs.mySqlAdminUser : ''
+output MYSQL_DATABASE_COUNT_PER_SERVER int = deployMySQL ? mysql!.outputs.mySqlDatabaseCountPerServer : 0

@@ -15,7 +15,7 @@ RUN sed -i 's|http://archive.ubuntu.com|https://archive.ubuntu.com|g; s|http://s
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" \
       > /etc/apt/sources.list.d/microsoft-prod.list && \
     apt-get update && \
-    apt-get install -y azure-cli msodbcsql18 postgresql-client unixodbc && \
+    apt-get install -y azure-cli msodbcsql18 postgresql-client default-mysql-client unixodbc && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

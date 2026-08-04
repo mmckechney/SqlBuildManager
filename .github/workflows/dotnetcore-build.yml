@@ -29,7 +29,7 @@ jobs:
     - name: Restore locked dependencies
       run: |
         dotnet restore ./src/SqlBuildManager-console.sln --locked-mode -p:ContinuousIntegrationBuild=true
-        dotnet restore ./src/SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.csproj --locked-mode -p:ContinuousIntegrationBuild=true
+        dotnet restore ./src/SqlBuildManager.DbInformation.UnitTest/SqlBuildManager.DbInformation.UnitTest.csproj --locked-mode -p:ContinuousIntegrationBuild=true
 
     - name: Build console app
       run: dotnet build ./src/SqlBuildManager.Console/sbm.csproj --configuration Release -f ${{ env.DOTNET_VERSION }} --no-restore
@@ -44,17 +44,17 @@ jobs:
     - name: Run SqlBuildManager.ScriptHandling.UnitTest
       run: dotnet test ./src/SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj --configuration Release --no-restore
 
-    - name: Run SqlSync.Connection.UnitTest
-      run: dotnet test ./src/SqlSync.Connection.UnitTest/SqlSync.Connection.UnitTest.csproj --configuration Release --no-restore
+    - name: Run SqlBuildManager.Connection.UnitTest
+      run: dotnet test ./src/SqlBuildManager.Connection.UnitTest/SqlBuildManager.Connection.UnitTest.csproj --configuration Release --no-restore
 
-    - name: Run SqlSync.DbInformation.UnitTest
-      run: dotnet test ./src/SqlSync.DbInformation.UnitTest/SqlSync.DbInformation.UnitTest.csproj --configuration Release --no-restore
+    - name: Run SqlBuildManager.DbInformation.UnitTest
+      run: dotnet test ./src/SqlBuildManager.DbInformation.UnitTest/SqlBuildManager.DbInformation.UnitTest.csproj --configuration Release --no-restore
 
-    - name: Run SqlSync.ObjectScript.UnitTest
-      run: dotnet test ./src/SqlSync.ObjectScript.UnitTest/SqlSync.ObjectScript.UnitTest.csproj --configuration Release --no-restore
+    - name: Run SqlBuildManager.ObjectScript.UnitTest
+      run: dotnet test ./src/SqlBuildManager.ObjectScript.UnitTest/SqlBuildManager.ObjectScript.UnitTest.csproj --configuration Release --no-restore
 
-    - name: Run SqlSync.SqlBuild.UnitTest
-      run: dotnet test ./src/SqlSync.SqlBuild.UnitTest/SqlSync.SqlBuild.UnitTest.csproj --configuration Release --no-restore
+    - name: Run SqlBuildManager.SqlBuild.UnitTest
+      run: dotnet test ./src/SqlBuildManager.SqlBuild.UnitTest/SqlBuildManager.SqlBuild.UnitTest.csproj --configuration Release --no-restore
 
     # Pubish
     - name: Publish the Windows CLI app 

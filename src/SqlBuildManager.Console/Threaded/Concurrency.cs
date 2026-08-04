@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging;
 using MoreLinq;
 using SqlBuildManager.Console.CommandLine;
-using SqlSync.Connection;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.MultiDb;
-using SqlSync.SqlBuild.Utilities;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.MultiDb;
+using SqlBuildManager.SqlBuild.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

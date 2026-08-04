@@ -70,7 +70,7 @@ namespace SqlBuildManager.Console.UnitTest
         public void ValidateUserNameAndPassword_UsesAuthenticationExitCode()
         {
             var commandLine = new CommandLineArgs();
-            commandLine.AuthenticationArgs.AuthenticationType = SqlSync.Connection.AuthenticationType.Password;
+            commandLine.AuthenticationArgs.AuthenticationType = SqlBuildManager.Connection.AuthenticationType.Password;
 
             int result = Validation.ValidateUserNameAndPassword(commandLine, out string[] errors);
 
@@ -101,6 +101,36 @@ namespace SqlBuildManager.Console.UnitTest
 
             Assert.IsFalse(valid);
             Assert.IsFalse(string.IsNullOrWhiteSpace(error));
+        }
+
+        [TestMethod]
+        public void TryValidateContainerAppJobName_AllowsNameThatFitsWithSbmPrefix()
+        {
+            var jobName = new string('a', ExecutionOptions.ContainerAppJobNameMaxLength);
+
+            bool valid = ExecutionOptionValidator.TryValidateContainerAppJobName(
+                jobName,
+                required: true,
+                out string error);
+
+            Assert.IsTrue(valid, error);
+            Assert.AreEqual(
+                ExecutionOptions.ContainerAppNameMaxLength,
+                ExecutionOptions.ContainerAppNamePrefix.Length + jobName.Length);
+        }
+
+        [TestMethod]
+        public void TryValidateContainerAppJobName_RejectsNameThatExceedsAzureLimit()
+        {
+            var jobName = new string('a', ExecutionOptions.ContainerAppJobNameMaxLength + 1);
+
+            bool valid = ExecutionOptionValidator.TryValidateContainerAppJobName(
+                jobName,
+                required: true,
+                out string error);
+
+            Assert.IsFalse(valid);
+            StringAssert.Contains(error, ExecutionOptions.ContainerAppJobNameMaxLength.ToString());
         }
 
         [TestMethod]

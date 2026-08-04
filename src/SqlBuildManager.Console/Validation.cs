@@ -3,9 +3,9 @@ using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.Connection;
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.MultiDb;
+using SqlBuildManager.Connection;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.MultiDb;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -313,6 +313,7 @@ namespace SqlBuildManager.Console
             connData.Password = cmdLine.AuthenticationArgs.Password;
             connData.AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType;
             connData.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+            connData.DatabasePlatform = cmdLine.AuthenticationArgs.DatabasePlatform;
             connData.TrustServerCertificate = cmdLine.AuthenticationArgs.TrustServerCertificate;
 
             return connData;
@@ -382,12 +383,10 @@ namespace SqlBuildManager.Console
                 messages.Add("--batchaccountname is required in command line or --settingsfile Json");
                 returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
-            // BatchAccountKey is not required when using Managed Identity
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey) &&
-                 (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity &&
-                 cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault))
+                String.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
             {
-                messages.Add("--batchaccountkey is required in command line or --settingsfile Json");
+                messages.Add("--batchaccountkey is required in command line or --settingsfile Json when a Batch managed identity is not configured");
                 returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             if (String.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.BatchAccountUrl))
@@ -451,12 +450,10 @@ namespace SqlBuildManager.Console
                 messages.Add("--batchaccountname is required in command line or --settingsfile  Json");
                 returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
-            // BatchAccountKey is not required when using Managed Identity
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey) &&
-                 (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity &&
-                 cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault))
+                String.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
             {
-                messages.Add("--batchaccountkey is required in command line or --settingsfile  Json");
+                messages.Add("--batchaccountkey is required in command line or --settingsfile  Json when a Batch managed identity is not configured");
                 returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountUrl))
@@ -498,12 +495,10 @@ namespace SqlBuildManager.Console
                 messages.Add("--batchaccountname is required in command line or --settingsfile  Json");
                 returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
-            // BatchAccountKey is not required when using Managed Identity
-            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey) && 
-                (cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.ManagedIdentity &&
-                cmdLine.AuthenticationArgs.AuthenticationType != SqlSync.Connection.AuthenticationType.AzureADDefault))
+            if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountKey) &&
+                String.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
             {
-                messages.Add("--batchaccountkey is required in command line or --settingsfile  Json");
+                messages.Add("--batchaccountkey is required in command line or --settingsfile  Json when a Batch managed identity is not configured");
                 returnVal = (int)ExecutionReturn.InvalidBatchArguments;
             }
             if (String.IsNullOrEmpty(cmdLine.ConnectionArgs.BatchAccountUrl))
@@ -555,6 +550,13 @@ namespace SqlBuildManager.Console
         {
 
             List<string> messages = new List<string>(ExecutionOptionValidator.ValidateContainerApp(cmdLine));
+            if (!ExecutionOptionValidator.TryValidateContainerAppJobName(
+                cmdLine.JobName,
+                required: false,
+                out string jobNameError))
+            {
+                messages.Add(jobNameError);
+            }
             if (String.IsNullOrEmpty(cmdLine.ContainerAppArgs.EnvironmentName))
             {
                 messages.Add("--environmentname is required in command line or --settingsfile");

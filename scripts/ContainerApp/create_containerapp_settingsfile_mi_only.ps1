@@ -6,7 +6,14 @@ param
     [string] $sbmExe = "sbm.exe",
     [string] $path,
     [string] $resourceGroupName,
-    [string] $imageTag = "latest-vNext"
+    [string] $imageTag = "latest-vNext",
+    [ValidateSet("AzureADDefault", "Password")]
+    [string] $databaseAuthType = "AzureADDefault",
+    [string] $databaseUserName = "",
+    [string] $databasePassword = "",
+    [string] $settingsFileSuffix = "mi-only",
+    [ValidateSet("SqlServer", "PostgreSQL", "MySQL")]
+    [string] $databasePlatform = "SqlServer"
 )
 
 <#
@@ -70,6 +77,10 @@ $path = Resolve-Path $path
 Write-Host "Output path: $path" -ForegroundColor DarkGreen
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 
+if ($databaseAuthType -eq "Password" -and ([string]::IsNullOrWhiteSpace($databaseUserName) -or [string]::IsNullOrWhiteSpace($databasePassword))) {
+    throw "databaseUserName and databasePassword are required when databaseAuthType is Password."
+}
+
 # Get resource information
 $subscriptionId = az account show --query id --output tsv
 $tenantId = az account show -o tsv --query tenantId
@@ -92,7 +103,7 @@ $location = az containerapp env show -g $resourceGroupName -n $containerAppEnvNa
 $acrServerName = az acr show -g $resourceGroupName --name $containerRegistryName -o tsv --query loginServer
 
 # Output file path
-$settingsContainerApp = Join-Path $path "settingsfile-containerapp-mi-only.json"
+$settingsContainerApp = Join-Path $path "settingsfile-containerapp-$settingsFileSuffix.json"
 
 # Settings file key
 $keyFile = Join-Path $path "settingsfilekey.txt"
@@ -122,7 +133,12 @@ $params += @("--subscriptionid", $subscriptionId)
 $params += @("--force", "true")
 $params += @("--eventhublogging", "ScriptErrors")
 
-$params += @("--authtype", "AzureADDefault") #use this for local testing, will be overridden to ManagedIdentity in ACI
+$params += @("--authtype", $databaseAuthType)
+$params += @("--platform", $databasePlatform)
+if ($databaseAuthType -eq "Password") {
+    $params += @("--username", $databaseUserName)
+    $params += @("--password", $databasePassword)
+}
 
 # Identity parameters
 $params += @("--identityname", $identityName)

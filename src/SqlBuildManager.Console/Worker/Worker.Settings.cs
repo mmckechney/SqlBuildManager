@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.KeyVault;
 using SqlBuildManager.Interfaces.Console;
-using SqlSync.Connection;
+using SqlBuildManager.Connection;
 using System;
 using System.IO;
 

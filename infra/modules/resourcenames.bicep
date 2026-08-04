@@ -44,6 +44,9 @@ var sqlElasticPoolBaseNameVar = '${prefixes.sqlElasticPool}${resourceEnvName}'
 var postgresqlServerNameA = '${prefixes.postgreSQLServer}${resourceEnvName}-a'
 var postgresqlServerNameB = '${prefixes.postgreSQLServer}${resourceEnvName}-b'
 var postgresqlAdminUser = '${prefixes.postgreSQLAdministrator}${normalizedEnvName}'
+var mySqlServerNameA = '${prefixes.mySQLServer}${resourceEnvName}-a'
+var mySqlServerNameB = '${prefixes.mySQLServer}${resourceEnvName}-b'
+var mySqlAdminUser = '${prefixes.mySQLAdministrator}${normalizedEnvName}'
 
 output resourceGroupName string = resourceGroupNameVar
 output batchAccountName string = batchAccountNameVar
@@ -80,3 +83,6 @@ output sqlElasticPoolBaseName string = sqlElasticPoolBaseNameVar
 output postgresqlServerNameA string = postgresqlServerNameA
 output postgresqlServerNameB string = postgresqlServerNameB
 output postgresqlAdminUser string = postgresqlAdminUser
+output mySqlServerNameA string = mySqlServerNameA
+output mySqlServerNameB string = mySqlServerNameB
+output mySqlAdminUser string = mySqlAdminUser

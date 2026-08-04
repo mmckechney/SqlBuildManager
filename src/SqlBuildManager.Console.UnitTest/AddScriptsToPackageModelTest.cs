@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Console;
 using SqlBuildManager.Console.CommandLine;
-using sqlB = SqlSync.SqlBuild;
-using sqlM = SqlSync.SqlBuild.Models;
+using sqlB = SqlBuildManager.SqlBuild;
+using sqlM = SqlBuildManager.SqlBuild.Models;
 
 namespace SqlBuildManager.Console.UnitTest
 {

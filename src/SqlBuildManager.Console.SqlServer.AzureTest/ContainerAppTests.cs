@@ -1,0 +1,958 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.KeyVault;
+using System;
+using System.Collections.Generic;
+using System.CommandLine;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using SqlBuildManager.Console.AzureTest.TestBase;
+
+namespace SqlBuildManager.Console.SqlServer.AzureTest
+{
+    /// <summary>
+    /// To run these tests, you will need to have an Azure environment set up.
+    /// You can easily do this by following the script instructions found in the /docs/localbuild.md file
+    /// </summary>
+    [TestClass]
+    public class ContainerAppTests
+    {
+        public TestContext TestContext { get; set; }
+
+        private string settingsFileKeyPath = string.Empty;
+        private StringBuilder ConsoleOutput { get; set; } = new StringBuilder();
+
+        [TestInitialize]
+        public void ConfigureProcessInfo()
+        {
+
+            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<ContainerAppTests>("SqlBuildManager.Console.log", Path.GetTempPath());
+            settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
+
+            System.Console.SetOut(new StringWriter(ConsoleOutput));    // Associate StringBuilder with StdOut
+            ConsoleOutput.Clear();    // Clear text from any previous text runs
+        }
+        [TestCleanup]
+        public void CleanUp()
+        {
+
+        }
+
+
+        // [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-containerapp-no-registry.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
+
+        [TestMethod]
+        public async Task ContainerApp_Run_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
+
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("ca");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+                //monitor for completion
+                var args = new string[]{
+                    "--loglevel", "Debug",
+                    "containerapp",  "run",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "-P", sbmFileName,
+                    "--override", overrideFile,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--maxcontainers", containerCount.ToString(),
+                    "--imagetag", imageTag,
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream", "true",
+                    "--deletewhendone", "true"
+
+                };
+                var val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs agree with Container App test result
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+            }
+
+        }
+
+        // [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
+        public async Task ContainerApp_Run_LongRunning_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            settingsFile = Path.GetFullPath(settingsFile);
+            var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+            var tmpOverride = Path.Combine(Path.GetDirectoryName(overrideFile)!, Guid.NewGuid().ToString() + ".cfg");
+            File.WriteAllLines(tmpOverride, File.ReadAllLines(overrideFile).Take(6).ToArray());
+            try
+            {
+                var sbmFileName = TestHelper.GetLongRunningSbm();
+
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("ca");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+                //monitor for completion
+                var args = new string[]{
+                    "--loglevel", "Debug",
+                    "containerapp",  "run",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "-P", sbmFileName,
+                    "--override", tmpOverride,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--maxcontainers", containerCount.ToString(),
+                    "--imagetag", imageTag,
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream", "true",
+                    "--deletewhendone", "true"
+
+                };
+                var val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                var dbCount = File.ReadAllText(tmpOverride).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+            }
+
+        }
+
+
+        // [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
+        public async Task ContainerApp_StepWise_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
+
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("ca");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+                //Prep the build
+                var args = new string[]{
+                    "containerapp",  "prep",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--packagename", sbmFileName
+
+                };
+
+                var val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //enqueue the topic messages
+                args = new string[]{
+                    "containerapp",  "enqueue",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--override", overrideFile
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //monitor for completion
+                args = new string[]{
+                    //"--loglevel", "Debug",
+                    "containerapp",  "deploy",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "-P", sbmFileName,
+                    "--override", overrideFile,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--maxcontainers", containerCount.ToString(),
+                    "--imagetag", imageTag,
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream", "true",
+                    "--deletewhendone", "true"
+
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+            }
+
+        }
+
+        // [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-containerapp-no-registry-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
+        public async Task ContainerApp_Queue_ManagedIdentity_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
+
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("ca");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+                //Prep the build
+                var args = new string[]{
+                    "containerapp",  "prep",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--packagename", sbmFileName
+
+                };
+
+                var val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //enqueue the topic messages
+                args = new string[]{
+                    "containerapp",  "enqueue",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--override", overrideFile
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //monitor for completion
+                args = new string[]{
+                    "--loglevel", "Debug",
+                    "containerapp",  "deploy",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "-P", sbmFileName,
+                    "--override", overrideFile,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--maxcontainers", containerCount.ToString(),
+                    "--imagetag", imageTag,
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream", "true",
+                    "--deletewhendone", "false"
+
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                TestContext.WriteLine(ConsoleOutput.ToString());
+                Assert.AreEqual(0, result);
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+            }
+
+        }
+
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
+        public async Task ContainerApp_EnvOnly_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
+
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("ca");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+                //Prep the build
+                var args = new string[]{
+                    "containerapp",  "prep",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--packagename", sbmFileName
+
+                };
+
+                var val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //enqueue the topic messages
+                args = new string[]{
+                    "containerapp",  "enqueue",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--override", overrideFile
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //monitor for completion
+                args = new string[]{
+                    "--loglevel", "debug",
+                    "containerapp",  "deploy",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "-P", sbmFileName,
+                    "--override", overrideFile,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--maxcontainers", containerCount.ToString(),
+                    "--imagetag", imageTag,
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--env", "true",
+                    "--stream", "true",
+                    "--deletewhendone", "true"
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+            }
+
+        }
+
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
+        public async Task ContainerApp_Queue_DacpacSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+
+                int removeCount = 1;
+                string server, database;
+
+                var overrideFileContents = File.ReadAllLines(overrideFile).ToList();
+                string firstOverride = overrideFileContents.First();
+                (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+
+                string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+                File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
+
+                var cmdLine = new CommandLineArgs();
+                cmdLine.SettingsFileKey = settingsFileKeyPath;
+                cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
+                bool decryptSuccess;
+                (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+                if (!decryptSuccess)
+                {
+                    Assert.Fail("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                }
+                bool tmp;
+                (tmp, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+
+                DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
+
+                string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
+                Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
+
+                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName)!, Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
+
+
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("ca");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+                //Prep the build
+                var args = new string[]{
+                    "--loglevel", "debug",
+                    "containerapp",  "prep",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--platinumdacpac", dacpacName,
+                     "--override", minusFirst
+
+                };
+
+                var val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //enqueue the topic messages
+                args = new string[]{
+                    "containerapp",  "enqueue",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--override", minusFirst
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //monitor for completion
+                args = new string[]{
+                    //"--loglevel", "Debug",
+                    "containerapp",  "deploy",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "-P", sbmFileName,
+                    "--platinumdacpac", dacpacName,
+                    "--override", minusFirst,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--maxcontainers", containerCount.ToString(),
+                    "--imagetag", imageTag,
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream", "true",
+                    "--deletewhendone", "true"
+
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
+                BlobLogValidator.AssertBlobContainerNameInLog(combinedLog, jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+            }
+        }
+
+
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 5, ConcurrencyType.MaxPerServer)]
+        // [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
+        public async Task ContainerApp_Queue_DacpacSource_DbAlreadyInSync_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+
+                int removeCount = 1;
+                string server, database;
+
+                var overrideFileContents = File.ReadAllLines(overrideFile).ToList();
+
+
+                string firstOverride = overrideFileContents.First();
+                (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+
+                string server2, database2;
+                string thirdOverride = overrideFileContents.ElementAt(2);
+                (server2, database2) = DatabaseHelper.ExtractServerAndDbFromLine(thirdOverride);
+
+                string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+                File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
+
+                var cmdLine = new CommandLineArgs();
+                cmdLine.SettingsFileKey = settingsFileKeyPath;
+                cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
+                bool decryptSuccess;
+                (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+                if (!decryptSuccess)
+                {
+                    Assert.Fail("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                }
+                bool tmp;
+                (tmp, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+
+                //First and 3rd will already be in sync and will result in the creation of a custom DACPAC, but no changes needed
+                DatabaseHelper.CreateRandomTable(cmdLine, new List<string>() { firstOverride, thirdOverride });
+
+                string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
+                Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
+
+                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName)!, Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("ca");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+                //Prep the build
+                var args = new string[]{
+                    "containerapp",  "prep",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--platinumdacpac", dacpacName,
+                     "--override", minusFirst
+
+                };
+
+                var val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //enqueue the topic messages
+                args = new string[]{
+                    "containerapp",  "enqueue",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--override", minusFirst
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //monitor for completion
+                args = new string[]{
+                    "--loglevel", "Debug",
+                    "containerapp",  "deploy",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "-P", sbmFileName,
+                    "--platinumdacpac", dacpacName,
+                    "--override", minusFirst,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream", "true",
+                    "--deletewhendone", "true"
+
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                TestContext.WriteLine(ConsoleOutput.ToString());
+                Assert.AreEqual(0, result);
+
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                Assert.IsTrue(logFileContents.Contains("Dacpac Databases In Sync") || ConsoleOutput.ToString().Contains("Dacpac Databases In Sync"), "There should be a DB already in sync that forced a custom DACPAC to be created");
+
+                var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs
+                BlobLogValidator.AssertBlobContainerNameInLog(logFileContents + Environment.NewLine + ConsoleOutput.ToString(), jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+            }
+
+        }
+
+        // [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Server)]
+        // [DataRow("TestConfig/settingsfile-containerapp-kv-mi.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        // [DataRow("TestConfig/settingsfile-containerapp.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [TestMethod]
+        public async Task ContainerApp_Queue_DacpacSource_ForceApplyCustom_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
+        {
+            try
+            {
+                settingsFile = Path.GetFullPath(settingsFile);
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+
+                int removeCount = 1;
+                string server, database;
+
+                var overrideFileContents = File.ReadAllLines(overrideFile).ToList();
+
+
+                string firstOverride = overrideFileContents.First();
+                (server, database) = DatabaseHelper.ExtractServerAndDbFromLine(firstOverride);
+
+                string server2, database2;
+                string thirdOverride = overrideFileContents.ElementAt(2);
+                (server2, database2) = DatabaseHelper.ExtractServerAndDbFromLine(thirdOverride);
+
+                string minusFirst = Path.GetFullPath("TestConfig/minusFirst.cfg");
+                File.WriteAllLines(minusFirst, DatabaseHelper.ModifyTargetList(overrideFileContents, removeCount));
+
+                var cmdLine = new CommandLineArgs();
+                cmdLine.SettingsFileKey = settingsFileKeyPath;
+                cmdLine.FileInfoSettingsFile = new FileInfo(settingsFile);
+                bool decryptSuccess;
+                (decryptSuccess, cmdLine) = Cryptography.DecryptSensitiveFields(cmdLine);
+                if (!decryptSuccess)
+                {
+                    Assert.Fail("There was an error decrypting one or more value from the --settingsfile. Please check that you are using the correct --settingsfilekey value");
+                }
+                bool tmp;
+                (tmp, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+
+                //First and 3rd will already be in sync, which will cause an SBM failure and force a new custom SBM to be created from the Platinum DACPAC
+                DatabaseHelper.CreateRandomTable(cmdLine, new List<string>() { firstOverride, thirdOverride });
+                string dacpacName = DatabaseHelper.CreateDacpac(cmdLine, server, database);
+                Assert.IsNotNull(dacpacName, $"There was a problem creating the dacpac for this test");
+
+                string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName)!, Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                string jobName = TestHelper.GetUniqueJobName("ca");
+                string outputFile = Path.Combine(Directory.GetCurrentDirectory(), jobName + ".json");
+
+                //Prep the build
+                var args = new string[]{
+                    "containerapp",  "prep",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--platinumdacpac", dacpacName,
+                    "--override", minusFirst
+
+                };
+
+                var val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //Create another table in the first that will be applied when the custom DACPAC is created
+                DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
+                DatabaseHelper.CreateRandomTable(cmdLine, thirdOverride);
+
+                //enqueue the topic messages
+                args = new string[]{
+                    "containerapp",  "enqueue",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--override", minusFirst
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                //monitor for completion
+                args = new string[]{
+                    //"--loglevel", "Debug",
+                    "containerapp",  "deploy",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "-P", sbmFileName,
+                    "--platinumdacpac", dacpacName,
+                    "--override", minusFirst,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString(),
+                    "--unittest", "true",
+                    "--monitor", "true",
+                    "--stream", "true",
+                    "--deletewhendone", "true",
+                    "--allowobjectdelete", "true"
+
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result);
+
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                Assert.IsTrue(logFileContents.Contains("Committed - With Custom Dacpac") || ConsoleOutput.ToString().Contains("Committed - With Custom Dacpac"), "A custom DACPAC should have been required for a database");
+
+                var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
+
+                // Validate blob storage logs
+                BlobLogValidator.AssertBlobContainerNameInLog(logFileContents + Environment.NewLine + ConsoleOutput.ToString(), jobName, TestContext);
+
+                var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
+                var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
+                await blobValidator.LoadLogsAsync();
+                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+            }
+
+        }
+
+        /// <summary>
+        /// Tests the 'containerapp worker test' command which runs the container worker locally
+        /// by setting environment variables to simulate the container environment.
+        /// This validates the local execution path without deploying to Azure Container Apps.
+        /// </summary>
+        [DataRow("TestConfig/settingsfile-containerapp-mi-only.json", 2, ConcurrencyType.Count)]
+        [TestMethod]
+        [Ignore("This test can not be run in an environment where the storage account does not allow public access")]
+        public void ContainerApp_WorkerTest_SBMSource_Success(string settingsFile, int concurrency, ConcurrencyType concurrencyType)
+        {
+            string jobName = null!;
+            settingsFile = Path.GetFullPath(settingsFile);
+            try
+            {
+                var overrideFile = Path.GetFullPath("TestConfig/databasetargets.cfg");
+                var sbmFileName = TestHelper.GetSimpleSelectSbm();
+
+                //get the size of the log file before we start
+                int startingLine = TestHelper.LogFileCurrentLineCount();
+
+                RootCommand rootCommand = CommandLineBuilder.SetUp();
+                jobName = TestHelper.GetUniqueJobName("cawt");
+
+                // Step 1: Prep - upload the SBM package to storage
+                var args = new string[]{
+                    "containerapp",  "prep",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--packagename", sbmFileName
+                };
+
+                var val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                int result = val.Result;
+                Assert.AreEqual(0, result, "Prep step failed");
+
+                // Step 2: Enqueue - send database targets to Service Bus
+                args = new string[]{
+                    "containerapp",  "enqueue",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--override", overrideFile
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+                Assert.AreEqual(0, result, "Enqueue step failed");
+
+                // Step 3: Run worker test - executes locally with environment variables
+                args = new string[]{
+                    "--loglevel", "Debug",
+                    "containerapp",  "worker", "test",
+                    "--settingsfile", settingsFile,
+                    "--settingsfilekey", settingsFileKeyPath,
+                    "--jobname", jobName,
+                    "--packagename", sbmFileName,
+                    "--override", overrideFile,
+                    "--concurrencytype", concurrencyType.ToString(),
+                    "--concurrency", concurrency.ToString()
+                };
+                val = rootCommand.Parse(args).InvokeAsync();
+                val.Wait();
+                result = val.Result;
+
+                var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
+                Assert.AreEqual(0, result, $"Worker test failed. Log contents: {logFileContents}");
+
+                var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
+                Assert.IsTrue(logFileContents.Contains("Completed Successfully") || ConsoleOutput.ToString().Contains("Completed Successfully"), 
+                    $"Expected 'Completed Successfully' in output. Log: {logFileContents}");
+            }
+            finally
+            {
+                TestContext.WriteLine(ConsoleOutput.ToString());
+
+                // Cleanup: Dequeue any remaining messages from Service Bus
+                if (!string.IsNullOrEmpty(jobName))
+                {
+                    try
+                    {
+                        RootCommand rootCommand = CommandLineBuilder.SetUp();
+                        var args = new string[]{
+                            "containerapp",  "dequeue",
+                            "--settingsfile", settingsFile,
+                            "--settingsfilekey", settingsFileKeyPath,
+                            "--jobname", jobName,
+                            "--concurrencytype", concurrencyType.ToString()
+                        };
+                        var val = rootCommand.Parse(args).InvokeAsync();
+                        val.Wait();
+                    }
+                    catch
+                    {
+                        // Ignore cleanup errors
+                    }
+                }
+            }
+        }
+    }
+}
+

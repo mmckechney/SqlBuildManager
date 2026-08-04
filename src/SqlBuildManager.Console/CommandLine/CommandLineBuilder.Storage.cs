@@ -115,12 +115,40 @@ namespace SqlBuildManager.Console.CommandLine
             }
         }
 
+        private static Command StorageDownloadAllCommand
+        {
+            get
+            {
+                var cmd = new Command(
+                    "download-all",
+                    "Download all Blob files in a container through Azure Relay into an output subfolder named for the container")
+                {
+                    storageContainerOption,
+                    storageOutputPathOption,
+                    relayProxyEndpointOption
+                };
+                cmd.AddRange(SettingsFileExistingOptions);
+                cmd.AddRange(IdentityArgumentsForBatch);
+                cmd.SetAction(async (parseResult, cancellationToken) =>
+                {
+                    var cmdLine = CommandLineArgsBinder.Bind(parseResult);
+                    return await Worker.DownloadAllRelayBlobFilesAsync(
+                        cmdLine,
+                        parseResult.GetValue(storageContainerOption)!,
+                        parseResult.GetValue(storageOutputPathOption)!,
+                        cancellationToken);
+                });
+                return cmd;
+            }
+        }
+
         private static Command StorageCommand =>
             new("storage", "List and download private Blob Storage files through Azure Relay")
             {
                 StorageListCommand,
                 StorageDownloadCommand,
-                StorageDownloadPrefixCommand
+                StorageDownloadPrefixCommand,
+                StorageDownloadAllCommand
             };
     }
 }

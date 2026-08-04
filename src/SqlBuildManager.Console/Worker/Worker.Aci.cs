@@ -180,8 +180,12 @@ namespace SqlBuildManager.Console
             {
                 try
                 {
-                    var stat = await Aci.AciManager.AciIsInErrorState(cmdLine.IdentityArgs.SubscriptionId, cmdLine.AciArgs.ResourceGroup, cmdLine.AciArgs.AciName);
-                    aciIsInErrorState = stat;
+                    var state = await Aci.AciManager.GetAciRuntimeState(
+                        cmdLine.IdentityArgs.SubscriptionId,
+                        cmdLine.AciArgs.ResourceGroup,
+                        cmdLine.AciArgs.AciName);
+                    aciIsInErrorState = state.IsInErrorState;
+                    aciHasCompletedSuccessfully = state.HasCompletedSuccessfully;
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {

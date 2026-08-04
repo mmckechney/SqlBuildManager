@@ -55,11 +55,11 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore
-        run: dotnet restore src/SqlSync.SqlBuild.Benchmarks/SqlSync.SqlBuild.Benchmarks.csproj
+        run: dotnet restore src/SqlBuildManager.SqlBuild.Benchmarks/SqlBuildManager.SqlBuild.Benchmarks.csproj
 
       - name: Build (Release — required by BenchmarkDotNet)
         run: |
-          dotnet build src/SqlSync.SqlBuild.Benchmarks/SqlSync.SqlBuild.Benchmarks.csproj \
+          dotnet build src/SqlBuildManager.SqlBuild.Benchmarks/SqlBuildManager.SqlBuild.Benchmarks.csproj \
             --configuration Release --no-restore
 
       - name: Run benchmarks
@@ -68,7 +68,7 @@ jobs:
           FILTER="${{ inputs.filter }}"
           FILTER="${FILTER:-*}"
           dotnet run \
-            --project src/SqlSync.SqlBuild.Benchmarks/SqlSync.SqlBuild.Benchmarks.csproj \
+            --project src/SqlBuildManager.SqlBuild.Benchmarks/SqlBuildManager.SqlBuild.Benchmarks.csproj \
             --configuration Release \
             --no-build \
             -- \

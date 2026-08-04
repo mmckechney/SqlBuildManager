@@ -1,5 +1,5 @@
-using SqlSync.SqlBuild;
-using SqlSync.SqlBuild.Models;
+using SqlBuildManager.SqlBuild;
+using SqlBuildManager.SqlBuild.Models;
 using System;
 
 namespace SqlBuildManager.Console.Threaded
