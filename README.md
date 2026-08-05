@@ -12,15 +12,16 @@ SQL Build Manager is a multi-faceted tool to allow you to manage the life-cycle 
 
 
 ---
-### **Highlighted feature update, v16+: PostgreSQL and MySQL Support**
+### **Highlighted feature update, v16+: PostgreSQL and MySQL Support; Batch Execution via Linux Container**
 
-SQL Build Manager supports **PostgreSQL** and **MySQL** as alternative database targets alongside Microsoft SQL Server. Use `--platform PostgreSQL` or `--platform MySQL` in any build command to target those databases.
+- Batch Execution is now run via Linux container (vs. uploaded zip package). This provides significant improvement in execution times and ensures code and platform consistency
+- SQL Build Manager supports **PostgreSQL** and **MySQL** as alternative database targets alongside Microsoft SQL Server. Use `--platform PostgreSQL` or `--platform MySQL` in any build command to target those databases.
 
 See:
 - [PostgreSQL documentation](docs/postgresql.md)
 - [MySQL documentation](docs/mysql.md)
 
-Features **not yet available** for PostgreSQL/MySQL:
+Features **not available** for PostgreSQL/MySQL:
 - DACPAC operations (extract, compare, `create fromdacpacs` / `create fromdacpacdiff`)
 - Object scripting (SMO-based)
 - Some SQL Server-specific script policies (`WithNoLockPolicy`, `QualifiedNamesPolicy`)
