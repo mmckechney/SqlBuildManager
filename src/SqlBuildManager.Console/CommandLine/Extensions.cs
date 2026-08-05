@@ -89,7 +89,7 @@ namespace SqlBuildManager.Console.CommandLine
                      {
                         args.AddRange(new string[] { "--authtype", "ManagedIdentity".Quoted() });
                      }
-                     else if (cmd.AuthenticationArgs.AuthenticationType == SqlSync.Connection.AuthenticationType.Password)
+                     else if (cmd.AuthenticationArgs.AuthenticationType == SqlBuildManager.Connection.AuthenticationType.Password)
                      {
                         args.AddRange(new string[] { "--authtype", "Password".Quoted() });
                         
