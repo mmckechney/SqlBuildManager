@@ -60,7 +60,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest
             string scriptId = System.Guid.NewGuid().ToString();
             ScriptBatch target = new ScriptBatch(scriptfileName, scriptBatchContents, scriptId);
             Assert.AreEqual(scriptfileName, target.ScriptfileName);
-            Assert.AreEqual(scriptBatchContents, target.ScriptBatchContents);
+            Assert.AreSequenceEqual(scriptBatchContents, target.ScriptBatchContents);
             Assert.AreEqual(scriptId, target.ScriptId);
 
             target.ScriptfileName = "ChangedName";
@@ -69,7 +69,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest
             string newId = System.Guid.NewGuid().ToString();
             target.ScriptId = newId;
             Assert.AreEqual("ChangedName", target.ScriptfileName);
-            Assert.AreEqual(newBatch, target.ScriptBatchContents);
+            Assert.AreSequenceEqual(newBatch, target.ScriptBatchContents);
             Assert.AreEqual(newId, target.ScriptId);
         }
     }

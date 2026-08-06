@@ -14,7 +14,6 @@ namespace SqlBuildManager.Connection.UnitTest
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
-            var x = new ConnectionHelper();
             appNameString = ConnectionHelper.appName;
         }
 
@@ -30,28 +29,28 @@ namespace SqlBuildManager.Connection.UnitTest
 
             string result = ConnectionHelper.GetConnectionString(connData);
 
-            Assert.IsTrue(result.Contains("Authentication=ActiveDirectoryIntegrated"));
-            Assert.IsTrue(result.Contains("Integrated Security=True"));
-            Assert.IsFalse(result.Contains("Trust Server Certificate=True"), "Should not trust server cert by default (secure-by-default)");
+            Assert.Contains("Authentication=ActiveDirectoryIntegrated", result);
+            Assert.Contains("Integrated Security=True", result);
+            Assert.DoesNotContain("Trust Server Certificate=True", result, "Should not trust server cert by default (secure-by-default)");
         }
 
         [TestMethod]
-        public void GetConnectionString_AzureADPassword_ShouldIncludeCredentials()
+        public void GetConnectionString_AzureADIntegrated_ShouldNotIncludeCredentials()
         {
             var connData = new ConnectionData
             {
                 SQLServerName = "myserver",
                 DatabaseName = "mydatabase",
-                AuthenticationType = AuthenticationType.AzureADPassword,
+                AuthenticationType = AuthenticationType.AzureADIntegrated,
                 UserId = "user@domain.com",
                 Password = "secretPassword"
             };
 
             string result = ConnectionHelper.GetConnectionString(connData);
 
-            Assert.IsTrue(result.Contains("Authentication=ActiveDirectoryPassword"));
-            Assert.IsTrue(result.Contains("User ID=user@domain.com"));
-            Assert.IsTrue(result.Contains("Password=secretPassword"));
+            Assert.Contains("Authentication=ActiveDirectoryIntegrated", result);
+            Assert.DoesNotContain("User ID=user@domain.com", result);
+            Assert.DoesNotContain("Password=secretPassword", result);
         }
 
         [TestMethod]
@@ -67,8 +66,8 @@ namespace SqlBuildManager.Connection.UnitTest
 
             string result = ConnectionHelper.GetConnectionString(connData);
 
-            Assert.IsTrue(result.Contains("Authentication=ActiveDirectoryManagedIdentity"));
-            Assert.IsTrue(result.Contains("User ID=client-id-12345"));
+            Assert.Contains("Authentication=ActiveDirectoryManagedIdentity", result);
+            Assert.Contains("User ID=client-id-12345", result);
         }
 
         [TestMethod]
@@ -83,7 +82,7 @@ namespace SqlBuildManager.Connection.UnitTest
 
             string result = ConnectionHelper.GetConnectionString(connData);
 
-            Assert.IsTrue(result.Contains("Authentication=ActiveDirectoryInteractive"));
+            Assert.Contains("Authentication=ActiveDirectoryInteractive", result);
         }
 
         [TestMethod]
@@ -135,7 +134,7 @@ namespace SqlBuildManager.Connection.UnitTest
             string result = ConnectionHelper.ConnectCryptoKey;
 
             Assert.IsNotNull(result);
-            Assert.IsTrue(result.Contains(Environment.UserName));
+            Assert.Contains(Environment.UserName, result);
         }
 
         [TestMethod]
@@ -155,8 +154,8 @@ namespace SqlBuildManager.Connection.UnitTest
         public void AppName_ShouldBePopulated()
         {
             Assert.IsNotNull(ConnectionHelper.appName);
-            Assert.IsTrue(ConnectionHelper.appName.Contains("Sql Build Manager"));
-            Assert.IsTrue(ConnectionHelper.appName.Contains(Environment.UserName));
+            Assert.Contains("Sql Build Manager", ConnectionHelper.appName);
+            Assert.Contains(Environment.UserName, ConnectionHelper.appName);
         }
 
         #endregion

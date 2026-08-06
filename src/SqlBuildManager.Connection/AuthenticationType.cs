@@ -10,8 +10,6 @@ namespace SqlBuildManager.Connection
         Windows,
         [Description("Azure AD Integrated Authentication")]
         AzureADIntegrated,
-        [Description("Azure AD Password Authentication")]
-        AzureADPassword,
         [Description("Managed Identity")]
         ManagedIdentity,
         [Description("Azure AD Interactive")]

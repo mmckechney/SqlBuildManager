@@ -27,10 +27,10 @@ namespace SqlBuildManager.Connection.UnitTest
         {
             string connStr = factory.BuildConnectionString("mydb", "myserver", "myuser", "mypass", AuthenticationType.Password, 30, "");
 
-            Assert.IsTrue(connStr.Contains("Data Source=myserver"), "Should contain Data Source");
-            Assert.IsTrue(connStr.Contains("Initial Catalog=mydb"), "Should contain Initial Catalog");
-            Assert.IsTrue(connStr.Contains("User ID=myuser"), "Should contain User ID");
-            Assert.IsTrue(connStr.Contains("Password=mypass"), "Should contain Password");
+            Assert.Contains("Data Source=myserver", connStr);
+            Assert.Contains("Initial Catalog=mydb", connStr);
+            Assert.Contains("User ID=myuser", connStr);
+            Assert.Contains("Password=mypass", connStr);
         }
 
         [TestMethod]
@@ -41,7 +41,7 @@ namespace SqlBuildManager.Connection.UnitTest
             string redacted = ConnectionStringRedactor.Redact(connStr);
             var redactedBuilder = new SqlConnectionStringBuilder(redacted);
 
-            Assert.IsFalse(redacted.Contains("mypass"), "Should not contain full password value");
+            Assert.DoesNotContain("mypass", redacted, "Should not contain full password value");
             Assert.AreEqual("mypaxx", redactedBuilder.Password, "Password should be masked keeping the first 4 chars");
             Assert.AreEqual("myuser", redactedBuilder.UserID, "Should preserve non-secret connection details");
         }
@@ -51,8 +51,8 @@ namespace SqlBuildManager.Connection.UnitTest
         {
             string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.Windows, 30, "");
 
-            Assert.IsTrue(connStr.Contains("Integrated Security=True"), "Should set Integrated Security");
-            Assert.IsFalse(connStr.Contains("Trust Server Certificate=True"), "Should NOT trust server cert by default (secure-by-default)");
+            Assert.Contains("Integrated Security=True", connStr, "Should set Integrated Security");
+            Assert.DoesNotContain("Trust Server Certificate=True", connStr, "Should NOT trust server cert by default (secure-by-default)");
         }
 
         [TestMethod]
@@ -60,8 +60,8 @@ namespace SqlBuildManager.Connection.UnitTest
         {
             string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.AzureADDefault, 30, "");
 
-            Assert.IsTrue(connStr.Contains("Authentication=ActiveDirectoryDefault"), "Should set AD Default auth");
-            Assert.IsFalse(connStr.Contains("Trust Server Certificate=True"), "Should NOT trust server cert by default (secure-by-default)");
+            Assert.Contains("Authentication=ActiveDirectoryDefault", connStr, "Should set AD Default auth");
+            Assert.DoesNotContain("Trust Server Certificate=True", connStr, "Should NOT trust server cert by default (secure-by-default)");
         }
 
         [TestMethod]
@@ -69,8 +69,8 @@ namespace SqlBuildManager.Connection.UnitTest
         {
             string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.AzureADDefault, 30, "my-client-id");
 
-            Assert.IsTrue(connStr.Contains("Authentication=ActiveDirectoryDefault"), "Should set AD Default auth");
-            Assert.IsTrue(connStr.Contains("User ID=my-client-id"), "Should use managed identity client ID as User ID");
+            Assert.Contains("Authentication=ActiveDirectoryDefault", connStr, "Should set AD Default auth");
+            Assert.Contains("User ID=my-client-id", connStr, "Should use managed identity client ID as User ID");
         }
 
         [TestMethod]
@@ -88,18 +88,8 @@ namespace SqlBuildManager.Connection.UnitTest
         {
             string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.ManagedIdentity, 30, "my-client-id");
 
-            Assert.IsTrue(connStr.Contains("Authentication=ActiveDirectoryManagedIdentity"), "Should set MI auth");
-            Assert.IsTrue(connStr.Contains("User ID=my-client-id"), "Should use client ID as User ID");
-        }
-
-        [TestMethod]
-        public void BuildConnectionString_AzureADPassword_ShouldContainCredentials()
-        {
-            string connStr = factory.BuildConnectionString("mydb", "myserver", "aduser", "adpass", AuthenticationType.AzureADPassword, 30, "");
-
-            Assert.IsTrue(connStr.Contains("Authentication=ActiveDirectoryPassword"), "Should set AD Password auth");
-            Assert.IsTrue(connStr.Contains("User ID=aduser"), "Should contain User ID");
-            Assert.IsTrue(connStr.Contains("Password=adpass"), "Should contain Password");
+            Assert.Contains("Authentication=ActiveDirectoryManagedIdentity", connStr, "Should set MI auth");
+            Assert.Contains("User ID=my-client-id", connStr, "Should use client ID as User ID");
         }
 
         [TestMethod]
@@ -107,7 +97,7 @@ namespace SqlBuildManager.Connection.UnitTest
         {
             string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.AzureADInteractive, 30, "");
 
-            Assert.IsTrue(connStr.Contains("Authentication=ActiveDirectoryInteractive"), "Should set AD Interactive auth");
+            Assert.Contains("Authentication=ActiveDirectoryInteractive", connStr, "Should set AD Interactive auth");
         }
 
         [TestMethod]
@@ -115,7 +105,7 @@ namespace SqlBuildManager.Connection.UnitTest
         {
             string connStr = factory.BuildConnectionString("mydb", "myserver", "", "", AuthenticationType.AzureADIntegrated, 30, "");
 
-            Assert.IsTrue(connStr.Contains("Authentication=ActiveDirectoryIntegrated"), "Should set AD Integrated auth");
+            Assert.Contains("Authentication=ActiveDirectoryIntegrated", connStr, "Should set AD Integrated auth");
         }
 
         [TestMethod]
@@ -123,7 +113,7 @@ namespace SqlBuildManager.Connection.UnitTest
         {
             string connStr = factory.BuildConnectionString("mydb", "myserver", "u", "p", AuthenticationType.Password, 120, "");
 
-            Assert.IsTrue(connStr.Contains("Connect Timeout=120"), "Should set connect timeout");
+            Assert.Contains("Connect Timeout=120", connStr, "Should set connect timeout");
         }
 
         [TestMethod]
@@ -142,8 +132,8 @@ namespace SqlBuildManager.Connection.UnitTest
         {
             string connStr = factory.BuildConnectionString("mydb", "myserver", "u", "p", AuthenticationType.Password, 30, "");
 
-            Assert.IsTrue(connStr.Contains("Connect Retry Count=3"), "Should set retry count");
-            Assert.IsTrue(connStr.Contains("Connect Retry Interval=10"), "Should set retry interval");
+            Assert.Contains("Connect Retry Count=3", connStr, "Should set retry count");
+            Assert.Contains("Connect Retry Interval=10", connStr, "Should set retry interval");
         }
 
         [TestMethod]
@@ -161,9 +151,9 @@ namespace SqlBuildManager.Connection.UnitTest
 
             string connStr = factory.BuildConnectionString(connData);
 
-            Assert.IsTrue(connStr.Contains("Data Source=sqlserver1"), "Should use server from ConnectionData");
-            Assert.IsTrue(connStr.Contains("Initial Catalog=testdb"), "Should use database from ConnectionData");
-            Assert.IsTrue(connStr.Contains("Connect Timeout=45"), "Should use timeout from ConnectionData");
+            Assert.Contains("Data Source=sqlserver1", connStr, "Should use server from ConnectionData");
+            Assert.Contains("Initial Catalog=testdb", connStr, "Should use database from ConnectionData");
+            Assert.Contains("Connect Timeout=45", connStr, "Should use timeout from ConnectionData");
         }
 
         #endregion
@@ -240,7 +230,7 @@ namespace SqlBuildManager.Connection.UnitTest
             string withoutTrust = pgFactory.BuildConnectionString("db", "srv", "u", "p", AuthenticationType.Password, 30, "");
 
             Assert.AreEqual(withoutTrust, withTrust, "PostgreSQL uses SslMode and must ignore the TrustServerCertificate flag");
-            Assert.IsFalse(withTrust.Contains("Trust Server Certificate"), "PostgreSQL connection string should not contain TrustServerCertificate");
+            Assert.DoesNotContain("Trust Server Certificate", withTrust, "PostgreSQL connection string should not contain TrustServerCertificate");
         }
 
         [TestMethod]

@@ -69,7 +69,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             List<string> actual;
             target.FoundTables = expected;
             actual = target.FoundTables;
-            Assert.AreEqual(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
         }
     }
 }

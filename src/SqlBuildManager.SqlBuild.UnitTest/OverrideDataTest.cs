@@ -56,13 +56,15 @@ namespace SqlBuildManager.SqlBuild.UnitTest
         [TestMethod()]
         public void TargetDatabaseOverridesTest()
         {
-            List<DatabaseOverride> expected = new List<DatabaseOverride>();
-            expected.Add(new DatabaseOverride("server1", "default1", "override1"));
-            expected.Add(new DatabaseOverride("server1", "default2", "override2"));
+            List<DatabaseOverride> expected =
+            [
+                new DatabaseOverride("server1", "default1", "override1"),
+                new DatabaseOverride("server1", "default2", "override2"),
+            ];
             List<DatabaseOverride> actual;
             OverrideData.TargetDatabaseOverrides = expected;
             actual = OverrideData.TargetDatabaseOverrides;
-            Assert.AreEqual(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
         }
 
 
@@ -73,7 +75,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest
         [TestMethod()]
         public void OverrideDataConstructorTest()
         {
-            OverrideData target = new OverrideData();
+            OverrideData target = new();
             Assert.AreEqual(typeof(OverrideData), target.GetType());
         }
     }

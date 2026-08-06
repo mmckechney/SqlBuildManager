@@ -92,11 +92,6 @@ namespace SqlBuildManager.Connection
                     builder.Username = !string.IsNullOrEmpty(uid) ? uid : managedIdentityClientId;
                     builder.Password = GetAzureAdAccessToken(managedIdentityClientId);
                     break;
-                case AuthenticationType.AzureADPassword:
-                    builder.Username = uid;
-                    builder.Password = pw;
-                    builder.SslMode = SslMode.Require;
-                    break;
                 case AuthenticationType.AzureADIntegrated:
                 case AuthenticationType.AzureADInteractive:
                     builder.Username = uid;

@@ -144,11 +144,6 @@ namespace SqlBuildManager.Connection
                         builder.UserID = managedIdentityClientId;
                     builder.TrustServerCertificate = trustServerCertificate;
                     break;
-                case AuthenticationType.AzureADPassword:
-                    builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryPassword;
-                    builder.UserID = uid;
-                    builder.Password = pw;
-                    break;
                 case AuthenticationType.ManagedIdentity:
                     builder.Authentication = SqlAuthenticationMethod.ActiveDirectoryManagedIdentity;
                     builder.UserID = managedIdentityClientId;
