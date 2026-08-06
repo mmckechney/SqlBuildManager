@@ -38,6 +38,7 @@ set "WD=%REPO_ROOT%\scripts\tests"
 wt.exe -w new ^
   new-tab --title "SqlServer_External_Tests" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -CommandText ".\run_all_sqlserver_external_tests_in_aci.ps1 -envName " ^
   ; new-tab --title "Postgres_External_Tests" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -CommandText ".\run_all_postgres_external_tests_in_aci.ps1 -envName " ^
+  ; new-tab --title "MySQL_External_Tests" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -CommandText ".\run_all_mysql_external_tests_in_aci.ps1 -envName " ^
   ; new-tab --title "Dependent_Tests" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -CommandText ".\run_dependent_tests_in_aci.ps1 -envName "
 
 endlocal

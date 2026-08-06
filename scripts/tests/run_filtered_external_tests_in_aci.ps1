@@ -135,7 +135,7 @@ Write-Debug "Using Container Registry: $acrLoginServer"
 #############################################
 # Build and push test image if requested
 #############################################
-# if (-not $buildImage -and $testFilter -like "*MySQL.ExternalTest*") {
+# if (-not $buildImage -and $testFilter -like "*MySQL.AzureTest*") {
 #     $mySqlAuthMode = azd env get-value MYSQL_AUTH_MODE 2>$null
 #     if ($LASTEXITCODE -eq 0 -and $mySqlAuthMode -eq "Password") {
 #         Write-Host "MYSQL_AUTH_MODE=Password detected for MySQL external tests; enabling -buildImage to avoid stale ManagedIdentity test image reuse." -ForegroundColor Yellow
@@ -198,9 +198,9 @@ $blobPath = "$timestamp/$testContainerName"
 # Use tee to capture console output to a log file while still displaying it
 
 # Determine which test DLL to run based on the filter
-if ($testFilter -like "*PostgreSQL.ExternalTest*") {
+if ($testFilter -like "*PostgreSQL.AzureTest*") {
     $testDll = "SqlBuildManager.Console.PostgreSQL.AzureTest.dll"
-} elseif ($testFilter -like "*MySQL.ExternalTest*") {
+} elseif ($testFilter -like "*MySQL.AzureTest*") {
     $testDll = "SqlBuildManager.Console.MySQL.AzureTest.dll"
 } else {
     $testDll = "SqlBuildManager.Console.SqlServer.AzureTest.dll"
@@ -217,7 +217,7 @@ $uploadCmd = "az storage blob upload-batch --account-name $storageAccountName --
 
 # Build Kubernetes pre-requisite commands if test filter contains "Kubernetes"
 $aksPreCmd = ""
-if ($testFilter -like "*Kubernetes*" -or $testFilter -like "*PostgreSQL.ExternalTest*" -or $testFilter -like "*MySQL.ExternalTest*") {
+if ($testFilter -like "*Kubernetes*") {
     $aksPreCmd = "az aks install-cli; az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName --overwrite-existing; "
     Write-Debug "Kubernetes tests detected - will install kubectl and get AKS credentials"
 }
