@@ -50,7 +50,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest.MultiDb
 
             data.Add(server);
 
-            Assert.AreEqual(1, data.Count);
+            Assert.HasCount(1, data);
             Assert.AreEqual("TestServer", data[0].ServerName);
         }
 
@@ -69,7 +69,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest.MultiDb
                 MultiRunId = "run-123",
                 UserName = "admin",
                 Password = "secret",
-                AuthenticationType = AuthenticationType.AzureADPassword,
+                AuthenticationType = AuthenticationType.AzureADIntegrated,
                 BuildRevision = "v1.0.0"
             };
 
@@ -82,7 +82,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest.MultiDb
             Assert.AreEqual("run-123", data.MultiRunId);
             Assert.AreEqual("admin", data.UserName);
             Assert.AreEqual("secret", data.Password);
-            Assert.AreEqual(AuthenticationType.AzureADPassword, data.AuthenticationType);
+            Assert.AreEqual(AuthenticationType.AzureADIntegrated, data.AuthenticationType);
             Assert.AreEqual("v1.0.0", data.BuildRevision);
         }
 
@@ -116,7 +116,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest.MultiDb
 
             Assert.AreEqual("MyServer", server.ServerName);
             Assert.AreEqual(42, server.SequenceId);
-            Assert.AreEqual(1, server.Overrides.Count);
+            Assert.HasCount(1, server.Overrides);
         }
 
         [TestMethod]
@@ -200,7 +200,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest.MultiDb
 
             var overrides = new DbOverrides(ovr1, ovr2);
 
-            Assert.AreEqual(2, overrides.Count);
+            Assert.HasCount(2, overrides);
         }
 
         [TestMethod]
@@ -239,7 +239,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest.MultiDb
 
             var result = overrides.GetQueryRowData("DEFAULT1", "OVERRIDE1");
 
-            Assert.AreEqual(1, result.Count);
+            Assert.HasCount(1, result);
         }
 
         [TestMethod]
@@ -255,7 +255,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest.MultiDb
 
             var result = overrides.GetOverrideDatabaseNameList();
 
-            Assert.AreEqual(3, result.Count);
+            Assert.HasCount(3, result);
             Assert.AreEqual("Override1", result[0]);
             Assert.AreEqual("Override2", result[1]);
             Assert.AreEqual("Override3", result[2]);

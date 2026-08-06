@@ -80,9 +80,9 @@ namespace SqlBuildManager.SqlBuild.UnitTest
             Assert.AreEqual("SERVER", actual[0].ServerName); //Make sure the items with the same server only get on server entry.
             Assert.AreEqual("SERVER", actual[1].ServerName);
             Assert.AreEqual("SERVER1", actual[2].ServerName);
-            Assert.AreEqual(2, actual[0].Overrides.Count);
-            Assert.AreEqual(2, actual[1].Overrides.Count);
-            Assert.AreEqual(2, actual[2].Overrides.Count);
+            Assert.HasCount(2, actual[0].Overrides);
+            Assert.HasCount(2, actual[1].Overrides);
+            Assert.HasCount(2, actual[2].Overrides);
         }
         /// <summary>
         ///A test for ImportMultiDbTextConfig
@@ -126,7 +126,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest
             MultiDbData expected = null!;
             MultiDbData actual;
             actual = MultiDbHelper.ImportMultiDbTextConfig(fileName);
-            Assert.AreEqual(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
         }
         /// <summary>
         ///A test for ImportMultiDbTextConfig
@@ -171,7 +171,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest
             MultiDbData expected = null!;
             MultiDbData actual;
             actual = MultiDbHelper.DeserializeMultiDbConfiguration(fileName);
-            Assert.AreEqual(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
         }
 
         /// <summary>
@@ -461,7 +461,7 @@ ServerB:default5,override5
 
             var deserialized = MultiDbHelper.DeserializeMultiDbConfigurationString(actual);
 
-            Assert.AreEqual(cfg.Count, deserialized.Count);
+            Assert.HasCount(cfg.Count, deserialized);
 
         }
 
@@ -535,7 +535,7 @@ ServerB:default5,override5
             MultiDbData actual = MultiDbHelper.ImportMultiDbTextConfig(fileContents);
 
             // Assert
-            Assert.AreEqual(3, actual[0].Overrides.Count);
+            Assert.HasCount(3, actual[0].Overrides);
             Assert.AreEqual("db1", actual[0].Overrides[0].DefaultDbTarget);
             Assert.AreEqual("target1", actual[0].Overrides[0].OverrideDbTarget);
             Assert.AreEqual("db2", actual[0].Overrides[1].DefaultDbTarget);
@@ -610,7 +610,7 @@ ServerB:default5,override5
                 Assert.IsTrue(result);
                 Assert.IsTrue(File.Exists(fileName));
                 string content = File.ReadAllText(fileName);
-                Assert.IsTrue(content.Contains("<ServerName>Server1</ServerName>"));
+                Assert.Contains("<ServerName>Server1</ServerName>", content);
             }
             finally
             {
@@ -636,8 +636,8 @@ ServerB:default5,override5
             string actual = MultiDbHelper.ConvertMultiDbDataToTextConfig(cfg);
 
             // Assert - the format includes the tag after the semicolon
-            Assert.IsTrue(actual.Contains("default,override"));
-            Assert.IsTrue(actual.StartsWith("ServerA:"));
+            Assert.Contains("default,override", actual);
+            Assert.StartsWith("ServerA:", actual);
         }
 
         [TestMethod]
@@ -667,8 +667,8 @@ ServerB:default5,override5
             string actual = MultiDbHelper.ConvertMultiDbDataToTextConfig(cfg);
 
             // Assert
-            Assert.IsTrue(actual.Contains("ServerA:db1,target1"));
-            Assert.IsTrue(actual.Contains("ServerB:db2,target2"));
+            Assert.Contains("ServerA:db1,target1", actual);
+            Assert.Contains("ServerB:db2,target2", actual);
         }
 
         #endregion
@@ -685,7 +685,7 @@ ServerB:default5,override5
             MultiDbData actual = MultiDbHelper.DeserializeMultiDbConfigurationString(json);
 
             // Assert
-            Assert.AreEqual(1, actual.Count);
+            Assert.HasCount(1, actual);
             Assert.AreEqual("TestServer", actual[0].ServerName);
             Assert.AreEqual("default", actual[0].Overrides[0].DefaultDbTarget);
             Assert.AreEqual("target", actual[0].Overrides[0].OverrideDbTarget);
@@ -701,7 +701,7 @@ ServerB:default5,override5
             MultiDbData actual = MultiDbHelper.DeserializeMultiDbConfigurationString(json);
 
             // Assert
-            Assert.AreEqual(1, actual.Count);
+            Assert.HasCount(1, actual);
             Assert.AreEqual("TestServer", actual[0].ServerName);
         }
 
