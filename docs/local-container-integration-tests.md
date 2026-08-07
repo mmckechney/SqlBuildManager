@@ -19,3 +19,7 @@ and several minutes of startup time. Emulator behavior is not a substitute for
 Azure integration tests, and the emulator tests are inconclusive when the
 `SBM_TEST_*` emulator variables are absent, so ordinary `dotnet test` runs do
 not require Docker.
+
+When emulators are enabled, the test container also receives
+`SBM_BLOB_ENDPOINT` so production Blob clients use Azurite rather than the
+default Azure Storage hostname.

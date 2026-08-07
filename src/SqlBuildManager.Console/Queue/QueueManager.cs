@@ -98,7 +98,7 @@ namespace SqlBuildManager.Console.Queue
                 {
                     if (ConnectionStringValidator.IsServiceBusConnectionString(topicConnectionString))
                     {
-                        _adminClient = new ServiceBusAdministrationClient(topicConnectionString);
+                        _adminClient = new ServiceBusAdministrationClient(GetAdministrationConnectionString(topicConnectionString));
                     }
                     else
                     {
@@ -109,6 +109,55 @@ namespace SqlBuildManager.Console.Queue
                 }
                 return _adminClient;
             }
+        }
+
+        private static string GetAdministrationConnectionString(string connectionString)
+        {
+            if (!IsServiceBusEmulatorConnectionString(connectionString))
+            {
+                return connectionString;
+            }
+
+            var parts = connectionString.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            for (var i = 0; i < parts.Length; i++)
+            {
+                if (!parts[i].StartsWith("Endpoint=", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var endpoint = parts[i]["Endpoint=".Length..].TrimEnd('/');
+                var schemeEnd = endpoint.IndexOf("://", StringComparison.Ordinal);
+                if (schemeEnd < 0)
+                {
+                    continue;
+                }
+
+                var prefix = endpoint[..(schemeEnd + 3)];
+                var host = endpoint[(schemeEnd + 3)..];
+                var slash = host.IndexOf('/');
+                if (slash >= 0)
+                {
+                    host = host[..slash];
+                }
+
+                var colon = host.LastIndexOf(':');
+                host = colon >= 0 ? host[..colon] : host;
+                parts[i] = $"Endpoint={prefix}{host}:5300/";
+                break;
+            }
+
+            return string.Join(';', parts) + ';';
+        }
+
+        private static bool IsServiceBusEmulatorConnectionString(string connectionString)
+        {
+            if (connectionString.Contains("UseDevelopmentEmulator=true", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return connectionString.Contains("servicebus-emulator", StringComparison.OrdinalIgnoreCase);
         }
         public ServiceBusReceiver MessageReceiver
         {
@@ -808,7 +857,16 @@ namespace SqlBuildManager.Console.Queue
                 tasks.Add(_client.DisposeAsync().AsTask());
             }
 
-            Task.WaitAll(tasks.ToArray());
+            try
+            {
+                Task.WaitAll(tasks.ToArray());
+            }
+            catch (AggregateException ex) when (
+                IsServiceBusEmulatorConnectionString(topicConnectionString) &&
+                ex.Flatten().InnerExceptions.All(exception => exception is TimeoutException))
+            {
+                log.LogWarning("Service Bus emulator cleanup timed out while draining a receiver; continuing shutdown.");
+            }
 
         }
 

@@ -64,5 +64,42 @@ namespace SqlBuildManager.Console.UnitTest
                             "Ip has been prevented to connect to the endpoint."))),
                 "https://example.servicebus.windows.net/relayproxy"));
         }
+
+        [TestMethod]
+        public void IsEventHubEmulatorConnectionString_DevelopmentEmulator_ReturnsTrue()
+        {
+            Assert.IsTrue(EventManager.IsEventHubEmulatorConnectionString(
+                "Endpoint=sb://namespace/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY;EntityPath=events;UseDevelopmentEmulator=true"));
+        }
+
+        [TestMethod]
+        public void IsEventHubEmulatorConnectionString_EmulatorHost_ReturnsTrue()
+        {
+            Assert.IsTrue(EventManager.IsEventHubEmulatorConnectionString(
+                "Endpoint=sb://eventhubs-emulator:5672/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY;EntityPath=events"));
+        }
+
+        [TestMethod]
+        public void IsEventHubEmulatorConnectionString_AzureEndpoint_ReturnsFalse()
+        {
+            Assert.IsFalse(EventManager.IsEventHubEmulatorConnectionString(
+                "Endpoint=sb://namespace.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY;EntityPath=events"));
+        }
+
+        [TestMethod]
+        public void CreateCustomConsumerGroup_Emulator_UsesCg1WithoutArm()
+        {
+            using var manager = new EventManager(
+                "Endpoint=sb://eventhubs-emulator:5672/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY;EntityPath=events",
+                "subscription",
+                "resource-group",
+                "devstoreaccount1",
+                "storage-key",
+                "job");
+
+            Assert.AreEqual(
+                EventManager.EmulatorConsumerGroupName,
+                manager.CreateCustomConsumerGroup("subscription", "resource-group", "eventhubs-emulator:5672", "events", "job"));
+        }
     }
 }

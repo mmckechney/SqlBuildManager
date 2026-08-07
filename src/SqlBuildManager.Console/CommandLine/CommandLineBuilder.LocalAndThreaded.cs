@@ -71,10 +71,19 @@ namespace SqlBuildManager.Console.CommandLine
                     platinumserversourceOption,
                     timeoutretrycountOption,
                     defaultscripttimeoutOption,
-                    unitTestOption
+                    unitTestOption,
+                    jobnameOption,
+                    storageaccountnameOption,
+                    storageaccountkeyOption,
+                    serviceBusconnectionOption,
+                    eventhubconnectionOption,
+                    eventhubResourceGroupOption,
+                    eventhubSubscriptionOption,
+                    eventHubLoggingTypeOption
                 };
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConcurrencyOptions);
+                cmd.AddRange(SettingsFileExistingOptions);
                 cmd.SetGroupedHelp(
                     new OptionGroup("Build Options", new List<Option> { packagenameOption, overrideOption, trialOption, transactionalOption, descriptionOption, buildrevisionOption, scriptsrcdirOption, timeoutretrycountOption, defaultscripttimeoutOption }),
                     new OptionGroup("DACPAC", new List<Option> { platinumdacpacOption, targetdacpacOption, forcecustomdacpacOption, platinumdbsourceOption, platinumserversourceOption }),

@@ -32,17 +32,21 @@ namespace SqlBuildManager.Console.AzureTest.TestBase
 
         public BlobLogValidator(string storageAccountName, string storageAccountKey, string containerName)
         {
+            var configuredEndpoint = Environment.GetEnvironmentVariable("SBM_BLOB_ENDPOINT");
+            var endpoint = (string.IsNullOrWhiteSpace(configuredEndpoint)
+                ? $"https://{storageAccountName}.blob.core.windows.net"
+                : configuredEndpoint).TrimEnd('/');
             if (string.IsNullOrWhiteSpace(storageAccountKey))
             {
                 _containerClient = new BlobContainerClient(
-                    new Uri($"https://{storageAccountName}.blob.core.windows.net/{containerName}"),
+                    new Uri($"{endpoint}/{containerName}"),
                     new DefaultAzureCredential());
             }
             else
             {
                 var creds = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
                 _containerClient = new BlobContainerClient(
-                    new Uri($"https://{storageAccountName}.blob.core.windows.net/{containerName}"),
+                    new Uri($"{endpoint}/{containerName}"),
                     creds);
             }
         }

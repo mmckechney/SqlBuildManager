@@ -8,8 +8,11 @@ public static class LocalContainerTestEnvironment
         Environment.GetEnvironmentVariable("SBM_TEST_PLATFORM") ?? "all";
 
     public static string BlobEndpoint =>
-        Environment.GetEnvironmentVariable("SBM_TEST_BLOB_ENDPOINT")
-        ?? "http://localhost:10000/devstoreaccount1";
+        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SBM_TEST_BLOB_ENDPOINT"))
+            ? Environment.GetEnvironmentVariable("SBM_TEST_BLOB_ENDPOINT")!
+            : !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SBM_BLOB_ENDPOINT"))
+                ? Environment.GetEnvironmentVariable("SBM_BLOB_ENDPOINT")!
+                : "http://localhost:10000/devstoreaccount1";
 
     public static string EventHubConnectionString =>
         Environment.GetEnvironmentVariable("SBM_TEST_EVENTHUB_CONNECTION_STRING") ?? string.Empty;

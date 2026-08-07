@@ -19,11 +19,12 @@ if ($Filter) { $env:TEST_FILTER = $Filter }
 if ($IncludeEmulators) {
     # These values are resolved on the Compose network, not from the host.
     $env:SBM_TEST_BLOB_ENDPOINT = "http://azurite:10000/devstoreaccount1"
+    $env:SBM_BLOB_ENDPOINT = $env:SBM_TEST_BLOB_ENDPOINT
     $env:SBM_TEST_EVENTHUB_NAME = "sbm-events"
     $env:SBM_TEST_EVENTHUB_CONNECTION_STRING = "Endpoint=sb://eventhubs-emulator/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;EntityPath=sbm-events;UseDevelopmentEmulator=true"
     $env:SBM_TEST_SERVICEBUS_CONNECTION_STRING = "Endpoint=sb://servicebus-emulator:5672/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true"
 } else {
-    Remove-Item Env:SBM_TEST_BLOB_ENDPOINT, Env:SBM_TEST_EVENTHUB_NAME, Env:SBM_TEST_EVENTHUB_CONNECTION_STRING, Env:SBM_TEST_SERVICEBUS_CONNECTION_STRING -ErrorAction SilentlyContinue
+    Remove-Item Env:SBM_TEST_BLOB_ENDPOINT, Env:SBM_BLOB_ENDPOINT, Env:SBM_TEST_EVENTHUB_NAME, Env:SBM_TEST_EVENTHUB_CONNECTION_STRING, Env:SBM_TEST_SERVICEBUS_CONNECTION_STRING -ErrorAction SilentlyContinue
 }
 $profiles = @("--profile", $Platform)
 if ($IncludeEmulators) { $profiles += @("--profile", "emulators") }

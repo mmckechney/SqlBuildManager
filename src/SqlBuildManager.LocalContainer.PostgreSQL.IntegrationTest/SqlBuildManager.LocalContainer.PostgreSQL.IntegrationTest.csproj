@@ -12,6 +12,7 @@
     <PackageReference Include="Azure.Messaging.EventHubs" />
     <PackageReference Include="Azure.Messaging.ServiceBus" />
     <PackageReference Include="Azure.Storage.Blobs" />
+    <PackageReference Include="Npgsql" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlBuildManager.LocalContainer.IntegrationTest\SqlBuildManager.LocalContainer.IntegrationTest.csproj" />

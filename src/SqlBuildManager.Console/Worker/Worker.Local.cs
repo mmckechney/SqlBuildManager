@@ -326,7 +326,9 @@ namespace SqlBuildManager.Console
             string msg = "Total Run time: " + span.ToString();
             log.LogInformation(msg);
 
-            if (!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl))
+            if (!String.IsNullOrEmpty(cmdLine.BatchArgs.OutputContainerSasUrl) ||
+                (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.StorageAccountName) &&
+                 !string.IsNullOrWhiteSpace(cmdLine.JobName)))
             {
                 log.LogInformation("Writing log files to storage...");
                 await StorageManager.WriteLogsToBlobContainer(cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, cmdLine.JobName, cmdLine.RootLoggingPath);

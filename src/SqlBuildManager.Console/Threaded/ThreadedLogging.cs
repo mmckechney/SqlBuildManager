@@ -35,6 +35,7 @@ namespace SqlBuildManager.Console.Threaded
         public void Flush()
         {
             Logging.Threaded.Configure.CloseAndFlushAllLoggers(true);
+            TheadedLoggingInitiated = false;
         }
         public void InitThreadedLogging()
         {

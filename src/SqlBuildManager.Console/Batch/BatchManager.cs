@@ -187,7 +187,7 @@ namespace SqlBuildManager.Console.Batch
                 if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
                 {
                     log.LogDebug($"Preparing Entra-authenticated container '{storageContainerName}'");
-                    storageSvcClient = new BlobServiceClient(new Uri($"https://{cmdLine.ConnectionArgs.StorageAccountName}.blob.core.windows.net"), Aad.AadHelper.TokenCredential);
+                    storageSvcClient = StorageManager.CreateStorageClient(cmdLine.ConnectionArgs.StorageAccountName, string.Empty);
                     outputContainerUrl = await StorageManager
                         .EnsureOutputContainerAsync(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName)
                         .ConfigureAwait(false);
