@@ -140,6 +140,12 @@ for dll in "${TEST_DLLS[@]}"; do
     fi
 done
 
+LOCAL_TEST_DLL="${TEST_DLLS[0]}"
+LOCAL_TEST_NAME=$(basename "$(dirname "$LOCAL_TEST_DLL")")
+if [ -f "/tests/TestResults/${LOCAL_TEST_NAME}.html" ]; then
+    cp "/tests/TestResults/${LOCAL_TEST_NAME}.html" /tests/TestResults/TestResults.html
+fi
+
 echo ""
 echo "TEST_EXIT_CODE=$OVERALL_EXIT"
 exit $OVERALL_EXIT

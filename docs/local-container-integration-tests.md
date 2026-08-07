@@ -22,4 +22,6 @@ not require Docker.
 
 When emulators are enabled, the test container also receives
 `SBM_BLOB_ENDPOINT` so production Blob clients use Azurite rather than the
-default Azure Storage hostname.
+default Azure Storage hostname. Each run's console output, `TestResults.html`,
+per-assembly test reports, and Compose log are saved under a timestamped folder
+in `scripts/tests/testresults` named for the selected platform.

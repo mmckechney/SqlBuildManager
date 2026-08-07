@@ -7,6 +7,9 @@
   <ItemGroup>
     <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Azure.Messaging.EventHubs" />
+    <PackageReference Include="Azure.Messaging.ServiceBus" />
+    <PackageReference Include="Azure.Storage.Blobs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlBuildManager.Test.Common\SqlBuildManager.Test.Common.csproj" />

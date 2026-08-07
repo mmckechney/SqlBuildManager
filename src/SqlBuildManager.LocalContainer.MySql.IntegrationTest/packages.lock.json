@@ -65,6 +65,16 @@
           "MSTest.Analyzers": "4.3.3"
         }
       },
+      "MySqlConnector": {
+        "type": "Direct",
+        "requested": "[2.6.1, )",
+        "resolved": "2.6.1",
+        "contentHash": "MzNSfnHWBc0Mo3zVbYxG+556zuex9obs8NYtwcPCwFahel40e49stH+osjX4k/doEHp4LT/zTtGdax4nlGWhcw==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.2"
+        }
+      },
       "Azure.Core.Amqp": {
         "type": "Transitive",
         "resolved": "1.3.1",
@@ -785,6 +795,9 @@
       "sqlbuildmanager.localcontainer.integrationtest": {
         "type": "Project",
         "dependencies": {
+          "Azure.Messaging.EventHubs": "[5.12.2, )",
+          "Azure.Messaging.ServiceBus": "[7.20.2, )",
+          "Azure.Storage.Blobs": "[12.29.1, )",
           "Microsoft.Extensions.Logging": "[10.0.10, )",
           "SqlBuildManager.Test.Common": "[1.0.0, )"
         }
@@ -1146,16 +1159,6 @@
         "requested": "[4.4.0, )",
         "resolved": "4.4.0",
         "contentHash": "QX3bsK9oFeUXk8tFsc9NkI6NnCr8Ar/ex027p+ZZ/jdLCdX2RlryDtxUqZW5j45NVwn4E4Z4hzupsoMQd6Yxtg=="
-      },
-      "MySqlConnector": {
-        "type": "CentralTransitive",
-        "requested": "[2.6.1, )",
-        "resolved": "2.6.1",
-        "contentHash": "MzNSfnHWBc0Mo3zVbYxG+556zuex9obs8NYtwcPCwFahel40e49stH+osjX4k/doEHp4LT/zTtGdax4nlGWhcw==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.2"
-        }
       },
       "Npgsql": {
         "type": "CentralTransitive",

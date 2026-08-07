@@ -10,11 +10,14 @@ $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $composeFile = Join-Path $PSScriptRoot "local-container\docker-compose.yml"
 $projectName = "sbm-local-$Platform"
-$results = Join-Path $repoRoot "testresults"
+$results = Join-Path $PSScriptRoot "testresults"
+$runResults = Join-Path $results ("{0}-{1}" -f $Platform, (Get-Date -Format "yyyyMMdd-HHmmss"))
 $exitCode = 1
 New-Item -ItemType Directory -Force -Path $results | Out-Null
+New-Item -ItemType Directory -Force -Path $runResults | Out-Null
 
 $env:SBM_TEST_PLATFORM = $Platform
+$env:SBM_LOCAL_TEST_RESULTS = $runResults
 if ($Filter) { $env:TEST_FILTER = $Filter }
 if ($IncludeEmulators) {
     # These values are resolved on the Compose network, not from the host.
@@ -37,7 +40,8 @@ try {
 }
 finally {
     & docker compose -p $projectName -f $composeFile @profiles logs --no-color 2>&1 |
-        Tee-Object -FilePath (Join-Path $results "docker-compose-$Platform.log")
+        Tee-Object -FilePath (Join-Path $runResults "docker-compose-$Platform.log")
     & docker compose -p $projectName -f $composeFile @profiles down --volumes --remove-orphans
+    Remove-Item Env:SBM_LOCAL_TEST_RESULTS -ErrorAction SilentlyContinue
 }
 exit $exitCode

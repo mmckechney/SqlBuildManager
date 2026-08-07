@@ -794,6 +794,9 @@
       "sqlbuildmanager.localcontainer.integrationtest": {
         "type": "Project",
         "dependencies": {
+          "Azure.Messaging.EventHubs": "[5.12.2, )",
+          "Azure.Messaging.ServiceBus": "[7.20.2, )",
+          "Azure.Storage.Blobs": "[12.29.1, )",
           "Microsoft.Extensions.Logging": "[10.0.10, )",
           "SqlBuildManager.Test.Common": "[1.0.0, )"
         }

@@ -10,7 +10,10 @@ only the selected database platform:
 ./scripts/tests/run_local_container_tests.ps1 -Platform mysql
 ```
 
-Results and the compose log are written to `testresults`. Containers, networks,
+Each run writes to a timestamped platform folder under
+`scripts/tests/testresults` (for example, `postgresql-20260807-153500`).
+The folder contains the test container console output, `TestResults.html`,
+per-assembly TRX/HTML results, and the Docker Compose log. Containers, networks,
 and volumes are removed when the script exits. Add `-IncludeEmulators` to start
 the optional Azurite, Event Hubs emulator, and Service Bus emulator services.
 The messaging smoke tests are compiled into each platform runner, so the SBM

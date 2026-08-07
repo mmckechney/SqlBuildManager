@@ -55,7 +55,7 @@ services:
       sqlserver:
         condition: service_healthy
     volumes:
-      - ../../../testresults:/tests/TestResults
+      - ${SBM_LOCAL_TEST_RESULTS:-../../testresults}:/tests/TestResults
 
   test-postgresql:
     build:
@@ -77,7 +77,7 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ../../../testresults:/tests/TestResults
+      - ${SBM_LOCAL_TEST_RESULTS:-../../testresults}:/tests/TestResults
 
   test-mysql:
     build:
@@ -99,7 +99,7 @@ services:
       mysql:
         condition: service_healthy
     volumes:
-      - ../../../testresults:/tests/TestResults
+      - ${SBM_LOCAL_TEST_RESULTS:-../../testresults}:/tests/TestResults
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite:3.36.0

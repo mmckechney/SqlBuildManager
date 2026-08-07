@@ -12,6 +12,7 @@
     <PackageReference Include="Azure.Messaging.EventHubs" />
     <PackageReference Include="Azure.Messaging.ServiceBus" />
     <PackageReference Include="Azure.Storage.Blobs" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
     <Compile Include="..\SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest\LocalContainerEmulatorSmokeTests.cs" Link="LocalContainerEmulatorSmokeTests.cs" />
   </ItemGroup>
   <ItemGroup>
