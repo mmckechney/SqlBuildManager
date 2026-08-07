@@ -17,7 +17,6 @@ using Azure.ResourceManager.EventHubs;
 using Azure.ResourceManager.EventHubs.Models;
 using Azure.ResourceManager.Resources;
 using SqlBuildManager.Console.Arm;
-using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 
 namespace SqlBuildManager.Console.Events
@@ -137,11 +136,24 @@ namespace SqlBuildManager.Console.Events
         { 
             if(ConnectionStringValidator.IsEventHubConnectionString(input))
             {
-                string pattern = @"^Endpoint=sb:\/\/([^.]+)\.(.+)\/;SharedAccessKeyName=.+;SharedAccessKey=.+;EntityPath=(.+)$";
-                Match match = Regex.Match(input, pattern);
-                string name = match.Groups[1].Value;
-                string domainName = match.Groups[2].Value;
-                string entityPath = match.Groups[3].Value;
+                // Azure uses <namespace>.servicebus.windows.net, while the local
+                // Event Hubs emulator uses a host such as eventhubs-emulator:5672.
+                // Parse fields independently so both formats (and field ordering)
+                // are accepted.
+                var fields = input.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(part => part.Split('=', 2))
+                    .Where(part => part.Length == 2)
+                    .ToDictionary(part => part[0].Trim(), part => part[1].Trim(),
+                        StringComparer.OrdinalIgnoreCase);
+                var endpoint = fields["Endpoint"].TrimEnd('/');
+                var host = endpoint.StartsWith("sb://", StringComparison.OrdinalIgnoreCase)
+                    ? endpoint.Substring("sb://".Length)
+                    : endpoint;
+                host = host.Split('/')[0];
+                var name = host.EndsWith(".servicebus.windows.net", StringComparison.OrdinalIgnoreCase)
+                    ? host.Split('.')[0]
+                    : host;
+                var entityPath = fields["EntityPath"];
                 log.LogInformation($"Using EventHub Namespace: {name} with Event Hub name: {entityPath}");
                 return ($"{name}", entityPath);
             }

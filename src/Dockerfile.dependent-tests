@@ -33,6 +33,10 @@ COPY SqlBuildManager.SqlBuild.IntegrationTest.TestBase/SqlBuildManager.SqlBuild.
 COPY SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/SqlBuildManager.SqlBuild.SqlServer.IntegrationTest.csproj SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/packages.lock.json SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/
 COPY SqlBuildManager.SqlBuild.UnitTest/SqlBuildManager.SqlBuild.UnitTest.csproj SqlBuildManager.SqlBuild.UnitTest/packages.lock.json SqlBuildManager.SqlBuild.UnitTest/
 COPY SqlBuildManager.SqlBuild/SqlBuildManager.SqlBuild.csproj SqlBuildManager.SqlBuild/packages.lock.json SqlBuildManager.SqlBuild/
+COPY SqlBuildManager.LocalContainer.IntegrationTest/SqlBuildManager.LocalContainer.IntegrationTest.csproj SqlBuildManager.LocalContainer.IntegrationTest/packages.lock.json SqlBuildManager.LocalContainer.IntegrationTest/
+COPY SqlBuildManager.LocalContainer.SqlServer.IntegrationTest/SqlBuildManager.LocalContainer.SqlServer.IntegrationTest.csproj SqlBuildManager.LocalContainer.SqlServer.IntegrationTest/packages.lock.json SqlBuildManager.LocalContainer.SqlServer.IntegrationTest/
+COPY SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest/SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest.csproj SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest/packages.lock.json SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest/
+COPY SqlBuildManager.LocalContainer.MySql.IntegrationTest/SqlBuildManager.LocalContainer.MySql.IntegrationTest.csproj SqlBuildManager.LocalContainer.MySql.IntegrationTest/packages.lock.json SqlBuildManager.LocalContainer.MySql.IntegrationTest/
 
 RUN dotnet restore SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/SqlBuildManager.SqlBuild.SqlServer.IntegrationTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.Console.SqlServer.IntegrationTest/SqlBuildManager.Console.SqlServer.IntegrationTest.csproj --locked-mode && \
@@ -49,7 +53,10 @@ RUN dotnet restore SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/SqlBuildMa
     dotnet restore SqlBuildManager.DbInformation.UnitTest/SqlBuildManager.DbInformation.UnitTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj --locked-mode && \
     dotnet restore SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj --locked-mode && \
-    dotnet restore SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj --locked-mode
+    dotnet restore SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.LocalContainer.SqlServer.IntegrationTest/SqlBuildManager.LocalContainer.SqlServer.IntegrationTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest/SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest.csproj --locked-mode && \
+    dotnet restore SqlBuildManager.LocalContainer.MySql.IntegrationTest/SqlBuildManager.LocalContainer.MySql.IntegrationTest.csproj --locked-mode
 
 FROM restore AS build
 COPY . .
@@ -68,7 +75,10 @@ RUN dotnet build SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/SqlBuildMana
     dotnet build SqlBuildManager.DbInformation.UnitTest/SqlBuildManager.DbInformation.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.DbInformation.UnitTest && \
     dotnet build SqlBuildManager.ScriptHandling.UnitTest/SqlBuildManager.ScriptHandling.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.ScriptHandling.UnitTest && \
     dotnet build SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Console.UnitTest && \
-    dotnet build SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Enterprise.UnitTest
+    dotnet build SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.Enterprise.UnitTest && \
+    dotnet build SqlBuildManager.LocalContainer.SqlServer.IntegrationTest/SqlBuildManager.LocalContainer.SqlServer.IntegrationTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.LocalContainer.SqlServer.IntegrationTest && \
+    dotnet build SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest/SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest && \
+    dotnet build SqlBuildManager.LocalContainer.MySql.IntegrationTest/SqlBuildManager.LocalContainer.MySql.IntegrationTest.csproj --configuration Release --no-restore -clp:ErrorsOnly -o /tests/SqlBuildManager.LocalContainer.MySql.IntegrationTest
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:ed034a8bf0b24ded0cbbac07e17825d8e9ebfe21e308191d0f7421eaf5ad4664 AS testrunner
 RUN sed -i 's|http://archive.ubuntu.com|https://archive.ubuntu.com|g; s|http://security.ubuntu.com|https://security.ubuntu.com|g' /etc/apt/sources.list.d/ubuntu.sources && \

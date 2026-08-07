@@ -1,0 +1,39 @@
+name: Local Container Integration Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Database platform to test
+        required: true
+        type: choice
+        options: [sqlserver, postgresql, mysql]
+        default: sqlserver
+      include_emulators:
+        description: Run Azurite, Event Hubs emulator, and Service Bus emulator tests
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run local container tests
+        shell: pwsh
+        run: ./scripts/tests/run_local_container_tests.ps1 -Platform "${{ inputs.platform }}" ${{ inputs.include_emulators && '-IncludeEmulators' || '' }}
+      - name: Upload test results and logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: local-container-${{ inputs.platform }}-${{ github.run_id }}
+          path: testresults/**
+          if-no-files-found: warn
+      - name: Compose cleanup
+        if: always()
+        shell: bash
+        run: docker compose -p "sbm-local-${{ inputs.platform }}" -f scripts/tests/local-container/docker-compose.yml --profile "${{ inputs.platform }}" ${{ inputs.include_emulators && '--profile emulators' || '' }} down --volumes --remove-orphans
