@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Integration test runner for VNet-integrated Azure Container Instances.
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:ed034a8bf0b24ded0cbbac07e17825d8e9ebfe21e308191d0f7421eaf5ad4664 AS restore
+FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:72dd743782f2ae7e5476fd64f6a460045e3998dc862218b80e6944cba79a01b0 AS restore
 WORKDIR /src
 
 COPY Directory.Build.props Directory.Packages.props ./
@@ -33,7 +33,7 @@ RUN dotnet build SqlBuildManager.Console.SqlServer.AzureTest/SqlBuildManager.Con
       --configuration Release --framework net10.0 --no-restore --output /tests && \
     cp -r TestConfig /tests/TestConfig
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:ed034a8bf0b24ded0cbbac07e17825d8e9ebfe21e308191d0f7421eaf5ad4664 AS testrunner
+FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:72dd743782f2ae7e5476fd64f6a460045e3998dc862218b80e6944cba79a01b0 AS testrunner
 
 # Pinned kubectl version and architecture-aware SHA-256 checksums (update both when bumping).
 # Checksums sourced from https://dl.k8s.io/release/<version>/bin/linux/<arch>/kubectl.sha256
