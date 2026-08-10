@@ -13,7 +13,7 @@ RUN dotnet publish SqlBuildManager.RelayProxy/SqlBuildManager.RelayProxy.csproj 
     --no-restore \
     --output /app/publish
 
-FROM mcr.microsoft.com/dotnet/runtime:10.0@sha256:ed5d539b27842d656a06a5984dbcb5114d3e885fbada612a49a5a7c3c3a44e1c AS final
+FROM mcr.microsoft.com/dotnet/runtime:10.0@sha256:68d35011fe04a39cca38208d392ed48f2df15653633dca16dbc4582d07342b9f AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENV DOTNET_ENVIRONMENT=Production
