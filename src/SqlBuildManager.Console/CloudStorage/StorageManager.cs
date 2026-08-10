@@ -66,9 +66,18 @@ namespace SqlBuildManager.Console.CloudStorage
             }
             else
             {
-                var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey, endpoint);
                 log.LogDebug($"Creating container client for '{storageAccountName}/{containerName}' with storage key");
-                client = new BlobContainerClient(connstr, containerName);
+                if (!endpoint.Contains("blob.core.windows.net", StringComparison.OrdinalIgnoreCase))
+                {
+                    client = new BlobContainerClient(
+                        new Uri($"{endpoint}/{containerName}"),
+                        new StorageSharedKeyCredential(storageAccountName, storageAccountKey));
+                }
+                else
+                {
+                    var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey, endpoint);
+                    client = new BlobContainerClient(connstr, containerName);
+                }
             }
             await client.CreateIfNotExistsAsync();
             return client;

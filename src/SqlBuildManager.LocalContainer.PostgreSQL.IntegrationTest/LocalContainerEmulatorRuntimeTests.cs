@@ -3,6 +3,7 @@ using Npgsql;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.LocalContainer.IntegrationTest;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest;
@@ -11,35 +12,44 @@ namespace SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest;
 [DoNotParallelize]
 public class LocalContainerEmulatorRuntimeTests : LocalContainerEmulatorRuntimeTestBase
 {
+    private const string Server = "postgres";
+    private const string User = "postgres";
+    private const string Password = "P0stSqlAdm1n";
+
     [TestMethod]
-    public async Task ThreadedRun_WithLocalEmulators_UpdatesDatabaseAndPublishesEffects()
+    [DataRow("Count", 1)]
+    [DataRow("Count", 4)]
+    [DataRow("MaxPerServer", 4)]
+    public async Task ThreadedRun_WithTwentyDatabases_UsesConcurrencyAndPublishesEffects(string concurrencyType, int concurrency)
     {
         if (!LocalContainerTestEnvironment.EmulatorsConfigured)
         {
             Assert.Inconclusive("Emulator tests require SBM_TEST_BLOB_ENDPOINT, SBM_TEST_EVENTHUB_CONNECTION_STRING, and SBM_TEST_SERVICEBUS_CONNECTION_STRING.");
         }
-        const string database = "sbm_pg_runtime_test";
-        const string server = "postgres";
-        const string user = "postgres";
-        const string password = "P0stSqlAdm1n";
-        await using (var admin = new NpgsqlConnection($"Host={server};Database=postgres;Username={user};Password={password}"))
+
+        var databases = Enumerable.Range(1, 20).Select(index => $"sbm_pg_test_{index:00}").ToArray();
+        await using (var admin = new NpgsqlConnection($"Host={Server};Database=postgres;Username={User};Password={Password}"))
         {
             await admin.OpenAsync();
-            await using var command = admin.CreateCommand();
-            command.CommandText = $"CREATE DATABASE \"{database}\"";
-            try
+            foreach (var database in databases)
             {
-                await command.ExecuteNonQueryAsync();
-            }
-            catch (PostgresException ex) when (ex.SqlState == "42P04")
-            {
+                await using var command = admin.CreateCommand();
+                command.CommandText = $"CREATE DATABASE \"{database}\"";
+                try
+                {
+                    await command.ExecuteNonQueryAsync();
+                }
+                catch (PostgresException ex) when (ex.SqlState == "42P04")
+                {
+                }
             }
         }
 
         var rootCommand = CommandLineBuilder.SetUp();
+        var jobName = $"sbm-pg-20-{concurrencyType.ToLowerInvariant()}-{concurrency}";
         await RunThreadedRuntimeTestAsync(
-            "PostgreSQL", server, database, user, password, "sbm-pg-runtime-emulator-test",
-            db => new NpgsqlConnection($"Host={server};Database={db};Username={user};Password={password}"),
+            "PostgreSQL", Server, databases, User, Password, jobName, concurrencyType, concurrency,
+            database => new NpgsqlConnection($"Host={Server};Database={database};Username={User};Password={Password}"),
             """
             CREATE TABLE IF NOT EXISTS transactiontest (
                 message varchar(500),
@@ -47,7 +57,7 @@ public class LocalContainerEmulatorRuntimeTests : LocalContainerEmulatorRuntimeT
                 datetimestamp timestamp
             )
             """,
-            "INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('LOCAL EMULATOR THREADED TEST', '00000000-0000-0000-0000-000000000001', NOW())",
+            $"INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('{TestMessage}', '00000000-0000-0000-0000-000000000001', NOW())",
             args => rootCommand.Parse(args).InvokeAsync());
     }
 }

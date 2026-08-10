@@ -1,8 +1,9 @@
-using MySqlConnector;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MySqlConnector;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.LocalContainer.IntegrationTest;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SqlBuildManager.LocalContainer.MySql.IntegrationTest;
@@ -11,31 +12,40 @@ namespace SqlBuildManager.LocalContainer.MySql.IntegrationTest;
 [DoNotParallelize]
 public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntimeTestBase
 {
+    private const string Server = "mysql";
+    private const string User = "root";
+    private const string Password = "MySq1Adm!n";
+
     [TestMethod]
-    public async Task ThreadedRun_WithLocalEmulators_UpdatesDatabaseAndPublishesEffects()
+    [DataRow("Count", 1)]
+    [DataRow("Count", 4)]
+    [DataRow("MaxPerServer", 4)]
+    public async Task ThreadedRun_WithTwentyDatabases_UsesConcurrencyAndPublishesEffects(string concurrencyType, int concurrency)
     {
         if (!LocalContainerTestEnvironment.EmulatorsConfigured)
         {
             Assert.Inconclusive("Emulator tests require SBM_TEST_BLOB_ENDPOINT, SBM_TEST_EVENTHUB_CONNECTION_STRING, and SBM_TEST_SERVICEBUS_CONNECTION_STRING.");
         }
-        const string database = "sbm_mysql_test";
-        const string server = "mysql";
-        const string user = "root";
-        const string password = "MySq1Adm!n";
-        await using (var admin = new MySqlConnection($"Server={server};Database=mysql;User ID={user};Password={password}"))
+
+        var databases = Enumerable.Range(1, 20).Select(index => $"sbm_mysql_test_{index:00}").ToArray();
+        await using (var admin = new MySqlConnection($"Server={Server};Database=mysql;User ID={User};Password={Password}"))
         {
             await admin.OpenAsync();
-            await using var command = admin.CreateCommand();
-            command.CommandText = $"CREATE DATABASE IF NOT EXISTS `{database}`";
-            await command.ExecuteNonQueryAsync();
+            foreach (var database in databases)
+            {
+                await using var command = admin.CreateCommand();
+                command.CommandText = $"CREATE DATABASE IF NOT EXISTS `{database}`";
+                await command.ExecuteNonQueryAsync();
+            }
         }
 
         var rootCommand = CommandLineBuilder.SetUp();
+        var jobName = $"sbm-mysql-20-{concurrencyType.ToLowerInvariant()}-{concurrency}";
         await RunThreadedRuntimeTestAsync(
-            "MySQL", server, database, user, password, "sbm-mysql-emulator-test",
-            db => new MySqlConnection($"Server={server};Database={db};User ID={user};Password={password}"),
+            "MySQL", Server, databases, User, Password, jobName, concurrencyType, concurrency,
+            database => new MySqlConnection($"Server={Server};Database={database};User ID={User};Password={Password}"),
             "CREATE TABLE IF NOT EXISTS transactiontest (message varchar(500), guid char(36), datetimestamp datetime)",
-            "INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('LOCAL EMULATOR THREADED TEST', '00000000-0000-0000-0000-000000000001', NOW())",
+            $"INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('{TestMessage}', UUID(), NOW())",
             args => rootCommand.Parse(args).InvokeAsync());
     }
 }

@@ -19,16 +19,19 @@ namespace SqlBuildManager.LocalContainer.IntegrationTest;
 
 public abstract class LocalContainerEmulatorRuntimeTestBase
 {
+    protected const string TestMessage = "LOCAL EMULATOR THREADED TEST";
     private const string StorageAccount = "devstoreaccount1";
-    private const string StorageKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuF2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
+    private const string StorageKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
 
     protected async Task RunThreadedRuntimeTestAsync(
         string platform,
         string server,
-        string database,
+        IReadOnlyList<string> databases,
         string user,
         string password,
         string jobName,
+        string concurrencyType,
+        int concurrency,
         Func<string, DbConnection> createConnection,
         string createTableSql,
         string insertSql,
@@ -43,37 +46,57 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         Directory.CreateDirectory(testDirectory);
         try
         {
-            await EnsureDatabaseAsync(createConnection, database, createTableSql);
-            CreatePackage(packagePath, database, insertSql);
-            await File.WriteAllTextAsync(overridePath, $"{server}:{database},{database}");
-            await SeedServiceBusMessageAsync(server, database, jobName);
+            foreach (var database in databases)
+            {
+                await EnsureDatabaseAsync(createConnection, database, createTableSql);
+            }
 
-            var args = new[]
+            CreatePackage(packagePath, databases[0], insertSql);
+            await File.WriteAllLinesAsync(overridePath, databases.Select(database => $"{server}:{database},{database}"));
+            await EnsureServiceBusSubscriptionAsync(jobName, concurrencyType);
+            await SeedServiceBusMessagesAsync(server, databases[0], databases, jobName, concurrencyType);
+            var eventHubStart = DateTimeOffset.UtcNow;
+
+            var argList = new List<string>
             {
                 "--loglevel", "debug", "threaded", "run",
                 "--rootloggingpath", Path.Combine(testDirectory, "logs"),
                 "--transactional", "false", "--trial", "false", "--timeoutretrycount", "0",
-                "--concurrency", "1", "--concurrencytype", "Count",
+                "--concurrency", concurrency.ToString(), "--concurrencytype", concurrencyType,
                 "--override", overridePath, "--packagename", packagePath, "--jobname", jobName,
                 "--storageaccountname", StorageAccount, "--storageaccountkey", StorageKey,
                 "--eventhubconnection", LocalContainerTestEnvironment.EventHubConnectionString,
-                "--eventhublogging", "EssentialOnly",
+                "--eventhublogging", "IndividualScriptResults",
                 "--servicebustopicconnection", LocalContainerTestEnvironment.ServiceBusConnectionString,
                 "--authtype", "Password", "--username", user, "--password", password,
-                "--platform", platform
+                "--platform", platform, "--monitor", "true", "--stream"
             };
+
+            if (platform.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
+            {
+                // The local SQL Server emulator container uses a self-signed certificate; trust it
+                // explicitly rather than requiring full chain validation like a production server would need.
+                argList.AddRange(new[] { "--trustservercertificate", "true" });
+            }
+
+            var args = argList.ToArray();
 
             if (await invokeCommandAsync(args) != 0)
             {
                 throw new InvalidOperationException($"{platform} threaded run failed.");
             }
-            if (await CountRowsAsync(createConnection, database) != 1)
+
+            foreach (var database in databases)
             {
-                throw new InvalidOperationException($"{platform} threaded run did not update the expected database row.");
+                if (await CountRowsAsync(createConnection, database) < 1)
+                {
+                    throw new InvalidOperationException($"{platform} threaded run did not update {database}.");
+                }
             }
+
             await AssertBlobEffectAsync(jobName);
-            await AssertEventHubEffectAsync(jobName);
-            await AssertServiceBusEffectAsync(jobName);
+            await AssertEventHubEffectAsync(jobName, databases.Count, eventHubStart);
+            await AssertServiceBusEffectAsync(jobName, concurrencyType);
         }
         finally
         {
@@ -99,7 +122,7 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         await using var connection = createConnection(database);
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT COUNT(*) FROM transactiontest WHERE message = 'LOCAL EMULATOR THREADED TEST'";
+        command.CommandText = $"SELECT COUNT(*) FROM transactiontest WHERE message = '{TestMessage}'";
         return Convert.ToInt64(await command.ExecuteScalarAsync());
     }
 
@@ -127,21 +150,58 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         writer.Write(content);
     }
 
-    private static async Task SeedServiceBusMessageAsync(string server, string database, string jobName)
+    private static async Task SeedServiceBusMessagesAsync(
+        string server,
+        string defaultDatabase,
+        IReadOnlyList<string> databases,
+        string jobName,
+        string concurrencyType)
     {
         await using var client = new ServiceBusClient(LocalContainerTestEnvironment.ServiceBusConnectionString);
         await using var sender = client.CreateSender("sqlbuildmanager");
-        var target = new
+        foreach (var database in databases)
         {
-            ServerName = server,
-            DbOverrideSequence = new[] { new { ConcurrencyTag = string.Empty, Server = server, DefaultDbTarget = database, OverrideDbTarget = database } },
-            ConcurrencyTag = string.Empty
+            var target = new
+            {
+                ServerName = server,
+                DbOverrideSequence = new[] { new { ConcurrencyTag = string.Empty, Server = server, DefaultDbTarget = defaultDatabase, OverrideDbTarget = database } },
+                ConcurrencyTag = string.Empty
+            };
+            var message = new ServiceBusMessage(JsonSerializer.Serialize(target))
+            {
+                Subject = jobName,
+                MessageId = $"{jobName}-{database}"
+            };
+            if (!concurrencyType.Equals("Count", StringComparison.OrdinalIgnoreCase))
+            {
+                message.SessionId = jobName;
+            }
+
+            await sender.SendMessageAsync(message);
+        }
+    }
+
+    private static async Task EnsureServiceBusSubscriptionAsync(string jobName, string concurrencyType)
+    {
+        var adminConnection = LocalContainerTestEnvironment.ServiceBusConnectionString
+            .Replace(":5672/", ":5300/", StringComparison.OrdinalIgnoreCase);
+        var admin = new ServiceBusAdministrationClient(adminConnection);
+        var subscriptionName = concurrencyType.Equals("Count", StringComparison.OrdinalIgnoreCase)
+            ? jobName
+            : $"{jobName}session";
+
+        if (await admin.SubscriptionExistsAsync("sqlbuildmanager", subscriptionName))
+        {
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            return;
+        }
+
+        var options = new CreateSubscriptionOptions("sqlbuildmanager", subscriptionName)
+        {
+            RequiresSession = !concurrencyType.Equals("Count", StringComparison.OrdinalIgnoreCase)
         };
-        await sender.SendMessageAsync(new ServiceBusMessage(JsonSerializer.Serialize(target))
-        {
-            Subject = jobName,
-            MessageId = Guid.NewGuid().ToString("N")
-        });
+        await admin.CreateSubscriptionAsync(options);
+        await Task.Delay(TimeSpan.FromSeconds(2));
     }
 
     private static async Task AssertBlobEffectAsync(string jobName)
@@ -152,41 +212,89 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         {
             throw new InvalidOperationException("The threaded run did not create its Azurite container.");
         }
+
         var names = new List<string>();
-        await foreach (var blob in container.GetBlobsAsync()) names.Add(blob.Name);
+        await foreach (var blob in container.GetBlobsAsync())
+        {
+            names.Add(blob.Name);
+        }
+
         if (!names.Any(name => name.EndsWith("/commits.log", StringComparison.OrdinalIgnoreCase)))
         {
             throw new InvalidOperationException("The threaded run did not upload commits.log to Azurite.");
         }
     }
 
-    private static async Task AssertEventHubEffectAsync(string jobName)
+    private static async Task AssertEventHubEffectAsync(string jobName, int expectedMessages, DateTimeOffset startTime)
     {
         await using var consumer = new EventHubConsumerClient("cg1", LocalContainerTestEnvironment.EventHubConnectionString);
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        foreach (var partition in await consumer.GetPartitionIdsAsync(timeout.Token))
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+        var startPosition = EventPosition.FromEnqueuedTime(startTime.AddSeconds(-5));
+        var partitionIds = await consumer.GetPartitionIdsAsync(timeout.Token);
+
+        // Each partition's read is a live, never-completing stream, so partitions must be scanned
+        // concurrently rather than sequentially -- otherwise a partition with no further matching
+        // events blocks forever and later partitions are never reached before the timeout.
+        var matchingMessages = 0;
+        var tasks = partitionIds.Select(async partition =>
         {
-            await foreach (var item in consumer.ReadEventsFromPartitionAsync(partition, EventPosition.Earliest, timeout.Token))
+            try
             {
-                if (Encoding.UTF8.GetString(item.Data.EventBody.ToArray()).Contains(jobName, StringComparison.OrdinalIgnoreCase)) return;
+                await foreach (var item in consumer.ReadEventsFromPartitionAsync(partition, startPosition, timeout.Token))
+                {
+                    if (Encoding.UTF8.GetString(item.Data.EventBody.ToArray()).Contains(jobName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (Interlocked.Increment(ref matchingMessages) >= expectedMessages)
+                        {
+                            timeout.Cancel();
+                            return;
+                        }
+                    }
+                }
             }
+            catch (OperationCanceledException) when (timeout.IsCancellationRequested)
+            {
+            }
+        }).ToArray();
+
+        await Task.WhenAll(tasks);
+
+        if (matchingMessages < expectedMessages)
+        {
+            throw new InvalidOperationException($"The threaded run published {matchingMessages} of {expectedMessages} expected Event Hubs messages.");
         }
-        throw new InvalidOperationException("The threaded run did not publish an Event Hubs message.");
     }
 
-    private static async Task AssertServiceBusEffectAsync(string jobName)
+    private static async Task AssertServiceBusEffectAsync(string jobName, string concurrencyType)
     {
         var adminConnection = LocalContainerTestEnvironment.ServiceBusConnectionString.Replace(":5672/", ":5300/", StringComparison.OrdinalIgnoreCase);
         var admin = new ServiceBusAdministrationClient(adminConnection);
-        if (!await admin.SubscriptionExistsAsync("sqlbuildmanager", jobName))
+        var subscriptionName = concurrencyType.Equals("Count", StringComparison.OrdinalIgnoreCase)
+            ? jobName
+            : $"{jobName}session";
+
+        // A successful `threaded run` deletes its own job subscription as part of cleanup,
+        // so the subscription's absence here is confirmation that targets were fully consumed.
+        if (await admin.SubscriptionExistsAsync("sqlbuildmanager", subscriptionName))
         {
-            throw new InvalidOperationException("The threaded run did not create its Service Bus job subscription.");
-        }
-        await using var client = new ServiceBusClient(LocalContainerTestEnvironment.ServiceBusConnectionString);
-        await using var receiver = client.CreateReceiver("sqlbuildmanager", jobName);
-        if (await receiver.ReceiveMessageAsync(TimeSpan.FromSeconds(5)) != null)
-        {
-            throw new InvalidOperationException("The threaded run left its Service Bus target message unconsumed.");
+            await using var client = new ServiceBusClient(LocalContainerTestEnvironment.ServiceBusConnectionString);
+            ServiceBusReceiver receiver;
+            if (concurrencyType.Equals("Count", StringComparison.OrdinalIgnoreCase))
+            {
+                receiver = client.CreateReceiver("sqlbuildmanager", subscriptionName);
+            }
+            else
+            {
+                receiver = await client.AcceptNextSessionAsync("sqlbuildmanager", subscriptionName);
+            }
+
+            await using (receiver)
+            {
+                if (await receiver.ReceiveMessageAsync(TimeSpan.FromSeconds(5)) != null)
+                {
+                    throw new InvalidOperationException("The threaded run left a Service Bus target message unconsumed.");
+                }
+            }
         }
     }
 }
