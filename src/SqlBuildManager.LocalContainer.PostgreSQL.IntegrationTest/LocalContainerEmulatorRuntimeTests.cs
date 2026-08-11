@@ -147,9 +147,12 @@ public class LocalContainerEmulatorRuntimeTests : LocalContainerEmulatorRuntimeT
             $"INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('{TestMessage}', '00000000-0000-0000-0000-000000000001', NOW())",
             async args =>
             {
-               var result = await RuntimeContainerClient.RunAsync(default, args);
-               System.Console.WriteLine(result.Output);
-               return result.ExitCode;
+               var results = await RuntimeContainerClient.RunManyAsync(2, default, args);
+               foreach (var result in results)
+               {
+                   System.Console.WriteLine(result.Output);
+               }
+               return results.Max(result => result.ExitCode);
             });
     }
 }

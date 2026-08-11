@@ -34,6 +34,12 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         return Path.Combine(root, $"{prefix}-{Guid.NewGuid():N}");
     }
 
+    private static bool PreserveRuntimeContainerArtifacts =>
+        string.Equals(
+            Environment.GetEnvironmentVariable("SBM_RUNTIME_CONTAINER_MODE"),
+            "true",
+            StringComparison.OrdinalIgnoreCase);
+
     protected async Task RunThreadedRuntimeTestAsync(
         string platform,
         string server,
@@ -112,7 +118,7 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         finally
         {
             Environment.SetEnvironmentVariable("SBM_BLOB_ENDPOINT", previousBlobEndpoint);
-            if (Directory.Exists(testDirectory))
+            if (Directory.Exists(testDirectory) && !PreserveRuntimeContainerArtifacts)
             {
                 Directory.Delete(testDirectory, recursive: true);
             }
@@ -203,7 +209,7 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         finally
         {
             Environment.SetEnvironmentVariable("SBM_BLOB_ENDPOINT", previousBlobEndpoint);
-            if (Directory.Exists(testDirectory))
+            if (Directory.Exists(testDirectory) && !PreserveRuntimeContainerArtifacts)
             {
                 Directory.Delete(testDirectory, recursive: true);
             }
@@ -328,7 +334,7 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         finally
         {
             Environment.SetEnvironmentVariable("SBM_BLOB_ENDPOINT", previousBlobEndpoint);
-            if (Directory.Exists(testDirectory))
+            if (Directory.Exists(testDirectory) && !PreserveRuntimeContainerArtifacts)
             {
                 Directory.Delete(testDirectory, recursive: true);
             }
