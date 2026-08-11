@@ -105,4 +105,51 @@ public class LocalContainerEmulatorRuntimeTests : LocalContainerEmulatorRuntimeT
             60,
             args => rootCommand.Parse(args).InvokeAsync());
     }
+
+    [TestMethod]
+    [TestCategory("RuntimeContainer")]
+    public async Task ProductionRuntimeContainer_ThreadedRun_UpdatesDatabasesAndEmulators()
+    {
+        if (!LocalContainerTestEnvironment.EmulatorsConfigured ||
+            !string.Equals(Environment.GetEnvironmentVariable("SBM_RUNTIME_CONTAINER_MODE"), "true", StringComparison.OrdinalIgnoreCase))
+        {
+            Assert.Inconclusive("Runtime-container tests require the local emulators and SBM_RUNTIME_CONTAINER_MODE=true.");
+        }
+
+        var databases = Enumerable.Range(1, 20).Select(index => $"sbm_pg_runtime_{index:00}").ToArray();
+        await using (var admin = new NpgsqlConnection($"Host={Server};Database=postgres;Username={User};Password={Password}"))
+        {
+            await admin.OpenAsync();
+            foreach (var database in databases)
+            {
+               await using var command = admin.CreateCommand();
+               command.CommandText = $"CREATE DATABASE \"{database}\"";
+               try
+               {
+                   await command.ExecuteNonQueryAsync();
+               }
+               catch (PostgresException ex) when (ex.SqlState == "42P04")
+               {
+               }
+            }
+        }
+
+        await RunThreadedRuntimeTestAsync(
+            "PostgreSQL", Server, databases, User, Password, "sbm-pg-runtime", "Count", 4,
+            database => new NpgsqlConnection($"Host={Server};Database={database};Username={User};Password={Password}"),
+            """
+            CREATE TABLE IF NOT EXISTS transactiontest (
+               message varchar(500),
+               guid uuid,
+               datetimestamp timestamp
+            )
+            """,
+            $"INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('{TestMessage}', '00000000-0000-0000-0000-000000000001', NOW())",
+            async args =>
+            {
+               var result = await RuntimeContainerClient.RunAsync(default, args);
+               System.Console.WriteLine(result.Output);
+               return result.ExitCode;
+            });
+    }
 }

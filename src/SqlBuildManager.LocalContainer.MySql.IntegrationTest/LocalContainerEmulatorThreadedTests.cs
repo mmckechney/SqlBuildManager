@@ -81,4 +81,39 @@ public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntime
             60,
             args => rootCommand.Parse(args).InvokeAsync());
     }
+
+    [TestMethod]
+    [TestCategory("RuntimeContainer")]
+    public async Task ProductionRuntimeContainer_ThreadedRun_UpdatesDatabasesAndEmulators()
+    {
+        if (!LocalContainerTestEnvironment.EmulatorsConfigured ||
+            !string.Equals(Environment.GetEnvironmentVariable("SBM_RUNTIME_CONTAINER_MODE"), "true", StringComparison.OrdinalIgnoreCase))
+        {
+            Assert.Inconclusive("Runtime-container tests require the local emulators and SBM_RUNTIME_CONTAINER_MODE=true.");
+        }
+
+        var databases = Enumerable.Range(1, 20).Select(index => $"sbm_mysql_runtime_{index:00}").ToArray();
+        await using (var admin = new MySqlConnection($"Server={Server};Database=mysql;User ID={User};Password={Password}"))
+        {
+            await admin.OpenAsync();
+            foreach (var database in databases)
+            {
+               await using var command = admin.CreateCommand();
+               command.CommandText = $"CREATE DATABASE IF NOT EXISTS `{database}`";
+               await command.ExecuteNonQueryAsync();
+            }
+        }
+
+        await RunThreadedRuntimeTestAsync(
+            "MySQL", Server, databases, User, Password, "sbm-mysql-runtime", "Count", 4,
+            database => new MySqlConnection($"Server={Server};Database={database};User ID={User};Password={Password}"),
+            "CREATE TABLE IF NOT EXISTS transactiontest (message varchar(500), guid char(36), datetimestamp datetime)",
+            $"INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('{TestMessage}', UUID(), NOW())",
+            async args =>
+            {
+               var result = await RuntimeContainerClient.RunAsync(default, args);
+               System.Console.WriteLine(result.Output);
+               return result.ExitCode;
+            });
+    }
 }

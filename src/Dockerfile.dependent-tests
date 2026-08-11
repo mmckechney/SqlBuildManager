@@ -83,7 +83,7 @@ RUN dotnet build SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/SqlBuildMana
 FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:ed034a8bf0b24ded0cbbac07e17825d8e9ebfe21e308191d0f7421eaf5ad4664 AS testrunner
 RUN sed -i 's|http://archive.ubuntu.com|https://archive.ubuntu.com|g; s|http://security.ubuntu.com|https://security.ubuntu.com|g' /etc/apt/sources.list.d/ubuntu.sources && \
     apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates curl apt-transport-https gnupg && \
+    apt-get install -y --no-install-recommends ca-certificates curl apt-transport-https gnupg docker.io && \
     mkdir -p /etc/apt/keyrings && \
     curl -sLS https://packages.microsoft.com/keys/microsoft.asc | \
       gpg --dearmor -o /etc/apt/keyrings/microsoft.gpg && \

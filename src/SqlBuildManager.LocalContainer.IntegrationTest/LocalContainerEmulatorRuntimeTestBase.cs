@@ -23,6 +23,17 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
     private const string StorageAccount = "devstoreaccount1";
     private const string StorageKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
 
+    private static string CreateTestDirectory(string prefix)
+    {
+        var root = string.Equals(
+            Environment.GetEnvironmentVariable("SBM_RUNTIME_CONTAINER_MODE"),
+            "true",
+            StringComparison.OrdinalIgnoreCase)
+            ? "/tests/TestResults"
+            : Directory.GetCurrentDirectory();
+        return Path.Combine(root, $"{prefix}-{Guid.NewGuid():N}");
+    }
+
     protected async Task RunThreadedRuntimeTestAsync(
         string platform,
         string server,
@@ -38,7 +49,7 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         Func<string[], Task<int>> invokeCommandAsync)
     {
         var previousBlobEndpoint = Environment.GetEnvironmentVariable("SBM_BLOB_ENDPOINT");
-        var testDirectory = Path.Combine(Directory.GetCurrentDirectory(), $"local-{platform}-runtime-{Guid.NewGuid():N}");
+        var testDirectory = CreateTestDirectory($"local-{platform}-runtime");
         var packagePath = Path.Combine(testDirectory, "package.sbm");
         var overridePath = Path.Combine(testDirectory, "targets.cfg");
 
@@ -129,7 +140,7 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         Func<string[], Task<int>> invokeCommandAsync)
     {
         var previousBlobEndpoint = Environment.GetEnvironmentVariable("SBM_BLOB_ENDPOINT");
-        var testDirectory = Path.Combine(Directory.GetCurrentDirectory(), $"local-{platform}-longrunning-{Guid.NewGuid():N}");
+        var testDirectory = CreateTestDirectory($"local-{platform}-longrunning");
         var packagePath = Path.Combine(testDirectory, "package.sbm");
         var overridePath = Path.Combine(testDirectory, "targets.cfg");
 
@@ -261,7 +272,7 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         Func<string, Task> verifyDatabaseAsync)
     {
         var previousBlobEndpoint = Environment.GetEnvironmentVariable("SBM_BLOB_ENDPOINT");
-        var testDirectory = Path.Combine(Directory.GetCurrentDirectory(), $"local-{platform}-dacpac-{Guid.NewGuid():N}");
+        var testDirectory = CreateTestDirectory($"local-{platform}-dacpac");
         var overridePath = Path.Combine(testDirectory, "targets.cfg");
 
         Environment.SetEnvironmentVariable("SBM_BLOB_ENDPOINT", LocalContainerTestEnvironment.BlobEndpoint);

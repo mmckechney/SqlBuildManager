@@ -1,4 +1,11 @@
 services:
+  runtime-image:
+    build:
+      context: ../../../src
+      dockerfile: Dockerfile
+    image: ${SBM_RUNTIME_IMAGE:-sbm-local-runtime}
+    profiles: ["runtime-image"]
+
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2025-latest
     profiles: ["sqlserver"]
@@ -51,11 +58,16 @@ services:
       SBM_TEST_EVENTHUB_NAME: ${SBM_TEST_EVENTHUB_NAME:-sbm-events}
       SBM_TEST_SERVICEBUS_CONNECTION_STRING: ${SBM_TEST_SERVICEBUS_CONNECTION_STRING:-}
       TEST_FILTER: ${TEST_FILTER:-}
+      SBM_RUNTIME_IMAGE: ${SBM_RUNTIME_IMAGE:-sbm-local-runtime}
+      SBM_RUNTIME_NETWORK: ${SBM_RUNTIME_NETWORK:-}
+      SBM_TEST_RESULTS_VOLUME: ${SBM_TEST_RESULTS_VOLUME:-sbm-local-test-results}
+      SBM_RUNTIME_CONTAINER_MODE: ${SBM_RUNTIME_CONTAINER_MODE:-}
     depends_on:
       sqlserver:
         condition: service_healthy
     volumes:
-      - ${SBM_LOCAL_TEST_RESULTS:-../../testresults}:/tests/TestResults
+      - test-results:/tests/TestResults
+      - /var/run/docker.sock:/var/run/docker.sock
 
   test-postgresql:
     build:
@@ -73,11 +85,16 @@ services:
       SBM_TEST_EVENTHUB_NAME: ${SBM_TEST_EVENTHUB_NAME:-sbm-events}
       SBM_TEST_SERVICEBUS_CONNECTION_STRING: ${SBM_TEST_SERVICEBUS_CONNECTION_STRING:-}
       TEST_FILTER: ${TEST_FILTER:-}
+      SBM_RUNTIME_IMAGE: ${SBM_RUNTIME_IMAGE:-sbm-local-runtime}
+      SBM_RUNTIME_NETWORK: ${SBM_RUNTIME_NETWORK:-}
+      SBM_TEST_RESULTS_VOLUME: ${SBM_TEST_RESULTS_VOLUME:-sbm-local-test-results}
+      SBM_RUNTIME_CONTAINER_MODE: ${SBM_RUNTIME_CONTAINER_MODE:-}
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
-      - ${SBM_LOCAL_TEST_RESULTS:-../../testresults}:/tests/TestResults
+      - test-results:/tests/TestResults
+      - /var/run/docker.sock:/var/run/docker.sock
 
   test-mysql:
     build:
@@ -95,11 +112,16 @@ services:
       SBM_TEST_EVENTHUB_NAME: ${SBM_TEST_EVENTHUB_NAME:-sbm-events}
       SBM_TEST_SERVICEBUS_CONNECTION_STRING: ${SBM_TEST_SERVICEBUS_CONNECTION_STRING:-}
       TEST_FILTER: ${TEST_FILTER:-}
+      SBM_RUNTIME_IMAGE: ${SBM_RUNTIME_IMAGE:-sbm-local-runtime}
+      SBM_RUNTIME_NETWORK: ${SBM_RUNTIME_NETWORK:-}
+      SBM_TEST_RESULTS_VOLUME: ${SBM_TEST_RESULTS_VOLUME:-sbm-local-test-results}
+      SBM_RUNTIME_CONTAINER_MODE: ${SBM_RUNTIME_CONTAINER_MODE:-}
     depends_on:
       mysql:
         condition: service_healthy
     volumes:
-      - ${SBM_LOCAL_TEST_RESULTS:-../../testresults}:/tests/TestResults
+      - test-results:/tests/TestResults
+      - /var/run/docker.sock:/var/run/docker.sock
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite:3.36.0
@@ -155,3 +177,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 30
+
+volumes:
+  test-results:
+    name: ${SBM_TEST_RESULTS_VOLUME:-sbm-local-test-results}

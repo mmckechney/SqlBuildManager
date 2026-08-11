@@ -86,6 +86,42 @@ public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntime
     }
 
     [TestMethod]
+    [TestCategory("RuntimeContainer")]
+    public async Task ProductionRuntimeContainer_ThreadedRun_UpdatesDatabasesAndEmulators()
+    {
+        if (!LocalContainerTestEnvironment.EmulatorsConfigured ||
+            !string.Equals(Environment.GetEnvironmentVariable("SBM_RUNTIME_CONTAINER_MODE"), "true", StringComparison.OrdinalIgnoreCase))
+        {
+            Assert.Inconclusive("Runtime-container tests require the local emulators and SBM_RUNTIME_CONTAINER_MODE=true.");
+        }
+
+        var databases = Enumerable.Range(1, 20).Select(index => $"sbm_sql_runtime_{index:00}").ToArray();
+        await using (var admin = new SqlConnection($"Server={Server};Database=master;User Id={User};Password={Password};TrustServerCertificate=True"))
+        {
+            await admin.OpenAsync();
+            foreach (var database in databases)
+            {
+               await using var command = admin.CreateCommand();
+               command.CommandText = $"IF DB_ID('{database}') IS NULL CREATE DATABASE [{database}]";
+               await command.ExecuteNonQueryAsync();
+            }
+        }
+
+        var jobName = "sbm-sql-runtime";
+        await RunThreadedRuntimeTestAsync(
+            "SqlServer", Server, databases, User, Password, jobName, "Count", 4,
+            database => new SqlConnection($"Server={Server};Database={database};User Id={User};Password={Password};TrustServerCertificate=True"),
+            "IF OBJECT_ID('transactiontest', 'U') IS NULL CREATE TABLE transactiontest (message nvarchar(500), guid uniqueidentifier, datetimestamp datetime2)",
+            $"INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('{TestMessage}', NEWID(), SYSUTCDATETIME())",
+            async args =>
+            {
+                var result = await RuntimeContainerClient.RunAsync(default, args);
+                System.Console.WriteLine(result.Output);
+                return result.ExitCode;
+            });
+    }
+
+    [TestMethod]
     [DataRow("Count", 1)]
     [DataRow("MaxPerServer", 3)]
     public async Task ACI_Queue_DacpacSource_KeyVault_Secrets_Success(string concurrencyType, int concurrency)
