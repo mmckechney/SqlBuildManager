@@ -108,6 +108,222 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         }
     }
 
+    /// <summary>
+    /// Local-container equivalent of Aci_Queue_LongRunning_SBMSource_ByConcurrencyType_Success: builds a package
+    /// whose single script sleeps for a platform-appropriate duration before completing, then runs it through
+    /// `threaded run` (the local analog of `aci run` since no container orchestration is exercised locally).
+    /// </summary>
+    protected async Task RunLongRunningRuntimeTestAsync(
+        string platform,
+        string server,
+        IReadOnlyList<string> databases,
+        string user,
+        string password,
+        string jobName,
+        string concurrencyType,
+        int concurrency,
+        Func<string, DbConnection> createConnection,
+        string createTableSql,
+        string longRunningSql,
+        int scriptTimeoutSeconds,
+        Func<string[], Task<int>> invokeCommandAsync)
+    {
+        var previousBlobEndpoint = Environment.GetEnvironmentVariable("SBM_BLOB_ENDPOINT");
+        var testDirectory = Path.Combine(Directory.GetCurrentDirectory(), $"local-{platform}-longrunning-{Guid.NewGuid():N}");
+        var packagePath = Path.Combine(testDirectory, "package.sbm");
+        var overridePath = Path.Combine(testDirectory, "targets.cfg");
+
+        Environment.SetEnvironmentVariable("SBM_BLOB_ENDPOINT", LocalContainerTestEnvironment.BlobEndpoint);
+        Directory.CreateDirectory(testDirectory);
+        try
+        {
+            foreach (var database in databases)
+            {
+                await EnsureDatabaseAsync(createConnection, database, createTableSql);
+            }
+
+            CreateLongRunningPackage(packagePath, databases[0], longRunningSql, scriptTimeoutSeconds);
+            await File.WriteAllLinesAsync(overridePath, databases.Select(database => $"{server}:{database},{database}"));
+            await EnsureServiceBusSubscriptionAsync(jobName, concurrencyType);
+            await SeedServiceBusMessagesAsync(server, databases[0], databases, jobName, concurrencyType);
+            var eventHubStart = DateTimeOffset.UtcNow;
+
+            var argList = new List<string>
+            {
+                "--loglevel", "debug", "threaded", "run",
+                "--rootloggingpath", Path.Combine(testDirectory, "logs"),
+                "--transactional", "false", "--trial", "false", "--timeoutretrycount", "0",
+                "--concurrency", concurrency.ToString(), "--concurrencytype", concurrencyType,
+                "--override", overridePath, "--packagename", packagePath, "--jobname", jobName,
+                "--storageaccountname", StorageAccount, "--storageaccountkey", StorageKey,
+                "--eventhubconnection", LocalContainerTestEnvironment.EventHubConnectionString,
+                "--eventhublogging", "IndividualScriptResults",
+                "--servicebustopicconnection", LocalContainerTestEnvironment.ServiceBusConnectionString,
+                "--authtype", "Password", "--username", user, "--password", password,
+                "--platform", platform, "--monitor", "true", "--stream"
+            };
+
+            if (platform.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
+            {
+                // The local SQL Server emulator container uses a self-signed certificate; trust it
+                // explicitly rather than requiring full chain validation like a production server would need.
+                argList.AddRange(new[] { "--trustservercertificate", "true" });
+            }
+
+            var args = argList.ToArray();
+
+            if (await invokeCommandAsync(args) != 0)
+            {
+                throw new InvalidOperationException($"{platform} long-running threaded run failed.");
+            }
+
+            foreach (var database in databases)
+            {
+                if (await CountRowsAsync(createConnection, database) < 1)
+                {
+                    throw new InvalidOperationException($"{platform} long-running threaded run did not update {database}.");
+                }
+            }
+
+            await AssertBlobEffectAsync(jobName);
+            await AssertEventHubEffectAsync(jobName, databases.Count, eventHubStart);
+            await AssertServiceBusEffectAsync(jobName, concurrencyType);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("SBM_BLOB_ENDPOINT", previousBlobEndpoint);
+            if (Directory.Exists(testDirectory))
+            {
+                Directory.Delete(testDirectory, recursive: true);
+            }
+        }
+    }
+
+    private static void CreateLongRunningPackage(string path, string database, string longRunningSql, int scriptTimeoutSeconds)
+    {
+        using var archive = ZipFile.Open(path, ZipArchiveMode.Create);
+        AddEntry(archive, "Long Running Local Emulator Test.sql", longRunningSql);
+        AddEntry(archive, "SqlSyncBuildHistory.xml", "<?xml version=\"1.0\" standalone=\"yes\"?><SqlSyncBuildHistory />");
+        AddEntry(archive, "SqlSyncBuildProject.xml", $"""
+            <?xml version="1.0" standalone="yes"?>
+            <SqlSyncBuildData xmlns="http://schemas.mckechney.com/SqlSyncBuildProject.xsd">
+              <SqlSyncBuildProject ProjectName="" ScriptTagRequired="true">
+                <Scripts>
+                  <Script FileName="Long Running Local Emulator Test.sql" BuildOrder="1" Description="" RollBackOnError="true" CausesBuildFailure="true" ScriptId="00000000-0000-0000-0000-000000000003" Database="{database}" StripTransactionText="true" AllowMultipleRuns="true" AddedBy="local-test" ScriptTimeOut="{scriptTimeoutSeconds}" Tag="Default" />
+                </Scripts>
+                <Builds />
+              </SqlSyncBuildProject>
+            </SqlSyncBuildData>
+            """);
+    }
+
+    private static async Task SetPackageDatabaseAsync(string packagePath, string database)
+    {
+        using var archive = ZipFile.Open(packagePath, ZipArchiveMode.Update);
+        var xmlEntries = archive.Entries
+            .Where(entry => entry.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        if (xmlEntries.Length == 0)
+        {
+            throw new InvalidOperationException("The generated DACPAC package does not contain XML project metadata.");
+        }
+
+        foreach (var entry in xmlEntries)
+        {
+            string xml;
+            await using (var stream = entry.Open())
+            using (var reader = new StreamReader(stream))
+            {
+                xml = await reader.ReadToEndAsync();
+            }
+
+            entry.Delete();
+            var replacement = archive.CreateEntry(entry.FullName);
+            await using var replacementStream = replacement.Open();
+            await using var writer = new StreamWriter(replacementStream);
+            await writer.WriteAsync(xml.Replace("client", database, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    protected async Task RunThreadedDacpacRuntimeTestAsync(
+        string platform,
+        string server,
+        IReadOnlyList<string> databases,
+        string user,
+        string password,
+        string jobName,
+        string concurrencyType,
+        int concurrency,
+        string dacpacPath,
+        string packagePath,
+        bool forceCustomDacpac,
+        Func<string[], Task<int>> invokeCommandAsync,
+        Func<string, Task> verifyDatabaseAsync)
+    {
+        var previousBlobEndpoint = Environment.GetEnvironmentVariable("SBM_BLOB_ENDPOINT");
+        var testDirectory = Path.Combine(Directory.GetCurrentDirectory(), $"local-{platform}-dacpac-{Guid.NewGuid():N}");
+        var overridePath = Path.Combine(testDirectory, "targets.cfg");
+
+        Environment.SetEnvironmentVariable("SBM_BLOB_ENDPOINT", LocalContainerTestEnvironment.BlobEndpoint);
+        Directory.CreateDirectory(testDirectory);
+        try
+        {
+            await SetPackageDatabaseAsync(packagePath, databases[0]);
+            await File.WriteAllLinesAsync(overridePath, databases.Select(database => $"{server}:{database},{database}"));
+            await EnsureServiceBusSubscriptionAsync(jobName, concurrencyType);
+            await SeedServiceBusMessagesAsync(server, databases[0], databases, jobName, concurrencyType);
+            var eventHubStart = DateTimeOffset.UtcNow;
+
+            var argList = new List<string>
+            {
+                "--loglevel", "debug", "threaded", "run",
+                "--rootloggingpath", Path.Combine(testDirectory, "logs"),
+                "--transactional", "false", "--trial", "false", "--timeoutretrycount", "0",
+                "--concurrency", concurrency.ToString(), "--concurrencytype", concurrencyType,
+                "--override", overridePath, "--packagename", packagePath,
+                "--platinumdacpac", dacpacPath, "--jobname", jobName,
+                "--storageaccountname", StorageAccount, "--storageaccountkey", StorageKey,
+                "--eventhubconnection", LocalContainerTestEnvironment.EventHubConnectionString,
+                "--eventhublogging", "IndividualScriptResults",
+                "--servicebustopicconnection", LocalContainerTestEnvironment.ServiceBusConnectionString,
+                "--authtype", "Password", "--username", user, "--password", password,
+                "--platform", platform, "--monitor", "true", "--stream"
+            };
+
+            if (forceCustomDacpac)
+            {
+                argList.AddRange(new[] { "--forcecustomdacpac", "true" });
+            }
+
+            if (platform.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
+            {
+                argList.AddRange(new[] { "--trustservercertificate", "true" });
+            }
+
+            if (await invokeCommandAsync(argList.ToArray()) != 0)
+            {
+                throw new InvalidOperationException($"{platform} DACPAC threaded run failed.");
+            }
+
+            foreach (var database in databases)
+            {
+                await verifyDatabaseAsync(database);
+            }
+
+            await AssertBlobEffectAsync(jobName);
+            await AssertEventHubEffectAsync(jobName, databases.Count, eventHubStart);
+            await AssertServiceBusEffectAsync(jobName, concurrencyType);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("SBM_BLOB_ENDPOINT", previousBlobEndpoint);
+            if (Directory.Exists(testDirectory))
+            {
+                Directory.Delete(testDirectory, recursive: true);
+            }
+        }
+    }
+
     private static async Task EnsureDatabaseAsync(Func<string, DbConnection> createConnection, string database, string sql)
     {
         await using var connection = createConnection(database);

@@ -74,7 +74,7 @@ namespace SqlBuildManager.Console.CommandLine
 
                 };
                 cmd.SetAction((parseResult) => {
-                    var outputsbm = parseResult.GetValue(outputsbmOption);
+                    var outputsbm = parseResult.GetValue(outputsbmRequiredOption);
                     var platinumdacpac = parseResult.GetValue(platinumdacpacSourceOption);
                     var targetdacpac = parseResult.GetValue(targetdacpacSourceOption);
                     var allowObjectDelete = parseResult.GetValue(allowForObjectDeletionOption);
