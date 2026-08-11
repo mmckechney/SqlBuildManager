@@ -11,6 +11,7 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $composeFile = Join-Path $PSScriptRoot "local-container\docker-compose.yml"
 $projectName = "sbm-local-$Platform"
 $runtimeImage = "sbm-local-runtime"
+$testImage = "sbm-local-test-$Platform"
 $runtimeNetwork = "${projectName}_default"
 $resultsVolume = "${projectName}-test-results"
 $results = Join-Path $PSScriptRoot "testresults"
@@ -22,6 +23,7 @@ New-Item -ItemType Directory -Force -Path $runResults | Out-Null
 $env:SBM_TEST_PLATFORM = $Platform
 $env:SBM_LOCAL_TEST_RESULTS = $runResults
 $env:SBM_RUNTIME_IMAGE = $runtimeImage
+$env:SBM_TEST_IMAGE = $testImage
 $env:SBM_RUNTIME_NETWORK = $runtimeNetwork
 $env:SBM_TEST_RESULTS_VOLUME = $resultsVolume
 if ($Filter) { $env:TEST_FILTER = $Filter }
@@ -42,9 +44,27 @@ if ($IncludeEmulators) { $profiles += @("--profile", "emulators") }
 try {
     & docker compose -p $projectName -f $composeFile @profiles config --quiet
     if ($LASTEXITCODE -ne 0) { throw "docker compose config validation failed." }
-    & docker compose -p $projectName -f $composeFile build runtime-image
-    if ($LASTEXITCODE -ne 0) { throw "The production runtime image build failed." }
-    & docker compose -p $projectName -f $composeFile @profiles up --build --abort-on-container-exit --exit-code-from "test-$Platform"
+    & docker image inspect $runtimeImage *> $null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Building missing production runtime image: $runtimeImage"
+        & docker compose -p $projectName -f $composeFile build runtime-image
+        if ($LASTEXITCODE -ne 0) { throw "The production runtime image build failed." }
+    }
+    else {
+        Write-Host "Using existing production runtime image: $runtimeImage"
+    }
+
+    & docker image inspect $testImage *> $null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Building missing test-runner image: $testImage"
+        & docker compose -p $projectName -f $composeFile @profiles build "test-$Platform"
+        if ($LASTEXITCODE -ne 0) { throw "The test-runner image build failed." }
+    }
+    else {
+        Write-Host "Using existing test-runner image: $testImage"
+    }
+
+    & docker compose -p $projectName -f $composeFile @profiles up --abort-on-container-exit --exit-code-from "test-$Platform"
     $exitCode = $LASTEXITCODE
 }
 finally {
@@ -59,7 +79,7 @@ finally {
         Tee-Object -FilePath (Join-Path $runResults "runtime-container-volume-copy.log")
     & docker compose -p $projectName -f $composeFile @profiles down --volumes --remove-orphans
     Remove-Item Env:SBM_LOCAL_TEST_RESULTS -ErrorAction SilentlyContinue
-    Remove-Item Env:SBM_RUNTIME_IMAGE, Env:SBM_RUNTIME_NETWORK, Env:SBM_TEST_RESULTS_VOLUME -ErrorAction SilentlyContinue
+    Remove-Item Env:SBM_RUNTIME_IMAGE, Env:SBM_TEST_IMAGE, Env:SBM_RUNTIME_NETWORK, Env:SBM_TEST_RESULTS_VOLUME -ErrorAction SilentlyContinue
     Remove-Item Env:SBM_RUNTIME_CONTAINER_MODE -ErrorAction SilentlyContinue
 }
 exit $exitCode
