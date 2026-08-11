@@ -70,7 +70,7 @@ public class LocalContainerEmulatorThreadedTests
                 "--loglevel", "debug",
                 "threaded", "run",
                 "--rootloggingpath", loggingPath,
-                "--transactional", "false",
+                "--transactional", "true",
                 "--trial", "false",
                 "--override", overridePath,
                 "--packagename", packagePath,

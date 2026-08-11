@@ -78,7 +78,7 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
             {
                 "--loglevel", "debug", "threaded", "run",
                 "--rootloggingpath", Path.Combine(testDirectory, "logs"),
-                "--transactional", "false", "--trial", "false", "--timeoutretrycount", "0",
+                "--transactional", "true", "--trial", "false", "--timeoutretrycount", "0",
                 "--concurrency", concurrency.ToString(), "--concurrencytype", concurrencyType,
                 "--override", overridePath, "--packagename", packagePath, "--jobname", jobName,
                 "--storageaccountname", StorageAccount, "--storageaccountkey", StorageKey,
@@ -169,7 +169,7 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
             {
                 "--loglevel", "debug", "threaded", "run",
                 "--rootloggingpath", Path.Combine(testDirectory, "logs"),
-                "--transactional", "false", "--trial", "false", "--timeoutretrycount", "0",
+                "--transactional", "true", "--trial", "false", "--timeoutretrycount", "0",
                 "--concurrency", concurrency.ToString(), "--concurrencytype", concurrencyType,
                 "--override", overridePath, "--packagename", packagePath, "--jobname", jobName,
                 "--storageaccountname", StorageAccount, "--storageaccountkey", StorageKey,
@@ -295,7 +295,7 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
             {
                 "--loglevel", "debug", "threaded", "run",
                 "--rootloggingpath", Path.Combine(testDirectory, "logs"),
-                "--transactional", "false", "--trial", "false", "--timeoutretrycount", "0",
+                "--transactional", "true", "--trial", "false", "--timeoutretrycount", "0",
                 "--concurrency", concurrency.ToString(), "--concurrencytype", concurrencyType,
                 "--override", overridePath, "--packagename", packagePath,
                 "--platinumdacpac", dacpacPath, "--jobname", jobName,
