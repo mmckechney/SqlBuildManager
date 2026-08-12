@@ -59,8 +59,9 @@ public static class RuntimeContainerClient
         var image = RequiredEnvironment("SBM_RUNTIME_IMAGE");
         var network = RequiredEnvironment("SBM_RUNTIME_NETWORK");
         var volume = RequiredEnvironment("SBM_TEST_RESULTS_VOLUME");
+        var platform = Environment.GetEnvironmentVariable("SBM_TEST_PLATFORM") ?? "unknown";
         var blobEndpoint = Environment.GetEnvironmentVariable("SBM_BLOB_ENDPOINT");
-        var name = $"sbm-runtime-test-{Guid.NewGuid():N}";
+        var name = $"sbm-runtime-{platform}-{Guid.NewGuid():N}";
 
         var startInfo = new ProcessStartInfo
         {
@@ -73,6 +74,8 @@ public static class RuntimeContainerClient
         foreach (var value in new[]
         {
             "run", "--rm", "--name", name, "--network", network,
+            "--label", $"com.sqlbuildmanager.role=runtime",
+            "--label", $"com.sqlbuildmanager.platform={platform}",
             "--mount", $"type=volume,source={volume},target=/tests/TestResults",
         })
         {
