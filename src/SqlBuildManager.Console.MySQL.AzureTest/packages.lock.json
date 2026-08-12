@@ -80,9 +80,9 @@
       },
       "System.CommandLine": {
         "type": "Direct",
-        "requested": "[2.0.10, )",
-        "resolved": "2.0.10",
-        "contentHash": "6i1D6/U3i1f/PiXTt9pDvbJwdXEe0F2DZPup6BHzeIu5yPk/lkFzgtrJnPbj54JWUh8Y9vJeKG/TZIT6MkF8TA=="
+        "requested": "[2.0.11, )",
+        "resolved": "2.0.11",
+        "contentHash": "Pmg3/T0M37ZS3ovwPHtfBNTCdqNpnxo+tnZMg8JDHVR0qD8KwcPUKlheEiZysb1En8IyH7yDoa9QDq97Ny/vhQ=="
       },
       "Azure.Core.Amqp": {
         "type": "Transitive",
@@ -731,7 +731,7 @@
           "SqlBuildManager.Logging": "[1.0.0, )",
           "SqlBuildManager.ObjectScript": "[1.0.0, )",
           "SqlBuildManager.SqlBuild": "[1.0.0, )",
-          "System.CommandLine": "[2.0.10, )",
+          "System.CommandLine": "[2.0.11, )",
           "System.DirectoryServices": "[10.0.10, )",
           "System.Memory.Data": "[10.0.10, )",
           "YamlDotNet": "[18.1.0, )",
@@ -759,7 +759,7 @@
           "Microsoft.Extensions.Logging": "[10.0.10, )",
           "Microsoft.NET.Test.Sdk": "[18.8.1, )",
           "SqlBuildManager.SqlBuild": "[1.0.0, )",
-          "System.CommandLine": "[2.0.10, )",
+          "System.CommandLine": "[2.0.11, )",
           "YamlDotNet": "[18.1.0, )",
           "sbm": "[1.0.0, )"
         }
