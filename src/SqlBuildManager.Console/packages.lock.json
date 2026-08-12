@@ -397,9 +397,9 @@
       },
       "System.DirectoryServices": {
         "type": "Direct",
-        "requested": "[10.0.10, )",
-        "resolved": "10.0.10",
-        "contentHash": "wedXPKcfkebHfYnK0uY01SRTsK5bB+uh1CxZFf7R9zlD/tLwnjnRHWwllEXo2W+a6iFBs6JK9uh6ewzA16sEQg=="
+        "requested": "[10.0.11, )",
+        "resolved": "10.0.11",
+        "contentHash": "kj7evAu1OcxBg2KOXWDgbLt12100t+1rlKk6M9/F/lK1NF68me6iQ/x9rJ8xEEt7AtVj4lMUFD/nr6N5zcQBKw=="
       },
       "System.Memory.Data": {
         "type": "Direct",
@@ -986,7 +986,7 @@
           "SqlBuildManager.Logging": "[1.0.0, )",
           "SqlBuildManager.ScriptHandling": "[1.0.0, )",
           "SqlBuildManager.SqlBuild": "[1.0.0, )",
-          "System.DirectoryServices": "[10.0.10, )"
+          "System.DirectoryServices": "[10.0.11, )"
         }
       },
       "sqlbuildmanager.interfaces": {
