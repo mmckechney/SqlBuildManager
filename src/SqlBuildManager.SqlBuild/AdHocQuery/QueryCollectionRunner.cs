@@ -285,14 +285,16 @@ namespace SqlBuildManager.SqlBuild.AdHocQuery
             }
 
             ResultsTempFile = Path.Combine(tempWorkingDirectory, String.Format("Combined-{0}.txt", Guid.NewGuid().ToString()));
-            string tmpLine = null!;
+            string? tmpLine = null;
             using (StreamWriter sw = new StreamWriter(ResultsTempFile))
             {
                 using (StreamReader srShell = new StreamReader(tmpShell))
                 {
                     while (srShell.Peek() > 0)
                     {
-                        tmpLine = srShell.ReadLine()!;
+                        tmpLine = srShell.ReadLine();
+                        if (tmpLine == null)
+                            break;
                         if (tmpLine.Trim().StartsWith("<Results", StringComparison.InvariantCultureIgnoreCase))
                             break;
                         else
