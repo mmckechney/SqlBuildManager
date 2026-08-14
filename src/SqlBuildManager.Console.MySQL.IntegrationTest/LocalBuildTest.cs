@@ -58,6 +58,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
                 logLines
                     .Where(line => !string.IsNullOrWhiteSpace(line))
                     .Select(line => line.Contains("] ") ? line[(line.LastIndexOf("] ", StringComparison.Ordinal) + 2)..] : line)
+                    .Select(line => line.Contains(" - ", StringComparison.Ordinal) ? line[(line.IndexOf(" - ", StringComparison.Ordinal) + 3)..] : line)
                     .Distinct());
         }
 
