@@ -38,20 +38,20 @@ namespace SqlBuildManager.Console.PostgreSQL.IntegrationTest
         {
             System.Console.SetOut(new StringWriter(ConsoleOutput));
             ConsoleOutput.Clear();
-            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<LocalBuildTest>("SqlBuildManager.Console.PG.log", Path.GetTempPath());
         }
 
         private string GetExecutionLog(string loggingPath)
         {
-            var log = new StringBuilder(ConsoleOutput.ToString());
             if (Directory.Exists(loggingPath))
             {
-                foreach (string file in Directory.EnumerateFiles(loggingPath, "*.log", SearchOption.AllDirectories))
+                string[] files = Directory.EnumerateFiles(loggingPath, "*.log", SearchOption.AllDirectories).ToArray();
+                if (files.Length > 0)
                 {
-                    log.AppendLine(File.ReadAllText(file));
+                    return string.Join(Environment.NewLine, files.Select(File.ReadAllText));
                 }
             }
-            return log.ToString();
+
+            return ConsoleOutput.ToString();
         }
 
         [ClassCleanup()]
