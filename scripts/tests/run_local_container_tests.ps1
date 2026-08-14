@@ -3,10 +3,24 @@ param(
     [ValidateSet("sqlserver", "postgresql", "mysql")]
     [string] $Platform = "sqlserver",
     [string] $Filter,
-    [switch] $IncludeEmulators
+    [switch] $IncludeEmulators,
+    [string] $NuGetSource,
+    [switch] $RebuildImages
 )
 
 $ErrorActionPreference = "Stop"
+if (-not $NuGetSource) {
+    $nuGetConfigPath = Join-Path $env:APPDATA "NuGet\NuGet.Config"
+    if (Test-Path $nuGetConfigPath) {
+        [xml]$nuGetConfig = Get-Content $nuGetConfigPath
+        $proxySource = @($nuGetConfig.configuration.packageSources.add) |
+            Where-Object { $_.value -match "packagefeedproxy" } |
+            Select-Object -First 1
+        if ($proxySource) {
+            $NuGetSource = $proxySource.value
+        }
+    }
+}
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $composeFile = Join-Path $PSScriptRoot "local-container\docker-compose.yml"
 $projectName = "sbm-local-$Platform"
@@ -26,6 +40,9 @@ $env:SBM_RUNTIME_IMAGE = $runtimeImage
 $env:SBM_TEST_IMAGE = $testImage
 $env:SBM_RUNTIME_NETWORK = $runtimeNetwork
 $env:SBM_TEST_RESULTS_VOLUME = $resultsVolume
+if ($NuGetSource) {
+    $env:SBM_LOCAL_NUGET_SOURCE = $NuGetSource
+}
 if ($Filter) { $env:TEST_FILTER = $Filter }
 if ($Filter -match "RuntimeContainer") { $env:SBM_RUNTIME_CONTAINER_MODE = "true" }
 if ($IncludeEmulators) {
@@ -45,9 +62,9 @@ try {
     & docker compose -p $projectName -f $composeFile @profiles config --quiet
     if ($LASTEXITCODE -ne 0) { throw "docker compose config validation failed." }
     & docker image inspect $runtimeImage *> $null
-    if ($LASTEXITCODE -ne 0) {
+    if ($LASTEXITCODE -ne 0 -or $RebuildImages) {
         Write-Host "Building missing production runtime image: $runtimeImage"
-        & docker compose -p $projectName -f $composeFile build runtime-image
+        & docker compose -p $projectName -f $composeFile build $(if ($RebuildImages) { "--no-cache" }) runtime-image
         if ($LASTEXITCODE -ne 0) { throw "The production runtime image build failed." }
     }
     else {
@@ -55,9 +72,9 @@ try {
     }
 
     & docker image inspect $testImage *> $null
-    if ($LASTEXITCODE -ne 0) {
+    if ($LASTEXITCODE -ne 0 -or $RebuildImages) {
         Write-Host "Building missing test-runner image: $testImage"
-        & docker compose -p $projectName -f $composeFile @profiles build "test-$Platform"
+        & docker compose -p $projectName -f $composeFile @profiles build $(if ($RebuildImages) { "--no-cache" }) "test-$Platform"
         if ($LASTEXITCODE -ne 0) { throw "The test-runner image build failed." }
     }
     else {
@@ -80,6 +97,7 @@ finally {
     & docker compose -p $projectName -f $composeFile @profiles down --volumes --remove-orphans
     Remove-Item Env:SBM_LOCAL_TEST_RESULTS -ErrorAction SilentlyContinue
     Remove-Item Env:SBM_RUNTIME_IMAGE, Env:SBM_TEST_IMAGE, Env:SBM_RUNTIME_NETWORK, Env:SBM_TEST_RESULTS_VOLUME -ErrorAction SilentlyContinue
+    Remove-Item Env:SBM_LOCAL_NUGET_SOURCE -ErrorAction SilentlyContinue
     Remove-Item Env:SBM_RUNTIME_CONTAINER_MODE -ErrorAction SilentlyContinue
 }
 exit $exitCode

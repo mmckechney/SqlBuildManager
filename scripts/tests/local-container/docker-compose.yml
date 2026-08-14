@@ -3,6 +3,8 @@ services:
     build:
       context: ../../../src
       dockerfile: Dockerfile
+      args:
+        SBM_NUGET_SOURCE: ${SBM_LOCAL_NUGET_SOURCE:-}
     image: ${SBM_RUNTIME_IMAGE:-sbm-local-runtime}
     profiles: ["runtime-image"]
 
@@ -67,6 +69,8 @@ services:
     build:
       context: ../../../src
       dockerfile: Dockerfile.dependent-tests
+      args:
+        SBM_NUGET_SOURCE: ${SBM_LOCAL_NUGET_SOURCE:-}
     image: ${SBM_TEST_IMAGE:-sbm-local-test}
     profiles: ["sqlserver"]
     environment:
@@ -95,6 +99,8 @@ services:
     build:
       context: ../../../src
       dockerfile: Dockerfile.dependent-tests
+      args:
+        SBM_NUGET_SOURCE: ${SBM_LOCAL_NUGET_SOURCE:-}
     image: ${SBM_TEST_IMAGE:-sbm-local-test}
     profiles: ["postgresql"]
     environment:
@@ -123,6 +129,8 @@ services:
     build:
       context: ../../../src
       dockerfile: Dockerfile.dependent-tests
+      args:
+        SBM_NUGET_SOURCE: ${SBM_LOCAL_NUGET_SOURCE:-}
     image: ${SBM_TEST_IMAGE:-sbm-local-test}
     profiles: ["mysql"]
     environment:

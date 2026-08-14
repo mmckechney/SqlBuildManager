@@ -36,9 +36,22 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
-            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<LocalBuildTest>("SqlBuildManager.Console.MySQL.log", Path.GetTempPath());
             System.Console.SetOut(new StringWriter(ConsoleOutput));
             ConsoleOutput.Clear();
+            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<LocalBuildTest>("SqlBuildManager.Console.MySQL.log", Path.GetTempPath());
+        }
+
+        private string GetExecutionLog(string loggingPath)
+        {
+            var log = new StringBuilder(ConsoleOutput.ToString());
+            if (Directory.Exists(loggingPath))
+            {
+                foreach (string file in Directory.EnumerateFiles(loggingPath, "*.log", SearchOption.AllDirectories))
+                {
+                    log.AppendLine(File.ReadAllText(file));
+                }
+            }
+            return log.ToString();
         }
 
         [ClassCleanup()]
@@ -82,7 +95,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
                     Assert.Fail("Unable to complete test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = ConsoleOutput.ToString();
+                string executionLogFile = GetExecutionLog(loggingPath);
 
                 var regex = new Regex("Batch logging 1 script");
                 Assert.AreEqual(1, regex.Matches(executionLogFile).Count(), "Didn't find 1 script commit");
@@ -139,7 +152,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
                     Assert.Fail("Unable to complete test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = ConsoleOutput.ToString();
+                string executionLogFile = GetExecutionLog(loggingPath);
 
                 var regex = new Regex("Batch logging 1 script");
                 Assert.AreEqual(1, regex.Matches(executionLogFile).Count(), "Didn't find 1 script commit");
@@ -198,7 +211,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
                     Assert.Fail("Unable to complete test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = ConsoleOutput.ToString();
+                string executionLogFile = GetExecutionLog(loggingPath);
 
                 Assert.IsTrue(executionLogFile.Contains("Commit Successful"), "Didn't find successful commit message");
                 Assert.IsTrue(executionLogFile.Contains("BUILD_COMMITTED"), "Didn't find build committed message");
@@ -257,7 +270,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
                     Assert.Fail("Unable to complete test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = ConsoleOutput.ToString();
+                string executionLogFile = GetExecutionLog(loggingPath);
 
                 Assert.IsTrue(executionLogFile.Contains("Commit Successful"), "Didn't find successful commit message");
                 Assert.IsTrue(executionLogFile.Contains("BUILD_COMMITTED"), "Didn't find build committed message");
@@ -317,7 +330,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
                 Assert.AreEqual(0, actual, "Build with trial flag should complete without error");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = ConsoleOutput.ToString();
+                string executionLogFile = GetExecutionLog(loggingPath);
 
                 var regex = new Regex("Batch logging 1 script");
                 Assert.AreEqual(1, regex.Matches(executionLogFile).Count(), "Should process 1 script");
@@ -368,7 +381,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
             try
             {
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = ConsoleOutput.ToString();
+                string executionLogFile = GetExecutionLog(loggingPath);
 
                 Assert.IsTrue(
                     executionLogFile.Contains("Build Failed") || executionLogFile.Contains("Rolled Back"),
