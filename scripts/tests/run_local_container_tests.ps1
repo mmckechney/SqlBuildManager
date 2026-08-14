@@ -10,14 +10,23 @@ param(
 
 $ErrorActionPreference = "Stop"
 if (-not $NuGetSource) {
-    $nuGetConfigPath = Join-Path $env:APPDATA "NuGet\NuGet.Config"
-    if (Test-Path $nuGetConfigPath) {
-        [xml]$nuGetConfig = Get-Content $nuGetConfigPath
-        $proxySource = @($nuGetConfig.configuration.packageSources.add) |
-            Where-Object { $_.value -match "packagefeedproxy" } |
-            Select-Object -First 1
-        if ($proxySource) {
-            $NuGetSource = $proxySource.value
+    $nuGetConfigPaths = @()
+    if ($env:APPDATA) {
+        $nuGetConfigPaths += Join-Path $env:APPDATA "NuGet\NuGet.Config"
+    }
+    if ($HOME) {
+        $nuGetConfigPaths += Join-Path $HOME ".nuget/NuGet/NuGet.Config"
+    }
+    foreach ($nuGetConfigPath in $nuGetConfigPaths) {
+        if (Test-Path $nuGetConfigPath) {
+            [xml]$nuGetConfig = Get-Content $nuGetConfigPath
+            $proxySource = @($nuGetConfig.configuration.packageSources.add) |
+                Where-Object { $_.value -match "packagefeedproxy" } |
+                Select-Object -First 1
+            if ($proxySource) {
+                $NuGetSource = $proxySource.value
+                break
+            }
         }
     }
 }
