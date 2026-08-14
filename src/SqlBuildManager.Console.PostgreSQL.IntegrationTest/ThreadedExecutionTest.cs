@@ -352,7 +352,7 @@ namespace SqlBuildManager.Console.PostgreSQL.IntegrationTest
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.PG_InsertForThreadedTest);
 
-            string cfgContents = $"localhost:sbm_pg_test,sbm_pg_test\nlocalhost:sbm_pg_test,sbm_pg_test1";
+            string cfgContents = $"{Initialization.Server}:sbm_pg_test,sbm_pg_test\n{Initialization.Server}:sbm_pg_test,sbm_pg_test1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
@@ -418,7 +418,7 @@ namespace SqlBuildManager.Console.PostgreSQL.IntegrationTest
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.PG_InsertForThreadedTest);
 
-            string cfgContents = $"localhost:sbm_pg_test,sbm_pg_test\nlocalhost:sbm_pg_test,sbm_pg_test1";
+            string cfgContents = $"{Initialization.Server}:sbm_pg_test,sbm_pg_test\n{Initialization.Server}:sbm_pg_test,sbm_pg_test1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 

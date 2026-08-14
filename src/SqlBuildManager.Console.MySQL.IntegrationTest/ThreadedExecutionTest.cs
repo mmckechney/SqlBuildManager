@@ -352,7 +352,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_InsertForThreadedTest);
 
-            string cfgContents = $"localhost:sbm_mysql_test,sbm_mysql_test\nlocalhost:sbm_mysql_test,sbm_mysql_test1";
+            string cfgContents = $"{Initialization.Server}:sbm_mysql_test,sbm_mysql_test\n{Initialization.Server}:sbm_mysql_test,sbm_mysql_test1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
@@ -418,7 +418,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
             string sbmFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".sbm";
             File.WriteAllBytes(sbmFileName, Properties.Resources.MySQL_InsertForThreadedTest);
 
-            string cfgContents = $"localhost:sbm_mysql_test,sbm_mysql_test\nlocalhost:sbm_mysql_test,sbm_mysql_test1";
+            string cfgContents = $"{Initialization.Server}:sbm_mysql_test,sbm_mysql_test\n{Initialization.Server}:sbm_mysql_test,sbm_mysql_test1";
             string multiDbOverrideSettingFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".cfg";
             File.WriteAllText(multiDbOverrideSettingFileName, cfgContents);
 
