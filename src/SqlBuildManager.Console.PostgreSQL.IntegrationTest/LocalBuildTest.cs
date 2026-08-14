@@ -42,16 +42,23 @@ namespace SqlBuildManager.Console.PostgreSQL.IntegrationTest
 
         private string GetExecutionLog(string loggingPath)
         {
+            var logLines = new List<string>();
+            logLines.AddRange(ConsoleOutput.ToString().Split(Environment.NewLine));
+
             if (Directory.Exists(loggingPath))
             {
-                string[] files = Directory.EnumerateFiles(loggingPath, "*.log", SearchOption.AllDirectories).ToArray();
-                if (files.Length > 0)
+                foreach (string file in Directory.EnumerateFiles(loggingPath, "*.log", SearchOption.AllDirectories))
                 {
-                    return string.Join(Environment.NewLine, files.Select(File.ReadAllText));
+                    logLines.AddRange(File.ReadAllText(file).Split(Environment.NewLine));
                 }
             }
 
-            return ConsoleOutput.ToString();
+            return string.Join(
+                Environment.NewLine,
+                logLines
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    .Select(line => line.Contains("] ") ? line[(line.LastIndexOf("] ", StringComparison.Ordinal) + 2)..] : line)
+                    .Distinct());
         }
 
         [ClassCleanup()]
