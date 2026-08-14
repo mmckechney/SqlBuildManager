@@ -34,6 +34,7 @@ public class LocalContainerEmulatorThreadedTests
     public async Task ThreadedRun_WithLocalEmulators_UpdatesDatabaseAndPublishesEffects()
     {
         RequireEmulators();
+        RequireSupportedEmulators();
 
         var server = Environment.GetEnvironmentVariable("SBM_TEST_POSTGRES_SERVER") ?? "localhost";
         var user = Environment.GetEnvironmentVariable("SBM_TEST_POSTGRES_USER") ?? "postgres";
@@ -123,6 +124,17 @@ public class LocalContainerEmulatorThreadedTests
         {
             Assert.Inconclusive(
                 "Emulator tests require SBM_TEST_BLOB_ENDPOINT, SBM_TEST_EVENTHUB_CONNECTION_STRING, and SBM_TEST_SERVICEBUS_CONNECTION_STRING.");
+        }
+    }
+
+    private static void RequireSupportedEmulators()
+    {
+        if (LocalContainerTestEnvironment.EventHubConnectionString.Contains(
+                "UseDevelopmentEmulator=true", StringComparison.OrdinalIgnoreCase) ||
+            LocalContainerTestEnvironment.ServiceBusConnectionString.Contains(
+                "UseDevelopmentEmulator=true", StringComparison.OrdinalIgnoreCase))
+        {
+            Assert.Inconclusive("The local Event Hubs and Service Bus emulators do not support the management and event flow used by this test.");
         }
     }
 

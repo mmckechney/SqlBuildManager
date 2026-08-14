@@ -240,7 +240,11 @@ namespace SqlBuildManager.SqlBuild.AdHocQuery
                                 string tempLine = sr.ReadLine()!;
                                 if (tempLine.StartsWith("<?xml", StringComparison.InvariantCultureIgnoreCase) ||
                                     tempLine.StartsWith("<ArrayOfResult", StringComparison.InvariantCultureIgnoreCase) ||
-                                    tempLine.StartsWith("</ArrayOfResult>"))
+                                    tempLine.StartsWith("</ArrayOfResult>") ||
+                                    tempLine.StartsWith("<ArrayOfQueryResultData", StringComparison.InvariantCultureIgnoreCase) ||
+                                    tempLine.StartsWith("</ArrayOfQueryResultData>", StringComparison.InvariantCultureIgnoreCase) ||
+                                    tempLine.StartsWith("<QueryResultData", StringComparison.InvariantCultureIgnoreCase) ||
+                                    tempLine.StartsWith("</QueryResultData>", StringComparison.InvariantCultureIgnoreCase))
                                     continue;
 
                                 sw.WriteLine(tempLine);

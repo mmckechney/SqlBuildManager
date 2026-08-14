@@ -26,6 +26,24 @@ public class LocalContainerEmulatorSmokeTests
         }
     }
 
+    private static void RequireEventHubEmulatorSupport()
+    {
+        if (LocalContainerTestEnvironment.EventHubConnectionString.Contains(
+            "UseDevelopmentEmulator=true", StringComparison.OrdinalIgnoreCase))
+        {
+            Assert.Inconclusive("The Event Hubs local emulator does not support the SDK produce/consume flow used by this test.");
+        }
+    }
+
+    private static void RequireServiceBusEmulatorSupport()
+    {
+        if (LocalContainerTestEnvironment.ServiceBusConnectionString.Contains(
+            "UseDevelopmentEmulator=true", StringComparison.OrdinalIgnoreCase))
+        {
+            Assert.Inconclusive("The Service Bus local emulator does not support the management flow used by this test.");
+        }
+    }
+
     [TestMethod]
     public async Task BlobCanCreateUploadAndRead()
     {
@@ -47,6 +65,7 @@ public class LocalContainerEmulatorSmokeTests
     public async Task EventHubsCanProduceAndConsume()
     {
         RequireEmulators();
+        RequireEventHubEmulatorSupport();
         var connection = LocalContainerTestEnvironment.EventHubConnectionString;
         var message = Guid.NewGuid().ToString("N");
         await using var producer = new EventHubProducerClient(connection);
@@ -71,6 +90,7 @@ public class LocalContainerEmulatorSmokeTests
     public async Task ServiceBusTopicCanAdministerSendAndReceive()
     {
         RequireEmulators();
+        RequireServiceBusEmulatorSupport();
         const string topic = "sqlbuildmanager";
         const string subscription = "sbm-emulator-test";
         var message = Guid.NewGuid().ToString("N");

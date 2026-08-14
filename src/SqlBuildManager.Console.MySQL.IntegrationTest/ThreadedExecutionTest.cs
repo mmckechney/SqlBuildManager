@@ -385,14 +385,14 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
 
                 // sbm_mysql_test should commit 
-                string[] logFiles = Directory.GetFiles(Path.Combine(loggingPath, "Working", "localhost", "sbm_mysql_test"), "*.log");
+                string[] logFiles = Directory.GetFiles(Path.Combine(loggingPath, "Working", Initialization.Server, "sbm_mysql_test"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find sbm_mysql_test log file");
                 string logContents = File.ReadAllText(logFiles[0]);
                 Assert.IsTrue(logContents.IndexOf("COMMIT") > -1, "sbm_mysql_test log does not contain a 'COMMIT' message");
                 Assert.IsTrue(logContents.IndexOf("ROLLBACK") == -1, "sbm_mysql_test contains a 'ROLLBACK' message");
 
                 // sbm_mysql_test1 should commit
-                logFiles = Directory.GetFiles(Path.Combine(loggingPath, "Working", "localhost", "sbm_mysql_test1"), "*.log");
+                logFiles = Directory.GetFiles(Path.Combine(loggingPath, "Working", Initialization.Server, "sbm_mysql_test1"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find sbm_mysql_test1 log file");
                 logContents = File.ReadAllText(logFiles[0]);
                 Assert.IsTrue(logContents.IndexOf("COMMIT") > -1, "sbm_mysql_test1 log does not contain a 'COMMIT' message");
@@ -451,7 +451,7 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
 
                 // sbm_mysql_test should not have COMMIT/ROLLBACK (non-transactional)
-                string[] logFiles = Directory.GetFiles(Path.Combine(loggingPath, "Working", "localhost", "sbm_mysql_test"), "*.log");
+                string[] logFiles = Directory.GetFiles(Path.Combine(loggingPath, "Working", Initialization.Server, "sbm_mysql_test"), "*.log");
                 Assert.AreEqual(1, logFiles.Length, "Unable to find sbm_mysql_test log file");
                 string logContents = File.ReadAllText(logFiles[0]);
                 Assert.IsTrue(logContents.IndexOf("Completed: No Transaction Set") > -1, "sbm_mysql_test does not contain 'Completed: No Transaction Set' message");
