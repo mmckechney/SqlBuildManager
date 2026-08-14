@@ -147,7 +147,7 @@ namespace SqlBuildManager.Connection.UnitTest
                 Password = "SourcePassword",
                 UserId = "SourceUser",
                 StartingDirectory = Path.Combine(Path.GetTempPath(), "Source"),
-                AuthenticationType = AuthenticationType.AzureADPassword,
+                AuthenticationType = AuthenticationType.AzureADIntegrated,
                 ScriptTimeout = 60,
                 ManagedIdentityClientId = "source-client-id"
             };
@@ -237,9 +237,6 @@ namespace SqlBuildManager.Connection.UnitTest
 
             target.AuthenticationType = AuthenticationType.Windows;
             Assert.AreEqual(AuthenticationType.Windows, target.AuthenticationType);
-
-            target.AuthenticationType = AuthenticationType.AzureADPassword;
-            Assert.AreEqual(AuthenticationType.AzureADPassword, target.AuthenticationType);
 
             target.AuthenticationType = AuthenticationType.AzureADIntegrated;
             Assert.AreEqual(AuthenticationType.AzureADIntegrated, target.AuthenticationType);
@@ -388,13 +385,13 @@ namespace SqlBuildManager.Connection.UnitTest
             {
                 SQLServerName = "myserver.database.windows.net",
                 DatabaseName = "mydb",
-                AuthenticationType = AuthenticationType.AzureADPassword,
+                AuthenticationType = AuthenticationType.AzureADIntegrated,
                 UserId = "user@domain.com",
                 Password = "MyP@ssword123",
                 ScriptTimeout = 30
             };
 
-            Assert.AreEqual(AuthenticationType.AzureADPassword, target.AuthenticationType);
+            Assert.AreEqual(AuthenticationType.AzureADIntegrated, target.AuthenticationType);
             Assert.AreEqual("user@domain.com", target.UserId);
             Assert.AreEqual("MyP@ssword123", target.Password);
         }

@@ -42,16 +42,6 @@ namespace SqlBuildManager.Connection.UnitTest
         }
 
         [TestMethod]
-        public void GetDescription_AzureADPassword_ShouldReturnCorrectDescription()
-        {
-            var authType = AuthenticationType.AzureADPassword;
-
-            string result = authType.GetDescription();
-
-            Assert.AreEqual("Azure AD Password Authentication", result);
-        }
-
-        [TestMethod]
         public void GetDescription_ManagedIdentity_ShouldReturnCorrectDescription()
         {
             var authType = AuthenticationType.ManagedIdentity;
@@ -111,8 +101,6 @@ namespace SqlBuildManager.Connection.UnitTest
             // Test all authentication types with their description values
             Assert.AreEqual(AuthenticationType.AzureADIntegrated, 
                 Extensions.GetValueFromDescription<AuthenticationType>("Azure AD Integrated Authentication"));
-            Assert.AreEqual(AuthenticationType.AzureADPassword, 
-                Extensions.GetValueFromDescription<AuthenticationType>("Azure AD Password Authentication"));
             Assert.AreEqual(AuthenticationType.AzureADInteractive, 
                 Extensions.GetValueFromDescription<AuthenticationType>("Azure AD Interactive"));
         }

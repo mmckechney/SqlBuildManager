@@ -21,7 +21,7 @@ namespace SqlBuildManager.Console
             string error = string.Empty;
             errorMessages = new string[0];
 
-            if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.AzureADPassword || cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.Password)
+            if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.Password)
             {
                 if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
@@ -265,7 +265,7 @@ namespace SqlBuildManager.Console
             //    multiData = MultiDbHelper.ImportMultiDbTextConfig(multiDbOverrideSettingFileName);
 
 
-            if (multiData == null || multiData.Count() == 0)
+            if (multiData == null || multiData.Count == 0)
             {
                 error = "Unable to read in configuration file " + multiDbOverrideSettingFileName + ((message.Length > 0) ? " :: " + message : "");
                 errorMessages = new string[] { error, "Returning error code: " + (int)ExecutionReturn.NullMultiDbConfig };
@@ -641,11 +641,11 @@ namespace SqlBuildManager.Console
         {
             List<string> messages = new List<string>();
 
-            if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.AzureADPassword || cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.Password)
+            if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.Password)
             {
                 if (string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName) || string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
                 {
-                    messages.Add("The --username and --password arguments are required when authentication type is set to Password or AzurePassword.");
+                    messages.Add("The --username and --password arguments are required when authentication type is set to Password.");
                 }
             }
 

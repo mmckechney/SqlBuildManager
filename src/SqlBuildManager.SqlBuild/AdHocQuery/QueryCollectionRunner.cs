@@ -74,7 +74,7 @@ namespace SqlBuildManager.SqlBuild.AdHocQuery
                     QueryCollectionRunnerUpdate(this, new QueryCollectionRunnerUpdateEventArgs(serverName, databaseName, "Starting"));
 
                 ConnectionData connData = new ConnectionData(serverName, databaseName);
-                if (masterConnData.AuthenticationType == AuthenticationType.AzureADPassword || masterConnData.AuthenticationType == AuthenticationType.Password)
+                if (masterConnData.AuthenticationType == AuthenticationType.Password)
                 {
                     connData.UserId = masterConnData.UserId;
                     connData.Password = masterConnData.Password;
@@ -229,7 +229,6 @@ namespace SqlBuildManager.SqlBuild.AdHocQuery
             }
             else
             {
-                string tempLine = null!;
                 using (StreamWriter sw = new StreamWriter(tmpCombined, true))
                 {
                     foreach (string partial in dumpFiles)
@@ -238,7 +237,7 @@ namespace SqlBuildManager.SqlBuild.AdHocQuery
                         {
                             while (sr.Peek() > 0)
                             {
-                                tempLine = sr.ReadLine()!;
+                                string tempLine = sr.ReadLine()!;
                                 if (tempLine.StartsWith("<?xml", StringComparison.InvariantCultureIgnoreCase) ||
                                     tempLine.StartsWith("<ArrayOfResult", StringComparison.InvariantCultureIgnoreCase) ||
                                     tempLine.StartsWith("</ArrayOfResult>"))
@@ -298,7 +297,7 @@ namespace SqlBuildManager.SqlBuild.AdHocQuery
                         if (tmpLine.Trim().StartsWith("<Results", StringComparison.InvariantCultureIgnoreCase))
                             break;
                         else
-                            sw.WriteLine(tmpLine);
+                            sw.WriteLine((string)null!);
 
                     }
                     sw.WriteLine("<Results>");

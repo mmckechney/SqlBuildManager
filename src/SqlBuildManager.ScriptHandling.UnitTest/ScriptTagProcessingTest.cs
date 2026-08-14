@@ -14,7 +14,9 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
     [TestClass()]
     public class ScriptTagProcessingTest
     {
+#pragma warning disable CS8625 // Converting null literal or possible null value to non-nullable type.
         static List<string> regex = null;
+#pragma warning restore CS8625 // Converting null literal or possible null value to non-nullable type.
         [ClassInitialize()]
         public static void SetRegex(TestContext context)
         {
@@ -72,10 +74,14 @@ namespace SqlBuildManager.ScriptHandling.UnitTest
         public void InferScriptTagFromFileContents_NullRegexTest()
         {
             string scriptContents = string.Empty;
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             List<string> regexFormats = null;
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
             string expected = string.Empty;
             string actual;
+#pragma warning disable CS8604 // Possible null reference argument.
             actual = ScriptTagProcessing.InferScriptTagFromFileContents(scriptContents, regexFormats);
+#pragma warning restore CS8604 // Possible null reference argument.
             Assert.AreEqual(expected, actual);
         }
         #endregion
@@ -329,11 +335,15 @@ P number 1234 content match";
         {
             string scriptPathAndName = @"C:\mypath\path2\CR2123456-test script.sql";
             string scriptContents = Properties.Resources.TagFromContents;
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             List<string> regexFormats = null;
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
             TagInferenceSource source = TagInferenceSource.TextOverName;
             string expected = "";
             string actual;
+#pragma warning disable CS8604 // Possible null reference argument.
             actual = ScriptTagProcessing.InferScriptTag(scriptPathAndName, scriptContents, regexFormats, source);
+#pragma warning restore CS8604 // Possible null reference argument.
             Assert.AreEqual(expected, actual);
 
         }
@@ -386,7 +396,7 @@ P number 1234 content match";
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string scriptName = Path.GetTempPath() + @"CR 123456 test me.sql";
             File.WriteAllText(scriptName, Properties.Resources.TagFromContents);
-            string scriptPath = Path.GetDirectoryName(scriptName);
+            string scriptPath = Path.GetDirectoryName(scriptName) ?? string.Empty;
             string expected = "CR987654";
             string actual;
             actual = ScriptTagProcessing.InferScriptTag(source, regexFormats, scriptName, scriptPath);
@@ -407,7 +417,7 @@ P number 1234 content match";
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string scriptName = Path.GetTempPath() + @"CR 123456 test me.sql";
             File.WriteAllText(scriptName, Properties.Resources.TagFromContents);
-            string scriptPath = Path.GetDirectoryName(scriptName);
+            string scriptPath = Path.GetDirectoryName(scriptName) ?? string.Empty;
             string expected = "CR987654";
             string actual;
             actual = ScriptTagProcessing.InferScriptTag(source, regexFormats, scriptName, scriptPath);
@@ -428,7 +438,7 @@ P number 1234 content match";
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string scriptName = Path.GetTempPath() + @"CR 123456 test me.sql";
             File.WriteAllText(scriptName, Properties.Resources.TagFromContents);
-            string scriptPath = Path.GetDirectoryName(scriptName);
+            string scriptPath = Path.GetDirectoryName(scriptName) ?? string.Empty; 
             string expected = "CR123456";
             string actual;
             actual = ScriptTagProcessing.InferScriptTag(source, regexFormats, scriptName, scriptPath);
@@ -449,7 +459,7 @@ P number 1234 content match";
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string scriptName = Path.GetTempPath() + @"CR 123456 test me.sql";
             File.WriteAllText(scriptName, Properties.Resources.TagFromContents);
-            string scriptPath = Path.GetDirectoryName(scriptName);
+            string scriptPath = Path.GetDirectoryName(scriptName) ?? string.Empty;
             string expected = "CR123456";
             string actual;
             actual = ScriptTagProcessing.InferScriptTag(source, regexFormats, scriptName, scriptPath);
@@ -469,7 +479,7 @@ P number 1234 content match";
             TagInferenceSource source = TagInferenceSource.TextOverName;
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string scriptName = Path.GetTempPath() + Guid.NewGuid().ToString();
-            string scriptPath = Path.GetDirectoryName(scriptName);
+            string scriptPath = Path.GetDirectoryName(scriptName) ?? string.Empty;
             string expected = "";
             string actual;
             actual = ScriptTagProcessing.InferScriptTag(source, regexFormats, scriptName, scriptPath);
@@ -487,7 +497,7 @@ P number 1234 content match";
             List<string> regexFormats = ScriptTagProcessingTest.regex;
             string scriptName = Path.GetTempPath() + @"empty tagless test me.sql";
             File.WriteAllText(scriptName, "This doesn't have a tag in it");
-            string scriptPath = Path.GetDirectoryName(scriptName);
+            string scriptPath = Path.GetDirectoryName(scriptName) ?? string.Empty;
             string expected = "";
             string actual;
             actual = ScriptTagProcessing.InferScriptTag(source, regexFormats, scriptName, scriptPath);
@@ -501,13 +511,17 @@ P number 1234 content match";
         public void InferScriptTagTest_NullRegex()
         {
             TagInferenceSource source = TagInferenceSource.ScriptName;
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             List<string> regexFormats = null;
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
             string scriptName = Path.GetTempPath() + @"CR 123456 test me.sql";
             File.WriteAllText(scriptName, Properties.Resources.TagFromContents);
-            string scriptPath = Path.GetDirectoryName(scriptName);
+            string scriptPath = Path.GetDirectoryName(scriptName) ?? string.Empty;
             string expected = string.Empty;
             string actual;
+#pragma warning disable CS8604 // Possible null reference argument.
             actual = ScriptTagProcessing.InferScriptTag(source, regexFormats, scriptName, scriptPath);
+#pragma warning restore CS8604 // Possible null reference argument.
 
             if (File.Exists(scriptName))
                 File.Delete(scriptName);

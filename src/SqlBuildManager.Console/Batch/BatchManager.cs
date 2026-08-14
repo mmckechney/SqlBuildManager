@@ -92,7 +92,7 @@ namespace SqlBuildManager.Console.Batch
             }
 
             log.LogInformation("Creating BatchClient with Managed Identity (token credentials)");
-            Func<Task<string>> tokenProvider = async () => await AadHelper.GetBatchTokenString();
+            static async Task<string> tokenProvider() => await AadHelper.GetBatchTokenString();
             var tokenCred = new BatchTokenCredentials(cmdLine.ConnectionArgs.BatchAccountUrl, tokenProvider);
             return BatchClient.Open(tokenCred);
         }
@@ -131,13 +131,11 @@ namespace SqlBuildManager.Console.Batch
 
             //Check for the platinum dacpac and configure it if necessary
             log.LogInformation("Validating database overrides");
-            MultiDbData multiData;
             int? myExitCode = 0;
 
             //TODO: fix this for queue!!!!
             //Validate the override settings (not needed if --servicebusconnection is provided
-            string[] errorMessages;
-            int tmpVal = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out multiData, out errorMessages);
+            int tmpVal = Validation.ValidateAndLoadMultiDbData(cmdLine.MultiDbRunConfigFileName, cmdLine, out MultiDbData multiData, out string[] errorMessages);
             if (tmpVal != 0)
             {
                 log.LogError($"Unable to validate database config\r\n{string.Join("\r\n", errorMessages)}");
@@ -268,14 +266,14 @@ namespace SqlBuildManager.Console.Batch
                         }
 
                         //If we end up with fewer splits, then reduce the node count...
-                        if (concurrencyBuckets.Count() < cmdLine.BatchArgs.BatchNodeCount)
+                        if (concurrencyBuckets.Count < cmdLine.BatchArgs.BatchNodeCount)
                         {
-                            log.LogInformation($"NOTE! The number of targets ({concurrencyBuckets.Count()}) is less than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Changing the pool node count to {concurrencyBuckets.Count()}");
-                            cmdLine.BatchArgs.BatchNodeCount = concurrencyBuckets.Count();
+                            log.LogInformation($"NOTE! The number of targets ({concurrencyBuckets.Count}) is less than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Changing the pool node count to {concurrencyBuckets.Count}");
+                            cmdLine.BatchArgs.BatchNodeCount = concurrencyBuckets.Count;
                         }
-                        else if (concurrencyBuckets.Count() > cmdLine.BatchArgs.BatchNodeCount) //need to do some consolidating
+                        else if (concurrencyBuckets.Count > cmdLine.BatchArgs.BatchNodeCount) //need to do some consolidating
                         {
-                            log.LogInformation($"NOTE! When splitting by {cmdLine.ConcurrencyType.ToString()}, the number of targets ({concurrencyBuckets.Count()}) is greater than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Will consolidate to fit within the number of nodes");
+                            log.LogInformation($"NOTE! When splitting by {cmdLine.ConcurrencyType.ToString()}, the number of targets ({concurrencyBuckets.Count}) is greater than the requested node count ({cmdLine.BatchArgs.BatchNodeCount}). Will consolidate to fit within the number of nodes");
                             concurrencyBuckets = Concurrency.RecombineServersToFixedBucketCount(multiDb, cmdLine.BatchArgs.BatchNodeCount);
                         }
                     }
@@ -680,7 +678,6 @@ namespace SqlBuildManager.Console.Batch
             data.DeploymentConfiguration = new BatchDeploymentConfiguration() { VmConfiguration = virtualMachineConfiguration };
             data.ScaleSettings = new BatchAccountPoolScaleSettings() { FixedScale = new BatchAccountFixedScaleSettings() { TargetDedicatedNodes = nodeCount } };
             data.VmSize = vmSize;
-            data.TargetNodeCommunicationMode = azB.Models.NodeCommunicationMode.Simplified;
 
             if (!string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.SubnetName) && !string.IsNullOrWhiteSpace(cmdLine.NetworkArgs.VnetName))
             {
@@ -960,9 +957,7 @@ namespace SqlBuildManager.Console.Batch
         /// <returns></returns>
         private static string[] GetTargetConfigValues(string multiDBFileName)
         {
-            MultiDbData multiDb;
-            string[] errorMessages;
-            int valRet = Validation.ValidateAndLoadMultiDbData(multiDBFileName, null!, out multiDb, out errorMessages);
+            _ = Validation.ValidateAndLoadMultiDbData(multiDBFileName, null!, out MultiDbData multiDb, out string[] errorMessages);
             string cfg = MultiDbHelper.ConvertMultiDbDataToTextConfig(multiDb);
             return cfg.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         }
@@ -996,9 +991,8 @@ namespace SqlBuildManager.Console.Batch
 
         public async Task<int> PreStageBatchNodes()
         {
-            string[] errorMessages;
             log.LogInformation("Validating batch pre-stage command parameters");
-            int tmpReturn = Validation.ValidateBatchPreStageArguments(ref cmdLine, out errorMessages);
+            int tmpReturn = Validation.ValidateBatchPreStageArguments(ref cmdLine, out string[] errorMessages);
             if (tmpReturn != 0)
             {
                 foreach (var msg in errorMessages)
@@ -1127,9 +1121,8 @@ namespace SqlBuildManager.Console.Batch
 
         public async Task<int> CleanUpBatchNodes()
         {
-            string[] errorMessages;
             log.LogInformation("Validating batch cleanup command parameters");
-            int tmpReturn = Validation.ValidateBatchCleanUpArguments(ref cmdLine, out errorMessages);
+            int tmpReturn = Validation.ValidateBatchCleanUpArguments(ref cmdLine, out string[] errorMessages);
             if (tmpReturn != 0)
             {
                 foreach (var msg in errorMessages)

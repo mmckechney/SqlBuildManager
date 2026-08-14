@@ -73,9 +73,8 @@ namespace SqlBuildManager.Console.CommandLine
                 }
                 else if (property.PropertyType == typeof(CommandLineArgs.Authentication)) //Special case if Key Vault is specified
                 {
-                    if (obj is CommandLineArgs)
+                    if (obj is CommandLineArgs cmd)
                     {
-                        var cmd = (CommandLineArgs)obj;
                         if (string.IsNullOrWhiteSpace(cmd.ConnectionArgs.KeyVaultName))
                         {
                             if (property.GetValue(obj) != null)
@@ -297,8 +296,7 @@ namespace SqlBuildManager.Console.CommandLine
                             }
                             else
                             {
-                                double num;
-                                if (double.TryParse(property.GetValue(obj)!.ToString(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out num))
+                                if (double.TryParse(property.GetValue(obj)!.ToString(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out _))
                                 {
                                     args.AddRange(new string[] { $"--{property.Name!.ToLower()}", property.GetValue(obj)!.ToString()! });
                                 }

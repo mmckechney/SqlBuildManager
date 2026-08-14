@@ -76,7 +76,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest
             DbOverrides actual;
             target.Overrides = expected;
             actual = target.Overrides;
-            Assert.AreEqual(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace SqlBuildManager.SqlBuild.UnitTest
         {
             ServerData target = new ServerData();
             Assert.AreEqual(typeof(ServerData), target.GetType());
-            Assert.IsTrue(target != null, "Error. ServerData object is null");
+            Assert.IsNotNull(target, "Error. ServerData object is null");
         }
     }
 }

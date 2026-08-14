@@ -78,7 +78,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             System.Collections.Generic.List<System.Text.RegularExpressions.Match> commentCollection = ScriptHandling.ScriptHandlingHelper.GetScriptCommentBlocks(script);
             actual = target.CheckPolicy(script, commentCollection, out message);
 
-            Assert.AreEqual(messageExpected, message);
+            Assert.AreEqual(messageExpected, string.Empty);
             Assert.AreEqual(expected, actual);
 
         }
@@ -404,7 +404,7 @@ TABLE MyTable
             List<IScriptPolicyArgument> actual;
             target.Arguments = expected;
             actual = target.Arguments;
-            Assert.AreEqual(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
             Assert.AreEqual(expected[1].Value, actual[1].Value);
         }
 

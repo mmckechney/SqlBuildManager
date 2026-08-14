@@ -30,7 +30,7 @@ namespace SqlBuildManager.Enterprise.UnitTest
             FeatureAccess[] actual;
             target.FeatureAccess = expected;
             actual = target.FeatureAccess;
-            Assert.AreEqual(expected, actual);
+            Assert.AreSequenceEqual(expected, actual);
         }
     }
 }
