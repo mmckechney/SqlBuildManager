@@ -238,13 +238,14 @@ namespace SqlBuildManager.SqlBuild.AdHocQuery
                             while (sr.Peek() > 0)
                             {
                                 string tempLine = sr.ReadLine()!;
-                                if (tempLine.StartsWith("<?xml", StringComparison.InvariantCultureIgnoreCase) ||
-                                    tempLine.StartsWith("<ArrayOfResult", StringComparison.InvariantCultureIgnoreCase) ||
-                                    tempLine.StartsWith("</ArrayOfResult>") ||
-                                    tempLine.StartsWith("<ArrayOfQueryResultData", StringComparison.InvariantCultureIgnoreCase) ||
-                                    tempLine.StartsWith("</ArrayOfQueryResultData>", StringComparison.InvariantCultureIgnoreCase) ||
-                                    tempLine.StartsWith("<QueryResultData", StringComparison.InvariantCultureIgnoreCase) ||
-                                    tempLine.StartsWith("</QueryResultData>", StringComparison.InvariantCultureIgnoreCase))
+                                string normalizedLine = tempLine.Trim();
+                                if (normalizedLine.StartsWith("<?xml", StringComparison.InvariantCultureIgnoreCase) ||
+                                    normalizedLine.StartsWith("<ArrayOfResult", StringComparison.InvariantCultureIgnoreCase) ||
+                                    normalizedLine.StartsWith("</ArrayOfResult>", StringComparison.InvariantCultureIgnoreCase) ||
+                                    normalizedLine.StartsWith("<ArrayOfQueryResultData", StringComparison.InvariantCultureIgnoreCase) ||
+                                    normalizedLine.StartsWith("</ArrayOfQueryResultData>", StringComparison.InvariantCultureIgnoreCase) ||
+                                    normalizedLine.StartsWith("<QueryResultData", StringComparison.InvariantCultureIgnoreCase) ||
+                                    normalizedLine.StartsWith("</QueryResultData>", StringComparison.InvariantCultureIgnoreCase))
                                     continue;
 
                                 sw.WriteLine(tempLine);
