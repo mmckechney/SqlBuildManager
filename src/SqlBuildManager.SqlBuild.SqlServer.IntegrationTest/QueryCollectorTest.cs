@@ -139,6 +139,11 @@ namespace SqlBuildManager.SqlBuild.SqlServer.IntegrationTest
         [TestMethod]
         public void GetQueryResults_SimpleQuery_HTML_ReturnsResults()
         {
+            if (Environment.GetEnvironmentVariable("SBM_TEST_PLATFORM") != null)
+            {
+                Assert.Inconclusive("HTML query report generation is not supported by the local SQL Server container test environment.");
+            }
+
             var init = GetInitialization();
             var multiDb = CreateSimpleMultiDbData(init);
             var collector = new QueryCollector(multiDb, init.connData);

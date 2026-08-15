@@ -235,35 +235,27 @@ namespace SqlBuildManager.SqlBuild.AdHocQuery
             string tmpCombined = resultsFilePath + String.Format("Combined-{0}.txt", Guid.NewGuid().ToString());
             try
             {
-                var combined = new XmlDocument();
-                combined.LoadXml("<ArrayOfQueryResultData />");
-                XmlElement combinedRoot = combined.DocumentElement!;
-
-                foreach (string resultFile in queryResultFiles)
+                string tmpLine = null!;
+                using (StreamWriter sw = new StreamWriter(tmpCombined))
                 {
-                    var result = new XmlDocument();
-                    result.Load(resultFile);
-                    XmlElement resultRoot = result.DocumentElement!;
-                    if (resultRoot.Name.Equals("ArrayOfQueryResultData", StringComparison.OrdinalIgnoreCase))
+                    sw.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+                    sw.WriteLine("<ArrayOfQueryResultData>");
+
+                    foreach (string resultFile in queryResultFiles)
                     {
-                        foreach (XmlNode child in resultRoot.ChildNodes)
+                        using (StreamReader sr = new StreamReader(resultFile))
                         {
-                            if (child is XmlElement element &&
-                                element.Name.Equals("QueryResultData", StringComparison.OrdinalIgnoreCase))
+                            while (sr.Peek() > 0)
                             {
-                                combinedRoot.AppendChild(combined.ImportNode(element, true));
+                                tmpLine = sr.ReadLine()!;
+                                if (tmpLine.Trim().StartsWith("<?xml"))
+                                    continue;
+
+                                sw.WriteLine(tmpLine);
                             }
                         }
                     }
-                    else if (resultRoot.Name.Equals("QueryResultData", StringComparison.OrdinalIgnoreCase))
-                    {
-                        combinedRoot.AppendChild(combined.ImportNode(resultRoot, true));
-                    }
-                }
-
-                using (var writer = XmlWriter.Create(tmpCombined, new XmlWriterSettings { Indent = true, Encoding = Encoding.UTF8 }))
-                {
-                    combined.Save(writer);
+                    sw.WriteLine("</ArrayOfQueryResultData>");
                 }
             }
             catch (IOException ioExe)
