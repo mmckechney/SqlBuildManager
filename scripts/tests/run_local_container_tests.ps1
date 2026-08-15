@@ -37,7 +37,7 @@ $runtimeImage = "sbm-local-runtime"
 $testImage = "sbm-local-test-$Platform"
 $runtimeNetwork = "${projectName}_default"
 $resultsVolume = "${projectName}-test-results"
-$results = Join-Path $PSScriptRoot "testresults"
+$results = Join-Path $repoRoot "testresults"
 $runResults = Join-Path $results ("{0}-{1}" -f $Platform, (Get-Date -Format "yyyyMMdd-HHmmss"))
 $exitCode = 1
 New-Item -ItemType Directory -Force -Path $results | Out-Null
