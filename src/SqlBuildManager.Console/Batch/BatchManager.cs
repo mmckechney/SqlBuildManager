@@ -914,7 +914,7 @@ namespace SqlBuildManager.Console.Batch
 
                 threadCmdLine.BatchArgs.OutputContainerSasUrl = outputContainerUrl;
 
-                StringBuilder sb = new StringBuilder("/bin/sh -c 'dotnet /app/sbm.dll ");
+                StringBuilder sb = new StringBuilder("/bin/sh -c 'cd /app && dotnet sbm.dll ");
                 sb.Append($"--loglevel {threadCmdLine.LogLevel} batch ");
 
                 switch (bType)
