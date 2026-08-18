@@ -38,12 +38,23 @@ if ($LASTEXITCODE -ne 0) {
     throw "Unable to list containers in storage account '$storageAccountName' through the Azure management plane."
 }
 
-foreach($container in $containers)
-{
-    
-    if($container.StartsWith("app-") -eq $false -and $container.StartsWith("eventhubcheckpoint") -eq $false)
-    {
-        Write-Host "Deleting storage container: $container" -ForegroundColor Green
+$containersToDelete = @($containers | Where-Object {
+    -not $_.StartsWith("app-") -and -not $_.StartsWith("eventhubcheckpoint")
+})
+$containersToPreserve = @($containers | Where-Object {
+    $_.StartsWith("app-") -or $_.StartsWith("eventhubcheckpoint")
+})
+
+foreach ($container in $containersToPreserve) {
+    Write-Host "Preserving storage container: $container" -ForegroundColor Yellow
+}
+
+$numberWidth = [Math]::Max(3, $containersToDelete.Count.ToString().Length)
+for ($index = 0; $index -lt $containersToDelete.Count; $index++) {
+    $container = $containersToDelete[$index]
+    $currentNumber = ($index + 1).ToString("D$numberWidth")
+    $totalNumber = $containersToDelete.Count.ToString("D$numberWidth")
+    Write-Host "Deleting storage container $currentNumber of $totalNumber`: $container" -ForegroundColor Green
         az storage container-rm delete `
             --resource-group $resourceGroupName `
             --storage-account $storageAccountName `
@@ -54,10 +65,5 @@ foreach($container in $containers)
         if ($LASTEXITCODE -ne 0) {
             throw "Unable to delete storage container '$container'."
         }
-    }
-    else
-    {
-        Write-Host "Preserving storage container: $container" -ForegroundColor Yellow
-    }
 }
 Write-Host "Complete!"
