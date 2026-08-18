@@ -207,47 +207,24 @@ namespace SqlBuildManager.Console.Aci
         }
         internal static List<ContainerEnvironmentVariable> GetContainerEnvironmentVariables(CommandLineArgs cmdLine)
         {
-            var lst = new List<ContainerEnvironmentVariable>();
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.KeyVaultName) { Value = cmdLine.ConnectionArgs.KeyVaultName });
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.DacpacName) { Value = Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac) });
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.EventHubConnectionString) { Value = cmdLine.ConnectionArgs.EventHubConnectionString });
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.JobName) { Value = cmdLine.JobName });
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.ServiceBusTopicConnectionString) { Value = cmdLine.ConnectionArgs.ServiceBusTopicConnectionString });
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.PackageName) { Value = Path.GetFileName(cmdLine.BuildFileName) });
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.Concurrency) { Value = cmdLine.Concurrency.ToString() });
-            if(cmdLine.AuthenticationArgs.AuthenticationType != SqlBuildManager.Connection.AuthenticationType.Password)
+            var values = EnvironmentVariableHelper.CreateRuntimeEnvironmentVariables(cmdLine);
+            values[ContainerEnvVariables.PackageName] = Path.GetFileName(cmdLine.BuildFileName);
+            values.Remove(ContainerEnvVariables.Override);
+            if (values.ContainsKey(ContainerEnvVariables.DacpacName))
             {
-                cmdLine.AuthenticationArgs.AuthenticationType = SqlBuildManager.Connection.AuthenticationType.ManagedIdentity;
+                values[ContainerEnvVariables.DacpacName] = Path.GetFileName(cmdLine.DacPacArgs.PlatinumDacpac);
             }
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.AuthType) { Value = cmdLine.AuthenticationArgs.AuthenticationType.ToString() });
-            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.UserName))
-            {
-                lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.UserName) { Value = cmdLine.AuthenticationArgs.UserName });
-            }
-            if (!string.IsNullOrWhiteSpace(cmdLine.AuthenticationArgs.Password))
-            {
-                lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.Password) { Value = cmdLine.AuthenticationArgs.Password });
-            }
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.ConcurrencyType) { Value = cmdLine.ConcurrencyType.ToString() });
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.AllowObjectDelete) { Value = cmdLine.AllowObjectDelete.ToString() });
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.IdentityClientId) { Value = cmdLine.IdentityArgs.ClientId.ToString() });
-            if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
-            {
-                lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.IdentityName) { Value = cmdLine.IdentityArgs.IdentityName });
-            }
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.StorageAccountName) { Value = cmdLine.ConnectionArgs.StorageAccountName });
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.EventHubLogging) { Value = string.Join("|",cmdLine.EventHubLogging) });
-            lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.DatabasePlatform) { Value = cmdLine.AuthenticationArgs.DatabasePlatform.ToString() });
             if (cmdLine.QueryFile != null)
             {
-                lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.QueryFile) { Value = cmdLine.QueryFile.Name });
+                values[ContainerEnvVariables.QueryFile] = cmdLine.QueryFile.Name;
             }
             if (cmdLine.OutputFile != null)
             {
-                lst.Add(new ContainerEnvironmentVariable(ContainerEnvVariables.OutputFile) { Value = cmdLine.OutputFile.Name });
+                values[ContainerEnvVariables.OutputFile] = cmdLine.OutputFile.Name;
             }
-
-            return lst;
+            return values
+                .Select(value => new ContainerEnvironmentVariable(value.Key) { Value = value.Value })
+                .ToList();
         }
 
         private static async Task<bool> AciInstanceExists(CommandLineArgs cmdLine)

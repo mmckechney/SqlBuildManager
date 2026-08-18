@@ -15,7 +15,7 @@ public sealed record RuntimeContainerResult(int ExitCode, string StandardOutput,
 public static class RuntimeContainerClient
 {
     public static Task<RuntimeContainerResult> RunVersionAsync(CancellationToken cancellationToken = default) =>
-        RunAsync(cancellationToken, "--version");
+        RunAsync(cancellationToken, "/tmp", "--version");
 
     public static async Task<RuntimeContainerResult[]> RunManyAsync(
         int containerCount,
@@ -54,6 +54,12 @@ public static class RuntimeContainerClient
 
     public static async Task<RuntimeContainerResult> RunAsync(
         CancellationToken cancellationToken,
+        params string[] arguments) =>
+        await RunAsync(cancellationToken, null, arguments);
+
+    private static async Task<RuntimeContainerResult> RunAsync(
+        CancellationToken cancellationToken,
+        string? workingDirectory,
         params string[] arguments)
     {
         var image = RequiredEnvironment("SBM_RUNTIME_IMAGE");
@@ -80,6 +86,11 @@ public static class RuntimeContainerClient
         })
         {
             startInfo.ArgumentList.Add(value);
+        }
+        if (!string.IsNullOrWhiteSpace(workingDirectory))
+        {
+            startInfo.ArgumentList.Add("--workdir");
+            startInfo.ArgumentList.Add(workingDirectory);
         }
         if (!string.IsNullOrWhiteSpace(blobEndpoint))
         {

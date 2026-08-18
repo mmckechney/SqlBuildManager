@@ -23,6 +23,19 @@
         internal static string OutputFile { get; } = "Sbm_OutputFile";
         internal static string EventHubLogging { get; } = "Sbm_EventHubLogging";
         internal static string DatabasePlatform { get; } = "Sbm_DatabasePlatform";
+        internal static string Override { get; } = "Sbm_Override";
+        internal static string TargetDacpac { get; } = "Sbm_TargetDacpac";
+        internal static string OutputContainerSasUrl { get; } = "Sbm_OutputContainerSasUrl";
+        internal static string Transactional { get; } = "Sbm_Transactional";
+        internal static string TimeoutRetryCount { get; } = "Sbm_TimeoutRetryCount";
+        internal static string DefaultScriptTimeout { get; } = "Sbm_DefaultScriptTimeout";
+        internal static string ForceCustomDacPac { get; } = "Sbm_ForceCustomDacPac";
+        internal static string PlatinumDbSource { get; } = "Sbm_PlatinumDbSource";
+        internal static string PlatinumServerSource { get; } = "Sbm_PlatinumServerSource";
+        internal static string TrustServerCertificate { get; } = "Sbm_TrustServerCertificate";
+        internal static string Silent { get; } = "Sbm_Silent";
+        internal static string TenantId { get; } = "Sbm_TenantId";
+        internal static string UnitTest { get; } = "Sbm_UnitTest";
 
     }
 }

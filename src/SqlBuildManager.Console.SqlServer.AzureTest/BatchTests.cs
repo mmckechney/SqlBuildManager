@@ -189,7 +189,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 await blobValidator.LoadLogsAsync();
                 blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
             }
-            if (batchMethod == "runthreaded")
+            if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count()}"), $"Should have run against a {overrideFileContents.Count()} databases");
             }
@@ -368,7 +368,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 await blobValidator.LoadLogsAsync();
                 blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
             }
-            if (batchMethod == "runthreaded")
+            if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count()}"), $"Should have run against a {overrideFileContents.Count()} databases");
             }
@@ -482,7 +482,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 await blobValidator.LoadLogsAsync();
                 blobValidator.AssertBuildSuccess(tmpOverrideFileContents.Count, TestContext);
             }
-            if (batchMethod == "runthreaded")
+            if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {tmpOverrideFileContents.Count()}"), $"Should have run against a {tmpOverrideFileContents.Count()} databases");
             }
@@ -539,7 +539,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 await blobValidator.LoadLogsAsync();
                 blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
             }
-            if (batchMethod == "runthreaded")
+            if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count()}"), $"Should have run against a {overrideFileContents.Count()} databases");
             }
@@ -619,7 +619,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             await blobValidator.LoadLogsAsync();
             blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
 
-            if (batchMethod == "runthreaded")
+            if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count() - removeCount}"), $"Should have run against a {overrideFileContents.Count() - removeCount} databases");
             }
@@ -676,7 +676,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             await blobValidator.LoadLogsAsync();
             blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
 
-            if (batchMethod == "runthreaded")
+            if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"{database2}:Dacpac Databases In Sync"), "The second database should already be in sync with the first");
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count() - removeCount}"), $"Should have run against a {overrideFileContents.Count() - removeCount} databases");
@@ -735,7 +735,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             await blobValidator.LoadLogsAsync();
             blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
 
-            if (batchMethod == "runthreaded")
+            if (batchMethod == "run")
             {
 
                 Assert.IsTrue(logFileContents.Contains($"Custom dacpac required for {server3} : {database3}. Generating file"), "Should create a custom DACPAC for this database since the update would have failed b/c they are in sync.");
@@ -796,7 +796,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             await blobValidator.LoadLogsAsync();
             blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
 
-            if (batchMethod == "runthreaded")
+            if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count() - removeCount}"), $"Should have run against a {overrideFileContents.Count() - removeCount} databases");
             }
@@ -863,7 +863,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             await blobValidator.LoadLogsAsync();
             blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
 
-            if (batchMethod == "runthreaded")
+            if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count() - removeCount}"), $"Should have run against a {overrideFileContents.Count() - removeCount} databases");
             }
@@ -925,7 +925,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             await blobValidator.LoadLogsAsync();
             blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
 
-            if (batchMethod == "runthreaded")
+            if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"{database2}:Dacpac Databases In Sync"), "The second database should already be in sync with the first");
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count() - removeCount}"), $"Should have run against a {overrideFileContents.Count() - removeCount} databases");
@@ -971,16 +971,8 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-                switch (batchMethod)
-                {
-                    case "querythreaded":
-                        Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
-                        break;
-
-                    case "query":
-                        Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
-                        break;
-                }
+                Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
+                Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
                 var overrideLength = File.ReadAllLines(overrideFile).Length;
@@ -1044,16 +1036,8 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-                switch (batchMethod)
-                {
-                    case "querythreaded":
-                        Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
-                        break;
-
-                    case "query":
-                        Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
-                        break;
-                }
+                Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
+                Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
                 var overrideLength = File.ReadAllLines(overrideFile).Length;
@@ -1139,16 +1123,8 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-                switch (batchMethod)
-                {
-                    case "querythreaded":
-                        Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
-                        break;
-
-                    case "query":
-                        Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
-                        break;
-                }
+                Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
+                Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
                 var overrideLength = File.ReadAllLines(overrideFile).Length;
@@ -1214,16 +1190,8 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
                 Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-                switch (batchMethod)
-                {
-                    case "querythreaded":
-                        Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
-                        break;
-
-                    case "query":
-                        Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
-                        break;
-                }
+                Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
+                Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
                 var overrideLength = File.ReadAllLines(overrideFile).Length;
@@ -1508,7 +1476,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             {
                 Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
             }
-            if (batchMethod == "runthreaded")
+            if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count()}"), $"Should have run against a {overrideFileContents.Count()} databases");
             }
@@ -1790,7 +1758,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
 
-            if (batchMethod == "runthreaded")
+            if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Custom dacpac required for"), "A custom DACPAC should have been required for a database");
                 Assert.IsTrue(logFileContents.Contains($"Total number of targets: {overrideFileContents.Count() - removeCount}"), $"Should have run against a {overrideFileContents.Count() - removeCount} databases");
@@ -1864,7 +1832,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
             Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
-            if (batchMethod == "runthreaded")
+            if (batchMethod == "run")
             {
                 Assert.IsTrue(logFileContents.Contains($"Custom dacpac required for"), "A custom DACPAC should have been required for a database");
             }
@@ -1872,8 +1840,8 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         }
 
 
-        //[DataRow("runthreaded", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.Server, 2)]
-        //[DataRow("runthreaded", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.Count, 5)]
+        //[DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.Server, 2)]
+        //[DataRow("run", "TestConfig/settingsfile-batch-linux-queue.json", ConcurrencyType.Count, 5)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.Server, 2)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.Count, 5)]
         [TestMethod]
@@ -1970,7 +1938,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
         // [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json", ConcurrencyType.Tag, 2)]
         // [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault-mi.json", ConcurrencyType.Tag, 2)]
-        [DataRow("runthreaded", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.MaxPerTag, 5)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.MaxPerTag, 5)]
         [TestMethod]
         public void Batch_Queue_SBMSource_KeyVault_NoSettingsFileKey_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {

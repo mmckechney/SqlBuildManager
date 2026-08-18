@@ -33,4 +33,4 @@ FROM mcr.microsoft.com/dotnet/runtime:10.0-noble AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENV DOTNET_ENVIRONMENT=Production
-ENTRYPOINT ["dotnet", "sbm.dll"]
+ENTRYPOINT ["dotnet", "/app/sbm.dll"]

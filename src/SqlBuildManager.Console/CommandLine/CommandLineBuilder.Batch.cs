@@ -76,42 +76,16 @@ namespace SqlBuildManager.Console.CommandLine
         /// <summary>
         /// [Internal use only] - this commmand is used to send threaded commands to Azure Batch Nodes
         /// </summary>
-        private static Command BatchRunThreadedCommand
+        private static Command BatchWorkerCommand
         {
             get
             {
-                var cmd = new Command("runthreaded", "[Internal use only] - this commmand is used to send threaded commands to Azure Batch Nodes")
-                {
-                    overrideOption,
-                    rootloggingpathOption,
-                    defaultscripttimeoutOption,
-                    platinumdacpacOption,
-                    packagenameNotReqOption,
-                    targetdacpacOption,
-                    forcecustomdacpacOption,
-                    platinumdbsourceOption,
-                    platinumserversourceOption,
-                    outputcontainersasurlOption,
-                    transactionalOption,
-                    timeoutretrycountOption,
-                    unitTestOption,
-                    //these two options aren't used and are added just for reusability in unit tests
-                    new Option<bool>("--monitor"){Hidden = true},
-
-                };
-                cmd.AddRange(SettingsFileExistingOptions);
-                cmd.AddRange(BatchSettingsOptions);
-                cmd.AddRange(BatchComputeOptions);
-                cmd.AddRange(DatabaseAuthArgs);
-                cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
-                cmd.AddRange(ConcurrencyOptions);
-                cmd.AddRange(IdentityArgumentsForBatch);
-                cmd.AddRange(EventHubResourceOptions);
+                var cmd = new Command("worker", "[Internal use only] Starts an Azure Batch container worker");
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
-                    var unittest = parseResult.GetValue(unitTestOption);
-                    return await Worker.RunThreadedExecutionAsync(cmdLine: cmdLine, unittest: unittest);
+                    return await Worker.BatchWorker_RunBuild(cmdLine);
                 });
+                cmd.Add(BatchQueryWorkerCommand);
                 cmd.Hidden = true;
                 return cmd;
             }
@@ -336,35 +310,14 @@ namespace SqlBuildManager.Console.CommandLine
         /// <summary>
         /// [Internal use only] - this commmand is used to send query commands to Azure Batch Nodes
         /// </summary>
-        private static Command BatchQueryThreadedCommand
+        private static Command BatchQueryWorkerCommand
         {
             get
             {
-                var cmd = new Command("querythreaded", "[Internal use only] - this commmand is used to send query commands to Azure Batch Nodes")
-                {
-                    overrideOption,
-                    queryFileRequiredOption,
-                    outputFileRequiredOption,
-                    deletebatchjobOption,
-                    rootloggingpathOption,
-                    defaultscripttimeoutOption,
-                    //Batch to Threaded node options
-                    outputcontainersasurlOption,
-                    transactionalOption,
-                    timeoutretrycountOption,
-                    silentOption,
-                    jobnameOption
-                };
-                cmd.AddRange(SettingsFileExistingOptions);
-                cmd.AddRange(BatchComputeOptions);
-                cmd.AddRange(DatabaseAuthArgs);
-                cmd.AddRange(ConnectionAndSecretsOptionsForBatch);
-                cmd.AddRange(IdentityArgumentsForBatch);
-                cmd.AddRange(ConcurrencyOptions);
-                cmd.AddRange(EventHubResourceOptions);
+                var cmd = new Command("query", "[Internal use only] Starts an Azure Batch query container worker");
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
-                    return await Worker.QueryDatabasesAsync(cmdLine);
+                    return await Worker.BatchWorker_RunQuery(cmdLine);
                 });
                 cmd.Hidden = true;
                 return cmd;
@@ -386,8 +339,7 @@ namespace SqlBuildManager.Console.CommandLine
                 tmp.Add(BatchQueryCommand);
                 tmp.Add(BatchCleanUpCommand);
                 tmp.Add(BatchDequeueTargetsCommand);
-                tmp.Add(BatchRunThreadedCommand);
-                tmp.Add(BatchQueryThreadedCommand);
+                tmp.Add(BatchWorkerCommand);
                 tmp.Add(BatchDeleteJobsCommand);
                 return tmp;
             }

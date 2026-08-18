@@ -12,6 +12,65 @@ namespace SqlBuildManager.Console.ContainerShared
     internal class EnvironmentVariableHelper
     {
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
+
+        internal static Dictionary<string, string> CreateRuntimeEnvironmentVariables(CommandLineArgs cmdLine, bool unitTest = false)
+        {
+            var authenticationType = cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.Password
+                ? AuthenticationType.Password
+                : AuthenticationType.ManagedIdentity;
+            var values = new Dictionary<string, string>
+            {
+                [ContainerEnvVariables.JobName] = cmdLine.JobName,
+                [ContainerEnvVariables.PackageName] = cmdLine.BuildFileName,
+                [ContainerEnvVariables.Concurrency] = cmdLine.Concurrency.ToString(),
+                [ContainerEnvVariables.ConcurrencyType] = cmdLine.ConcurrencyType.ToString(),
+                [ContainerEnvVariables.KeyVaultName] = cmdLine.ConnectionArgs.KeyVaultName,
+                [ContainerEnvVariables.StorageAccountName] = cmdLine.ConnectionArgs.StorageAccountName,
+                [ContainerEnvVariables.AuthType] = authenticationType.ToString(),
+                [ContainerEnvVariables.AllowObjectDelete] = cmdLine.AllowObjectDelete.ToString(),
+                [ContainerEnvVariables.EventHubLogging] = string.Join("|", cmdLine.EventHubLogging),
+                [ContainerEnvVariables.DatabasePlatform] = cmdLine.AuthenticationArgs.DatabasePlatform.ToString(),
+                [ContainerEnvVariables.Transactional] = cmdLine.Transactional.ToString(),
+                [ContainerEnvVariables.TimeoutRetryCount] = cmdLine.TimeoutRetryCount.ToString(),
+                [ContainerEnvVariables.DefaultScriptTimeout] = cmdLine.DefaultScriptTimeout.ToString(),
+                [ContainerEnvVariables.ForceCustomDacPac] = cmdLine.DacPacArgs.ForceCustomDacPac.ToString(),
+                [ContainerEnvVariables.TrustServerCertificate] = cmdLine.AuthenticationArgs.TrustServerCertificate.ToString(),
+                [ContainerEnvVariables.Silent] = cmdLine.Silent.ToString(),
+                [ContainerEnvVariables.UnitTest] = unitTest.ToString()
+            };
+
+            AddIfPresent(values, ContainerEnvVariables.DacpacName, cmdLine.DacPacArgs.PlatinumDacpac);
+            AddIfPresent(values, ContainerEnvVariables.TargetDacpac, cmdLine.DacPacArgs.TargetDacpac);
+            AddIfPresent(values, ContainerEnvVariables.PlatinumDbSource, cmdLine.DacPacArgs.PlatinumDbSource);
+            AddIfPresent(values, ContainerEnvVariables.PlatinumServerSource, cmdLine.DacPacArgs.PlatinumServerSource);
+            AddIfPresent(values, ContainerEnvVariables.Override, cmdLine.MultiDbRunConfigFileName);
+            AddIfPresent(values, ContainerEnvVariables.EventHubConnectionString, cmdLine.ConnectionArgs.EventHubConnectionString);
+            AddIfPresent(values, ContainerEnvVariables.ServiceBusTopicConnectionString, cmdLine.ConnectionArgs.ServiceBusTopicConnectionString);
+            AddIfPresent(values, ContainerEnvVariables.IdentityClientId, cmdLine.IdentityArgs.ClientId);
+            AddIfPresent(values, ContainerEnvVariables.IdentityName, cmdLine.IdentityArgs.IdentityName);
+            AddIfPresent(values, ContainerEnvVariables.TenantId, cmdLine.IdentityArgs.TenantId);
+            AddIfPresent(values, ContainerEnvVariables.OutputContainerSasUrl, cmdLine.BatchArgs.OutputContainerSasUrl);
+            AddIfPresent(values, ContainerEnvVariables.QueryFile, cmdLine.QueryFile?.ToString());
+            AddIfPresent(values, ContainerEnvVariables.OutputFile, cmdLine.OutputFile?.ToString());
+
+            if (string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                AddIfPresent(values, ContainerEnvVariables.StorageAccountKey, cmdLine.ConnectionArgs.StorageAccountKey);
+                AddIfPresent(values, ContainerEnvVariables.UserName, cmdLine.AuthenticationArgs.UserName);
+                AddIfPresent(values, ContainerEnvVariables.Password, cmdLine.AuthenticationArgs.Password);
+            }
+
+            return values;
+        }
+
+        private static void AddIfPresent(Dictionary<string, string> values, string name, string? value)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                values[name] = value;
+            }
+        }
+
         internal static CommandLineArgs ReadRuntimeEnvironmentVariables(CommandLineArgs cmdLine)
         {
             log.LogInformation("Reading environment variables for Container worker");
@@ -252,8 +311,79 @@ namespace SqlBuildManager.Console.ContainerShared
                 log.LogDebug($"Unable to read environment variable {ContainerEnvVariables.OutputFile}");
             }
 
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.Override);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.Override = tmp;
+            }
+
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.TargetDacpac);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.TargetDacpac = tmp;
+            }
+
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.OutputContainerSasUrl);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.OutputContainerSasUrl = tmp;
+            }
+
+            ReadBoolean(ContainerEnvVariables.Transactional, value => cmdLine.Transactional = value);
+            ReadBoolean(ContainerEnvVariables.ForceCustomDacPac, value => cmdLine.ForceCustomDacPac = value);
+            ReadBoolean(ContainerEnvVariables.TrustServerCertificate, value => cmdLine.TrustServerCertificate = value);
+            ReadBoolean(ContainerEnvVariables.Silent, value => cmdLine.Silent = value);
+            ReadInteger(ContainerEnvVariables.TimeoutRetryCount, value => cmdLine.TimeoutRetryCount = value);
+            ReadInteger(ContainerEnvVariables.DefaultScriptTimeout, value => cmdLine.DefaultScriptTimeout = value);
+
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.PlatinumDbSource);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.PlatinumDbSource = tmp;
+            }
+
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.PlatinumServerSource);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.PlatinumServerSource = tmp;
+            }
+
+            tmp = Environment.GetEnvironmentVariable(ContainerEnvVariables.TenantId);
+            if (!string.IsNullOrWhiteSpace(tmp))
+            {
+                cmdLine.TenantId = tmp;
+            }
 
             return cmdLine;
+        }
+
+        internal static bool IsUnitTest() =>
+            bool.TryParse(Environment.GetEnvironmentVariable(ContainerEnvVariables.UnitTest), out var value) && value;
+
+        private static void ReadBoolean(string name, Action<bool> setter)
+        {
+            var value = Environment.GetEnvironmentVariable(name);
+            if (bool.TryParse(value, out var parsed))
+            {
+                setter(parsed);
+            }
+            else if (!string.IsNullOrWhiteSpace(value))
+            {
+                log.LogWarning($"Unable to parse environment variable {name} as a boolean");
+            }
+        }
+
+        private static void ReadInteger(string name, Action<int> setter)
+        {
+            var value = Environment.GetEnvironmentVariable(name);
+            if (int.TryParse(value, out var parsed))
+            {
+                setter(parsed);
+            }
+            else if (!string.IsNullOrWhiteSpace(value))
+            {
+                log.LogWarning($"Unable to parse environment variable {name} as an integer");
+            }
         }
     }
 }
