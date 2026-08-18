@@ -99,6 +99,42 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.DbInformati
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBuildManager.SqlBuild.Benchmarks", "SqlBuildManager.SqlBuild.Benchmarks\SqlBuildManager.SqlBuild.Benchmarks.csproj", "{6B226E44-33EE-03E6-4389-7B29D0A0CFE0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "azureconfig", "azureconfig", "{0B4253AE-5FE1-40CC-8891-E4F1BB97F32C}"
+	ProjectSection(SolutionItems) = preProject
+		TestConfig\clientdbtargets-doubledb.cfg = TestConfig\clientdbtargets-doubledb.cfg
+		TestConfig\clientdbtargets-tag.cfg = TestConfig\clientdbtargets-tag.cfg
+		TestConfig\clientdbtargets.cfg = TestConfig\clientdbtargets.cfg
+		TestConfig\databasetargets-badtargets.cfg = TestConfig\databasetargets-badtargets.cfg
+		TestConfig\databasetargets-tag.cfg = TestConfig\databasetargets-tag.cfg
+		TestConfig\databasetargets.cfg = TestConfig\databasetargets.cfg
+		TestConfig\mysql-clientdbtargets-doubledb.cfg = TestConfig\mysql-clientdbtargets-doubledb.cfg
+		TestConfig\mysql-clientdbtargets.cfg = TestConfig\mysql-clientdbtargets.cfg
+		TestConfig\mysql-databasetargets.cfg = TestConfig\mysql-databasetargets.cfg
+		TestConfig\mysql-pw.txt = TestConfig\mysql-pw.txt
+		TestConfig\mysql-server.txt = TestConfig\mysql-server.txt
+		TestConfig\mysql-un.txt = TestConfig\mysql-un.txt
+		TestConfig\pg-clientdbtargets-doubledb.cfg = TestConfig\pg-clientdbtargets-doubledb.cfg
+		TestConfig\pg-clientdbtargets.cfg = TestConfig\pg-clientdbtargets.cfg
+		TestConfig\pg-databasetargets.cfg = TestConfig\pg-databasetargets.cfg
+		TestConfig\pg-pw.txt = TestConfig\pg-pw.txt
+		TestConfig\pg-server.txt = TestConfig\pg-server.txt
+		TestConfig\pg-un.txt = TestConfig\pg-un.txt
+		TestConfig\pw.txt = TestConfig\pw.txt
+		TestConfig\server.txt = TestConfig\server.txt
+		TestConfig\settingsfile-aci-mi-only.json = TestConfig\settingsfile-aci-mi-only.json
+		TestConfig\settingsfile-aci-mysql-password.json = TestConfig\settingsfile-aci-mysql-password.json
+		TestConfig\settingsfile-batch-linux-mi-only.json = TestConfig\settingsfile-batch-linux-mi-only.json
+		TestConfig\settingsfile-batch-linux-mysql-password.json = TestConfig\settingsfile-batch-linux-mysql-password.json
+		TestConfig\settingsfile-batch-linux-queue-mi-only.json = TestConfig\settingsfile-batch-linux-queue-mi-only.json
+		TestConfig\settingsfile-batch-linux-queue-mysql-password.json = TestConfig\settingsfile-batch-linux-queue-mysql-password.json
+		TestConfig\settingsfile-containerapp-mi-only.json = TestConfig\settingsfile-containerapp-mi-only.json
+		TestConfig\settingsfile-containerapp-mysql-password.json = TestConfig\settingsfile-containerapp-mysql-password.json
+		TestConfig\settingsfile-k8s-mi-only.json = TestConfig\settingsfile-k8s-mi-only.json
+		TestConfig\settingsfile-k8s-mysql-password.json = TestConfig\settingsfile-k8s-mysql-password.json
+		TestConfig\settingsfilekey.txt = TestConfig\settingsfilekey.txt
+		TestConfig\un.txt = TestConfig\un.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		CD_ROM|.NET = CD_ROM|.NET
@@ -2460,6 +2496,7 @@ Global
 		{3D8D35D1-B50C-41C9-B543-DF3532F8011A} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{6F906D05-512F-9BC6-C3FD-7C1D857056D8} = {9D556B49-86D1-93A7-9596-FFAAB74EC556}
 		{6B226E44-33EE-03E6-4389-7B29D0A0CFE0} = {9D556B49-86D1-93A7-9596-FFAAB74EC556}
+		{0B4253AE-5FE1-40CC-8891-E4F1BB97F32C} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4EAE68F9-7FF3-4D91-AA57-7BB94190F4FC}
