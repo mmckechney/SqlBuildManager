@@ -12,6 +12,7 @@ using SqlBuildManager.SqlBuild.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -510,35 +511,135 @@ namespace SqlBuildManager.Console.Threaded
             await Task.Run(() => Directory.CreateDirectory(_context.WorkingDirectory)).ConfigureAwait(false);
 
             string workDir = _context.WorkingDirectory;
-            var extractResult = await SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(sqlBuildProjectFileName, workingDirectory: workDir, resetWorkingDirectory: false, overwriteExistingProjectFiles: true).ConfigureAwait(false);
-            if (!extractResult.success)
+            var archiveEntries = GetArchiveEntries(sqlBuildProjectFileName);
+            for (var attempt = 1; attempt <= 2; attempt++)
             {
-                var msg = new LogMsg()
+                if (attempt > 1)
                 {
-                    Message = $"Zip extraction error. Unable to Extract Sql Build file at '{sqlBuildProjectFileName}'. Do you need to specify a full directory path? {extractResult.result}",
-                    LogType = LogType.Error
-                };
-                threadedLog.WriteToLog(msg);
+                    ClearWorkingDirectory(workDir);
+                    log.LogWarning("Retrying build package extraction once in cleared working directory '{WorkingDirectory}'", workDir);
+                }
+
+                var extractResult = await SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(
+                    sqlBuildProjectFileName,
+                    workingDirectory: workDir,
+                    resetWorkingDirectory: false,
+                    overwriteExistingProjectFiles: true).ConfigureAwait(false);
+                if (!extractResult.success)
+                {
+                    if (attempt == 1 && archiveEntries.Count > 0)
+                    {
+                        continue;
+                    }
+
+                    WritePackageValidationError(
+                        $"Zip extraction error: {extractResult.result}",
+                        sqlBuildProjectFileName,
+                        workDir,
+                        archiveEntries);
+                    return ((int)ExecutionReturn.BuildFileExtractionError, null!);
+                }
+
+                _context.WorkingDirectory = extractResult.workingDirectory;
+                _context.ProjectFileName = extractResult.projectFileName;
+                projectFilePath = extractResult.projectFilePath;
+
+                var (loadSuccess, model) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(_context.ProjectFileName, validateSchema: false).ConfigureAwait(false);
+                if (!loadSuccess)
+                {
+                    var msg = new LogMsg()
+                    {
+                        Message = "Build project load error. Unable to load project file.",
+                        LogType = LogType.Error
+                    };
+                    threadedLog.WriteToLog(msg);
+                    return ((int)ExecutionReturn.LoadProjectFileError, null!);
+                }
+
+                var missingScripts = GetMissingReferencedScripts(model, projectFilePath);
+                if (missingScripts.Count == 0)
+                {
+                    return (0, model);
+                }
+
+                var missingEntriesAreInArchive = missingScripts.All(missing =>
+                    archiveEntries.Any(entry =>
+                        string.Equals(Path.GetFileName(entry.Name), Path.GetFileName(missing), StringComparison.OrdinalIgnoreCase)));
+                if (attempt == 1 && missingEntriesAreInArchive)
+                {
+                    log.LogWarning(
+                        "Extracted package is missing referenced scripts that exist in the archive. Retrying extraction once. Missing scripts: {MissingScripts}",
+                        string.Join(", ", missingScripts));
+                    continue;
+                }
+
+                WritePackageValidationError(
+                    $"Build project references missing scripts: {string.Join(", ", missingScripts)}",
+                    sqlBuildProjectFileName,
+                    projectFilePath,
+                    archiveEntries);
                 return ((int)ExecutionReturn.BuildFileExtractionError, null!);
-
             }
-            _context.WorkingDirectory = extractResult.workingDirectory;
-            _context.ProjectFileName = extractResult.projectFileName;
-            projectFilePath = extractResult.projectFilePath;
 
-            var (loadSuccess, model) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(_context.ProjectFileName, validateSchema: false).ConfigureAwait(false);
-            if (!loadSuccess)
+            return ((int)ExecutionReturn.BuildFileExtractionError, null!);
+        }
+
+        internal static IReadOnlyList<string> GetMissingReferencedScripts(SqlSyncBuildDataModel model, string projectDirectory)
+        {
+            return model.Script
+                .Select(script => script.FileName)
+                .Where(fileName => !string.IsNullOrWhiteSpace(fileName))
+                .Select(fileName => fileName!)
+                .Where(fileName => !File.Exists(Path.Combine(projectDirectory, fileName)))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        private static IReadOnlyList<(string Name, long Length)> GetArchiveEntries(string packagePath)
+        {
+            try
             {
-                var msg = new LogMsg()
-                {
-                    Message = $"Build project load error. Unable to load project file.",
-                    LogType = LogType.Error
-                };
-                threadedLog.WriteToLog(msg);
-                return ((int)ExecutionReturn.LoadProjectFileError, null!);
+                using var archive = ZipFile.OpenRead(packagePath);
+                return archive.Entries
+                    .Where(entry => !string.IsNullOrEmpty(entry.Name))
+                    .Select(entry => (entry.FullName, entry.Length))
+                    .ToList();
             }
+            catch (Exception exception)
+            {
+                log.LogError(exception, "Unable to inspect build package archive entries for '{PackagePath}'", packagePath);
+                return Array.Empty<(string Name, long Length)>();
+            }
+        }
 
-            return (0, model);
+        private static void ClearWorkingDirectory(string workingDirectory)
+        {
+            if (Directory.Exists(workingDirectory))
+            {
+                Directory.Delete(workingDirectory, recursive: true);
+            }
+            Directory.CreateDirectory(workingDirectory);
+        }
+
+        private void WritePackageValidationError(
+            string reason,
+            string packagePath,
+            string workingDirectory,
+            IReadOnlyList<(string Name, long Length)> archiveEntries)
+        {
+            var taskId = Environment.GetEnvironmentVariable("AZ_BATCH_TASK_ID") ?? "not-running-in-batch";
+            var entries = archiveEntries.Count == 0
+                ? "<unavailable>"
+                : string.Join(", ", archiveEntries.Select(entry => $"{entry.Name} ({entry.Length} bytes)"));
+            var msg = new LogMsg
+            {
+                Message =
+                    $"{reason}. Task ID: '{taskId}'. Working directory: '{workingDirectory}'. " +
+                    $"Package path: '{packagePath}'. Archive entries: {entries}. " +
+                    $"Returning error code: {(int)ExecutionReturn.BuildFileExtractionError}",
+                LogType = LogType.Error
+            };
+            threadedLog.WriteToLog(msg);
         }
 
         private async Task ConstructBuildFileFromScriptDirectory(string directoryName)

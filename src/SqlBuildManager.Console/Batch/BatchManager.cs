@@ -413,16 +413,24 @@ namespace SqlBuildManager.Console.Batch
                     BatchExecutionCompletedEvent(this, new BatchMonitorEventArgs(cmdLine, stream, unittest));
                 }
 
-                log.LogInformation("All tasks reached state Completed.");
+                log.LogInformation("All tasks reached a terminal state; validating exit results.");
 
                 // Print task output
                 log.LogInformation("Printing task output...");
 
-                IEnumerable<CloudTask> completedtasks = batchClient.JobOperations.ListTasks(jobId);
+                var completedtasks = batchClient.JobOperations.ListTasks(jobId).ToList();
+                var succeededTaskCount = completedtasks.Count(task =>
+                    task.ExecutionInformation.Result == TaskExecutionResult.Success ||
+                    task.ExecutionInformation.ExitCode == 0);
+                var failedTaskCount = completedtasks.Count - succeededTaskCount;
+                log.LogInformation(
+                    "Batch task results: {SucceededTaskCount} succeeded, {FailedTaskCount} failed.",
+                    succeededTaskCount,
+                    failedTaskCount);
 
                 foreach (CloudTask task in completedtasks)
                 {
-                    string nodeId = String.Format(task.ComputeNodeInformation.ComputeNodeId);
+                    string nodeId = task.ComputeNodeInformation?.ComputeNodeId ?? "<not assigned>";
                     log.LogInformation("---------------------------------");
                     log.LogInformation($"Task: {task.Id}");
                     log.LogInformation($"Node: {nodeId}");
@@ -437,17 +445,34 @@ namespace SqlBuildManager.Console.Batch
                             failure.Message,
                             string.Join(", ", failure.Details.Select(detail => $"{detail.Name}={detail.Value}")));
                     }
-                    if (isDebug)
+                    if (isDebug || task.ExecutionInformation.ExitCode != 0 || task.ExecutionInformation.FailureInformation != null)
                     {
-                        log.LogDebug("Standard out:");
-                        log.LogDebug(task.GetNodeFile("stdout.txt").ReadAsString());
+                        var standardOutput = ReadTaskOutput(task, "stdout.txt");
+                        if (standardOutput != null && isDebug)
+                        {
+                            log.LogDebug("Standard output for task {TaskId}:{NewLine}{StandardOutput}",
+                                task.Id,
+                                Environment.NewLine,
+                                standardOutput);
+                        }
+                        else if (standardOutput != null)
+                        {
+                            log.LogError("Standard output for failed task {TaskId}:{NewLine}{StandardOutput}",
+                                task.Id,
+                                Environment.NewLine,
+                                standardOutput);
+                        }
                     }
                     if (task.ExecutionInformation.ExitCode != 0)
                     {
-                        log.LogError("Standard error for task {TaskId}:{NewLine}{StandardError}",
-                            task.Id,
-                            Environment.NewLine,
-                            task.GetNodeFile("stderr.txt").ReadAsString());
+                        var standardError = ReadTaskOutput(task, "stderr.txt");
+                        if (standardError != null)
+                        {
+                            log.LogError("Standard error for task {TaskId}:{NewLine}{StandardError}",
+                                task.Id,
+                                Environment.NewLine,
+                                standardError);
+                        }
                         myExitCode = task.ExecutionInformation.ExitCode ?? (int)ExecutionReturn.BatchExecutionError;
                     }
                 }
@@ -557,6 +582,23 @@ namespace SqlBuildManager.Console.Batch
                 return ((int)ExecutionReturn.BatchJobMonitorTimeout, readOnlySasToken);
             }
 
+        }
+
+        private string? ReadTaskOutput(CloudTask task, string fileName)
+        {
+            try
+            {
+                return task.GetNodeFile(fileName).ReadAsString();
+            }
+            catch (BatchException exception)
+            {
+                log.LogWarning(
+                    exception,
+                    "Unable to read {FileName} for Batch task {TaskId}; the task may have failed before a node file was created.",
+                    fileName,
+                    task.Id);
+                return null;
+            }
         }
 
 

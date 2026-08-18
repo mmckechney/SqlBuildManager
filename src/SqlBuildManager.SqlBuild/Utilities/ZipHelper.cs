@@ -140,15 +140,42 @@ namespace SqlBuildManager.SqlBuild.Utilities
                 using (ZipArchive archive = ZipFile.Open(zipFileName, ZipArchiveMode.Read))
                 {
                     log.LogDebug($"Archive contains {archive.Entries.Count} entries: {string.Join(", ", archive.Entries.Select(e => e.FullName))}");
+                    var extractedEntries = new List<(string ArchiveName, string ExtractedPath, long ExpectedLength)>();
                     foreach (ZipArchiveEntry file in archive.Entries)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
+                        if (string.IsNullOrEmpty(file.Name))
+                        {
+                            continue;
+                        }
+
                         fileUnzipFullName = Path.Combine(destinationDir, file.Name);
                         if (!File.Exists(fileUnzipFullName) || overwriteExistingProjectFiles)
                         {
-                            await using var entryStream = file.Open();
-                            await using var outStream = new FileStream(fileUnzipFullName, FileMode.Create, FileAccess.Write, FileShare.None, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
-                            await entryStream.CopyToAsync(outStream, 81920, cancellationToken).ConfigureAwait(false);
+                            await using (var entryStream = file.Open())
+                            await using (var outStream = new FileStream(fileUnzipFullName, FileMode.Create, FileAccess.Write, FileShare.None, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan))
+                            {
+                                await entryStream.CopyToAsync(outStream, 81920, cancellationToken).ConfigureAwait(false);
+                                await outStream.FlushAsync(cancellationToken).ConfigureAwait(false);
+                            }
+                        }
+
+                        extractedEntries.Add((file.FullName, fileUnzipFullName, file.Length));
+                    }
+
+                    foreach (var entry in extractedEntries)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        if (!File.Exists(entry.ExtractedPath))
+                        {
+                            throw new InvalidDataException($"Archive entry '{entry.ArchiveName}' was not extracted to '{entry.ExtractedPath}'.");
+                        }
+
+                        var actualLength = new FileInfo(entry.ExtractedPath).Length;
+                        if (actualLength != entry.ExpectedLength)
+                        {
+                            throw new InvalidDataException(
+                                $"Archive entry '{entry.ArchiveName}' extracted to '{entry.ExtractedPath}' with length {actualLength}, expected {entry.ExpectedLength}.");
                         }
                     }
                 }
@@ -361,4 +388,3 @@ namespace SqlBuildManager.SqlBuild.Utilities
         }
     }
 }
-

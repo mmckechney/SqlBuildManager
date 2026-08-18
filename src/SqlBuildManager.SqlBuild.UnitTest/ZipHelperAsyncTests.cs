@@ -36,6 +36,35 @@ namespace SqlBuildManager.SqlBuild.UnitTest
         }
 
         [TestMethod]
+        public async Task UnpackZipPackageAsync_ExistingEntryHasWrongLength_ReturnsFalse()
+        {
+            var tmpDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tmpDir);
+            try
+            {
+                var zipPath = Path.Combine(tmpDir, "test.zip");
+                var sourcePath = Path.Combine(tmpDir, "source.txt");
+                await File.WriteAllTextAsync(sourcePath, "expected content");
+                using (var zip = IOZipFile.Open(zipPath, ZipArchiveMode.Create))
+                {
+                    System.IO.Compression.ZipFileExtensions.CreateEntryFromFile(zip, sourcePath, "file.txt", CompressionLevel.Fastest);
+                }
+
+                var outDir = Path.Combine(tmpDir, "out");
+                Directory.CreateDirectory(outDir);
+                await File.WriteAllTextAsync(Path.Combine(outDir, "file.txt"), "bad");
+
+                var ok = await ZipHelper.UnpackZipPackageAsync(outDir, zipPath, overwriteExistingProjectFiles: false);
+
+                Assert.IsFalse(ok);
+            }
+            finally
+            {
+                Directory.Delete(tmpDir, true);
+            }
+        }
+
+        [TestMethod]
         public async Task AppendZipPackageAsync_AppendsFile()
         {
             var tmpDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

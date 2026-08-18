@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SqlBuildManager.SqlBuild;
+using ZipHelper = SqlBuildManager.SqlBuild.Utilities.ZipHelper;
 
 namespace SqlBuildManager.Console.MySQL.AzureTest
 {
@@ -86,6 +88,49 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
         }
 
         #endregion
+
+        [TestMethod]
+        public async Task Batch_MySQL_Package_ExtractsReferencedScript_InIndependentTaskDirectories()
+        {
+            var packagePath = MySqlTestHelper.GetMySqlSimpleSelectSbm();
+            var rootDirectory = Path.Combine(Path.GetTempPath(), $"mysql-batch-package-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(rootDirectory);
+
+            try
+            {
+                var extractionTasks = Enumerable.Range(0, 5).Select(async taskIndex =>
+                {
+                    var taskDirectory = Path.Combine(rootDirectory, $"Task{taskIndex}", "wd", "Working");
+                    Directory.CreateDirectory(taskDirectory);
+
+                    var extracted = await ZipHelper.UnpackZipPackageAsync(
+                        taskDirectory,
+                        packagePath,
+                        overwriteExistingProjectFiles: true);
+
+                    Assert.IsTrue(extracted, $"Package extraction failed for Task{taskIndex}");
+                    var projectPath = Path.Combine(taskDirectory, XmlFileNames.MainProjectFile);
+                    var (loaded, model) = await SqlBuildFileHelper.LoadSqlBuildProjectFileAsync(projectPath, validateSchema: false);
+                    Assert.IsTrue(loaded, $"Project metadata failed to load for Task{taskIndex}");
+
+                    var missingScripts = model.Script
+                        .Select(script => script.FileName)
+                        .Where(fileName => !string.IsNullOrWhiteSpace(fileName))
+                        .Where(fileName => !File.Exists(Path.Combine(taskDirectory, fileName!)))
+                        .ToList();
+                    Assert.AreEqual(0, missingScripts.Count,
+                        $"Task{taskIndex} is missing referenced scripts: {string.Join(", ", missingScripts)}");
+                    Assert.IsTrue(File.Exists(Path.Combine(taskDirectory, "Simple Select.sql")),
+                        $"Task{taskIndex} did not extract Simple Select.sql");
+                });
+
+                await Task.WhenAll(extractionTasks);
+            }
+            finally
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+        }
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.Count, 10)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.Server, 2)]
