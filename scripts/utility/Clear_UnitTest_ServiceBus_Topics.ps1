@@ -24,7 +24,11 @@ if (-not [string]::IsNullOrWhiteSpace($resourceGroupNameOverride)) {
 $sbNamespaceName = $serviceBusNamespaceName
 
 Write-Host "Cleaning up old Service Bus Topic subscriptions from $sbNamespaceName" -ForegroundColor Green
-$subs = (az servicebus topic subscription list -g $resourceGroupName --namespace-name $sbNamespaceName --topic-name "sqlbuildmanager" ) | ConvertFrom-Json
+$subscriptionsJson = az servicebus topic subscription list -g $resourceGroupName --namespace-name $sbNamespaceName --topic-name "sqlbuildmanager" --only-show-errors
+if ($LASTEXITCODE -ne 0) {
+    throw "Unable to list Service Bus subscriptions in namespace '$sbNamespaceName'."
+}
+$subs = $subscriptionsJson | ConvertFrom-Json
 if($null -ne $subs)
 {
     foreach($sub in $subs)
@@ -32,7 +36,10 @@ if($null -ne $subs)
         if($sub.name.StartsWith("aci-") -or $sub.name.StartsWith("k8s-") -or $sub.name.StartsWith("aci-") -or $sub.name.StartsWith("c-") -or $sub.name.StartsWith("ca-") -or $sub.name.StartsWith("batch-") -or $sub.name.StartsWith("bat-"))
         {
             Write-Host "Removing Service Bus Topic subscription : $($sub.name)" -ForegroundColor Green
-            az servicebus topic subscription delete --ids $sub.id 
+            az servicebus topic subscription delete --ids $sub.id --only-show-errors
+            if ($LASTEXITCODE -ne 0) {
+                throw "Unable to delete Service Bus subscription '$($sub.name)'."
+            }
         }
         else {
             Write-Host "Skippping Service Bus Topic subscription : $($sub.name). Didn't meet name criteria" -ForegroundColor Cyan

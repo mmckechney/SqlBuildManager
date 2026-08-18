@@ -7,5 +7,10 @@
 #>
 Write-Host "Deleting Kubernetes unit test YAML files" -ForegroundColor Green
 
-$frameworkTarget = (Select-Xml -Path "../../src/SqlBuildManager.Console.SqlServer.AzureTest/SqlBuildManager.Console.SqlServer.AzureTest.csproj" -XPath "/Project/PropertyGroup/TargetFramework").Node.InnerText
-Get-ChildItem ../../src/SqlBuildManager.Console.SqlServer.AzureTest/bin/Debug/$frameworkTarget -Include *.yaml -Recurse -Force | Remove-Item -Recurse -Force
+$repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+$projectPath = Join-Path $repoRoot "src\SqlBuildManager.Console.SqlServer.AzureTest\SqlBuildManager.Console.SqlServer.AzureTest.csproj"
+$frameworkTarget = (Select-Xml -Path $projectPath -XPath "/Project/PropertyGroup/TargetFramework").Node.InnerText
+$outputPath = Join-Path $repoRoot "src\SqlBuildManager.Console.SqlServer.AzureTest\bin\Debug\$frameworkTarget"
+if (Test-Path $outputPath) {
+    Get-ChildItem $outputPath -Filter *.yaml -Recurse -Force | Remove-Item -Force
+}
