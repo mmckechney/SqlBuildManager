@@ -52,6 +52,11 @@ public static class RuntimeContainerClient
         return results;
     }
 
+    public static Task<RuntimeContainerResult[]> RunManyAsync(
+        CancellationToken cancellationToken,
+        params string[] arguments) =>
+        RunManyAsync(LocalContainerTestEnvironment.RuntimeContainerCount, cancellationToken, arguments);
+
     public static async Task<RuntimeContainerResult> RunAsync(
         CancellationToken cancellationToken,
         params string[] arguments) =>

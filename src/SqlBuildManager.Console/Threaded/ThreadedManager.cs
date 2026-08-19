@@ -406,25 +406,25 @@ namespace SqlBuildManager.Console.Threaded
         }
         private async Task<int> ProcessThreadedBuildWithQueueAsync(ThreadedRunner runner, ServiceBusReceivedMessage message, CancellationToken cancellationToken = default)
         {
-            const int MessageLockRenewalSeconds = 30;
+            var messageLockRenewalSeconds =
+                cmdLine.ConnectionArgs.ServiceBusTopicConnectionString?.Contains(
+                    "UseDevelopmentEmulator=true",
+                    StringComparison.OrdinalIgnoreCase) == true
+                    ? 5
+                    : 30;
             
-            //Renew the lock on the message every 30 seconds
-            var timer = new System.Diagnostics.Stopwatch();
-            timer.Start();
-            var buildTask = ProcessThreadedBuildAsync(runner, cancellationToken);
-            while (!buildTask.IsCompleted)
+            using var renewalTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var renewalTask = RenewMessageLockAsync(message, messageLockRenewalSeconds, renewalTokenSource.Token);
+            RunnerReturn retVal;
+            try
             {
-                if (timer.Elapsed.TotalSeconds >= MessageLockRenewalSeconds)
-                {
-                    await this.qManager.RenewMessageLock(message);
-                    timer.Restart();
-                }
-                await Task.Delay(ExecutionOptions.FastPollingInterval, cancellationToken);
+                retVal = await ProcessThreadedBuildAsync(runner, cancellationToken);
             }
-            timer.Stop();
-            
-            //Get result - task is already completed
-            var retVal = await buildTask;
+            finally
+            {
+                renewalTokenSource.Cancel();
+                await renewalTask;
+            }
             
             RunnerReturn tmp;
             Enum.TryParse<RunnerReturn>(retVal.ToString(), out tmp);
@@ -441,6 +441,24 @@ namespace SqlBuildManager.Console.Threaded
                     queueReturnValue += 1;
                     return 1;
 
+            }
+        }
+
+        private async Task RenewMessageLockAsync(
+            ServiceBusReceivedMessage message,
+            int renewalSeconds,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                using var timer = new PeriodicTimer(TimeSpan.FromSeconds(renewalSeconds));
+                while (await timer.WaitForNextTickAsync(cancellationToken))
+                {
+                    await qManager.RenewMessageLock(message);
+                }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
             }
         }
         private async Task<RunnerReturn> ProcessThreadedBuildAsync(ThreadedRunner runner, CancellationToken cancellationToken = default)

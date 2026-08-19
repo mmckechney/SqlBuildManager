@@ -88,9 +88,16 @@ services:
       SBM_RUNTIME_NETWORK: ${SBM_RUNTIME_NETWORK:-}
       SBM_TEST_RESULTS_VOLUME: ${SBM_TEST_RESULTS_VOLUME:-sbm-local-test-results}
       SBM_RUNTIME_CONTAINER_MODE: ${SBM_RUNTIME_CONTAINER_MODE:-}
+      SBM_RUNTIME_CONTAINER_COUNT: ${SBM_RUNTIME_CONTAINER_COUNT:-2}
     depends_on:
       sqlserver:
         condition: service_healthy
+      azurite:
+        condition: service_started
+      eventhubs-emulator:
+        condition: service_started
+      servicebus-emulator:
+        condition: service_started
     volumes:
       - test-results:/tests/TestResults
       - /var/run/docker.sock:/var/run/docker.sock
@@ -118,9 +125,16 @@ services:
       SBM_RUNTIME_NETWORK: ${SBM_RUNTIME_NETWORK:-}
       SBM_TEST_RESULTS_VOLUME: ${SBM_TEST_RESULTS_VOLUME:-sbm-local-test-results}
       SBM_RUNTIME_CONTAINER_MODE: ${SBM_RUNTIME_CONTAINER_MODE:-}
+      SBM_RUNTIME_CONTAINER_COUNT: ${SBM_RUNTIME_CONTAINER_COUNT:-2}
     depends_on:
       postgres:
         condition: service_healthy
+      azurite:
+        condition: service_started
+      eventhubs-emulator:
+        condition: service_started
+      servicebus-emulator:
+        condition: service_started
     volumes:
       - test-results:/tests/TestResults
       - /var/run/docker.sock:/var/run/docker.sock
@@ -148,9 +162,16 @@ services:
       SBM_RUNTIME_NETWORK: ${SBM_RUNTIME_NETWORK:-}
       SBM_TEST_RESULTS_VOLUME: ${SBM_TEST_RESULTS_VOLUME:-sbm-local-test-results}
       SBM_RUNTIME_CONTAINER_MODE: ${SBM_RUNTIME_CONTAINER_MODE:-}
+      SBM_RUNTIME_CONTAINER_COUNT: ${SBM_RUNTIME_CONTAINER_COUNT:-2}
     depends_on:
       mysql:
         condition: service_healthy
+      azurite:
+        condition: service_started
+      eventhubs-emulator:
+        condition: service_started
+      servicebus-emulator:
+        condition: service_started
     volumes:
       - test-results:/tests/TestResults
       - /var/run/docker.sock:/var/run/docker.sock

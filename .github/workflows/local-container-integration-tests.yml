@@ -19,12 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Run same-container tests
-        shell: pwsh
-        run: ./scripts/tests/run_local_container_tests.ps1 -Platform "${{ matrix.platform }}" -IncludeEmulators
       - name: Run runtime-container tests
         shell: pwsh
-        run: ./scripts/tests/run_local_container_tests.ps1 -Platform "${{ matrix.platform }}" -Filter "TestCategory=RuntimeContainer" -IncludeEmulators
+        run: ./scripts/tests/run_local_container_tests.ps1 -Platform "${{ matrix.platform }}"
       - name: Upload test results and logs
         if: always()
         uses: actions/upload-artifact@v6

@@ -27,4 +27,42 @@ public static class LocalContainerTestEnvironment
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SBM_TEST_BLOB_ENDPOINT")) &&
         !string.IsNullOrWhiteSpace(EventHubConnectionString) &&
         !string.IsNullOrWhiteSpace(ServiceBusConnectionString);
+
+    public static int RuntimeContainerCount
+    {
+        get
+        {
+            var configured = Environment.GetEnvironmentVariable("SBM_RUNTIME_CONTAINER_COUNT");
+            if (string.IsNullOrWhiteSpace(configured))
+            {
+                return 2;
+            }
+
+            if (!int.TryParse(configured, out var count) || count < 1)
+            {
+                throw new InvalidOperationException("SBM_RUNTIME_CONTAINER_COUNT must be an integer greater than zero.");
+            }
+
+            return count;
+        }
+    }
+
+    public static void RequireRuntimeInfrastructure()
+    {
+        if (!EmulatorsConfigured)
+        {
+            throw new InvalidOperationException(
+                "Local-container tests require Azurite, Event Hubs Emulator, and Service Bus Emulator configuration.");
+        }
+
+        foreach (var name in new[] { "SBM_RUNTIME_IMAGE", "SBM_RUNTIME_NETWORK", "SBM_TEST_RESULTS_VOLUME" })
+        {
+            if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(name)))
+            {
+                throw new InvalidOperationException($"{name} must be configured for local-container tests.");
+            }
+        }
+
+        _ = RuntimeContainerCount;
+    }
 }

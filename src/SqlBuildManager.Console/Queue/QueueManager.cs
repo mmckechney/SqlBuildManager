@@ -32,6 +32,8 @@ namespace SqlBuildManager.Console.Queue
         private ServiceBusSessionReceiver _sessionReceiver = null!;
         private ServiceBusReceiver _messageReceiver = null!;
         private CancellationTokenSource tokenSource = null!;
+        private readonly SemaphoreSlim _sessionLockRenewalGate = new(1, 1);
+        private DateTimeOffset _lastSessionLockRenewal = DateTimeOffset.MinValue;
 
         public QueueManager(string topicConnectionString, string jobName, ConcurrencyType concurrencyType, bool unitest = false)
         {
@@ -385,6 +387,7 @@ namespace SqlBuildManager.Console.Queue
                     try
                     {
                         _sessionReceiver = await Client.AcceptNextSessionAsync(topicName, topicSessionSubscriptionName, new ServiceBusSessionReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.PeekLock }, token);
+                        _lastSessionLockRenewal = DateTimeOffset.MinValue;
                         log.LogInformation($"Obtained new subscription for batch job '{jobName}' and subscription Id '{_sessionReceiver.SessionId}' ");
                     }
                     catch (TaskCanceledException)
@@ -577,7 +580,21 @@ namespace SqlBuildManager.Console.Queue
                 log.LogDebug($"Renewing message lock on {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}{concurrency} message ID '{message.MessageId}'");
                 if (_sessionReceiver != null)
                 {
-                    await _sessionReceiver.RenewSessionLockAsync();
+                    await _sessionLockRenewalGate.WaitAsync();
+                    try
+                    {
+                        if (DateTimeOffset.UtcNow - _lastSessionLockRenewal < TimeSpan.FromSeconds(1))
+                        {
+                            return;
+                        }
+
+                        await _sessionReceiver.RenewSessionLockAsync();
+                        _lastSessionLockRenewal = DateTimeOffset.UtcNow;
+                    }
+                    finally
+                    {
+                        _sessionLockRenewalGate.Release();
+                    }
                 }
                 else
                 {
@@ -852,6 +869,10 @@ namespace SqlBuildManager.Console.Queue
             {
                 tasks.Add(_messageReceiver.DisposeAsync().AsTask());
             }
+            if (_sessionReceiver != null)
+            {
+                tasks.Add(_sessionReceiver.DisposeAsync().AsTask());
+            }
             if (_client != null)
             {
                 tasks.Add(_client.DisposeAsync().AsTask());
@@ -866,6 +887,10 @@ namespace SqlBuildManager.Console.Queue
                 ex.Flatten().InnerExceptions.All(exception => exception is TimeoutException))
             {
                 log.LogWarning("Service Bus emulator cleanup timed out while draining a receiver; continuing shutdown.");
+            }
+            finally
+            {
+                _sessionLockRenewalGate.Dispose();
             }
 
         }

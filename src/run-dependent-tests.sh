@@ -55,7 +55,7 @@ fi
 
 if [ -n "${SBM_TEST_EVENTHUB_CONNECTION_STRING:-}" ]; then
     echo "Waiting for local messaging emulators..."
-    for hostport in "azurite:10000" "eventhubs-emulator:5672" "servicebus-emulator:5672"; do
+    for hostport in "azurite:10000" "eventhubs-emulator:5672" "servicebus-emulator:5672" "servicebus-emulator:5300"; do
         host="${hostport%%:*}"; port="${hostport##*:}"
         for i in $(seq 1 $RETRIES); do
             if timeout 2 bash -c "echo > /dev/tcp/$host/$port" 2>/dev/null; then break; fi
@@ -67,22 +67,17 @@ fi
 
 mkdir -p /tests/TestResults
 
-# Local Compose selects a small subset of the existing dependent suites.
+# Local Compose runs only the all-runtime LocalContainer suite. The broader
+# dependent suites remain available through the existing ACI test path.
 case "$PLATFORM" in
     sqlserver) TEST_DLLS=(
         "SqlBuildManager.LocalContainer.SqlServer.IntegrationTest/SqlBuildManager.LocalContainer.SqlServer.IntegrationTest.dll"
-        "SqlBuildManager.SqlBuild.SqlServer.IntegrationTest/SqlBuildManager.SqlBuild.SqlServer.IntegrationTest.dll"
-        "SqlBuildManager.Console.SqlServer.IntegrationTest/SqlBuildManager.Console.SqlServer.IntegrationTest.dll"
     ) ;;
     postgresql) TEST_DLLS=(
         "SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest/SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest.dll"
-        "SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest/SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest.dll"
-        "SqlBuildManager.Console.PostgreSQL.IntegrationTest/SqlBuildManager.Console.PostgreSQL.IntegrationTest.dll"
     ) ;;
     mysql) TEST_DLLS=(
         "SqlBuildManager.LocalContainer.MySql.IntegrationTest/SqlBuildManager.LocalContainer.MySql.IntegrationTest.dll"
-        "SqlBuildManager.SqlBuild.MySQL.IntegrationTest/SqlBuildManager.SqlBuild.MySQL.IntegrationTest.dll"
-        "SqlBuildManager.Console.MySQL.IntegrationTest/SqlBuildManager.Console.MySQL.IntegrationTest.dll"
     ) ;;
     all) ;;
 esac

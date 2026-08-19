@@ -3,7 +3,8 @@ param(
     [ValidateSet("sqlserver", "postgresql", "mysql")]
     [string] $Platform = "sqlserver",
     [string] $Filter,
-    [switch] $IncludeEmulators,
+    [ValidateRange(1, [int]::MaxValue)]
+    [int] $RuntimeContainerCount = 2,
     [string] $NuGetSource,
     [switch] $RebuildImages
 )
@@ -49,23 +50,19 @@ $env:SBM_RUNTIME_IMAGE = $runtimeImage
 $env:SBM_TEST_IMAGE = $testImage
 $env:SBM_RUNTIME_NETWORK = $runtimeNetwork
 $env:SBM_TEST_RESULTS_VOLUME = $resultsVolume
+$env:SBM_RUNTIME_CONTAINER_COUNT = $RuntimeContainerCount
+$env:SBM_RUNTIME_CONTAINER_MODE = "true"
 if ($NuGetSource) {
     $env:SBM_LOCAL_NUGET_SOURCE = $NuGetSource
 }
-if ($Filter) { $env:TEST_FILTER = $Filter }
-if ($Filter -match "RuntimeContainer") { $env:SBM_RUNTIME_CONTAINER_MODE = "true" }
-if ($IncludeEmulators) {
-    # These values are resolved on the Compose network, not from the host.
-    $env:SBM_TEST_BLOB_ENDPOINT = "http://azurite:10000/devstoreaccount1"
-    $env:SBM_BLOB_ENDPOINT = $env:SBM_TEST_BLOB_ENDPOINT
-    $env:SBM_TEST_EVENTHUB_NAME = "sbm-events"
-    $env:SBM_TEST_EVENTHUB_CONNECTION_STRING = "Endpoint=sb://eventhubs-emulator/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;EntityPath=sbm-events;UseDevelopmentEmulator=true"
-    $env:SBM_TEST_SERVICEBUS_CONNECTION_STRING = "Endpoint=sb://servicebus-emulator:5672/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true"
-} else {
-    Remove-Item Env:SBM_TEST_BLOB_ENDPOINT, Env:SBM_BLOB_ENDPOINT, Env:SBM_TEST_EVENTHUB_NAME, Env:SBM_TEST_EVENTHUB_CONNECTION_STRING, Env:SBM_TEST_SERVICEBUS_CONNECTION_STRING -ErrorAction SilentlyContinue
-}
-$profiles = @("--profile", $Platform)
-if ($IncludeEmulators) { $profiles += @("--profile", "emulators") }
+if ($Filter) { $env:TEST_FILTER = $Filter } else { Remove-Item Env:TEST_FILTER -ErrorAction SilentlyContinue }
+# These values are resolved on the Compose network, not from the host.
+$env:SBM_TEST_BLOB_ENDPOINT = "http://azurite:10000/devstoreaccount1"
+$env:SBM_BLOB_ENDPOINT = $env:SBM_TEST_BLOB_ENDPOINT
+$env:SBM_TEST_EVENTHUB_NAME = "sbm-events"
+$env:SBM_TEST_EVENTHUB_CONNECTION_STRING = "Endpoint=sb://eventhubs-emulator/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;EntityPath=sbm-events;UseDevelopmentEmulator=true"
+$env:SBM_TEST_SERVICEBUS_CONNECTION_STRING = "Endpoint=sb://servicebus-emulator:5672/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true"
+$profiles = @("--profile", $Platform, "--profile", "emulators")
 
 try {
     & docker compose -p $projectName -f $composeFile @profiles config --quiet
@@ -79,6 +76,8 @@ try {
     else {
         Write-Host "Using existing production runtime image: $runtimeImage"
     }
+    & docker run --rm $runtimeImage --version
+    if ($LASTEXITCODE -ne 0) { throw "The production runtime image preflight failed." }
 
     & docker image inspect $testImage *> $null
     if ($LASTEXITCODE -ne 0 -or $RebuildImages) {
@@ -105,8 +104,9 @@ finally {
         Tee-Object -FilePath (Join-Path $runResults "runtime-container-volume-copy.log")
     & docker compose -p $projectName -f $composeFile @profiles down --volumes --remove-orphans
     Remove-Item Env:SBM_LOCAL_TEST_RESULTS -ErrorAction SilentlyContinue
-    Remove-Item Env:SBM_RUNTIME_IMAGE, Env:SBM_TEST_IMAGE, Env:SBM_RUNTIME_NETWORK, Env:SBM_TEST_RESULTS_VOLUME -ErrorAction SilentlyContinue
+    Remove-Item Env:SBM_RUNTIME_IMAGE, Env:SBM_TEST_IMAGE, Env:SBM_RUNTIME_NETWORK, Env:SBM_TEST_RESULTS_VOLUME, Env:SBM_RUNTIME_CONTAINER_COUNT -ErrorAction SilentlyContinue
     Remove-Item Env:SBM_LOCAL_NUGET_SOURCE -ErrorAction SilentlyContinue
     Remove-Item Env:SBM_RUNTIME_CONTAINER_MODE -ErrorAction SilentlyContinue
+    Remove-Item Env:TEST_FILTER, Env:SBM_TEST_BLOB_ENDPOINT, Env:SBM_BLOB_ENDPOINT, Env:SBM_TEST_EVENTHUB_NAME, Env:SBM_TEST_EVENTHUB_CONNECTION_STRING, Env:SBM_TEST_SERVICEBUS_CONNECTION_STRING -ErrorAction SilentlyContinue
 }
 exit $exitCode

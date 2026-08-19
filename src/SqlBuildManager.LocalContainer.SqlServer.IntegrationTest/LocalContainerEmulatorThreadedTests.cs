@@ -1,9 +1,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.LocalContainer.IntegrationTest;
 using System;
-using System.CommandLine;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,11 +23,6 @@ public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntime
     [DataRow("MaxPerServer", 4)]
     public async Task ThreadedRun_WithTwentyDatabases_UsesConcurrencyAndPublishesEffects(string concurrencyType, int concurrency)
     {
-        if (!LocalContainerTestEnvironment.EmulatorsConfigured)
-        {
-            Assert.Inconclusive("Emulator tests require SBM_TEST_BLOB_ENDPOINT, SBM_TEST_EVENTHUB_CONNECTION_STRING, and SBM_TEST_SERVICEBUS_CONNECTION_STRING.");
-        }
-
         var databases = Enumerable.Range(1, 20).Select(index => $"sbm_sql_test_{index:00}").ToArray();
         await using (var admin = new SqlConnection($"Server={Server};Database=master;User Id={User};Password={Password};TrustServerCertificate=True"))
         {
@@ -42,14 +35,12 @@ public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntime
             }
         }
 
-        var rootCommand = CommandLineBuilder.SetUp();
         var jobName = $"sbm-sql-20-{concurrencyType.ToLowerInvariant()}-{concurrency}";
         await RunThreadedRuntimeTestAsync(
             "SqlServer", Server, databases, User, Password, jobName, concurrencyType, concurrency,
             database => new SqlConnection($"Server={Server};Database={database};User Id={User};Password={Password};TrustServerCertificate=True"),
             "IF OBJECT_ID('transactiontest', 'U') IS NULL CREATE TABLE transactiontest (message nvarchar(500), guid uniqueidentifier, datetimestamp datetime2)",
-            $"INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('{TestMessage}', NEWID(), SYSUTCDATETIME())",
-            args => rootCommand.Parse(args).InvokeAsync());
+            $"INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('{TestMessage}', NEWID(), SYSUTCDATETIME())");
     }
 
     [TestMethod]
@@ -57,11 +48,6 @@ public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntime
     [DataRow("MaxPerServer", 3)]
     public async Task LongRunning_SBMSource_ByConcurrencyType_Success(string concurrencyType, int concurrency)
     {
-        if (!LocalContainerTestEnvironment.EmulatorsConfigured)
-        {
-            Assert.Inconclusive("Emulator tests require SBM_TEST_BLOB_ENDPOINT, SBM_TEST_EVENTHUB_CONNECTION_STRING, and SBM_TEST_SERVICEBUS_CONNECTION_STRING.");
-        }
-
         var databases = Enumerable.Range(1, 6).Select(index => $"sbm_sql_longrun_{index:00}").ToArray();
         await using (var admin = new SqlConnection($"Server={Server};Database=master;User Id={User};Password={Password};TrustServerCertificate=True"))
         {
@@ -74,54 +60,13 @@ public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntime
             }
         }
 
-        var rootCommand = CommandLineBuilder.SetUp();
         var jobName = $"sbm-sql-longrun-{concurrencyType.ToLowerInvariant()}-{concurrency}";
         await RunLongRunningRuntimeTestAsync(
             "SqlServer", Server, databases, User, Password, jobName, concurrencyType, concurrency,
             database => new SqlConnection($"Server={Server};Database={database};User Id={User};Password={Password};TrustServerCertificate=True"),
             "IF OBJECT_ID('transactiontest', 'U') IS NULL CREATE TABLE transactiontest (message nvarchar(500), guid uniqueidentifier, datetimestamp datetime2)",
             $"WAITFOR DELAY '00:00:15'; INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('{TestMessage}', NEWID(), SYSUTCDATETIME())",
-            60,
-            args => rootCommand.Parse(args).InvokeAsync());
-    }
-
-    [TestMethod]
-    [TestCategory("RuntimeContainer")]
-    public async Task ProductionRuntimeContainer_ThreadedRun_UpdatesDatabasesAndEmulators()
-    {
-        if (!LocalContainerTestEnvironment.EmulatorsConfigured ||
-            !string.Equals(Environment.GetEnvironmentVariable("SBM_RUNTIME_CONTAINER_MODE"), "true", StringComparison.OrdinalIgnoreCase))
-        {
-            Assert.Inconclusive("Runtime-container tests require the local emulators and SBM_RUNTIME_CONTAINER_MODE=true.");
-        }
-
-        var databases = Enumerable.Range(1, 20).Select(index => $"sbm_sql_runtime_{index:00}").ToArray();
-        await using (var admin = new SqlConnection($"Server={Server};Database=master;User Id={User};Password={Password};TrustServerCertificate=True"))
-        {
-            await admin.OpenAsync();
-            foreach (var database in databases)
-            {
-               await using var command = admin.CreateCommand();
-               command.CommandText = $"IF DB_ID('{database}') IS NULL CREATE DATABASE [{database}]";
-               await command.ExecuteNonQueryAsync();
-            }
-        }
-
-        var jobName = "sbm-sql-runtime";
-        await RunThreadedRuntimeTestAsync(
-            "SqlServer", Server, databases, User, Password, jobName, "Count", 4,
-            database => new SqlConnection($"Server={Server};Database={database};User Id={User};Password={Password};TrustServerCertificate=True"),
-            "IF OBJECT_ID('transactiontest', 'U') IS NULL CREATE TABLE transactiontest (message nvarchar(500), guid uniqueidentifier, datetimestamp datetime2)",
-            $"INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('{TestMessage}', NEWID(), SYSUTCDATETIME())",
-            async args =>
-            {
-                var results = await RuntimeContainerClient.RunManyAsync(2, default, args);
-                foreach (var result in results)
-                {
-                    System.Console.WriteLine(result.Output);
-                }
-                return results.Max(result => result.ExitCode);
-            });
+            60);
     }
 
     [TestMethod]
@@ -129,17 +74,11 @@ public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntime
     [DataRow("MaxPerServer", 3)]
     public async Task ACI_Queue_DacpacSource_KeyVault_Secrets_Success(string concurrencyType, int concurrency)
     {
-        if (!LocalContainerTestEnvironment.EmulatorsConfigured)
-        {
-            Assert.Inconclusive("Emulator tests require SBM_TEST_BLOB_ENDPOINT, SBM_TEST_EVENTHUB_CONNECTION_STRING, and SBM_TEST_SERVICEBUS_CONNECTION_STRING.");
-        }
-
         var databasePrefix = $"sbm_sql_dacpac_{concurrencyType.ToLowerInvariant()}_{concurrency}";
         var sourceDatabase = $"{databasePrefix}_source";
         var databases = Enumerable.Range(1, 6).Select(index => $"{databasePrefix}_{index:00}").ToArray();
         await EnsureDatabasesAsync(new[] { sourceDatabase }.Concat(databases).ToArray());
-        var rootCommand = CommandLineBuilder.SetUp();
-        var testDirectory = Path.Combine(Directory.GetCurrentDirectory(), $"dacpac-source-{Guid.NewGuid():N}");
+        var testDirectory = CreateRuntimeTestDirectory("dacpac-source");
         Directory.CreateDirectory(testDirectory);
         var dacpacPath = Path.Combine(testDirectory, "platinum.dacpac");
         var targetDacpacPath = Path.Combine(testDirectory, "empty-target.dacpac");
@@ -148,23 +87,17 @@ public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntime
         try
         {
             await CreateDacpacTableAsync(sourceDatabase);
-            Assert.AreEqual(0, await CreateDacpacAsync(rootCommand, sourceDatabase, dacpacPath));
-            Assert.AreEqual(0, await CreateDacpacAsync(rootCommand, databases[0], targetDacpacPath));
-            Assert.AreEqual(0, await CreateSbmFromDacpacsAsync(rootCommand, dacpacPath, targetDacpacPath, packagePath));
+            await CreateDacpacAsync(sourceDatabase, dacpacPath);
+            await CreateDacpacAsync(databases[0], targetDacpacPath);
+            await CreateSbmFromDacpacsAsync(dacpacPath, targetDacpacPath, packagePath);
 
             var jobName = $"sbm-sql-dacpac-{concurrencyType.ToLowerInvariant()}-{concurrency}";
             await RunThreadedDacpacRuntimeTestAsync(
                 "SqlServer", Server, databases, User, Password, jobName, concurrencyType, concurrency,
-                dacpacPath, packagePath, false, args => rootCommand.Parse(args).InvokeAsync(),
+                dacpacPath, packagePath, false,
                 database => AssertDacpacTableAsync(database, "dacpac_test"));
         }
-        finally
-        {
-            if (Directory.Exists(testDirectory))
-            {
-                Directory.Delete(testDirectory, recursive: true);
-            }
-        }
+        finally { }
     }
 
     [TestMethod]
@@ -172,17 +105,11 @@ public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntime
     [DataRow("MaxPerServer", 3)]
     public async Task ACI_Queue_DacpacSource_ForceApplyCustom_KeyVault_Secrets_Success(string concurrencyType, int concurrency)
     {
-        if (!LocalContainerTestEnvironment.EmulatorsConfigured)
-        {
-            Assert.Inconclusive("Emulator tests require SBM_TEST_BLOB_ENDPOINT, SBM_TEST_EVENTHUB_CONNECTION_STRING, and SBM_TEST_SERVICEBUS_CONNECTION_STRING.");
-        }
-
         var databasePrefix = $"sbm_sql_custom_dacpac_{concurrencyType.ToLowerInvariant()}_{concurrency}";
         var sourceDatabase = $"{databasePrefix}_source";
         var databases = Enumerable.Range(1, 6).Select(index => $"{databasePrefix}_{index:00}").ToArray();
         await EnsureDatabasesAsync(new[] { sourceDatabase }.Concat(databases).ToArray());
-        var rootCommand = CommandLineBuilder.SetUp();
-        var testDirectory = Path.Combine(Directory.GetCurrentDirectory(), $"dacpac-custom-{Guid.NewGuid():N}");
+        var testDirectory = CreateRuntimeTestDirectory("dacpac-custom");
         Directory.CreateDirectory(testDirectory);
         var dacpacPath = Path.Combine(testDirectory, "platinum.dacpac");
         var targetDacpacPath = Path.Combine(testDirectory, "empty-target.dacpac");
@@ -191,25 +118,19 @@ public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntime
         try
         {
             await CreateDacpacTableAsync(sourceDatabase);
-            Assert.AreEqual(0, await CreateDacpacAsync(rootCommand, sourceDatabase, dacpacPath));
-            Assert.AreEqual(0, await CreateDacpacAsync(rootCommand, databases[0], targetDacpacPath));
-            Assert.AreEqual(0, await CreateSbmFromDacpacsAsync(rootCommand, dacpacPath, targetDacpacPath, packagePath));
+            await CreateDacpacAsync(sourceDatabase, dacpacPath);
+            await CreateDacpacAsync(databases[0], targetDacpacPath);
+            await CreateSbmFromDacpacsAsync(dacpacPath, targetDacpacPath, packagePath);
             await CreateSchemaDriftAsync(databases[1]);
             await CreateSchemaDriftAsync(databases[2]);
 
             var jobName = $"sbm-sql-custom-dacpac-{concurrencyType.ToLowerInvariant()}-{concurrency}";
             await RunThreadedDacpacRuntimeTestAsync(
                 "SqlServer", Server, databases, User, Password, jobName, concurrencyType, concurrency,
-                dacpacPath, packagePath, true, args => rootCommand.Parse(args).InvokeAsync(),
+                dacpacPath, packagePath, true,
                 database => AssertDacpacTableAsync(database, "dacpac_test"));
         }
-        finally
-        {
-            if (Directory.Exists(testDirectory))
-            {
-                Directory.Delete(testDirectory, recursive: true);
-            }
-        }
+        finally { }
     }
 
     private async Task EnsureDatabasesAsync(IReadOnlyList<string> databases)
@@ -224,7 +145,7 @@ public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntime
         }
     }
 
-    private async Task<int> CreateDacpacAsync(RootCommand rootCommand, string database, string dacpacPath)
+    private static Task CreateDacpacAsync(string database, string dacpacPath)
     {
         var args = new[]
         {
@@ -232,11 +153,10 @@ public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntime
             "--server", Server, "--database", database, "--dacpacname", dacpacPath,
             "--platform", "SqlServer", "--trustservercertificate", "true"
         };
-        return await rootCommand.Parse(args).InvokeAsync();
+        return RunRuntimeCommandAsync(args);
     }
 
-    private async Task<int> CreateSbmFromDacpacsAsync(
-        RootCommand rootCommand,
+    private static Task CreateSbmFromDacpacsAsync(
         string platinumDacpacPath,
         string targetDacpacPath,
         string packagePath)
@@ -246,7 +166,7 @@ public class LocalContainerEmulatorThreadedTests : LocalContainerEmulatorRuntime
             "create", "fromdacpacs", "--outputsbm", packagePath,
             "--platinumdacpac", platinumDacpacPath, "--targetdacpac", targetDacpacPath
         };
-        return await rootCommand.Parse(args).InvokeAsync();
+        return RunRuntimeCommandAsync(args);
     }
 
     private async Task CreateDacpacTableAsync(string database)

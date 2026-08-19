@@ -22,23 +22,15 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
     protected const string TestMessage = "LOCAL EMULATOR THREADED TEST";
     private const string StorageAccount = "devstoreaccount1";
     private const string StorageKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
+    private const string EmulatorCountJobName = "sbm-emulator-test";
+    private const string EmulatorSessionJobName = "sbm-emulator-session";
 
     private static string CreateTestDirectory(string prefix)
     {
-        var root = string.Equals(
-            Environment.GetEnvironmentVariable("SBM_RUNTIME_CONTAINER_MODE"),
-            "true",
-            StringComparison.OrdinalIgnoreCase)
-            ? "/tests/TestResults"
-            : Directory.GetCurrentDirectory();
-        return Path.Combine(root, $"{prefix}-{Guid.NewGuid():N}");
+        return Path.Combine("/tests/TestResults", $"{prefix}-{Guid.NewGuid():N}");
     }
 
-    private static bool PreserveRuntimeContainerArtifacts =>
-        string.Equals(
-            Environment.GetEnvironmentVariable("SBM_RUNTIME_CONTAINER_MODE"),
-            "true",
-            StringComparison.OrdinalIgnoreCase);
+    protected static string CreateRuntimeTestDirectory(string prefix) => CreateTestDirectory(prefix);
 
     protected async Task RunThreadedRuntimeTestAsync(
         string platform,
@@ -51,9 +43,10 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         int concurrency,
         Func<string, DbConnection> createConnection,
         string createTableSql,
-        string insertSql,
-        Func<string[], Task<int>> invokeCommandAsync)
+        string insertSql)
     {
+        LocalContainerTestEnvironment.RequireRuntimeInfrastructure();
+        jobName = GetEffectiveJobName(concurrencyType);
         var previousBlobEndpoint = Environment.GetEnvironmentVariable("SBM_BLOB_ENDPOINT");
         var testDirectory = CreateTestDirectory($"local-{platform}-runtime");
         var packagePath = Path.Combine(testDirectory, "package.sbm");
@@ -98,10 +91,7 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
 
             var args = argList.ToArray();
 
-            if (await invokeCommandAsync(args) != 0)
-            {
-                throw new InvalidOperationException($"{platform} threaded run failed.");
-            }
+            await RunWorkerContainersAsync(platform, args);
 
             foreach (var database in databases)
             {
@@ -118,10 +108,6 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         finally
         {
             Environment.SetEnvironmentVariable("SBM_BLOB_ENDPOINT", previousBlobEndpoint);
-            if (Directory.Exists(testDirectory) && !PreserveRuntimeContainerArtifacts)
-            {
-                Directory.Delete(testDirectory, recursive: true);
-            }
         }
     }
 
@@ -142,9 +128,10 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         Func<string, DbConnection> createConnection,
         string createTableSql,
         string longRunningSql,
-        int scriptTimeoutSeconds,
-        Func<string[], Task<int>> invokeCommandAsync)
+        int scriptTimeoutSeconds)
     {
+        LocalContainerTestEnvironment.RequireRuntimeInfrastructure();
+        jobName = GetEffectiveJobName(concurrencyType);
         var previousBlobEndpoint = Environment.GetEnvironmentVariable("SBM_BLOB_ENDPOINT");
         var testDirectory = CreateTestDirectory($"local-{platform}-longrunning");
         var packagePath = Path.Combine(testDirectory, "package.sbm");
@@ -189,10 +176,7 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
 
             var args = argList.ToArray();
 
-            if (await invokeCommandAsync(args) != 0)
-            {
-                throw new InvalidOperationException($"{platform} long-running threaded run failed.");
-            }
+            await RunWorkerContainersAsync(platform, args);
 
             foreach (var database in databases)
             {
@@ -209,10 +193,6 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         finally
         {
             Environment.SetEnvironmentVariable("SBM_BLOB_ENDPOINT", previousBlobEndpoint);
-            if (Directory.Exists(testDirectory) && !PreserveRuntimeContainerArtifacts)
-            {
-                Directory.Delete(testDirectory, recursive: true);
-            }
         }
     }
 
@@ -274,9 +254,10 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         string dacpacPath,
         string packagePath,
         bool forceCustomDacpac,
-        Func<string[], Task<int>> invokeCommandAsync,
         Func<string, Task> verifyDatabaseAsync)
     {
+        LocalContainerTestEnvironment.RequireRuntimeInfrastructure();
+        jobName = GetEffectiveJobName(concurrencyType);
         var previousBlobEndpoint = Environment.GetEnvironmentVariable("SBM_BLOB_ENDPOINT");
         var testDirectory = CreateTestDirectory($"local-{platform}-dacpac");
         var overridePath = Path.Combine(testDirectory, "targets.cfg");
@@ -317,10 +298,7 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
                 argList.AddRange(new[] { "--trustservercertificate", "true" });
             }
 
-            if (await invokeCommandAsync(argList.ToArray()) != 0)
-            {
-                throw new InvalidOperationException($"{platform} DACPAC threaded run failed.");
-            }
+            await RunWorkerContainersAsync(platform, argList.ToArray());
 
             foreach (var database in databases)
             {
@@ -334,10 +312,41 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         finally
         {
             Environment.SetEnvironmentVariable("SBM_BLOB_ENDPOINT", previousBlobEndpoint);
-            if (Directory.Exists(testDirectory) && !PreserveRuntimeContainerArtifacts)
-            {
-                Directory.Delete(testDirectory, recursive: true);
-            }
+        }
+    }
+
+    protected static async Task RunRuntimeCommandAsync(params string[] arguments)
+    {
+        LocalContainerTestEnvironment.RequireRuntimeInfrastructure();
+        var result = await RuntimeContainerClient.RunAsync(default, arguments);
+        Console.WriteLine(result.Output);
+        if (result.ExitCode != 0)
+        {
+            throw new InvalidOperationException(
+                $"The runtime container exited with code {result.ExitCode}.{Environment.NewLine}{result.Output}");
+        }
+    }
+
+    private static string GetEffectiveJobName(string concurrencyType)
+    {
+        return concurrencyType.Equals("Count", StringComparison.OrdinalIgnoreCase)
+            ? EmulatorCountJobName
+            : EmulatorSessionJobName;
+    }
+
+    private static async Task RunWorkerContainersAsync(string platform, params string[] arguments)
+    {
+        var results = await RuntimeContainerClient.RunManyAsync(CancellationToken.None, arguments);
+        foreach (var result in results)
+        {
+            Console.WriteLine(result.Output);
+        }
+
+        var failures = results.Where(result => result.ExitCode != 0).ToArray();
+        if (failures.Length > 0)
+        {
+            throw new InvalidOperationException(
+                $"{failures.Length} of {results.Length} {platform} runtime containers failed.");
         }
     }
 
@@ -392,8 +401,9 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
     {
         await using var client = new ServiceBusClient(LocalContainerTestEnvironment.ServiceBusConnectionString);
         await using var sender = client.CreateSender("sqlbuildmanager");
-        foreach (var database in databases)
+        for (var index = 0; index < databases.Count; index++)
         {
+            var database = databases[index];
             var target = new
             {
                 ServerName = server,
@@ -407,7 +417,9 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
             };
             if (!concurrencyType.Equals("Count", StringComparison.OrdinalIgnoreCase))
             {
-                message.SessionId = jobName;
+                // Model independent server sessions so every runtime worker can consume
+                // concurrently without the emulator invalidating another receiver's lock.
+                message.SessionId = $"{server}-runtime-{index + 1}";
             }
 
             await sender.SendMessageAsync(message);
@@ -425,16 +437,37 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
 
         if (await admin.SubscriptionExistsAsync("sqlbuildmanager", subscriptionName))
         {
+            await EnsureServiceBusRuleAsync(admin, subscriptionName, jobName);
             await Task.Delay(TimeSpan.FromSeconds(2));
             return;
         }
 
         var options = new CreateSubscriptionOptions("sqlbuildmanager", subscriptionName)
         {
-            RequiresSession = !concurrencyType.Equals("Count", StringComparison.OrdinalIgnoreCase)
+            RequiresSession = !concurrencyType.Equals("Count", StringComparison.OrdinalIgnoreCase),
+            LockDuration = TimeSpan.FromMinutes(5)
         };
         await admin.CreateSubscriptionAsync(options);
+        await EnsureServiceBusRuleAsync(admin, subscriptionName, jobName);
         await Task.Delay(TimeSpan.FromSeconds(2));
+    }
+
+    private static async Task EnsureServiceBusRuleAsync(
+        ServiceBusAdministrationClient admin,
+        string subscriptionName,
+        string jobName)
+    {
+        if (await admin.RuleExistsAsync("sqlbuildmanager", subscriptionName, jobName))
+        {
+            return;
+        }
+
+        await admin.CreateRuleAsync(
+            "sqlbuildmanager",
+            subscriptionName,
+            new CreateRuleOptions(
+                jobName,
+                new CorrelationRuleFilter { Subject = jobName }));
     }
 
     private static async Task AssertBlobEffectAsync(string jobName)
@@ -510,7 +543,17 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
         // so the subscription's absence here is confirmation that targets were fully consumed.
         if (await admin.SubscriptionExistsAsync("sqlbuildmanager", subscriptionName))
         {
-            await using var client = new ServiceBusClient(LocalContainerTestEnvironment.ServiceBusConnectionString);
+            var clientOptions = new ServiceBusClientOptions
+            {
+                RetryOptions =
+                {
+                    MaxRetries = 0,
+                    TryTimeout = TimeSpan.FromSeconds(5)
+                }
+            };
+            await using var client = new ServiceBusClient(
+                LocalContainerTestEnvironment.ServiceBusConnectionString,
+                clientOptions);
             ServiceBusReceiver receiver;
             if (concurrencyType.Equals("Count", StringComparison.OrdinalIgnoreCase))
             {
@@ -518,7 +561,15 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
             }
             else
             {
-                receiver = await client.AcceptNextSessionAsync("sqlbuildmanager", subscriptionName);
+                try
+                {
+                    receiver = await client.AcceptNextSessionAsync("sqlbuildmanager", subscriptionName);
+                }
+                catch (ServiceBusException exception)
+                    when (exception.Reason == ServiceBusFailureReason.ServiceTimeout)
+                {
+                    return;
+                }
             }
 
             await using (receiver)

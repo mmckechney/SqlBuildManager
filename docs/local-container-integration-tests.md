@@ -1,27 +1,26 @@
 # Local container integration tests
 
-Run one database platform locally:
+Run one database platform locally. Azurite, Event Hubs Emulator, Service Bus
+Emulator, and the production SBM runtime image are always included:
 
 ```powershell
 ./scripts/tests/run_local_container_tests.ps1 -Platform sqlserver
 ```
 
-Include Azurite, the Event Hubs emulator, and the Service Bus emulator:
+Threaded tests launch two production runtime containers by default. Configure
+any positive number with `-RuntimeContainerCount`:
 
 ```powershell
-./scripts/tests/run_local_container_tests.ps1 -Platform sqlserver -IncludeEmulators
+./scripts/tests/run_local_container_tests.ps1 -Platform sqlserver -RuntimeContainerCount 4
 ```
 
-The same options are available from the **Local Container Integration Tests**
-GitHub Actions workflow using `workflow_dispatch`; set `include_emulators` to
-`true` to run the messaging tests. Emulator images require Docker image pulls
-and several minutes of startup time. Emulator behavior is not a substitute for
-Azure integration tests, and the emulator tests are inconclusive when the
-`SBM_TEST_*` emulator variables are absent, so ordinary `dotnet test` runs do
-not require Docker.
+The **Local Container Integration Tests** GitHub Actions workflow runs one
+all-runtime/emulator pass for SQL Server, PostgreSQL, and MySQL. Emulator images
+require Docker image pulls and several minutes of startup time. Emulator
+behavior supplements rather than replaces Azure integration tests.
 
-When emulators are enabled, the test container also receives
-`SBM_BLOB_ENDPOINT` so production Blob clients use Azurite rather than the
-default Azure Storage hostname. Each run's console output, `TestResults.html`,
+The test coordinator and runtime containers receive `SBM_BLOB_ENDPOINT` so
+production Blob clients use Azurite rather than the default Azure Storage
+hostname. Each run's console output, `TestResults.html`,
 per-assembly test reports, and Compose log are saved under a timestamped folder
-in `scripts/tests/testresults` named for the selected platform.
+in `testresults` named for the selected platform.
