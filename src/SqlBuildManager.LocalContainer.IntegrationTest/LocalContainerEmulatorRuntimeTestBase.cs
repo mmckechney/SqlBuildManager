@@ -4,6 +4,7 @@ using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using Azure.Storage;
 using Azure.Storage.Blobs;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -24,6 +25,12 @@ public abstract class LocalContainerEmulatorRuntimeTestBase
     private const string StorageKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
     private const string EmulatorCountJobName = "sbm-emulator-test";
     private const string EmulatorSessionJobName = "sbm-emulator-session";
+
+    [TestInitialize]
+    public void RequireContainerHarness()
+    {
+        LocalContainerTestEnvironment.RequireRuntimeInfrastructure();
+    }
 
     private static string CreateTestDirectory(string prefix)
     {

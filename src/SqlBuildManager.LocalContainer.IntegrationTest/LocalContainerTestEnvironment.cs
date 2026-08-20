@@ -1,9 +1,13 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
 namespace SqlBuildManager.LocalContainer.IntegrationTest;
 
 public static class LocalContainerTestEnvironment
 {
+    public const string ContainerHarnessMessage =
+        @"LocalContainer tests require the containerized test harness and cannot run directly in Visual Studio Test Explorer. Run scripts\tests\run_local_container_tests.ps1 -Platform <sqlserver|postgresql|mysql> from the repository root.";
+
     public static string Platform =>
         Environment.GetEnvironmentVariable("SBM_TEST_PLATFORM") ?? "all";
 
@@ -49,6 +53,14 @@ public static class LocalContainerTestEnvironment
 
     public static void RequireRuntimeInfrastructure()
     {
+        if (!string.Equals(
+                Environment.GetEnvironmentVariable("SBM_RUNTIME_CONTAINER_MODE"),
+                "true",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            Assert.Inconclusive(ContainerHarnessMessage);
+        }
+
         if (!EmulatorsConfigured)
         {
             throw new InvalidOperationException(
