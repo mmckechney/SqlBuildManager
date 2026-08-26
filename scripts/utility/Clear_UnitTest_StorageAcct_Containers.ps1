@@ -9,6 +9,10 @@
     Azure Developer CLI environment name used to derive the storage account name.
 .PARAMETER resourceGroupName
     Azure resource group. Defaults to rg-{envName}.
+
+.NOTES
+    Uses the Microsoft.Storage management plane rather than the Blob data plane,
+    so it works when the storage account has public network access disabled.
 #>
 param
 (
@@ -23,21 +27,43 @@ if (-not [string]::IsNullOrWhiteSpace($resourceGroupNameOverride)) {
 }
 
 Write-Host "Deleting storage containers from $storageAccountName" -ForegroundColor Green
-$storageAcctKey = (az storage account keys list --account-name $storageAccountName -o tsv --query '[].value')[0]
 
-$containers = az storage container list --auth-mode login --account-name $storageAccountName --query [].name -o tsv
+$containers = az storage container-rm list `
+    --resource-group $resourceGroupName `
+    --storage-account $storageAccountName `
+    --query "[?deleted != ``true``].name" `
+    --output tsv `
+    --only-show-errors
+if ($LASTEXITCODE -ne 0) {
+    throw "Unable to list containers in storage account '$storageAccountName' through the Azure management plane."
+}
 
-foreach($container in $containers)
-{
-    
-    if($container.StartsWith("app-") -eq $false -and $container.StartsWith("eventhubcheckpoint") -eq $false)
-    {
-        Write-Host "Deleting storage container: $container" -ForegroundColor Green
-        az storage container delete --name $container --auth-mode  login --account-name $storageAccountName -o tsv
-    }
-    else
-    {
-        Write-Host "Preserving storage container: $container" -ForegroundColor Yellow
-    }
+$containersToDelete = @($containers | Where-Object {
+    -not $_.StartsWith("app-") -and -not $_.StartsWith("eventhubcheckpoint")
+})
+$containersToPreserve = @($containers | Where-Object {
+    $_.StartsWith("app-") -or $_.StartsWith("eventhubcheckpoint")
+})
+
+foreach ($container in $containersToPreserve) {
+    Write-Host "Preserving storage container: $container" -ForegroundColor Yellow
+}
+
+$numberWidth = [Math]::Max(3, $containersToDelete.Count.ToString().Length)
+for ($index = 0; $index -lt $containersToDelete.Count; $index++) {
+    $container = $containersToDelete[$index]
+    $currentNumber = ($index + 1).ToString("D$numberWidth")
+    $totalNumber = $containersToDelete.Count.ToString("D$numberWidth")
+    Write-Host "Deleting storage container $currentNumber of $totalNumber`: $container" -ForegroundColor Green
+        az storage container-rm delete `
+            --resource-group $resourceGroupName `
+            --storage-account $storageAccountName `
+            --name $container `
+            --yes `
+            --output none `
+            --only-show-errors
+        if ($LASTEXITCODE -ne 0) {
+            throw "Unable to delete storage container '$container'."
+        }
 }
 Write-Host "Complete!"

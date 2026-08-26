@@ -39,10 +39,30 @@ namespace SqlBuildManager.Console.SqlServer.IntegrationTest
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
-            SqlBuildManager.Logging.ApplicationLogging.CreateLogger<LocalBuildTest>("SqlBuildManager.Console.log", Path.GetTempPath());
-
             System.Console.SetOut(new StringWriter(ConsoleOutput));    // Associate StringBuilder with StdOut
-            ConsoleOutput.Clear();    // Clear text from any previous text runs
+            ConsoleOutput.Clear();
+        }
+
+        private string GetExecutionLog(string loggingPath)
+        {
+            var logLines = new List<string>();
+            logLines.AddRange(ConsoleOutput.ToString().Split(Environment.NewLine));
+
+            if (Directory.Exists(loggingPath))
+            {
+                foreach (string file in Directory.EnumerateFiles(loggingPath, "*.log", SearchOption.AllDirectories))
+                {
+                    logLines.AddRange(File.ReadAllText(file).Split(Environment.NewLine));
+                }
+            }
+
+            return string.Join(
+                Environment.NewLine,
+                logLines
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    .Select(line => line.Contains("] ") ? line[(line.LastIndexOf("] ", StringComparison.Ordinal) + 2)..] : line)
+                    .Select(line => line.Contains(" - ", StringComparison.Ordinal) ? line[(line.IndexOf(" - ", StringComparison.Ordinal) + 3)..] : line)
+                    .Distinct());
         }
 
         //Use ClassCleanup to run code after all tests in a class have run
@@ -86,7 +106,7 @@ namespace SqlBuildManager.Console.SqlServer.IntegrationTest
                     Assert.Fail("Unable to completed test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = ConsoleOutput.ToString();
+                string executionLogFile = GetExecutionLog(loggingPath);
 
 
                 var regex = new Regex("Batch logging 1 script");
@@ -146,7 +166,7 @@ namespace SqlBuildManager.Console.SqlServer.IntegrationTest
                     Assert.Fail("Unable to completed test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = ConsoleOutput.ToString();
+                string executionLogFile = GetExecutionLog(loggingPath);
 
                 var regex = new Regex("Batch logging 1 script");
                 Assert.AreEqual(1, regex.Matches(executionLogFile).Count(), "Didn't find 1 script commit");
@@ -204,7 +224,7 @@ namespace SqlBuildManager.Console.SqlServer.IntegrationTest
                     Assert.Fail("Unable to completed test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = ConsoleOutput.ToString();
+                string executionLogFile = GetExecutionLog(loggingPath);
 
                 var regex = new Regex("Batch logging 1 script");
                 Assert.AreEqual(1, regex.Matches(executionLogFile).Count(), "Didn't find 1 script commit");
@@ -266,7 +286,7 @@ namespace SqlBuildManager.Console.SqlServer.IntegrationTest
                     Assert.Fail("Unable to completed test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = ConsoleOutput.ToString();
+                string executionLogFile = GetExecutionLog(loggingPath);
 
                 //Should be all sequential!
                 Assert.IsTrue(executionLogFile.Contains("Commit Successful"), "Didn't find successful commit message");
@@ -332,7 +352,7 @@ namespace SqlBuildManager.Console.SqlServer.IntegrationTest
                     Assert.Fail("Unable to completed test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = ConsoleOutput.ToString();
+                string executionLogFile = GetExecutionLog(loggingPath);
 
                 //Should be all sequential!
                 Assert.IsTrue(executionLogFile.Contains("Commit Successful"), "Didn't find successful commit message");
@@ -400,7 +420,7 @@ namespace SqlBuildManager.Console.SqlServer.IntegrationTest
                     Assert.Fail("Unable to completed test.");
 
                 SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string executionLogFile = ConsoleOutput.ToString();
+                string executionLogFile = GetExecutionLog(loggingPath);
 
                 //Should be all sequential!
                 Assert.IsTrue(executionLogFile.Contains("Commit Successful"), "Didn't find successful commit message");

@@ -4,6 +4,9 @@ using SqlBuildManager.Console.Batch;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Console.Queue;
+using SqlBuildManager.Console.ContainerShared;
+using SqlBuildManager.Console.KeyVault;
+using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Interfaces.Console;
 using System;
 using System.IO;
@@ -281,6 +284,59 @@ namespace SqlBuildManager.Console
 
             return retVal;
         }
+
+        internal static async Task<int> BatchWorker_RunBuild(CommandLineArgs cmdLine)
+        {
+            cmdLine = PrepareBatchWorker(cmdLine);
+            return await RunThreadedExecutionAsync(cmdLine, EnvironmentVariableHelper.IsUnitTest());
+        }
+
+        internal static async Task<int> BatchWorker_RunQuery(CommandLineArgs cmdLine)
+        {
+            cmdLine = PrepareBatchWorker(cmdLine);
+            return await QueryDatabasesAsync(cmdLine);
+        }
+
+        private static CommandLineArgs PrepareBatchWorker(CommandLineArgs cmdLine)
+        {
+            cmdLine.RunningAsContainer = true;
+            cmdLine = EnvironmentVariableHelper.ReadRuntimeEnvironmentVariables(cmdLine);
+
+            if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.KeyVaultName))
+            {
+                (var success, cmdLine) = KeyVaultHelper.GetSecrets(cmdLine);
+                if (!success)
+                {
+                    throw new InvalidOperationException("Unable to retrieve required connection secrets for the Batch worker.");
+                }
+                cmdLine = EnvironmentVariableHelper.ReadRuntimeEnvironmentVariables(cmdLine);
+            }
+
+            var taskDirectory = Environment.GetEnvironmentVariable("AZ_BATCH_TASK_DIR") ?? Directory.GetCurrentDirectory();
+            var workingDirectory = Environment.GetEnvironmentVariable("AZ_BATCH_TASK_WORKING_DIR") ?? Directory.GetCurrentDirectory();
+            cmdLine.RootLoggingPath = taskDirectory;
+            cmdLine.MultiDbRunConfigFileName = ResolveBatchResourcePath(cmdLine.MultiDbRunConfigFileName, workingDirectory);
+            cmdLine.BuildFileName = ResolveBatchResourcePath(cmdLine.BuildFileName, workingDirectory);
+            cmdLine.DacPacArgs.PlatinumDacpac = ResolveBatchResourcePath(cmdLine.DacPacArgs.PlatinumDacpac, workingDirectory);
+            cmdLine.DacPacArgs.TargetDacpac = ResolveBatchResourcePath(cmdLine.DacPacArgs.TargetDacpac, workingDirectory);
+            if (cmdLine.QueryFile != null)
+            {
+                cmdLine.QueryFile = new FileInfo(ResolveBatchResourcePath(cmdLine.QueryFile.ToString(), workingDirectory));
+            }
+            if (cmdLine.OutputFile != null)
+            {
+                cmdLine.OutputFile = new FileInfo(Path.Combine(taskDirectory, cmdLine.OutputFile.Name));
+            }
+
+            AadHelper.ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId;
+            AadHelper.TenantId = cmdLine.IdentityArgs.TenantId;
+            return cmdLine;
+        }
+
+        private static string ResolveBatchResourcePath(string path, string workingDirectory) =>
+            string.IsNullOrWhiteSpace(path) || Path.IsPathRooted(path)
+                ? path
+                : Path.Combine(workingDirectory, path);
 
     }
 }

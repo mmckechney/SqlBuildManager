@@ -1,0 +1,236 @@
+services:
+  runtime-image:
+    build:
+      context: ../../../src
+      dockerfile: Dockerfile
+      args:
+        SBM_NUGET_SOURCE: ${SBM_LOCAL_NUGET_SOURCE:-}
+    image: ${SBM_RUNTIME_IMAGE:-sbm-local-runtime}
+    profiles: ["runtime-image"]
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    profiles: ["sqlserver"]
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SBM_TEST_SQL_PASSWORD:-SqlBuildLocal1!}
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q 'SQL Server is now ready' /var/opt/mssql/log/errorlog"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  postgres:
+    image: postgres:18.4
+    profiles: ["postgresql"]
+    environment:
+      POSTGRES_USER: ${SBM_TEST_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${SBM_TEST_POSTGRES_PASSWORD:-P0stSqlAdm1n}
+    # These are ephemeral, disposable test containers, so durability guarantees
+    # are unnecessary. Disabling fsync/full_page_writes avoids multi-minute
+    # background-writer checkpoint stalls (observed up to ~270s on constrained
+    # CI disks) that were blocking concurrent connections and causing
+    # intermittent, otherwise-unexplained test failures.
+    command: >
+      -c fsync=off
+      -c full_page_writes=off
+      -c synchronous_commit=off
+      -c checkpoint_timeout=30min
+      -c max_wal_size=4GB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${SBM_TEST_POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  mysql:
+    image: mysql:8.4
+    profiles: ["mysql"]
+    environment:
+      MYSQL_ROOT_PASSWORD: ${SBM_TEST_MYSQL_PASSWORD:-MySq1Adm!n}
+    # These are ephemeral, disposable test containers, so durability guarantees
+    # are unnecessary. Disabling InnoDB's per-commit fsync/flush and binlog sync
+    # avoids I/O stalls on constrained CI disks (same class of issue as the
+    # PostgreSQL checkpoint stall above) that were causing intermittent
+    # "Commit Successful" / concurrent-execution test failures.
+    command: >
+      --innodb-flush-log-at-trx-commit=0
+      --sync-binlog=0
+      --innodb-flush-method=nosync
+      --innodb-doublewrite=0
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  test-sqlserver:
+    build:
+      context: ../../../src
+      dockerfile: Dockerfile.dependent-tests
+      args:
+        SBM_NUGET_SOURCE: ${SBM_LOCAL_NUGET_SOURCE:-}
+    image: ${SBM_TEST_IMAGE:-sbm-local-test}
+    profiles: ["sqlserver"]
+    environment:
+      SBM_TEST_PLATFORM: sqlserver
+      SBM_TEST_SQL_SERVER: sqlserver
+      SBM_TEST_SQL_USER: sa
+      SBM_TEST_SQL_PASSWORD: ${SBM_TEST_SQL_PASSWORD:-SqlBuildLocal1!}
+      SBM_TEST_BLOB_ENDPOINT: ${SBM_TEST_BLOB_ENDPOINT:-}
+      SBM_BLOB_ENDPOINT: ${SBM_BLOB_ENDPOINT:-}
+      SBM_TEST_EVENTHUB_CONNECTION_STRING: ${SBM_TEST_EVENTHUB_CONNECTION_STRING:-}
+      SBM_TEST_EVENTHUB_NAME: ${SBM_TEST_EVENTHUB_NAME:-sbm-events}
+      SBM_TEST_SERVICEBUS_CONNECTION_STRING: ${SBM_TEST_SERVICEBUS_CONNECTION_STRING:-}
+      TEST_FILTER: ${TEST_FILTER:-}
+      SBM_RUNTIME_IMAGE: ${SBM_RUNTIME_IMAGE:-sbm-local-runtime}
+      SBM_RUNTIME_NETWORK: ${SBM_RUNTIME_NETWORK:-}
+      SBM_TEST_RESULTS_VOLUME: ${SBM_TEST_RESULTS_VOLUME:-sbm-local-test-results}
+      SBM_RUNTIME_CONTAINER_MODE: ${SBM_RUNTIME_CONTAINER_MODE:-}
+      SBM_RUNTIME_CONTAINER_COUNT: ${SBM_RUNTIME_CONTAINER_COUNT:-2}
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+      eventhubs-emulator:
+        condition: service_started
+      servicebus-emulator:
+        condition: service_started
+    volumes:
+      - test-results:/tests/TestResults
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  test-postgresql:
+    build:
+      context: ../../../src
+      dockerfile: Dockerfile.dependent-tests
+      args:
+        SBM_NUGET_SOURCE: ${SBM_LOCAL_NUGET_SOURCE:-}
+    image: ${SBM_TEST_IMAGE:-sbm-local-test}
+    profiles: ["postgresql"]
+    environment:
+      SBM_TEST_PLATFORM: postgresql
+      SBM_TEST_POSTGRES_SERVER: postgres
+      SBM_TEST_POSTGRES_USER: ${SBM_TEST_POSTGRES_USER:-postgres}
+      SBM_TEST_POSTGRES_PASSWORD: ${SBM_TEST_POSTGRES_PASSWORD:-P0stSqlAdm1n}
+      SBM_TEST_BLOB_ENDPOINT: ${SBM_TEST_BLOB_ENDPOINT:-}
+      SBM_BLOB_ENDPOINT: ${SBM_BLOB_ENDPOINT:-}
+      SBM_TEST_EVENTHUB_CONNECTION_STRING: ${SBM_TEST_EVENTHUB_CONNECTION_STRING:-}
+      SBM_TEST_EVENTHUB_NAME: ${SBM_TEST_EVENTHUB_NAME:-sbm-events}
+      SBM_TEST_SERVICEBUS_CONNECTION_STRING: ${SBM_TEST_SERVICEBUS_CONNECTION_STRING:-}
+      TEST_FILTER: ${TEST_FILTER:-}
+      SBM_RUNTIME_IMAGE: ${SBM_RUNTIME_IMAGE:-sbm-local-runtime}
+      SBM_RUNTIME_NETWORK: ${SBM_RUNTIME_NETWORK:-}
+      SBM_TEST_RESULTS_VOLUME: ${SBM_TEST_RESULTS_VOLUME:-sbm-local-test-results}
+      SBM_RUNTIME_CONTAINER_MODE: ${SBM_RUNTIME_CONTAINER_MODE:-}
+      SBM_RUNTIME_CONTAINER_COUNT: ${SBM_RUNTIME_CONTAINER_COUNT:-2}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+      eventhubs-emulator:
+        condition: service_started
+      servicebus-emulator:
+        condition: service_started
+    volumes:
+      - test-results:/tests/TestResults
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  test-mysql:
+    build:
+      context: ../../../src
+      dockerfile: Dockerfile.dependent-tests
+      args:
+        SBM_NUGET_SOURCE: ${SBM_LOCAL_NUGET_SOURCE:-}
+    image: ${SBM_TEST_IMAGE:-sbm-local-test}
+    profiles: ["mysql"]
+    environment:
+      SBM_TEST_PLATFORM: mysql
+      SBM_TEST_MYSQL_SERVER: mysql
+      SBM_TEST_MYSQL_USER: root
+      SBM_TEST_MYSQL_PASSWORD: ${SBM_TEST_MYSQL_PASSWORD:-MySq1Adm!n}
+      SBM_TEST_BLOB_ENDPOINT: ${SBM_TEST_BLOB_ENDPOINT:-}
+      SBM_BLOB_ENDPOINT: ${SBM_BLOB_ENDPOINT:-}
+      SBM_TEST_EVENTHUB_CONNECTION_STRING: ${SBM_TEST_EVENTHUB_CONNECTION_STRING:-}
+      SBM_TEST_EVENTHUB_NAME: ${SBM_TEST_EVENTHUB_NAME:-sbm-events}
+      SBM_TEST_SERVICEBUS_CONNECTION_STRING: ${SBM_TEST_SERVICEBUS_CONNECTION_STRING:-}
+      TEST_FILTER: ${TEST_FILTER:-}
+      SBM_RUNTIME_IMAGE: ${SBM_RUNTIME_IMAGE:-sbm-local-runtime}
+      SBM_RUNTIME_NETWORK: ${SBM_RUNTIME_NETWORK:-}
+      SBM_TEST_RESULTS_VOLUME: ${SBM_TEST_RESULTS_VOLUME:-sbm-local-test-results}
+      SBM_RUNTIME_CONTAINER_MODE: ${SBM_RUNTIME_CONTAINER_MODE:-}
+      SBM_RUNTIME_CONTAINER_COUNT: ${SBM_RUNTIME_CONTAINER_COUNT:-2}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+      eventhubs-emulator:
+        condition: service_started
+      servicebus-emulator:
+        condition: service_started
+    volumes:
+      - test-results:/tests/TestResults
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.36.0
+    profiles: ["emulators"]
+    command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+
+  eventhubs-emulator:
+    image: mcr.microsoft.com/azure-messaging/eventhubs-emulator:2.2.1
+    profiles: ["emulators"]
+    environment:
+      ACCEPT_EULA: "Y"
+      BLOB_SERVER: azurite
+      METADATA_SERVER: azurite
+    volumes:
+      - ./config/eventhubs-emulator.json:/Eventhubs_Emulator/ConfigFiles/Config.json:ro
+    depends_on:
+      azurite:
+        condition: service_started
+
+  servicebus-sql:
+    image: mcr.microsoft.com/azure-sql-edge:2.0.0
+    profiles: ["emulators"]
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SBM_SERVICEBUS_SQL_PASSWORD:-SqlBuildLocal1!}
+      MSSQL_PID: Developer
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q 'SQL Server is now ready' /var/opt/mssql/log/errorlog"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  servicebus-emulator:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:2.0.1
+    profiles: ["emulators"]
+    environment:
+      ACCEPT_EULA: "Y"
+      SQL_SERVER: servicebus-sql
+      MSSQL_SA_PASSWORD: ${SBM_SERVICEBUS_SQL_PASSWORD:-SqlBuildLocal1!}
+    volumes:
+      - ./config/servicebus-emulator.json:/ServiceBus_Emulator/ConfigFiles/Config.json:ro
+    depends_on:
+      servicebus-sql:
+        condition: service_healthy
+    ports:
+      - "5300:5300"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:5300/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  test-results:
+    name: ${SBM_TEST_RESULTS_VOLUME:-sbm-local-test-results}

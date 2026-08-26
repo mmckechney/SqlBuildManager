@@ -187,8 +187,8 @@ Write-Debug "========================================"
 Write-Debug "Deploying Container Group to ACI" 
 Write-Debug "========================================" 
 Write-Debug "Test Image: $fullImageName" 
-Write-Debug "SQL Server: mcr.microsoft.com/mssql/server:2022-latest" 
-Write-Debug "PostgreSQL: docker.io/library/postgres:16" 
+Write-Debug "SQL Server: mcr.microsoft.com/mssql/server:2025-latest"
+Write-Debug "PostgreSQL: docker.io/library/postgres:18.4"
 Write-Debug "MySQL: docker.io/library/mysql:8.4"
 Write-Debug ""
 
@@ -220,7 +220,7 @@ properties:
   containers:
   - name: sql-server
     properties:
-      image: mcr.microsoft.com/mssql/server:2022-latest
+      image: mcr.microsoft.com/mssql/server:2025-latest
       environmentVariables:
       - name: ACCEPT_EULA
         value: "Y"
@@ -236,7 +236,7 @@ properties:
       - port: 1433
   - name: postgres-server
     properties:
-      image: docker.io/library/postgres:16
+      image: docker.io/library/postgres:18.4
       environmentVariables:
       - name: POSTGRES_USER
         value: "postgres"

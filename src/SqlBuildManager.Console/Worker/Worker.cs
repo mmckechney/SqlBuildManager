@@ -294,7 +294,18 @@ namespace SqlBuildManager.Console
         #region ServiceBus and EventHub Monitoring
         private static bool activeServiceBusMonitoring = true;
         private static volatile bool aciHasCompletedSuccessfully;
-        internal static async Task<int> MonitorServiceBusRuntimeProgress(CommandLineArgs cmdLine, bool stream, DateTime? utcStartDate, bool unittest = false, bool checkAciState = false)
+        internal static void StopServiceBusRuntimeMonitoring()
+        {
+            activeServiceBusMonitoring = false;
+        }
+
+        internal static async Task<int> MonitorServiceBusRuntimeProgress(
+            CommandLineArgs cmdLine,
+            bool stream,
+            DateTime? utcStartDate,
+            bool unittest = false,
+            bool checkAciState = false,
+            CancellationToken cancellationToken = default)
         {
             Worker.activeServiceBusMonitoring = true;
             aciHasCompletedSuccessfully = false;
@@ -319,9 +330,12 @@ namespace SqlBuildManager.Console
             var ehandler = new Events.EventManager(cmdLine.ConnectionArgs.EventHubConnectionString, cmdLine.EventHubArgs.SubscriptionId, cmdLine.EventHubArgs.ResourceGroup, cmdLine.ConnectionArgs.StorageAccountName, cmdLine.ConnectionArgs.StorageAccountKey, jobName);
 
             Task eventHubMonitorTask = null!;
+            using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                ehCancellationSource.Token);
             if (!string.IsNullOrWhiteSpace(cmdLine.ConnectionArgs.EventHubConnectionString))
             {
-                eventHubMonitorTask = ehandler.MonitorEventHub(stream, utcStartDate, ehCancellationSource.Token);
+                eventHubMonitorTask = ehandler.MonitorEventHub(stream, utcStartDate, linkedCancellation.Token);
             }
             else
             {
@@ -369,7 +383,7 @@ namespace SqlBuildManager.Console
 
             try
             {
-                while (true && Worker.activeServiceBusMonitoring)
+                while (!cancellationToken.IsCancellationRequested && Worker.activeServiceBusMonitoring)
                 {
 
                     if (Worker.aciIsInErrorState)
@@ -415,7 +429,7 @@ namespace SqlBuildManager.Console
                         lastStatusWrite = DateTime.UtcNow;
                     }
 
-                    await Task.Delay(ExecutionOptions.MessagePollingInterval);
+                    await Task.Delay(ExecutionOptions.MessagePollingInterval, cancellationToken);
                     if (messageCount == 0)
                     {
                         zeroMessageCounter++;
@@ -527,7 +541,10 @@ namespace SqlBuildManager.Console
             }
             ehandler.Dispose();
 
-            await qManager.DeleteSubscription();
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                await qManager.DeleteSubscription();
+            }
 
 
            if (error > 0)

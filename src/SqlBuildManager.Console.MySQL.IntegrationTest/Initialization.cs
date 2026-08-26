@@ -2,6 +2,7 @@ using SqlBuildManager.Test.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using MySqlConnector;
 using SqlBuildManager.Connection;
 
@@ -109,22 +110,28 @@ namespace SqlBuildManager.Console.MySQL.IntegrationTest
 
         public void CopyDbConfigFileToTestPath()
         {
-            File.WriteAllBytes(DbConfigFileName, Properties.Resources.dbconfig);
+            WriteDbConfig(Properties.Resources.dbconfig);
         }
 
         public void CopyDbConfigFile4ToTestPath()
         {
-            File.WriteAllBytes(DbConfigFileName, Properties.Resources.dbconfig_4);
+            WriteDbConfig(Properties.Resources.dbconfig_4);
         }
 
         public void CopyDbConfigFile8ToTestPath()
         {
-            File.WriteAllBytes(DbConfigFileName, Properties.Resources.dbconfig_8);
+            WriteDbConfig(Properties.Resources.dbconfig_8);
         }
 
         public void CopyDoubleDbConfigFileToTestPath()
         {
-            File.WriteAllBytes(DbConfigFileName, Properties.Resources.dbconfig_doubledb);
+            WriteDbConfig(Properties.Resources.dbconfig_doubledb);
+        }
+
+        private static void WriteDbConfig(byte[] contents)
+        {
+            string config = Encoding.UTF8.GetString(contents);
+            File.WriteAllText(DbConfigFileName, config.Replace("localhost", Server, StringComparison.OrdinalIgnoreCase));
         }
 
         public void Dispose()

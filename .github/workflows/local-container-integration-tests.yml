@@ -1,0 +1,35 @@
+name: Local Container Integration Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  integration-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [sqlserver, postgresql, mysql]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run runtime-container tests
+        shell: pwsh
+        run: ./scripts/tests/run_local_container_tests.ps1 -Platform "${{ matrix.platform }}"
+      - name: Upload test results and logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: local-container-${{ matrix.platform }}-${{ github.run_id }}
+          path: testresults/**
+          if-no-files-found: warn
+      - name: Compose cleanup
+        if: always()
+        shell: bash
+        run: docker compose -p "sbm-local-${{ matrix.platform }}" -f scripts/tests/local-container/docker-compose.yml --profile "${{ matrix.platform }}" --profile emulators down --volumes --remove-orphans

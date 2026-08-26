@@ -79,12 +79,21 @@ function Show-TestSummary {
     $failed = $script:allFailed
     $skipped = $script:allSkipped
     
-    # Determine console width for padding (prevents wrapping so line count = visual row count)
-    $consoleWidth = [Math]::Max(40, [Console]::WindowWidth)
+    # Cursor-based refresh is unavailable when output is redirected (for example, CI or an agent shell).
+    $supportsCursorRefresh = -not [Console]::IsOutputRedirected
+    $consoleWidth = 120
+    if ($supportsCursorRefresh) {
+        try {
+            $consoleWidth = [Math]::Max(40, [Console]::WindowWidth)
+        }
+        catch {
+            $supportsCursorRefresh = $false
+        }
+    }
     
     # If refreshing, move cursor up by the number of lines we rendered last time
     # Using relative movement so it works correctly even when the buffer has scrolled
-    if ($refresh -and $script:lastRenderLineCount -gt 0) {
+    if ($refresh -and $supportsCursorRefresh -and $script:lastRenderLineCount -gt 0) {
         $targetRow = [Math]::Max(0, [Console]::CursorTop - $script:lastRenderLineCount)
         [Console]::SetCursorPosition(0, $targetRow)
     }

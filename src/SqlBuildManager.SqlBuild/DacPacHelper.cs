@@ -166,7 +166,7 @@ namespace SqlBuildManager.SqlBuild
 
         }
 
-        public static async System.Threading.Tasks.Task<(DacpacDeltasStatus status, string buildPackageName)> CreateSbmFromDacPacDifferencesAsync(string platinumDacPacFileName, string targetDacPacFileName, bool batchScripts, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete, System.Threading.CancellationToken cancellationToken = default)
+        public static async System.Threading.Tasks.Task<(DacpacDeltasStatus status, string buildPackageName)> CreateSbmFromDacPacDifferencesAsync(string platinumDacPacFileName, string targetDacPacFileName, bool batchScripts, string buildRevision, int defaultScriptTimeout, bool allowObjectDelete, System.Threading.CancellationToken cancellationToken = default, string targetDatabase = "client")
         {
             log.LogInformation($"Generating SBM build from dacpac differences: {Path.GetFileName(platinumDacPacFileName)} vs {Path.GetFileName(targetDacPacFileName)}");
             string path = Path.GetDirectoryName(targetDacPacFileName)!;
@@ -208,7 +208,7 @@ namespace SqlBuildManager.SqlBuild
                 }
 
                 buildPackageName = baseFileName + ".sbm";
-                if (await SqlBuildFileHelper.SaveSqlFilesToNewBuildFileAsync(buildPackageName, files, "client", true, defaultScriptTimeout, cancellationToken: cancellationToken).ConfigureAwait(false))
+                if (await SqlBuildFileHelper.SaveSqlFilesToNewBuildFileAsync(buildPackageName, files, targetDatabase, true, defaultScriptTimeout, cancellationToken: cancellationToken).ConfigureAwait(false))
                 {
 
                     //Clean up generated scripts files
@@ -356,7 +356,7 @@ namespace SqlBuildManager.SqlBuild
                 return (DacpacDeltasStatus.ExtractionFailure, runDataModel);
             }
 
-            var (stat, sbmFileName) = await CreateSbmFromDacPacDifferencesAsync(runDataModel.PlatinumDacPacFileName!, tmpDacPacName, false, buildRevision, defaultScriptTimeout, allowObjectDelete, cancellationToken).ConfigureAwait(false);
+            var (stat, sbmFileName) = await CreateSbmFromDacPacDifferencesAsync(runDataModel.PlatinumDacPacFileName!, tmpDacPacName, false, buildRevision, defaultScriptTimeout, allowObjectDelete, cancellationToken, targetDatabase).ConfigureAwait(false);
             if (stat != DacpacDeltasStatus.Success)
             {
                 return (stat, runDataModel);

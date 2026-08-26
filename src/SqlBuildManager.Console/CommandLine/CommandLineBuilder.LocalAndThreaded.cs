@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SqlBuildManager.Console.CommandLine
@@ -71,10 +72,21 @@ namespace SqlBuildManager.Console.CommandLine
                     platinumserversourceOption,
                     timeoutretrycountOption,
                     defaultscripttimeoutOption,
-                    unitTestOption
+                    unitTestOption,
+                    jobnameOption,
+                    storageaccountnameOption,
+                    storageaccountkeyOption,
+                    serviceBusconnectionOption,
+                    eventhubconnectionOption,
+                    eventhubResourceGroupOption,
+                    eventhubSubscriptionOption,
+                    eventHubLoggingTypeOption,
+                    aciMonitorOption,
+                    streamEventsOption
                 };
                 cmd.AddRange(DatabaseAuthArgs);
                 cmd.AddRange(ConcurrencyOptions);
+                cmd.AddRange(SettingsFileExistingOptions);
                 cmd.SetGroupedHelp(
                     new OptionGroup("Build Options", new List<Option> { packagenameOption, overrideOption, trialOption, transactionalOption, descriptionOption, buildrevisionOption, scriptsrcdirOption, timeoutretrycountOption, defaultscripttimeoutOption }),
                     new OptionGroup("DACPAC", new List<Option> { platinumdacpacOption, targetdacpacOption, forcecustomdacpacOption, platinumdbsourceOption, platinumserversourceOption }),
@@ -85,7 +97,36 @@ namespace SqlBuildManager.Console.CommandLine
                 cmd.SetAction(async (parseResult, ct) => {
                     var cmdLine = CommandLineArgsBinder.Bind(parseResult);
                     var unittest = parseResult.GetValue(unitTestOption);
-                    return await Worker.RunThreadedExecutionAsync(cmdLine: cmdLine, unittest: unittest);
+                    using var monitorCancellation = new CancellationTokenSource();
+                    Task<int>? monitorTask = null;
+                    if (parseResult.GetValue(aciMonitorOption))
+                    {
+                        monitorTask = Worker.MonitorServiceBusRuntimeProgress(
+                            cmdLine,
+                            parseResult.GetValue(streamEventsOption),
+                            DateTime.UtcNow.AddMinutes(-15),
+                            unittest,
+                            cancellationToken: monitorCancellation.Token);
+                    }
+
+                    var result = await Worker.RunThreadedExecutionAsync(cmdLine: cmdLine, unittest: unittest);
+                    if (monitorTask != null)
+                    {
+                        Worker.StopServiceBusRuntimeMonitoring();
+                        monitorCancellation.Cancel();
+                        try
+                        {
+                            await monitorTask.WaitAsync(TimeSpan.FromSeconds(10));
+                        }
+                        catch (OperationCanceledException) when (monitorCancellation.IsCancellationRequested)
+                        {
+                        }
+                        catch (TimeoutException)
+                        {
+                        }
+                    }
+
+                    return result;
                 });
                 return cmd;
             }

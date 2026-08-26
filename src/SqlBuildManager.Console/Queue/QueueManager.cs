@@ -32,6 +32,8 @@ namespace SqlBuildManager.Console.Queue
         private ServiceBusSessionReceiver _sessionReceiver = null!;
         private ServiceBusReceiver _messageReceiver = null!;
         private CancellationTokenSource tokenSource = null!;
+        private readonly SemaphoreSlim _sessionLockRenewalGate = new(1, 1);
+        private DateTimeOffset _lastSessionLockRenewal = DateTimeOffset.MinValue;
 
         public QueueManager(string topicConnectionString, string jobName, ConcurrencyType concurrencyType, bool unitest = false)
         {
@@ -98,7 +100,7 @@ namespace SqlBuildManager.Console.Queue
                 {
                     if (ConnectionStringValidator.IsServiceBusConnectionString(topicConnectionString))
                     {
-                        _adminClient = new ServiceBusAdministrationClient(topicConnectionString);
+                        _adminClient = new ServiceBusAdministrationClient(GetAdministrationConnectionString(topicConnectionString));
                     }
                     else
                     {
@@ -109,6 +111,55 @@ namespace SqlBuildManager.Console.Queue
                 }
                 return _adminClient;
             }
+        }
+
+        private static string GetAdministrationConnectionString(string connectionString)
+        {
+            if (!IsServiceBusEmulatorConnectionString(connectionString))
+            {
+                return connectionString;
+            }
+
+            var parts = connectionString.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            for (var i = 0; i < parts.Length; i++)
+            {
+                if (!parts[i].StartsWith("Endpoint=", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var endpoint = parts[i]["Endpoint=".Length..].TrimEnd('/');
+                var schemeEnd = endpoint.IndexOf("://", StringComparison.Ordinal);
+                if (schemeEnd < 0)
+                {
+                    continue;
+                }
+
+                var prefix = endpoint[..(schemeEnd + 3)];
+                var host = endpoint[(schemeEnd + 3)..];
+                var slash = host.IndexOf('/');
+                if (slash >= 0)
+                {
+                    host = host[..slash];
+                }
+
+                var colon = host.LastIndexOf(':');
+                host = colon >= 0 ? host[..colon] : host;
+                parts[i] = $"Endpoint={prefix}{host}:5300/";
+                break;
+            }
+
+            return string.Join(';', parts) + ';';
+        }
+
+        private static bool IsServiceBusEmulatorConnectionString(string connectionString)
+        {
+            if (connectionString.Contains("UseDevelopmentEmulator=true", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return connectionString.Contains("servicebus-emulator", StringComparison.OrdinalIgnoreCase);
         }
         public ServiceBusReceiver MessageReceiver
         {
@@ -336,6 +387,7 @@ namespace SqlBuildManager.Console.Queue
                     try
                     {
                         _sessionReceiver = await Client.AcceptNextSessionAsync(topicName, topicSessionSubscriptionName, new ServiceBusSessionReceiverOptions() { ReceiveMode = ServiceBusReceiveMode.PeekLock }, token);
+                        _lastSessionLockRenewal = DateTimeOffset.MinValue;
                         log.LogInformation($"Obtained new subscription for batch job '{jobName}' and subscription Id '{_sessionReceiver.SessionId}' ");
                     }
                     catch (TaskCanceledException)
@@ -528,7 +580,21 @@ namespace SqlBuildManager.Console.Queue
                 log.LogDebug($"Renewing message lock on {t.ServerName}.{t.DbOverrideSequence[0].OverrideDbTarget}{concurrency} message ID '{message.MessageId}'");
                 if (_sessionReceiver != null)
                 {
-                    await _sessionReceiver.RenewSessionLockAsync();
+                    await _sessionLockRenewalGate.WaitAsync();
+                    try
+                    {
+                        if (DateTimeOffset.UtcNow - _lastSessionLockRenewal < TimeSpan.FromSeconds(1))
+                        {
+                            return;
+                        }
+
+                        await _sessionReceiver.RenewSessionLockAsync();
+                        _lastSessionLockRenewal = DateTimeOffset.UtcNow;
+                    }
+                    finally
+                    {
+                        _sessionLockRenewalGate.Release();
+                    }
                 }
                 else
                 {
@@ -803,12 +869,29 @@ namespace SqlBuildManager.Console.Queue
             {
                 tasks.Add(_messageReceiver.DisposeAsync().AsTask());
             }
+            if (_sessionReceiver != null)
+            {
+                tasks.Add(_sessionReceiver.DisposeAsync().AsTask());
+            }
             if (_client != null)
             {
                 tasks.Add(_client.DisposeAsync().AsTask());
             }
 
-            Task.WaitAll(tasks.ToArray());
+            try
+            {
+                Task.WaitAll(tasks.ToArray());
+            }
+            catch (AggregateException ex) when (
+                IsServiceBusEmulatorConnectionString(topicConnectionString) &&
+                ex.Flatten().InnerExceptions.All(exception => exception is TimeoutException))
+            {
+                log.LogWarning("Service Bus emulator cleanup timed out while draining a receiver; continuing shutdown.");
+            }
+            finally
+            {
+                _sessionLockRenewalGate.Dispose();
+            }
 
         }
 

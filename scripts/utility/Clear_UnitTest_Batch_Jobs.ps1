@@ -11,6 +11,11 @@
     Azure resource group. Defaults to rg-{envName}.
 .PARAMETER includeActive
     When true, deletes active jobs in addition to completed jobs. Default: false.
+
+.NOTES
+    Azure Batch jobs are Batch data-plane resources and do not have an ARM cleanup
+    equivalent. If Batch public network access is disabled, run this script from a
+    host with connectivity to the Batch private endpoint.
 #>
 param
 (
@@ -25,16 +30,21 @@ if (-not [string]::IsNullOrWhiteSpace($resourceGroupNameOverride)) {
     $resourceGroupName = $resourceGroupNameOverride
 }
 
-$batchAcctKey  = az batch account keys list --name $batchAccountName --resource-group $resourceGroupName -o tsv --query 'primary'
-$batchAcctEndpoint = az batch account show --name $batchAccountName --resource-group $resourceGroupName -o tsv --query "accountEndpoint"
+az batch account login --name $batchAccountName --resource-group $resourceGroupName --only-show-errors
+if ($LASTEXITCODE -ne 0) {
+    throw "Unable to authenticate to Batch account '$batchAccountName'."
+}
 
 Write-Host "Retrieving list of completed Batch jobs for $batchAccountName " -ForegroundColor Green
 if($includeActive)
 {
-    $jobs = az batch job list --account-name $batchAccountName --account-endpoint $batchAcctEndpoint --account-key $batchAcctKey -o tsv --query "[].id"
+    $jobs = az batch job list --output tsv --query "[].id" --only-show-errors
 }
 else {
-    $jobs = az batch job list --account-name $batchAccountName --account-endpoint $batchAcctEndpoint --account-key $batchAcctKey -o tsv --query "[?contains(@.state 'completed')].id"
+    $jobs = az batch job list --output tsv --query "[?state=='completed'].id" --only-show-errors
+}
+if ($LASTEXITCODE -ne 0) {
+    throw "Unable to list jobs in Batch account '$batchAccountName'. Verify data-plane network access and RBAC."
 }
 
 foreach ($job in $jobs) {
@@ -42,7 +52,10 @@ foreach ($job in $jobs) {
     if($job.StartsWith("SqlBuild") -or $job.StartsWith("batch-") -or $job.StartsWith("bat-"))
     {
         Write-Host "Removing job: $($job)" -ForegroundColor Green
-        az batch job delete --account-name $batchAccountName --account-endpoint $batchAcctEndpoint --account-key $batchAcctKey  --job-id $job --yes
+        az batch job delete --job-id $job --yes --only-show-errors
+        if ($LASTEXITCODE -ne 0) {
+            throw "Unable to delete Batch job '$job'."
+        }
     }else
     {
         Write-Host "Skipping job: $($job). Doesn't meet name convention." -ForegroundColor Cyan

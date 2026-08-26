@@ -14,6 +14,11 @@ COPY SqlBuildManager.Constants/SqlBuildManager.Constants.csproj SqlBuildManager.
 COPY SqlBuildManager.DbInformation/SqlBuildManager.DbInformation.csproj SqlBuildManager.DbInformation/packages.lock.json SqlBuildManager.DbInformation/
 COPY SqlBuildManager.ObjectScript/SqlBuildManager.ObjectScript.csproj SqlBuildManager.ObjectScript/packages.lock.json SqlBuildManager.ObjectScript/
 COPY SqlBuildManager.SqlBuild/SqlBuildManager.SqlBuild.csproj SqlBuildManager.SqlBuild/packages.lock.json SqlBuildManager.SqlBuild/
+ARG SBM_NUGET_SOURCE=""
+RUN if [ -n "$SBM_NUGET_SOURCE" ]; then \
+      mkdir -p /root/.nuget/NuGet && \
+      printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<configuration><packageSources><clear /><add key="local-proxy" value="'$SBM_NUGET_SOURCE'" /></packageSources></configuration>' > /root/.nuget/NuGet/NuGet.Config; \
+    fi
 RUN dotnet restore SqlBuildManager.Console/sbm.csproj --locked-mode
 
 FROM restore AS publish
@@ -28,3 +33,4 @@ FROM mcr.microsoft.com/dotnet/runtime:10.0-noble AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENV DOTNET_ENVIRONMENT=Production
+ENTRYPOINT ["dotnet", "/app/sbm.dll"]

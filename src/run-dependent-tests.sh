@@ -3,9 +3,17 @@
 #used in Azure Container Instance image to run tests that depend on SQL Server being available.
 set -e
 
-echo "Waiting for SQL Server to be ready..."
+# Local Compose runs one database platform at a time.  The default remains
+# "all" for the existing ACI workflow.
+PLATFORM="${SBM_TEST_PLATFORM:-all}"
+case "$PLATFORM" in
+    sqlserver|postgresql|mysql|all) ;;
+    *) echo "Unsupported SBM_TEST_PLATFORM: $PLATFORM"; exit 2 ;;
+esac
+
 RETRIES=30
-for i in $(seq 1 $RETRIES); do
+if [ "$PLATFORM" = "sqlserver" ] || [ "$PLATFORM" = "all" ]; then for i in $(seq 1 $RETRIES); do
+    echo "Waiting for SQL Server to be ready..."
     # TCP check on SQL Server port
     if timeout 2 bash -c "echo > /dev/tcp/localhost/1433" 2>/dev/null; then
         echo "SQL Server port is open, waiting for initialization to complete..."
@@ -16,9 +24,10 @@ for i in $(seq 1 $RETRIES); do
     echo "  Attempt $i/$RETRIES - SQL Server not ready yet..."
     sleep 5
 done
+fi
 
-echo "Waiting for PostgreSQL to be ready..."
-for i in $(seq 1 $RETRIES); do
+if [ "$PLATFORM" = "postgresql" ] || [ "$PLATFORM" = "all" ]; then for i in $(seq 1 $RETRIES); do
+    echo "Waiting for PostgreSQL to be ready..."
     if timeout 2 bash -c "echo > /dev/tcp/localhost/5432" 2>/dev/null; then
         echo "PostgreSQL port is open, waiting for initialization to complete..."
         sleep 5
@@ -28,26 +37,56 @@ for i in $(seq 1 $RETRIES); do
     echo "  Attempt $i/$RETRIES - PostgreSQL not ready yet..."
     sleep 5
 done
+fi
 
-echo "Waiting for MySQL to be ready..."
-for i in $(seq 1 $RETRIES); do
+if [ "$PLATFORM" = "mysql" ] || [ "$PLATFORM" = "all" ]; then for i in $(seq 1 $RETRIES); do
+    echo "Waiting for MySQL to be ready..."
     if timeout 2 bash -c "echo > /dev/tcp/localhost/3306" 2>/dev/null; then
         echo "MySQL port is open, waiting for initialization to complete..."
         sleep 10
         echo "MySQL should be ready."
         break
     fi
+
     echo "  Attempt $i/$RETRIES - MySQL not ready yet..."
     sleep 5
 done
+fi
+
+if [ -n "${SBM_TEST_EVENTHUB_CONNECTION_STRING:-}" ]; then
+    echo "Waiting for local messaging emulators..."
+    for hostport in "azurite:10000" "eventhubs-emulator:5672" "servicebus-emulator:5672" "servicebus-emulator:5300"; do
+        host="${hostport%%:*}"; port="${hostport##*:}"
+        for i in $(seq 1 $RETRIES); do
+            if timeout 2 bash -c "echo > /dev/tcp/$host/$port" 2>/dev/null; then break; fi
+            echo "  Attempt $i/$RETRIES - $hostport not ready yet..."
+            sleep 5
+        done
+    done
+fi
 
 mkdir -p /tests/TestResults
+
+# Local Compose runs only the all-runtime LocalContainer suite. The broader
+# dependent suites remain available through the existing ACI test path.
+case "$PLATFORM" in
+    sqlserver) TEST_DLLS=(
+        "SqlBuildManager.LocalContainer.SqlServer.IntegrationTest/SqlBuildManager.LocalContainer.SqlServer.IntegrationTest.dll"
+    ) ;;
+    postgresql) TEST_DLLS=(
+        "SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest/SqlBuildManager.LocalContainer.PostgreSQL.IntegrationTest.dll"
+    ) ;;
+    mysql) TEST_DLLS=(
+        "SqlBuildManager.LocalContainer.MySql.IntegrationTest/SqlBuildManager.LocalContainer.MySql.IntegrationTest.dll"
+    ) ;;
+    all) ;;
+esac
 
 # Run test DLLs in order:
 # 1. Pure unit tests (no external dependencies)
 # 2. SQL Server dependent tests - SqlBuildManager.SqlBuild first (creates databases)
 # 3. PostgreSQL and MySQL dependent tests
-TEST_DLLS=(
+if [ "$PLATFORM" = "all" ]; then TEST_DLLS=(
     "SqlBuildManager.SqlBuild.UnitTest/SqlBuildManager.SqlBuild.UnitTest.dll"
     "SqlBuildManager.ObjectScript.UnitTest/SqlBuildManager.ObjectScript.UnitTest.dll"
     "SqlBuildManager.Connection.UnitTest/SqlBuildManager.Connection.UnitTest.dll"
@@ -64,7 +103,7 @@ TEST_DLLS=(
     "SqlBuildManager.Console.PostgreSQL.IntegrationTest/SqlBuildManager.Console.PostgreSQL.IntegrationTest.dll"
     "SqlBuildManager.SqlBuild.MySQL.IntegrationTest/SqlBuildManager.SqlBuild.MySQL.IntegrationTest.dll"
     "SqlBuildManager.Console.MySQL.IntegrationTest/SqlBuildManager.Console.MySQL.IntegrationTest.dll"
-)
+); fi
 
 OVERALL_EXIT=0
 for dll in "${TEST_DLLS[@]}"; do
@@ -95,6 +134,12 @@ for dll in "${TEST_DLLS[@]}"; do
         OVERALL_EXIT=$TEST_EXIT
     fi
 done
+
+LOCAL_TEST_DLL="${TEST_DLLS[0]}"
+LOCAL_TEST_NAME=$(basename "$(dirname "$LOCAL_TEST_DLL")")
+if [ -f "/tests/TestResults/${LOCAL_TEST_NAME}.html" ]; then
+    cp "/tests/TestResults/${LOCAL_TEST_NAME}.html" /tests/TestResults/TestResults.html
+fi
 
 echo ""
 echo "TEST_EXIT_CODE=$OVERALL_EXIT"

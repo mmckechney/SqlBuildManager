@@ -108,10 +108,10 @@ namespace SqlBuildManager.Console.Aad
 
                         _tokenCred = new RetryingTokenCredential(
                             new ChainedTokenCredential(
-                                new ManagedIdentityFallbackTokenCredential(AadHelper.ManagedIdentityClientId),
                                 new AzureCliCredential(cliOpts),
-                                new AzurePowerShellCredential(pwshOpts)));
-                        log.LogInformation($"Creating ChainedTokenCredential with ManagedIdentityClientId of: '{AadHelper.ManagedIdentityClientId}'");
+                                new AzurePowerShellCredential(pwshOpts),
+                                new ManagedIdentityFallbackTokenCredential(AadHelper.ManagedIdentityClientId)));
+                        log.LogInformation($"Creating ChainedTokenCredential with developer credentials first and ManagedIdentityClientId fallback of: '{AadHelper.ManagedIdentityClientId}'");
                     }
                 }
                 return _tokenCred;

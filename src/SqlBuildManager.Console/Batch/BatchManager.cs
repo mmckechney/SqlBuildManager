@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using SqlBuildManager.Console.Aad;
 using SqlBuildManager.Console.CloudStorage;
 using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Console.ContainerShared;
 using SqlBuildManager.Console.Relay;
 using SqlBuildManager.Console.Threaded;
 using SqlBuildManager.Interfaces.Console;
@@ -39,6 +40,9 @@ namespace SqlBuildManager.Console.Batch
             Run,
             Query
         }
+        internal sealed record BatchContainerTaskDefinition(
+            string CommandLine,
+            IReadOnlyDictionary<string, string> EnvironmentVariables);
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private CommandLineArgs cmdLine;
 
@@ -50,7 +54,6 @@ namespace SqlBuildManager.Console.Batch
         private string outputFile = string.Empty;
         private BatchType batchType = BatchType.Run;
         private const string baseTargetFormat = ExecutionOptions.BatchTargetFileFormat;
-
         public BatchManager(CommandLineArgs cmdLine)
         {
             this.cmdLine = cmdLine;
@@ -185,7 +188,7 @@ namespace SqlBuildManager.Console.Batch
                 if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.IdentityName))
                 {
                     log.LogDebug($"Preparing Entra-authenticated container '{storageContainerName}'");
-                    storageSvcClient = new BlobServiceClient(new Uri($"https://{cmdLine.ConnectionArgs.StorageAccountName}.blob.core.windows.net"), Aad.AadHelper.TokenCredential);
+                    storageSvcClient = StorageManager.CreateStorageClient(cmdLine.ConnectionArgs.StorageAccountName, string.Empty);
                     outputContainerUrl = await StorageManager
                         .EnsureOutputContainerAsync(cmdLine.ConnectionArgs.StorageAccountName, storageContainerName)
                         .ConfigureAwait(false);
@@ -307,10 +310,18 @@ namespace SqlBuildManager.Console.Batch
                         storageIdentity?.ResourceId ?? string.Empty).ConfigureAwait(false));
                 }
 
-                //Create the individual command lines for each node
-                IList<string> commandLines = CompileCommandLines(cmdLine, inputFiles, outputContainerUrl, cmdLine.BatchArgs.BatchNodeCount, jobId, cmdLine.BatchArgs.BatchPoolOs, batchType);
-                foreach (var s in commandLines)
-                    log.LogDebug(s);
+                var taskDefinitions = CompileTaskDefinitions(
+                    cmdLine,
+                    inputFiles,
+                    outputContainerUrl,
+                    cmdLine.BatchArgs.BatchNodeCount,
+                    cmdLine.BatchArgs.BatchPoolOs,
+                    batchType,
+                    unittest);
+                foreach (var definition in taskDefinitions)
+                {
+                    log.LogDebug("Creating Batch container task with command: {CommandLine}", definition.CommandLine);
+                }
 
                 try
                 {
@@ -347,16 +358,17 @@ namespace SqlBuildManager.Console.Batch
                 List<CloudTask> tasks = new List<CloudTask>();
 
                 // Create each of the tasks to process on each node 
-                for (int i = 0; i < commandLines.Count; i++)
+                for (int i = 0; i < taskDefinitions.Count; i++)
                 {
                     string taskId = String.Format($"Task{i}");
-                    string taskCommandLine = commandLines[i];
+                    var taskDefinition = taskDefinitions[i];
 
-                    CloudTask task = new CloudTask(taskId, taskCommandLine);
+                    CloudTask task = new CloudTask(taskId, taskDefinition.CommandLine);
                     task.ResourceFiles = inputFiles;
-                    task.ContainerSettings = new TaskContainerSettings(
-                        imageName: GetBatchContainerImage(cmdLine),
-                        workingDirectory: ContainerWorkingDirectory.TaskWorkingDirectory);
+                    task.EnvironmentSettings = taskDefinition.EnvironmentVariables
+                        .Select(value => new EnvironmentSetting(value.Key, value.Value))
+                        .ToList();
+                    task.ContainerSettings = CreateTaskContainerSettings(cmdLine);
                     task.OutputFiles = new List<OutputFile>
                         {
                             new OutputFile(
@@ -401,28 +413,67 @@ namespace SqlBuildManager.Console.Batch
                     BatchExecutionCompletedEvent(this, new BatchMonitorEventArgs(cmdLine, stream, unittest));
                 }
 
-                log.LogInformation("All tasks reached state Completed.");
+                log.LogInformation("All tasks reached a terminal state; validating exit results.");
 
                 // Print task output
                 log.LogInformation("Printing task output...");
 
-                IEnumerable<CloudTask> completedtasks = batchClient.JobOperations.ListTasks(jobId);
+                var completedtasks = batchClient.JobOperations.ListTasks(jobId).ToList();
+                var succeededTaskCount = completedtasks.Count(task =>
+                    task.ExecutionInformation.Result == TaskExecutionResult.Success ||
+                    task.ExecutionInformation.ExitCode == 0);
+                var failedTaskCount = completedtasks.Count - succeededTaskCount;
+                log.LogInformation(
+                    "Batch task results: {SucceededTaskCount} succeeded, {FailedTaskCount} failed.",
+                    succeededTaskCount,
+                    failedTaskCount);
 
                 foreach (CloudTask task in completedtasks)
                 {
-                    string nodeId = String.Format(task.ComputeNodeInformation.ComputeNodeId);
+                    string nodeId = task.ComputeNodeInformation?.ComputeNodeId ?? "<not assigned>";
                     log.LogInformation("---------------------------------");
                     log.LogInformation($"Task: {task.Id}");
                     log.LogInformation($"Node: {nodeId}");
                     log.LogInformation($"Exit Code: {task.ExecutionInformation.ExitCode}");
-                    if (isDebug)
+                    if (task.ExecutionInformation.FailureInformation != null)
                     {
-                        log.LogDebug("Standard out:");
-                        log.LogDebug(task.GetNodeFile("stdout.txt").ReadAsString());
+                        var failure = task.ExecutionInformation.FailureInformation;
+                        log.LogError(
+                            "Batch task {TaskId} failed before returning an exit code. Code: {FailureCode}. Message: {FailureMessage}. Details: {FailureDetails}",
+                            task.Id,
+                            failure.Code,
+                            failure.Message,
+                            string.Join(", ", failure.Details.Select(detail => $"{detail.Name}={detail.Value}")));
+                    }
+                    if (isDebug || task.ExecutionInformation.ExitCode != 0 || task.ExecutionInformation.FailureInformation != null)
+                    {
+                        var standardOutput = ReadTaskOutput(task, "stdout.txt");
+                        if (standardOutput != null && isDebug)
+                        {
+                            log.LogDebug("Standard output for task {TaskId}:{NewLine}{StandardOutput}",
+                                task.Id,
+                                Environment.NewLine,
+                                standardOutput);
+                        }
+                        else if (standardOutput != null)
+                        {
+                            log.LogError("Standard output for failed task {TaskId}:{NewLine}{StandardOutput}",
+                                task.Id,
+                                Environment.NewLine,
+                                standardOutput);
+                        }
                     }
                     if (task.ExecutionInformation.ExitCode != 0)
                     {
-                        myExitCode = task.ExecutionInformation.ExitCode;
+                        var standardError = ReadTaskOutput(task, "stderr.txt");
+                        if (standardError != null)
+                        {
+                            log.LogError("Standard error for task {TaskId}:{NewLine}{StandardError}",
+                                task.Id,
+                                Environment.NewLine,
+                                standardError);
+                        }
+                        myExitCode = task.ExecutionInformation.ExitCode ?? (int)ExecutionReturn.BatchExecutionError;
                     }
                 }
                 log.LogInformation("---------------------------------");
@@ -531,6 +582,23 @@ namespace SqlBuildManager.Console.Batch
                 return ((int)ExecutionReturn.BatchJobMonitorTimeout, readOnlySasToken);
             }
 
+        }
+
+        private string? ReadTaskOutput(CloudTask task, string fileName)
+        {
+            try
+            {
+                return task.GetNodeFile(fileName).ReadAsString();
+            }
+            catch (BatchException exception)
+            {
+                log.LogWarning(
+                    exception,
+                    "Unable to read {FileName} for Batch task {TaskId}; the task may have failed before a node file was created.",
+                    fileName,
+                    task.Id);
+                return null;
+            }
         }
 
 
@@ -833,13 +901,20 @@ namespace SqlBuildManager.Console.Batch
 
 
         /// <summary>
-        /// Builds commandlines for reach batch server based in the pool node count
+        /// Builds the fixed worker command and environment settings for each Batch task.
         /// </summary>
         /// <param name="args"></param>
         /// <param name="cmdLine"></param>
         /// <param name="poolNodeCount"></param>
         /// <returns></returns>
-        public IList<string> CompileCommandLines(CommandLineArgs cmdLine, List<ResourceFile> inputFiles, string outputContainerUrl, int poolNodeCount, string jobId, OsType os, BatchType bType)
+        internal IList<BatchContainerTaskDefinition> CompileTaskDefinitions(
+            CommandLineArgs cmdLine,
+            List<ResourceFile> inputFiles,
+            string outputContainerUrl,
+            int poolNodeCount,
+            OsType os,
+            BatchType bType,
+            bool unitTest)
         {
             if (os != OsType.Linux)
             {
@@ -848,8 +923,7 @@ namespace SqlBuildManager.Console.Batch
 
             // var z = inputFiles.Where(x => x.FilePath.ToLower().Contains(cmdLine.PackageName.ToLower())).FirstOrDefault();
 
-            List<string> commandLines = new List<string>();
-            //Need to replace the paths to 
+            var taskDefinitions = new List<BatchContainerTaskDefinition>();
             for (int i = 0; i < poolNodeCount; i++)
             {
                 var threadCmdLine = (CommandLineArgs)cmdLine.Clone();
@@ -882,25 +956,10 @@ namespace SqlBuildManager.Console.Batch
                     threadCmdLine.QueryFile = new FileInfo(qu!.FilePath);
                 }
 
-                //Update the RootLoggingPath as appropriate
-                switch (os)
-                {
-                    case OsType.Windows:
-                        threadCmdLine.RootLoggingPath = "%AZ_BATCH_TASK_DIR%";// string.Format("D:\\{0}", jobId);
-                        break;
-
-                    case OsType.Linux:
-                        threadCmdLine.RootLoggingPath = "$AZ_BATCH_TASK_DIR";
-                        break;
-                }
-
-
-
                 //Set the name of the output file (if set)
                 if (threadCmdLine.OutputFile != null)
                 {
-                    var tmpName = $"{threadCmdLine.RootLoggingPath}/{threadCmdLine.OutputFile.Name}{i}.csv"; //use forward slash for Linux compat.
-                    threadCmdLine.OutputFile = new FileInfo(tmpName);
+                    threadCmdLine.OutputFile = new FileInfo($"{threadCmdLine.OutputFile.Name}{i}.csv");
                 }
 
 
@@ -911,29 +970,25 @@ namespace SqlBuildManager.Console.Batch
                 {
                     threadCmdLine.MultiDbRunConfigFileName = target.FilePath;
                 }
+                else if (!string.IsNullOrWhiteSpace(threadCmdLine.ConnectionArgs.ServiceBusTopicConnectionString))
+                {
+                    threadCmdLine.MultiDbRunConfigFileName = string.Empty;
+                }
 
                 threadCmdLine.BatchArgs.OutputContainerSasUrl = outputContainerUrl;
 
-                StringBuilder sb = new StringBuilder("/bin/sh -c '/app/sbm ");
-                sb.Append($"--loglevel {threadCmdLine.LogLevel} batch ");
-
-                switch (bType)
+                var commandLine = $"--loglevel {threadCmdLine.LogLevel} batch worker";
+                if (bType == BatchType.Query)
                 {
-                    case BatchType.Run:
-                        sb.Append("runthreaded ");
-                        break;
-                    case BatchType.Query:
-                        sb.Append("querythreaded ");
-                        break;
+                    commandLine += " query";
                 }
-                sb.Append(threadCmdLine.ToBatchString() + "'");
 
-
-
-                commandLines.Add(sb.ToString());
+                taskDefinitions.Add(new BatchContainerTaskDefinition(
+                    commandLine,
+                    EnvironmentVariableHelper.CreateRuntimeEnvironmentVariables(threadCmdLine, unitTest)));
             }
 
-            return commandLines;
+            return taskDefinitions;
         }
 
         internal static string GetBatchContainerImage(CommandLineArgs cmdLine)
@@ -941,6 +996,11 @@ namespace SqlBuildManager.Console.Batch
             var registryServer = NormalizeRegistryServer(cmdLine.ContainerRegistryArgs.RegistryServer);
             return $"{registryServer}/{cmdLine.ContainerRegistryArgs.ImageName}:{cmdLine.ContainerRegistryArgs.ImageTag}";
         }
+
+        internal static TaskContainerSettings CreateTaskContainerSettings(CommandLineArgs cmdLine) =>
+            new TaskContainerSettings(
+                imageName: GetBatchContainerImage(cmdLine),
+                workingDirectory: ContainerWorkingDirectory.TaskWorkingDirectory);
 
         private static string NormalizeRegistryServer(string registryServer)
         {

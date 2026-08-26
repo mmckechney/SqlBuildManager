@@ -17,7 +17,6 @@ using Azure.ResourceManager.EventHubs;
 using Azure.ResourceManager.EventHubs.Models;
 using Azure.ResourceManager.Resources;
 using SqlBuildManager.Console.Arm;
-using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 
 namespace SqlBuildManager.Console.Events
@@ -36,6 +35,7 @@ namespace SqlBuildManager.Console.Events
         private string eventhubNamespace = "";
         private string eventHub = string.Empty;
         private string eventHubCheckpointContainer = "eventhubcheckpoint";
+        internal const string EmulatorConsumerGroupName = "cg1";
 
 
 
@@ -111,7 +111,9 @@ namespace SqlBuildManager.Console.Events
                     this.eventhubNamespace = namespaceName;
                     this.eventHub = hubName;
 
-                    this.consumerGroup = CreateCustomConsumerGroup(eventHubSubscription, eventHubResourceGroup, namespaceName, hubName, this.jobName);
+                    this.consumerGroup = IsEventHubEmulatorConnectionString(eventHubconnectionString)
+                        ? EmulatorConsumerGroupName
+                        : CreateCustomConsumerGroup(eventHubSubscription, eventHubResourceGroup, namespaceName, hubName, this.jobName);
                     consumerGroupInitialized = true;
                     if (this.consumerGroup != EventHubConsumerClient.DefaultConsumerGroupName) this.eventHubCheckpointContainer = this.consumerGroup.ToLower().Trim();
 
@@ -137,15 +139,27 @@ namespace SqlBuildManager.Console.Events
         { 
             if(ConnectionStringValidator.IsEventHubConnectionString(input))
             {
-                string pattern = @"^Endpoint=sb:\/\/([^.]+)\.(.+)\/;SharedAccessKeyName=.+;SharedAccessKey=.+;EntityPath=(.+)$";
-                Match match = Regex.Match(input, pattern);
-                string name = match.Groups[1].Value;
-                string domainName = match.Groups[2].Value;
-                string entityPath = match.Groups[3].Value;
+                // Azure uses <namespace>.servicebus.windows.net, while the local
+                // Event Hubs emulator uses a host such as eventhubs-emulator:5672.
+                // Parse fields independently so both formats (and field ordering)
+                // are accepted.
+                var fields = input.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(part => part.Split('=', 2))
+                    .Where(part => part.Length == 2)
+                    .ToDictionary(part => part[0].Trim(), part => part[1].Trim(),
+                        StringComparer.OrdinalIgnoreCase);
+                var endpoint = fields["Endpoint"].TrimEnd('/');
+                var host = endpoint.StartsWith("sb://", StringComparison.OrdinalIgnoreCase)
+                    ? endpoint.Substring("sb://".Length)
+                    : endpoint;
+                host = host.Split('/')[0];
+                var name = host.EndsWith(".servicebus.windows.net", StringComparison.OrdinalIgnoreCase)
+                    ? host.Split('.')[0]
+                    : host;
+                var entityPath = fields["EntityPath"];
                 log.LogInformation($"Using EventHub Namespace: {name} with Event Hub name: {entityPath}");
                 return ($"{name}", entityPath);
             }
-           
 
             string namespaceName = "";
             string hubName = "";
@@ -173,6 +187,47 @@ namespace SqlBuildManager.Console.Events
             }
 
         }
+
+        /// <summary>
+        /// Returns true for the Event Hubs development emulator connection formats.
+        /// The emulator does not expose Azure Resource Manager, so consumer groups
+        /// must not be created or removed through ARM.
+        /// </summary>
+        internal static bool IsEventHubEmulatorConnectionString(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return false;
+            }
+
+            var fields = input.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Select(part => part.Split('=', 2))
+                .Where(part => part.Length == 2)
+                .ToDictionary(
+                    part => part[0].Trim(),
+                    part => part[1].Trim(),
+                    StringComparer.OrdinalIgnoreCase);
+
+            if (fields.TryGetValue("UseDevelopmentEmulator", out var emulatorFlag) &&
+                bool.TryParse(emulatorFlag, out var useEmulator) &&
+                useEmulator)
+            {
+                return true;
+            }
+
+            if (!fields.TryGetValue("Endpoint", out var endpoint))
+            {
+                return false;
+            }
+
+            endpoint = endpoint.TrimEnd('/');
+            var host = endpoint.StartsWith("sb://", StringComparison.OrdinalIgnoreCase)
+                ? endpoint.Substring("sb://".Length)
+                : endpoint;
+            host = host.Split('/')[0].Split(':')[0];
+            return host.Equals("eventhubs-emulator", StringComparison.OrdinalIgnoreCase);
+        }
+
         public (int, int, int, int) GetCommitErrorScannedAndWorkerCompleteCounts()
         {
             return (databaseCommitMessages, databaseErrorMessages, eventsScanned, workersCompleted);
@@ -356,12 +411,14 @@ namespace SqlBuildManager.Console.Events
                 this.eventHub = hubName;
                 if (!consumerGroupInitialized)
                 {
-                    this.consumerGroup = CreateCustomConsumerGroup(
-                        eventHubSubscription,
-                        eventHubResourceGroup,
-                        namespaceName,
-                        hubName,
-                        this.jobName);
+                    this.consumerGroup = IsEventHubEmulatorConnectionString(eventHubconnectionString)
+                        ? EmulatorConsumerGroupName
+                        : CreateCustomConsumerGroup(
+                            eventHubSubscription,
+                            eventHubResourceGroup,
+                            namespaceName,
+                            hubName,
+                            this.jobName);
                     consumerGroupInitialized = true;
                 }
 
@@ -550,6 +607,12 @@ namespace SqlBuildManager.Console.Events
         
         public string CreateCustomConsumerGroup(string subscriptionId, string resourceGroup, string namespaceName, string hubName, string jobName)
         {
+            if (IsEventHubEmulatorConnectionString(eventHubconnectionString))
+            {
+                consumerGroupInitialized = true;
+                return EmulatorConsumerGroupName;
+            }
+
             if (!string.IsNullOrWhiteSpace(subscriptionId) && !string.IsNullOrWhiteSpace(resourceGroup))
             {
                 try
@@ -577,6 +640,12 @@ namespace SqlBuildManager.Console.Events
 
         public void RemoveCustomConsumerGroup()
         {
+            if (IsEventHubEmulatorConnectionString(eventHubconnectionString))
+            {
+                log.LogInformation($"No Azure Event Hub consumer group cleanup is required for the emulator.");
+                return;
+            }
+
             if (!string.IsNullOrWhiteSpace(this.eventHubSubscription) && !string.IsNullOrWhiteSpace(this.eventHubResourceGroup) && this.consumerGroup != EventHubConsumerClient.DefaultConsumerGroupName)
             {
                 try

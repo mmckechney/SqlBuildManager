@@ -57,17 +57,27 @@ namespace SqlBuildManager.Console.CloudStorage
             string storageAccountName, string storageAccountKey, string containerName)
         {
             BlobContainerClient client;
+            var endpoint = GetStorageEndpoint(storageAccountName);
             if (string.IsNullOrWhiteSpace(storageAccountKey))
             {
-                var url = $"https://{storageAccountName}.blob.core.windows.net/{containerName}";
+                var url = $"{endpoint}/{containerName}";
                 log.LogDebug($"Creating container client with URL: '{url}' and Token Credential");
                 client = new BlobContainerClient(new Uri(url), Aad.AadHelper.TokenCredential);
             }
             else
             {
-                var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
                 log.LogDebug($"Creating container client for '{storageAccountName}/{containerName}' with storage key");
-                client = new BlobContainerClient(connstr, containerName);
+                if (!endpoint.Contains("blob.core.windows.net", StringComparison.OrdinalIgnoreCase))
+                {
+                    client = new BlobContainerClient(
+                        new Uri($"{endpoint}/{containerName}"),
+                        new StorageSharedKeyCredential(storageAccountName, storageAccountKey));
+                }
+                else
+                {
+                    var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey, endpoint);
+                    client = new BlobContainerClient(connstr, containerName);
+                }
             }
             await client.CreateIfNotExistsAsync();
             return client;
@@ -79,14 +89,15 @@ namespace SqlBuildManager.Console.CloudStorage
         internal static BlobServiceClient CreateStorageClient(string storageAccountName, string storageAccountKey)
         {
             BlobServiceClient serviceClient = null!;
+            var endpoint = GetStorageEndpoint(storageAccountName);
             if (string.IsNullOrWhiteSpace(storageAccountKey))
             {
-                serviceClient = new BlobServiceClient(new Uri($"https://{storageAccountName}.blob.core.windows.net"), Aad.AadHelper.TokenCredential);
+                serviceClient = new BlobServiceClient(new Uri(endpoint), Aad.AadHelper.TokenCredential);
             }
             else
             {
                 StorageSharedKeyCredential creds = new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
-                serviceClient = new BlobServiceClient(new Uri($"https://{storageAccountName}.blob.core.windows.net"), creds);
+                serviceClient = new BlobServiceClient(new Uri(endpoint), creds);
             }
 
 
@@ -97,8 +108,18 @@ namespace SqlBuildManager.Console.CloudStorage
         {
             return new StorageSharedKeyCredential(storageAccountName, storageAccountKey);
         }
-        private static string GetStorageConnectionString(string storageAccountName, string storageAccountKey)
+        private static string GetStorageEndpoint(string storageAccountName)
         {
+            var configuredEndpoint = Environment.GetEnvironmentVariable("SBM_BLOB_ENDPOINT");
+            return (string.IsNullOrWhiteSpace(configuredEndpoint)
+                ? $"https://{storageAccountName}.blob.core.windows.net"
+                : configuredEndpoint).TrimEnd('/');
+        }
+
+        private static string GetStorageConnectionString(string storageAccountName, string storageAccountKey, string endpoint)
+        {
+            if (!endpoint.Contains("blob.core.windows.net", StringComparison.OrdinalIgnoreCase))
+                return $"DefaultEndpointsProtocol=http;AccountName={storageAccountName};AccountKey={storageAccountKey};BlobEndpoint={endpoint};";
             return $"DefaultEndpointsProtocol=https;AccountName={storageAccountName};AccountKey={storageAccountKey};EndpointSuffix=core.windows.net";
         }
 
@@ -248,7 +269,7 @@ namespace SqlBuildManager.Console.CloudStorage
 
         internal static string GetContainerRawUrl(string storageAccountName, string outputContainerName)
         {
-            return $"https://{storageAccountName}.blob.core.windows.net/{outputContainerName}";
+            return $"{GetStorageEndpoint(storageAccountName)}/{outputContainerName}";
         }
 
         internal static async Task<string> EnsureOutputContainerAsync(
@@ -259,7 +280,7 @@ namespace SqlBuildManager.Console.CloudStorage
             try
             {
                 var serviceClient = new BlobServiceClient(
-                    new Uri($"https://{storageAccountName}.blob.core.windows.net"),
+                    new Uri(GetStorageEndpoint(storageAccountName)),
                     Aad.AadHelper.TokenCredential);
                 await serviceClient
                     .GetBlobContainerClient(outputContainerName)
@@ -299,7 +320,7 @@ namespace SqlBuildManager.Console.CloudStorage
         private static async Task<string> GetOutputContainerSasUrlWithKeyAsync(string storageAccountName, string outputContainerName, StorageSharedKeyCredential storageCreds, bool forRead, CancellationToken cancellationToken = default)
         {
             log.LogDebug($"Ensuring presence of output blob container '{outputContainerName}'");
-            var container = new BlobContainerClient(new Uri($"https://{storageAccountName}.blob.core.windows.net/{outputContainerName}"), storageCreds);
+            var container = new BlobContainerClient(new Uri($"{GetStorageEndpoint(storageAccountName)}/{outputContainerName}"), storageCreds);
             await container.CreateIfNotExistsAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
             BlobSasBuilder sasConstraints;
@@ -531,12 +552,12 @@ namespace SqlBuildManager.Console.CloudStorage
             if (storageCreds != null)
             {
                 // Legacy: Use storage key
-                blobData = new BlockBlobClient(new Uri($"https://{storageAcctName}.blob.core.windows.net/{containerName}/{blobName}"), storageCreds);
+                blobData = new BlockBlobClient(new Uri($"{GetStorageEndpoint(storageAcctName)}/{containerName}/{blobName}"), storageCreds);
             }
             else
             {
                 // Use Managed Identity
-                blobData = new BlockBlobClient(new Uri($"https://{storageAcctName}.blob.core.windows.net/{containerName}/{blobName}"), Aad.AadHelper.TokenCredential);
+                blobData = new BlockBlobClient(new Uri($"{GetStorageEndpoint(storageAcctName)}/{containerName}/{blobName}"), Aad.AadHelper.TokenCredential);
             }
 
             try
@@ -792,16 +813,17 @@ namespace SqlBuildManager.Console.CloudStorage
         internal static BlobContainerClient GetBlobContainerClient(string storageAccountName, string storageAccountKey, string containerName)
         {
             BlobContainerClient containerClient = null!;
+            var endpoint = GetStorageEndpoint(storageAccountName);
             if (string.IsNullOrWhiteSpace(storageAccountKey))
             {
-                var url = $"https://{storageAccountName}.blob.core.windows.net/{containerName}";
+                var url = $"{endpoint}/{containerName}";
                 log.LogDebug($"Creating container with URL: '{url}' and Token Credential");
                 containerClient = new BlobContainerClient(new Uri(url), Aad.AadHelper.TokenCredential);
             }
             else
             {
 
-                var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
+                var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey, endpoint);
                 log.LogDebug($"Creating container with account name '{storageAccountName}' and container name '{containerName}' and key '{ConnectionStringRedactor.MaskKey(storageAccountKey)}'. ");
                 containerClient = new BlobContainerClient(connstr, containerName);
             }
@@ -812,14 +834,15 @@ namespace SqlBuildManager.Console.CloudStorage
         private static BlockBlobClient GetBlockBlobClient(string storageAccountName, string storageAccountKey, string containerName, string blobName)
         {
             BlockBlobClient containerClient = null!;
+            var endpoint = GetStorageEndpoint(storageAccountName);
             if (string.IsNullOrWhiteSpace(storageAccountKey))
             {
-                var url = $"https://{storageAccountName}.blob.core.windows.net/{containerName}/{blobName}";
+                var url = $"{endpoint}/{containerName}/{blobName}";
                 containerClient = new BlockBlobClient(new Uri(url), Aad.AadHelper.TokenCredential);
             }
             else
             {
-                var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey);
+                var connstr = GetStorageConnectionString(storageAccountName, storageAccountKey, endpoint);
                 containerClient = new BlockBlobClient(connstr, containerName, blobName);
             }
             return containerClient;
