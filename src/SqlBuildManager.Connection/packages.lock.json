@@ -590,9 +590,9 @@
       },
       "System.Memory.Data": {
         "type": "CentralTransitive",
-        "requested": "[10.0.11, )",
-        "resolved": "10.0.11",
-        "contentHash": "XJm7L8ie8wOGuPsu4+26Cr2Jk1kxRi1Z2AAuXhqvQBWGA/52/Nrt+UQwFud685rugPuZvwUP0FXdDTVwns1y4Q=="
+        "requested": "[10.0.12, )",
+        "resolved": "10.0.12",
+        "contentHash": "MksC4vmN7pWANW4VpvVw0TUA6sWa1yvMlms594JBiSsCD/CXH5mlazos76+UE6lGE+6/TiBA3S5TLEp8mGsMQw=="
       }
     }
   }
