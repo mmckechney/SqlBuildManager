@@ -72,12 +72,12 @@
       },
       "Azure.ResourceManager.AppContainers": {
         "type": "Direct",
-        "requested": "[1.5.0, )",
-        "resolved": "1.5.0",
-        "contentHash": "hl/Rsbso/SLJnefb618sSWuLYGM8ENraFsC2GypdPEh5x4hMf5NTgaTa5WTRt6d9bNkZki/eoWWTqS0DsQ1msA==",
+        "requested": "[1.6.0, )",
+        "resolved": "1.6.0",
+        "contentHash": "YCBgPeXJiIr/llALlIFUc97YgKCYb2L+3j6anooaMZBrGgrZqXIwvrSGr/nB2LyG1rXiORu/uiIglNRaFt75YQ==",
         "dependencies": {
-          "Azure.Core": "1.49.0",
-          "Azure.ResourceManager": "1.13.2"
+          "Azure.Core": "1.62.0",
+          "Azure.ResourceManager": "1.14.0"
         }
       },
       "Azure.ResourceManager.Batch": {
