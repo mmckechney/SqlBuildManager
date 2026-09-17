@@ -464,7 +464,7 @@
         "dependencies": {
           "Microsoft.Data.SqlClient": "[7.0.3, )",
           "Microsoft.Extensions.Logging": "[10.0.12, )",
-          "Microsoft.SqlServer.DacFx": "[170.5.76, )",
+          "Microsoft.SqlServer.DacFx": "[170.5.96, )",
           "Polly": "[8.7.0, )",
           "SqlBuildManager.Connection": "[1.0.0, )",
           "SqlBuildManager.Constants": "[1.0.0, )",
@@ -609,9 +609,9 @@
       },
       "Microsoft.SqlServer.DacFx": {
         "type": "CentralTransitive",
-        "requested": "[170.5.76, )",
-        "resolved": "170.5.76",
-        "contentHash": "AbimY2cKr9JbyJ+pgXiIf4dsMjrVyBenWzo7bWuJyv0lJGOmV/okXGRGx0X+dmjeIxLh2Ea70WtMx+TshBH0Yw==",
+        "requested": "[170.5.96, )",
+        "resolved": "170.5.96",
+        "contentHash": "O0f1yGJDI1d8WpD+8/AwlGJCT39l1lyFmYFKYIMxaaO3p4DaawVyAidGNZwRhDX5zvPTbXdxNbFrvUQL33EC2g==",
         "dependencies": {
           "Azure.Storage.Blobs": "12.18.0",
           "Microsoft.ApplicationInsights": "2.23.0",
