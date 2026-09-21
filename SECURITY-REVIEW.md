@@ -2,7 +2,35 @@
 
 Assessed source revision: `f955d1082d1920d400c0a6c88816cde5bd8784fb`.
 
-**Status: assessment and planning only. No remediation has been implemented.**
+**Status: historical assessment with subsequently authorized, scoped source remediation.** Finding descriptions and line references below describe the assessed revision, not an assertion that every finding remains unchanged. Live deployment/security sign-off is separate.
+
+### Owner decisions and authorized scope
+
+- Preserve intentional mixed encrypted/plaintext settings-file behavior. The fail-closed persistence proposal in R6/SEC-02 is explicitly declined; this is not a completed fix.
+- Implement general ACI secure environment transport, verified Azure PostgreSQL TLS, and R3 identity separation while retaining migration-capable database permissions.
+- R3 applies to **fresh disposable deployments only**. No migration tooling, automatic revocation of legacy roles, or live Azure changes are authorized by this source task. Incremental Bicep deployment does not remove legacy assignments.
+- Preserve native local/local-container authentication. Their PostgreSQL servers have no provisioned TLS certificates; existing local TLS compatibility remains intentional.
+- Earlier Azure MySQL work adds managed-identity test authentication, explicit test-database grants, verified token-mode TLS, and secure bootstrap-token transport. It does not close every work package below.
+
+### Implemented source changes
+
+ACI now uses secure environment properties for runtime credentials, connection strings, storage
+keys and SAS URLs. PostgreSQL uses certificate/hostname verification for Entra modes and canonical
+Azure endpoints, including the Azure-test helper and bootstrap client. Native local TLS behavior
+is retained because those servers have no provisioned certificates.
+
+Fresh-deployment infrastructure separates workers, orchestration, Relay, AKS control plane/kubelet,
+Batch account storage, private bootstrap and MySQL directory lookup. Runtime settings select the
+worker; trusted test-runner Azure operations explicitly select the orchestrator. Worker database
+grants retain migration permissions but target generated test databases only. Relay has separate
+SQL grants. SQL bootstrap restores each captured administrator; PostgreSQL/MySQL bootstrap use
+short-lived deploying-user tokens without granting the bootstrap identity those administrator
+roles. Each token is isolated to its intended database subprocess and cleared afterward.
+
+This is source remediation, not a deployed security attestation. Existing environments, effective
+inherited Azure roles, live certificate handshakes and service-side authorization remain outside
+the completed offline scope. Abrupt host/process termination can prevent `finally` cleanup;
+automatic recovery or reconciliation of legacy/crash state is not claimed.
 
 ## Scope and threat model
 
@@ -93,7 +121,7 @@ Apply centralized canonical containment and manifest-membership validation to re
 
 Encryption returns unchanged arguments after logging a missing-key error. The settings writer ignores initialization success, serializes the returned arguments and can write plaintext successfully without explicit `--cleartext`.
 
-Fail before any file replacement when initialization, resolved key validation, encryption or required secret-store persistence fails. Keep secret-free MI settings usable without a key and use atomic writes. The modern authenticated encryption format itself is not the demonstrated defect.
+**Owner disposition:** mixed encrypted/plaintext settings are intentional. The proposed fail-closed settings persistence change is not to be implemented. Preserve this behavior; secure ACI transport is a separate, authorized remediation. The modern authenticated encryption format itself is not the demonstrated defect.
 
 ### R7 - Private-endpoint flag does not guarantee private Service Bus
 
@@ -123,12 +151,12 @@ The attack requires an authorized Azure Relay Sender, not an anonymous caller. A
 
 ## Prioritized remediation plan
 
-All work below is pending. Production priorities must not be interpreted as an emergency caused by isolated, already-destroyed test credentials.
+This is the original prioritized backlog, subject to the owner decisions above. Selected source remediations do not constitute completion of the entire backlog or live production sign-off. Production priorities must not be interpreted as an emergency caused by isolated, already-destroyed test credentials.
 
 | Work package | Priority and dependencies | Acceptance criteria |
 |--------------|---------------------------|---------------------|
 | SEC-01: Source-only build contexts and images | P2 test hygiene; required before reusing the pattern with production secrets | Synthetic settings/key sentinels absent from outgoing contexts and image layers; runtime test configuration works; isolation and teardown verified |
-| SEC-02: Secure runtime transport and fail-closed settings | P0 before supplying production runtime secrets; P2 test-bootstrap cleanup; settings persistence P1 | No sentinel secrets in ordinary ARM properties; invalid/missing keys and secret-store failures leave files intact and return failure |
+| SEC-02: Secure runtime transport | P0 before supplying production runtime secrets; P2 test-bootstrap cleanup | No sentinel secrets in ordinary ARM environment properties; preserve intentionally mixed settings encryption per owner decision |
 | SEC-03: Exposure scope and conditional rotation | Risk-based; final credential cutover follows SEC-01/02 | Determine validity/reuse; close destroyed isolated environments with evidence; rotate only affected still-valid credentials where warranted |
 | SEC-04: Verified database TLS | P1; independent | Password/token modes reject wrong-host, untrusted and plaintext endpoints; approved private-DNS connections work on every target |
 | SEC-05: Separate identities and migration privileges | P1; design independently | Workers cannot administer infrastructure/AKS, access unrelated databases or assume bootstrap duties; supported jobs still work |
@@ -156,4 +184,4 @@ No live Azure/RBAC/Graph audit, deployed-image inspection, full exploit test, Bi
 
 No exploitable unauthenticated Relay access, active shell-injection path or XXE chain was established. Inactive modules and excluded code were distinguished from the effective deployment path. Existing test isolation is an owner-stated design assumption, not a live attestation.
 
-This document records findings and a plan only. Its creation does not implement remediation or authorize changes to Azure resources, credentials or access.
+The original assessment remains historical evidence. Subsequent source changes and owner decisions are recorded separately; neither this document nor offline validation authorizes live changes to Azure resources, credentials or access.

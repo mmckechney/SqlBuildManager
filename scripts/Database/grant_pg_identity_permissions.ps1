@@ -11,17 +11,23 @@ param
 
 <#
 .SYNOPSIS
-    Grants the managed identity access to all PostgreSQL databases using Entra ID authentication.
+    Grants the worker managed identity access to generated PostgreSQL test databases using Entra ID authentication.
 
 .DESCRIPTION
     This script connects to the Azure PostgreSQL Flexible Server and creates a role
-    for the managed identity, then grants it appropriate permissions on each database.
+    for the worker managed identity, then grants migration permissions on sbm_pg_testN databases.
+    Private postprovision uses the deploying Entra administrator's short-lived token;
+    the bootstrap managed identity is never made a PostgreSQL administrator.
+    Supply PG_ENTRA_ADMIN_LOGIN and PG_BOOTSTRAP_ACCESS_TOKEN (a secure environment
+    value consumed on entry) when POSTPROVISION_IDENTITY_NAME is set.
     
     Prerequisites:
     - The active Azure identity must be an Entra ID admin on the PostgreSQL server
     - Az CLI must be installed and logged in
     - psql must be installed
     - The managed identity must exist in the resource group
+    - TLS requires a trusted CA bundle: set PGSSLROOTCERT, or install the Linux
+      ca-certificates package. Connections always verify the server certificate and hostname.
 
 .PARAMETER envName
     The Azure Developer CLI environment name used when deploying resources.
@@ -34,6 +40,17 @@ param
 #>
 
 # Get the repo root
+$aadToken = $env:PG_BOOTSTRAP_ACCESS_TOKEN
+$env:PG_BOOTSTRAP_ACCESS_TOKEN = $null
+$entraAdminName = $env:PG_ENTRA_ADMIN_LOGIN
+$bootstrapLogin = $env:POSTPROVISION_IDENTITY_NAME
+$isPrivateBootstrap = -not [string]::IsNullOrWhiteSpace($bootstrapLogin)
+if ($isPrivateBootstrap -and
+    ([string]::IsNullOrWhiteSpace($entraAdminName) -or [string]::IsNullOrWhiteSpace($aadToken) -or
+        $entraAdminName -eq $bootstrapLogin)) {
+    throw 'Private PostgreSQL bootstrap requires the deploying Entra administrator: set PG_ENTRA_ADMIN_LOGIN and secure PG_BOOTSTRAP_ACCESS_TOKEN. The bootstrap managed identity must not be a PostgreSQL administrator.'
+}
+
 $repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
@@ -45,9 +62,11 @@ if ([string]::IsNullOrWhiteSpace($path)) {
 
 # Get resource name variables from the environment name
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
+$requestedResourceGroupName = $resourceGroupName
 . $prefixScript -envName $envName
+$resourceGroupName = $requestedResourceGroupName
 
-Write-Host "Granting Managed Identity '$identityName' access to PostgreSQL databases" -ForegroundColor Cyan
+Write-Host "Granting Managed Identity '$identityName' access to generated PostgreSQL test databases" -ForegroundColor Cyan
 Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 
 # Get the managed identity details
@@ -61,29 +80,47 @@ $identityPrincipalId = $identity.principalId
 Write-Host "Managed Identity Name: $identityName" -ForegroundColor DarkGreen
 Write-Host "Managed Identity Object ID: $identityPrincipalId" -ForegroundColor DarkGreen
 
-$entraAdminName = $env:POSTPROVISION_IDENTITY_NAME
-if ([string]::IsNullOrWhiteSpace($entraAdminName)) {
+if (-not $isPrivateBootstrap) {
     $entraAdminName = az account show --query user.name -o tsv
-}
-if ([string]::IsNullOrWhiteSpace($entraAdminName)) {
-    Write-Error "Unable to determine the PostgreSQL Entra administrator name."
-    exit 1
-}
-
-$aadToken = az account get-access-token --resource-type oss-rdbms --query accessToken -o tsv
-if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($aadToken)) {
-    Write-Error "Unable to acquire a PostgreSQL access token."
-    exit 1
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($entraAdminName)) {
+        throw 'Unable to determine the PostgreSQL Entra administrator name.'
+    }
+    $aadToken = az account get-access-token --resource-type oss-rdbms --query accessToken -o tsv
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($aadToken)) {
+        Write-Error "Unable to acquire a PostgreSQL access token."
+        exit 1
+    }
 }
 
+$rootCertificate = $env:PGSSLROOTCERT
+if ([string]::IsNullOrWhiteSpace($rootCertificate)) {
+    $rootCertificate = @(
+        '/etc/ssl/certs/ca-certificates.crt',
+        '/etc/pki/tls/certs/ca-bundle.crt',
+        '/etc/ssl/ca-bundle.pem',
+        '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'
+    ) | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -First 1
+}
+if ([string]::IsNullOrWhiteSpace($rootCertificate) -or
+    -not (Test-Path -LiteralPath $rootCertificate -PathType Leaf)) {
+    throw 'PostgreSQL verified TLS requires a trusted CA bundle. Set PGSSLROOTCERT to an existing trusted PEM CA bundle, or install the Linux ca-certificates package. An explicit PGSSLROOTCERT must reference an existing file; no TLS downgrade is allowed.'
+}
+
+$originalEnvironment = @{}
+foreach ($name in @('PGPASSWORD', 'PGSSLMODE', 'PGSSLROOTCERT')) {
+    $originalEnvironment[$name] = [Environment]::GetEnvironmentVariable($name)
+}
+
+$pgServerNames = @($pgServerNameA, $pgServerNameB)
+try {
 $env:PGPASSWORD = $aadToken
+$env:PGSSLMODE = 'verify-full'
+$env:PGSSLROOTCERT = $rootCertificate
 $escapedIdentityName = $identityName.Replace("'", "''")
 $quotedIdentityName = $identityName.Replace('"', '""')
 $failureCount = 0
 
 # Process both PostgreSQL servers
-$pgServerNames = @($pgServerNameA, $pgServerNameB)
-
 foreach ($pgServerName in $pgServerNames) {
 
 # Get PG server info
@@ -115,13 +152,14 @@ if ($LASTEXITCODE -eq 0) {
 $dbs = @(az postgres flexible-server db list --resource-group $resourceGroupName --server-name $pgServerName --query "[].name" -o tsv)
 
 foreach ($db in $dbs) {
-    if ($db -eq "postgres" -or $db -eq "azure_maintenance" -or $db -eq "azure_sys") {
+    if ($db -cnotmatch '^sbm_pg_test[1-9][0-9]*$') {
         continue
     }
 
     Write-Host "  Processing database: $db" -ForegroundColor DarkGreen
 
-    # Grant privileges (run each as a separate statement)
+    # Default ACLs belong to the persistent deploying user, never the bootstrap managed identity.
+    # Workers own objects they create; these grants do not transfer existing-object ownership.
     $grantStatements = @(
         "GRANT CONNECT ON DATABASE ""$db"" TO ""$quotedIdentityName""",
         "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ""$quotedIdentityName""",
@@ -148,6 +186,14 @@ foreach ($db in $dbs) {
 }
 
 } # end foreach pgServerName
+}
+finally {
+    $aadToken = $null
+    $env:PG_BOOTSTRAP_ACCESS_TOKEN = $null
+    foreach ($name in $originalEnvironment.Keys) {
+        [Environment]::SetEnvironmentVariable($name, $originalEnvironment[$name])
+    }
+}
 
 if ($failureCount -gt 0) {
     Write-Error "PostgreSQL permission initialization failed for $failureCount operation(s)."
@@ -159,5 +205,5 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "PostgreSQL Identity Permissions Complete" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "The managed identity '$identityName' has been granted access to all PostgreSQL databases on both servers." -ForegroundColor Green
+Write-Host "The managed identity '$identityName' has been granted access to generated PostgreSQL test databases on both servers." -ForegroundColor Green
 Write-Host "Applications using this identity can now connect using Azure AD token authentication." -ForegroundColor Green

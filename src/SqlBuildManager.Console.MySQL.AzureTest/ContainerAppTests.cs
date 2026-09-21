@@ -39,14 +39,14 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
         {
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
         [TestMethod]
         public async Task ContainerApp_MySQL_Run_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -102,13 +102,13 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
         public async Task ContainerApp_MySQL_StepWise_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -191,13 +191,13 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
         public async Task ContainerApp_MySQL_Queue_ManagedIdentity_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -282,13 +282,13 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
         public async Task ContainerApp_MySQL_Run_DoubleDbConfig_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-clientdbtargets-doubledb.cfg");
                 if (!File.Exists(overrideFile))
                 {

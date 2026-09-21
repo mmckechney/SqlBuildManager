@@ -1,5 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MySqlConnector;
+using Azure.Identity;
+using System;
 
 namespace SqlBuildManager.Connection.UnitTest
 {
@@ -32,6 +34,67 @@ namespace SqlBuildManager.Connection.UnitTest
             Assert.IsTrue(connStr.Contains("Database=mydb"), "Should contain Database");
             Assert.IsTrue(connStr.Contains("User ID=mysqluser"), "Should contain User ID");
             Assert.AreEqual("mysqlpass", builder.Password, "Should contain Password");
+            Assert.AreEqual(MySqlSslMode.Preferred, builder.SslMode, "Native local authentication must retain its existing behavior.");
+        }
+
+        [TestMethod]
+        [DataRow(AuthenticationType.ManagedIdentity)]
+        [DataRow(AuthenticationType.AzureADDefault)]
+        public void BuildConnectionString_EntraAuth_UsesTokenAndDatabasePrincipal(AuthenticationType authType)
+        {
+            var tokenFactory = new MySqlConnectionFactory(clientId =>
+            {
+                Assert.AreEqual("test-client-id", clientId);
+                return "synthetic-entra-token";
+            });
+            var builder = new MySqlConnectionStringBuilder(tokenFactory.BuildConnectionString(
+                "sbm_mysql_test1", "test.mysql.database.azure.com", "id-test", "unused-native-password",
+                authType, 30, "test-client-id"));
+
+            Assert.AreEqual("id-test", builder.UserID);
+            Assert.AreEqual("synthetic-entra-token", builder.Password);
+            Assert.AreEqual(MySqlSslMode.VerifyFull, builder.SslMode);
+        }
+
+        [TestMethod]
+        public void BuildConnectionString_NativeAuth_DoesNotAcquireAzureToken()
+        {
+            var tokenFactory = new MySqlConnectionFactory(_ => throw new InvalidOperationException("Unexpected Azure authentication"));
+            var builder = new MySqlConnectionStringBuilder(tokenFactory.BuildConnectionString(
+                "local", "localhost", "root", "local-only", AuthenticationType.Password, 30, ""));
+            Assert.AreEqual("local-only", builder.Password);
+        }
+
+        [TestMethod]
+        public void CreateTokenCredential_Aks_UsesWorkloadIdentity()
+        {
+            var credential = MySqlConnectionFactory.CreateTokenCredential(
+                "11111111-1111-1111-1111-111111111111",
+                "22222222-2222-2222-2222-222222222222", "synthetic-token-file");
+            Assert.IsInstanceOfType(credential, typeof(WorkloadIdentityCredential));
+        }
+
+        [TestMethod]
+        public void CreateTokenCredential_AzureContainer_UsesManagedIdentity()
+        {
+            var credential = MySqlConnectionFactory.CreateTokenCredential(
+                "11111111-1111-1111-1111-111111111111", "", "");
+            Assert.IsInstanceOfType(credential, typeof(ManagedIdentityCredential));
+        }
+
+        [TestMethod]
+        public void CreateTokenCredential_Developer_UsesDefaultCredential()
+        {
+            Assert.IsInstanceOfType(MySqlConnectionFactory.CreateTokenCredential("", "", ""), typeof(DefaultAzureCredential));
+        }
+
+        [TestMethod]
+        public void CreateTokenCredential_IncompleteWorkloadIdentity_DoesNotFallBack()
+        {
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
+                MySqlConnectionFactory.CreateTokenCredential("client-id", "", "token-file"));
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
+                MySqlConnectionFactory.CreateTokenCredential("", "tenant-id", "token-file"));
         }
 
         [TestMethod]

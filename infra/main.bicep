@@ -148,6 +148,51 @@ module identityResource './modules/identity.bicep' = {
   }
 }
 
+module orchestratorIdentity './modules/identity.bicep' = {
+  name: 'orchestratorIdentity'
+  scope: rg
+  params: {
+    identityName: resourceNames.outputs.orchestratorIdentityName
+    location: location
+  }
+}
+
+module mysqlDirectoryIdentity './modules/identity.bicep' = if (deployMySQL) {
+  name: 'mysqlDirectoryIdentity'
+  scope: rg
+  params: {
+    identityName: resourceNames.outputs.mysqlDirectoryIdentityName
+    location: location
+  }
+}
+
+module runtimeDataAccess './modules/dataaccess.bicep' = {
+  name: 'runtimeDataAccess'
+  scope: rg
+  params: {
+    workerPrincipalId: identityResource.outputs.principalId
+    orchestratorPrincipalId: orchestratorIdentity.outputs.principalId
+    storageAccountName: storageAccountResource.outputs.name
+    containerRegistryName: containerRegistry.outputs.name
+    serviceBusNamespaceName: serviceBusResource.outputs.namespaceName
+    eventHubNamespaceName: eventHubNamespaceResource.outputs.namespaceName
+    eventHubName: eventHubNamespaceResource.outputs.eventHubName
+  }
+}
+
+module orchestratorAccess './modules/orchestratoraccess.bicep' = {
+  name: 'orchestratorAccess'
+  scope: rg
+  params: {
+    orchestratorPrincipalId: orchestratorIdentity.outputs.principalId
+    workerIdentityName: identityResource.outputs.name
+    deployContainerAppEnv: deployContainerAppEnv
+    containerAppEnvName: deployContainerAppEnv ? containerAppEnv!.outputs.name : containerAppEnvNameVar
+    vnetName: networkResource.outputs.vnetName
+    subnetNames: concat([aciSubnetVar], deployBatchAccount ? [batchSubnetVar] : [], deployContainerAppEnv ? [containerAppSubnetVar] : [])
+  }
+}
+
 // Dedicated identity for the VNet-integrated post-provision bootstrap container.
 module postProvisionIdentity './modules/postprovisionidentity.bicep' = {
   name: 'postProvisionIdentity'
@@ -155,6 +200,7 @@ module postProvisionIdentity './modules/postprovisionidentity.bicep' = {
   params: {
     identityName: postProvisionIdentityNameVar
     location: location
+    containerRegistryName: containerRegistry.outputs.name
   }
 }
 
@@ -164,6 +210,11 @@ module userIdentityResource './modules/useridentity.bicep' = if(userIdGuid != ''
   scope: rg
   params: {
     userIdGuid: userIdGuid
+    storageAccountName: storageAccountResource.outputs.name
+    containerRegistryName: containerRegistry.outputs.name
+    serviceBusNamespaceName: serviceBusResource.outputs.namespaceName
+    eventHubNamespaceName: eventHubNamespaceResource.outputs.namespaceName
+    eventHubName: eventHubNamespaceResource.outputs.eventHubName
   }
 }
 
@@ -225,8 +276,6 @@ module postgresql './modules/postgresql.bicep' = if(deployPostgreSQL && userIdGu
     pgAdminObjectId: userIdGuid
     pgAdminLogin: userLoginName
     pgAdminPassword: pgAdminPassword
-    postProvisionAdminObjectId: postProvisionIdentity.outputs.principalId
-    postProvisionAdminName: postProvisionIdentity.outputs.name
     vnetId: networkResource.outputs.vnetId
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
   }
@@ -244,9 +293,7 @@ module mysql './modules/mysql.bicep' = if(deployMySQL){
     testDbCountPerServer: testDbCountPerServer
     location: location
     mySqlAdminPassword: mySqlAdminPassword
-    postProvisionAdminObjectId: postProvisionIdentity.outputs.principalId
-    postProvisionAdminName: postProvisionIdentity.outputs.name
-    postProvisionIdentityResourceId: postProvisionIdentity.outputs.id
+    directoryIdentityResourceId: mysqlDirectoryIdentity!.outputs.id
     vnetId: networkResource.outputs.vnetId
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
   }
@@ -260,6 +307,8 @@ module batchAccount './modules/batch.bicep' = if(deployBatchAccount){
     batchAccountName: batchAccountNameVar
     location: location
     identityName: identityResource.outputs.name
+    storageIdentityName: resourceNames.outputs.batchStorageIdentityName
+    orchestratorPrincipalId: orchestratorIdentity.outputs.principalId
     storageAccountName: storageAccountResource.outputs.name
   }
 }
@@ -272,7 +321,12 @@ module aks './modules/aks.bicep' = if(deployAks){
     aksClusterName: aksClusterNameVar
     location: location
     federatedIdName: federatedIdNameVar
-    identityName: identityNameVar
+    identityName: identityResource.outputs.name
+    controlPlaneIdentityName: resourceNames.outputs.aksControlPlaneIdentityName
+    kubeletIdentityName: resourceNames.outputs.aksKubeletIdentityName
+    containerRegistryName: containerRegistry.outputs.name
+    orchestratorPrincipalId: orchestratorIdentity.outputs.principalId
+    operatorPrincipalId: userIdGuid
     logAnalyticsWorkspaceName: logAnalyticsWorkspaceVar
     serviceAccountName: serviceAccountNameVar
     subnetName: aksSubnetVar
@@ -309,6 +363,7 @@ module relayProxy './modules/relayproxy.bicep' = if (deployRelayProxy) {
     identityName: relayProxyIdentityNameVar
     storageAccountName: storageAccountResource.outputs.name
     eventHubNamespaceName: eventHubNamespaceResource.outputs.namespaceName
+    eventHubName: eventHubNamespaceResource.outputs.eventHubName
     containerRegistryName: containerRegistry.outputs.name
     usePrivateEndpoint: usePrivateEndpoint
     privateEndpointSubnetId: networkResource.outputs.privateEndpointSubnetId
@@ -369,18 +424,13 @@ module serviceBusResource './modules/servicebus.bicep' = {
 // Outputs for azd
 output AZURE_LOCATION string = location
 output AZURE_RESOURCE_GROUP string = resourceGroupName
-output ENVIRONMENT_NAME string = envName
 
 // Deployment parameter outputs
 output DEPLOY_BATCH_ACCOUNT bool = deployBatchAccount
-output DEPLOY_CONTAINER_REGISTRY bool = true
 output DEPLOY_CONTAINERAPP_ENV bool = deployContainerAppEnv
 output DEPLOY_AKS bool = deployAks
 output DEPLOY_SQLSERVER bool = deploySqlServer
 output TEST_DB_COUNT_PER_SERVER int = testDbCountPerServer
-output EVENTHUB_SKU string = eventhubSku
-output SERVICEBUS_SKU string = serviceBusSku
-output EVENTHUB_SKU_CAPACITY int = skuCapacity
 output USE_PRIVATE_ENDPOINT bool = usePrivateEndpoint
 output DEPLOY_POSTGRESQL bool = deployPostgreSQL
 output DEPLOY_MYSQL bool = deployMySQL
@@ -390,7 +440,6 @@ output DEPLOY_RELAY_PROXY bool = deployRelayProxy
 output RESOURCE_GROUP_NAME string = resourceGroupName
 
 output VNET_NAME string = networkResource.outputs.vnetName
-output NSG_NAME string = networkResource.outputs.nsgName
 output ACI_SUBNET_NAME string = networkResource.outputs.aciSubnetName
 output ACI_SUBNET_ID string = networkResource.outputs.aciSubnetId
 output BATCH_SUBNET_NAME string = networkResource.outputs.batchSubnetName
@@ -402,6 +451,15 @@ output MANAGED_IDENTITY_NAME string = identityResource.outputs.name
 output MANAGED_IDENTITY_ID string = identityResource.outputs.id
 output MANAGED_IDENTITY_CLIENT_ID string = identityResource.outputs.clientId
 output MANAGED_IDENTITY_PRINCIPAL_ID string = identityResource.outputs.principalId
+
+output ORCHESTRATOR_IDENTITY_NAME string = orchestratorIdentity.outputs.name
+output ORCHESTRATOR_IDENTITY_ID string = orchestratorIdentity.outputs.id
+output ORCHESTRATOR_IDENTITY_CLIENT_ID string = orchestratorIdentity.outputs.clientId
+output ORCHESTRATOR_IDENTITY_PRINCIPAL_ID string = orchestratorIdentity.outputs.principalId
+output MYSQL_DIRECTORY_IDENTITY_NAME string = deployMySQL ? mysqlDirectoryIdentity!.outputs.name : ''
+output MYSQL_DIRECTORY_IDENTITY_ID string = deployMySQL ? mysqlDirectoryIdentity!.outputs.id : ''
+output MYSQL_DIRECTORY_IDENTITY_CLIENT_ID string = deployMySQL ? mysqlDirectoryIdentity!.outputs.clientId : ''
+output MYSQL_DIRECTORY_IDENTITY_PRINCIPAL_ID string = deployMySQL ? mysqlDirectoryIdentity!.outputs.principalId : ''
 
 output POSTPROVISION_IDENTITY_NAME string = postProvisionIdentity.outputs.name
 output POSTPROVISION_IDENTITY_ID string = postProvisionIdentity.outputs.id
@@ -449,11 +507,9 @@ output PG_SERVER_FQDN_A string = deployPostgreSQL && pgAdminPassword != '' ? pos
 output PG_SERVER_NAME_B string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerNameB : ''
 output PG_SERVER_FQDN_B string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgServerFqdnB : ''
 output PG_ADMIN_USER string = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgAdminUser : ''
-output PG_DATABASE_COUNT_PER_SERVER int = deployPostgreSQL && pgAdminPassword != '' ? postgresql!.outputs.pgDatabaseCountPerServer : 0
 
 output MYSQL_SERVER_NAME_A string = deployMySQL ? mysql!.outputs.mySqlServerNameA : ''
 output MYSQL_SERVER_FQDN_A string = deployMySQL ? mysql!.outputs.mySqlServerFqdnA : ''
 output MYSQL_SERVER_NAME_B string = deployMySQL ? mysql!.outputs.mySqlServerNameB : ''
 output MYSQL_SERVER_FQDN_B string = deployMySQL ? mysql!.outputs.mySqlServerFqdnB : ''
 output MYSQL_ADMIN_USER string = deployMySQL ? mysql!.outputs.mySqlAdminUser : ''
-output MYSQL_DATABASE_COUNT_PER_SERVER int = deployMySQL ? mysql!.outputs.mySqlDatabaseCountPerServer : 0

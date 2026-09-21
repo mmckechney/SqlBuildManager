@@ -32,20 +32,22 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 }
 
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
+$resourceGroupOverride = $resourceGroupName
 . $prefixScript -envName $envName
+$resourceGroupName = $resourceGroupOverride
 
-$postProvisionIdentity = az identity show --name $postProvisionIdentityName --resource-group $resourceGroupName | ConvertFrom-Json
-if ($null -eq $postProvisionIdentity -or [string]::IsNullOrWhiteSpace($postProvisionIdentity.principalId)) {
-    Write-Error "Unable to resolve the post-provision managed identity '$postProvisionIdentityName' in resource group '$resourceGroupName'."
+$directoryIdentity = az identity show --name $mysqlDirectoryIdentityName --resource-group $resourceGroupName | ConvertFrom-Json
+if ($LASTEXITCODE -ne 0 -or $null -eq $directoryIdentity -or [string]::IsNullOrWhiteSpace($directoryIdentity.principalId)) {
+    Write-Error "Unable to resolve the MySQL directory managed identity '$mysqlDirectoryIdentityName' in resource group '$resourceGroupName'."
     exit 1
 }
 
-$identityPrincipalId = $postProvisionIdentity.principalId
-Write-Host "Ensuring Graph permissions for MySQL server identity '$postProvisionIdentityName' ($identityPrincipalId)" -ForegroundColor Cyan
+$identityPrincipalId = $directoryIdentity.principalId
+Write-Host "Ensuring Graph permissions for MySQL server identity '$mysqlDirectoryIdentityName' ($identityPrincipalId)" -ForegroundColor Cyan
 
 $graphAppId = '00000003-0000-0000-c000-000000000000'
 $graphServicePrincipal = az ad sp show --id $graphAppId | ConvertFrom-Json
-if ($null -eq $graphServicePrincipal -or [string]::IsNullOrWhiteSpace($graphServicePrincipal.id)) {
+if ($LASTEXITCODE -ne 0 -or $null -eq $graphServicePrincipal -or [string]::IsNullOrWhiteSpace($graphServicePrincipal.id)) {
     Write-Error "Unable to resolve Microsoft Graph service principal."
     exit 1
 }
@@ -99,7 +101,7 @@ foreach ($role in $requiredRoles) {
         appRoleId   = $role.id
     } | ConvertTo-Json -Compress
 
-    $payloadFile = [System.IO.Path]::GetTempFileName()
+    $payloadFile = Join-Path $repoRoot ".graph-role-$([guid]::NewGuid()).json"
     try {
         Set-Content -Path $payloadFile -Value $payload -Encoding ascii -NoNewline
         $postOutput = & az rest `

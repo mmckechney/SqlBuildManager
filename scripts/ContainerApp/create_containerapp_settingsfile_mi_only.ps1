@@ -7,7 +7,7 @@ param
     [string] $path,
     [string] $resourceGroupName,
     [string] $imageTag = "latest-vNext",
-    [ValidateSet("AzureADDefault", "Password")]
+    [ValidateSet("AzureADDefault", "ManagedIdentity", "Password")]
     [string] $databaseAuthType = "AzureADDefault",
     [string] $databaseUserName = "",
     [string] $databasePassword = "",
@@ -165,6 +165,9 @@ if (Test-Path $settingsContainerApp) { Remove-Item $settingsContainerApp }
 Write-Host "Saving MI-only settings file to $settingsContainerApp" -ForegroundColor DarkGreen
 Write-Host $params -ForegroundColor DarkYellow
 & $sbmExe $params
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to generate Container App settings '$settingsContainerApp'."
+}
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Green

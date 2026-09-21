@@ -35,8 +35,9 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
+            originalConsoleOut = System.Console.Out;
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<BatchTests>("SqlBuildManager.Console.log", Path.GetTempPath());
-            settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux-mysql-password.json");
+            settingsFilePath = MySqlTestHelper.RequireManagedIdentitySettings("TestConfig/settingsfile-batch-linux-mysql-mi-only.json");
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
             overrideFilePath = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
 
@@ -132,14 +133,14 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.Count, 10)]
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.Server, 2)]
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.MaxPerServer, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-mi-only.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-mi-only.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-mi-only.json", ConcurrencyType.MaxPerServer, 2)]
         [TestMethod]
         public async Task Batch_MySQL_Override_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
-            settingsFile = Path.GetFullPath(settingsFile);
+            settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
             string jobName = GetUniqueBatchJobName("batch-mysql");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
@@ -180,12 +181,12 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-mi-only.json", ConcurrencyType.Count, 10)]
         [TestMethod]
         public async Task Batch_MySQL_Override_SBMSource_ManagedIdentity_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
-            settingsFile = Path.GetFullPath(settingsFile);
+            settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
             string jobName = GetUniqueBatchJobName("batch-mysql-mi");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
@@ -225,12 +226,12 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-password.json", ConcurrencyType.Count, 10)]
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-password.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-mi-only.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-mi-only.json", ConcurrencyType.Server, 2)]
         [TestMethod]
         public async Task Batch_MySQL_Queue_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
-            settingsFile = Path.GetFullPath(settingsFile);
+            settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
             string jobName = GetUniqueBatchJobName("batch-mysql-q");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
@@ -287,14 +288,14 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
-        [DataRow("query", "TestConfig/settingsfile-batch-linux-mysql-password.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux-mysql-mi-only.json")]
         [TestMethod]
         public async Task Batch_MySQL_Query_Override_SelectSuccess(string batchMethod, string settingsFile)
         {
             string outputFile = Path.GetFullPath($"{Guid.NewGuid()}.csv");
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var queryFile = MySqlTestHelper.GetMySqlSelectQueryFile();
                 string jobName = GetUniqueBatchJobName("batch-mysql-qry");
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
@@ -346,11 +347,11 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-mi-only.json")]
         [TestMethod]
         public void Batch_MySQL_Override_SBMSource_RunWithError_MissingPackage(string batchMethod, string settingsFile)
         {
-            settingsFile = Path.GetFullPath(settingsFile);
+            settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
             string jobName = GetUniqueBatchJobName("batch-mysql-err");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
@@ -375,11 +376,11 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             Assert.IsTrue(result != 0);
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-password.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-mi-only.json", ConcurrencyType.Count, 10)]
         [TestMethod]
         public async Task Batch_MySQL_Queue_SBMSource_ManagedIdentity_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
-            settingsFile = Path.GetFullPath(settingsFile);
+            settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
             string jobName = GetUniqueBatchJobName("batch-mysql-mi-q");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();

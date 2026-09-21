@@ -7,7 +7,7 @@ param
     [string] $path,
     [string] $resourceGroupName,
     [int] $podCount = 2,
-    [ValidateSet("AzureADDefault", "Password")]
+    [ValidateSet("AzureADDefault", "ManagedIdentity", "Password")]
     [string] $databaseAuthType = "AzureADDefault",
     [string] $databaseUserName = "",
     [string] $databasePassword = "",
@@ -155,6 +155,9 @@ if (Test-Path $settingsFileName) { Remove-Item $settingsFileName }
 Write-Host "Saving MI-only settings file to $settingsFileName" -ForegroundColor DarkGreen
 Write-Host $params -ForegroundColor DarkYellow
 & $sbmExe $params
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to generate Kubernetes settings '$settingsFileName'."
+}
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Green

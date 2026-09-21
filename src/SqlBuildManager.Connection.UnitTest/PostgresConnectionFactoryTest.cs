@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Npgsql;
+using System;
 
 namespace SqlBuildManager.Connection.UnitTest
 {
@@ -101,6 +102,88 @@ namespace SqlBuildManager.Connection.UnitTest
         {
             string connStr = factory.BuildConnectionString("mydb", "localhost", "pguser", "pgpass", AuthenticationType.Password, 30, "");
             Assert.IsTrue(connStr.Contains("SSL Mode=Prefer"), "Should set SSL mode to Prefer");
+        }
+
+        [TestMethod]
+        [DataRow("test.postgres.database.azure.com")]
+        [DataRow("test.postgres.database.azure.com:5433")]
+        [DataRow("test.POSTGRES.DATABASE.AZURE.COM.")]
+        [DataRow("test.postgres.database.usgovcloudapi.net")]
+        [DataRow("test.postgres.database.chinacloudapi.cn")]
+        [DataRow("test.postgres.database.microsoftazure.de")]
+        [DataRow("test.privatelink.postgres.database.azure.com")]
+        [DataRow("localhost,test.postgres.database.azure.com")]
+        [DataRow("test.postgres.database.azure.com,localhost")]
+        [DataRow("localhost:5433, test.postgres.database.azure.com:5434")]
+        [DataRow("test.postgres.database.azure.com:5433,localhost:5434")]
+        public void BuildConnectionString_AzurePasswordAuth_VerifiesCertificateAndHostname(string host)
+        {
+            var tokenFactory = new PostgresConnectionFactory(_ => throw new InvalidOperationException("Native authentication must not request a token"));
+            var builder = new NpgsqlConnectionStringBuilder(tokenFactory.BuildConnectionString(
+                "mydb", host, "pguser", "pgpass", AuthenticationType.Password, 30, "", true));
+            Assert.AreEqual(SslMode.VerifyFull, builder.SslMode);
+            Assert.AreEqual("pgpass", builder.Password);
+        }
+
+        [TestMethod]
+        [DataRow("localhost")]
+        [DataRow("127.0.0.1:5433")]
+        [DataRow("postgres")]
+        [DataRow("postgres:5433")]
+        [DataRow("localhost,postgres")]
+        [DataRow("localhost:5433,postgres:5434")]
+        [DataRow("myhost.example.com")]
+        [DataRow("test.postgres.database.azure.com.evil.invalid")]
+        [DataRow("testpostgres.database.azure.com")]
+        [DataRow("test.mysql.database.azure.com")]
+        public void BuildConnectionString_NonAzurePasswordAuth_PreservesPrefer(string host)
+        {
+            var builder = new NpgsqlConnectionStringBuilder(factory.BuildConnectionString(
+                "mydb", host, "pguser", "pgpass", AuthenticationType.Password, 30, ""));
+            Assert.AreEqual(SslMode.Prefer, builder.SslMode);
+        }
+
+        [TestMethod]
+        [DataRow(AuthenticationType.ManagedIdentity)]
+        [DataRow(AuthenticationType.AzureADDefault)]
+        [DataRow(AuthenticationType.AzureADIntegrated)]
+        [DataRow(AuthenticationType.AzureADInteractive)]
+        public void BuildConnectionString_AllEntraModes_AlwaysVerifyFull(AuthenticationType authType)
+        {
+            var tokenFactory = new PostgresConnectionFactory(clientId =>
+            {
+                Assert.AreEqual("test-client-id", clientId);
+                return "synthetic-token";
+            });
+            foreach (string host in new[] { "localhost", "test.postgres.database.azure.com" })
+            {
+                var builder = new NpgsqlConnectionStringBuilder(tokenFactory.BuildConnectionString(
+                    "mydb", host, "identity-name", "provided-token", authType, 30, "test-client-id", true));
+                Assert.AreEqual(SslMode.VerifyFull, builder.SslMode);
+                Assert.AreEqual("identity-name", builder.Username);
+                Assert.AreEqual(authType == AuthenticationType.ManagedIdentity || authType == AuthenticationType.AzureADDefault
+                    ? "synthetic-token" : "provided-token", builder.Password);
+            }
+        }
+
+        [TestMethod]
+        public void BuildConnectionString_MultiHost_PreservesAllHostsAndPorts()
+        {
+            var builder = new NpgsqlConnectionStringBuilder(factory.BuildConnectionString(
+                "mydb", "localhost:5433, test.postgres.database.azure.com:5434", "pguser", "pgpass",
+                AuthenticationType.Password, 30, ""));
+            Assert.AreEqual("localhost:5433,test.postgres.database.azure.com:5434", builder.Host);
+            Assert.AreEqual(5432, builder.Port);
+            using var connection = new NpgsqlConnection(builder.ConnectionString);
+            Assert.AreEqual(builder.Host, new NpgsqlConnectionStringBuilder(connection.ConnectionString).Host);
+        }
+
+        [TestMethod]
+        public void CreateConnection_AzurePasswordAuth_CannotBypassCertificateValidation()
+        {
+            using var connection = factory.CreateConnection("mydb", "test.postgres.database.azure.com",
+                "pguser", "pgpass", AuthenticationType.Password, 30, "", true);
+            Assert.AreEqual(SslMode.VerifyFull, new NpgsqlConnectionStringBuilder(connection.ConnectionString).SslMode);
         }
 
         [TestMethod]

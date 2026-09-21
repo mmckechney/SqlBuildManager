@@ -150,4 +150,12 @@ Managed Identity authentication is supported for Azure Database for PostgreSQL:
 
 When using Managed Identity, the application acquires an Azure AD token for the `https://ossrdbms-aad.database.windows.net` scope and uses it to authenticate to PostgreSQL. This works with all remote execution types (Batch, Kubernetes, Container Apps, ACI).
 
-Connection strings are built automatically using the `--server`, `--database`, `--username`, and `--password` options. Npgsql handles SSL/TLS negotiation with the PostgreSQL server according to server configuration.
+Connection strings are built automatically using the `--server`, `--database`, `--username`, and `--password` options.
+
+### TLS verification
+
+Entra/token authentication requires `SSL Mode=VerifyFull`: both the certificate chain and the server hostname must validate. Native-password connections to Azure PostgreSQL service hostnames also require `VerifyFull`; Azure test helpers and private bootstrap use the same verified policy. Use the canonical server FQDN with private DNS, not an IP address or an unrelated alias that does not match the certificate.
+
+Npgsql uses the operating-system trust store, with `PGSSLROOTCERT` available for an explicitly configured trusted CA bundle. Keep the container/host CA store current. The Azure `psql` bootstrap sets `PGSSLMODE=verify-full` and uses an explicit trusted bundle; an invalid or missing configured bundle fails rather than weakening TLS.
+
+The repository's native local and local-container PostgreSQL servers do not provision TLS certificates. Their existing `Prefer` behavior is retained: TLS is opportunistic and server identity is not verified. This is a local-test compatibility exception, not the recommended policy for a remote production database. Entra authentication never takes that exception, and no failed verified connection is retried with weaker TLS.

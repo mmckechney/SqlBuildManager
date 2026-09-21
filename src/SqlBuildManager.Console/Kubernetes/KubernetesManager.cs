@@ -72,25 +72,33 @@ namespace SqlBuildManager.Console.Kubernetes
       }
       internal static bool ApplyDeployment(KubernetesFiles files)
       {
-         var returnCode = 0;
-         log.LogInformation($"Creating 'sqlbuildmanager' namespace (if not already exists)");
-         if (KubectlProcess.DescribeKubernetesResource("namespace", KubernetesManager.SbmNamespace) != 0)
+         return ApplyDeployment(files, KubectlProcess.HasNamespaceAccess, KubectlProcess.ApplyFile);
+      }
+
+      internal static bool ApplyDeployment(KubernetesFiles files, Func<string, bool> hasNamespaceAccess, Func<string, int> applyFile)
+      {
+         if (!hasNamespaceAccess(SbmNamespace))
          {
-            returnCode += KubectlProcess.CreateKubernetesResource("namespace", KubernetesManager.SbmNamespace);
+            log.LogError($"The '{SbmNamespace}' namespace must be provisioned by the deployment operator, with namespace-scoped access granted to the orchestrator. Run the deployment setup before submitting jobs.");
+            return false;
          }
 
          log.LogInformation($"Applying file {files.RuntimeConfigMapFile}");
-         returnCode += KubectlProcess.ApplyFile(files.RuntimeConfigMapFile);
+         if (applyFile(files.RuntimeConfigMapFile) != 0)
+         {
+            return false;
+         }
 
          if (!string.IsNullOrWhiteSpace(files.SecretsFile) && File.Exists(files.SecretsFile))
          {
             log.LogInformation($"Applying file {files.SecretsFile}");
-            returnCode += KubectlProcess.ApplyFile(files.SecretsFile);
-
+            if (applyFile(files.SecretsFile) != 0)
+            {
+               return false;
+            }
          }
          log.LogInformation($"Applying file {files.JobFileName}");
-         returnCode += KubectlProcess.ApplyFile(files.JobFileName);
-         return returnCode == 0;
+         return applyFile(files.JobFileName) == 0;
       }
       internal static bool MonitorForPodStart(string k8Jobname)
       {

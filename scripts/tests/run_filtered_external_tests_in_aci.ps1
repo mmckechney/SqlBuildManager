@@ -120,10 +120,17 @@ Write-Debug "Subnet: $aciSubnet"
 
 # Get resource information
 $subscriptionId = az account show --query id --output tsv
-$identity = az identity show --resource-group $resourceGroupName --name $identityName | ConvertFrom-Json
+$workerIdentity = az identity show --resource-group $resourceGroupName --name $identityName --output json | ConvertFrom-Json
+if ($LASTEXITCODE -ne 0 -or $null -eq $workerIdentity) {
+    throw "Unable to read worker identity '$identityName'. Provision a fresh environment and regenerate its settings/image; legacy shared-identity environments are not supported by this runner."
+}
+$identity = az identity show --resource-group $resourceGroupName --name $orchestratorIdentityName --output json | ConvertFrom-Json
+if ($LASTEXITCODE -ne 0 -or $null -eq $identity) {
+    throw "Unable to read orchestrator identity '$orchestratorIdentityName'. Provision a fresh environment; do not substitute the worker or legacy shared identity."
+}
 $acrLoginServer = az acr show -g $resourceGroupName --name $containerRegistryName -o tsv --query loginServer
 
-Write-Debug "Using Managed Identity: $identityName (ClientId: $($identity.clientId))" 
+Write-Debug "Using orchestrator identity: $orchestratorIdentityName (ClientId: $($identity.clientId)); database worker identity: $identityName"
 Write-Debug "Using Container Registry: $acrLoginServer" 
 # if ($testFilter) {
 #     Write-Host "Test Filter: $testFilter" -ForegroundColor DarkGreen
@@ -135,13 +142,12 @@ Write-Debug "Using Container Registry: $acrLoginServer"
 #############################################
 # Build and push test image if requested
 #############################################
-# if (-not $buildImage -and $testFilter -like "*MySQL.AzureTest*") {
-#     $mySqlAuthMode = azd env get-value MYSQL_AUTH_MODE 2>$null
-#     if ($LASTEXITCODE -eq 0 -and $mySqlAuthMode -eq "Password") {
-#         Write-Host "MYSQL_AUTH_MODE=Password detected for MySQL external tests; enabling -buildImage to avoid stale ManagedIdentity test image reuse." -ForegroundColor Yellow
-#         $buildImage = $true
-#     }
-# }
+if ($testFilter -like "*MySQL.AzureTest*") {
+    $mySqlAuthMode = azd env get-value MYSQL_AUTH_MODE -e $envName 2>$null
+    if ($LASTEXITCODE -ne 0 -or $mySqlAuthMode -ne 'ManagedIdentity') {
+        throw 'Azure MySQL tests require MYSQL_AUTH_MODE=ManagedIdentity. Reprovision identity permissions/settings and rebuild the Azure test image before running these tests.'
+    }
+}
 
 if ($buildImage) {
     Write-Host "========================================" -ForegroundColor Cyan
@@ -218,14 +224,14 @@ $uploadCmd = "az storage blob upload-batch --account-name $storageAccountName --
 # Build Kubernetes pre-requisite commands if test filter contains "Kubernetes"
 $aksPreCmd = ""
 if ($testFilter -like "*Kubernetes*") {
-    $aksPreCmd = "az aks install-cli; az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName --overwrite-existing; "
+    $aksPreCmd = "az aks install-cli || exit `$?; az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName --overwrite-existing || exit `$?; kubelogin convert-kubeconfig -l azurecli || exit `$?; "
     Write-Debug "Kubernetes tests detected - will install kubectl and get AKS credentials"
 }
 
 # Create results directory first, then run tests, capture exit code, login and upload
 # Use PIPESTATUS to get the exit code of dotnet vstest (not tee)
 # Exit with the test exit code so the container terminates with the correct status
-$shellCmd = "mkdir -p /tests/TestResults; az login --identity --client-id `$AZURE_CLIENT_ID; $aksPreCmd$testCmd; TEST_EXIT_CODE=`${PIPESTATUS[0]}; echo TEST_EXIT_CODE=`$TEST_EXIT_CODE;  $uploadCmd; exit `$TEST_EXIT_CODE"
+$shellCmd = "set -o pipefail; mkdir -p /tests/TestResults; az login --identity --client-id `$AZURE_CLIENT_ID --output none || exit `$?; $aksPreCmd$testCmd; TEST_EXIT_CODE=`${PIPESTATUS[0]}; $uploadCmd; UPLOAD_EXIT_CODE=`$?; if test `$TEST_EXIT_CODE -eq 0; then TEST_EXIT_CODE=`$UPLOAD_EXIT_CODE; fi; echo TEST_EXIT_CODE=`$TEST_EXIT_CODE; exit `$TEST_EXIT_CODE"
 
 $commandYaml = @"
       - /bin/bash
@@ -236,6 +242,8 @@ $commandYaml = @"
 # Build environment variables for YAML
 $envVarsYaml = @"
       - name: AZURE_CLIENT_ID
+        value: $($identity.clientId)
+      - name: SBM_ORCHESTRATOR_CLIENT_ID
         value: $($identity.clientId)
 "@
 
@@ -257,6 +265,7 @@ identity:
   type: UserAssigned
   userAssignedIdentities:
     $($identity.id): {}
+    $($workerIdentity.id): {}
 properties:
   imageRegistryCredentials:
   - server: $acrLoginServer

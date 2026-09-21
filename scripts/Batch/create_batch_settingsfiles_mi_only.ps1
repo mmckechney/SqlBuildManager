@@ -6,7 +6,7 @@ param
     [string] $sbmExe = "sbm.exe",
     [string] $path,
     [string] $resourceGroupName,
-    [ValidateSet("AzureADDefault", "Password")]
+    [ValidateSet("AzureADDefault", "ManagedIdentity", "Password")]
     [string] $databaseAuthType = "AzureADDefault",
     [string] $databaseUserName = "",
     [string] $databasePassword = "",
@@ -126,6 +126,7 @@ $baseParams += @("--idrg", $identity.resourceGroup)
 $baseParams += @("--tenantid", $tenantId)
 $baseParams += @("--subscriptionid", $subscriptionId)
 $baseParams += @("--clientid", $identity.clientId)
+$baseParams += @("--identityname", $identityName)
 $baseParams += @("--principalid", $identity.principalId)
 $baseParams += @("--registryserver", $registryServer)
 $baseParams += @("--imagename", "sqlbuildmanager")
@@ -170,6 +171,9 @@ Write-Host "Saving MI-only settings file to $settingsJsonLinuxMiOnly" -Foregroun
 $tmpPath = @("--settingsfile", $settingsJsonLinuxMiOnly)
 $allArgs = $baseParams + $linuxParams + $tmpPath + $ehNameParam
 & $sbmExe $allArgs
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to generate Batch settings '$settingsJsonLinuxMiOnly'."
+}
 
 # Linux with Service Bus Queue
 if (Test-Path $settingsJsonLinuxQueueMiOnly) { Remove-Item $settingsJsonLinuxQueueMiOnly }
@@ -177,6 +181,9 @@ Write-Host "Saving MI-only settings file to $settingsJsonLinuxQueueMiOnly" -Fore
 $tmpPath = @("--settingsfile", $settingsJsonLinuxQueueMiOnly)
 $allArgs = $baseParams + $linuxParams + $tmpPath + $sbNamespaceParam + $ehNameParam
 & $sbmExe $allArgs
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to generate Batch queue settings '$settingsJsonLinuxQueueMiOnly'."
+}
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Green

@@ -1,5 +1,6 @@
 # Post-provision hook for Azure Developer CLI (azd)
 # Grants managed identity SQL permissions and optionally generates settings files
+$ErrorActionPreference = 'Stop'
 
 # Helper function to get azd environment value (checks $env first, then azd env get-value)
 function Get-AzdEnvValue {
@@ -53,7 +54,10 @@ $pgDeployed = Get-AzdEnvValue "DEPLOY_POSTGRESQL"
 $mySqlDeployed = Get-AzdEnvValue "DEPLOY_MYSQL"
 $mySqlAuthMode = Get-AzdEnvValue "MYSQL_AUTH_MODE"
 if ([string]::IsNullOrWhiteSpace($mySqlAuthMode)) {
-    $mySqlAuthMode = "Password"
+    $mySqlAuthMode = "ManagedIdentity"
+}
+if ($mySqlDeployed -eq "true" -and $mySqlAuthMode -notin @("ManagedIdentity", "Password")) {
+    throw "Invalid MYSQL_AUTH_MODE='$mySqlAuthMode'."
 }
 $useMySqlManagedIdentityAuth = ($mySqlDeployed -eq "true" -and $mySqlAuthMode -eq "ManagedIdentity")
 $privateInitializationScript = Join-Path $repoRoot "scripts\ContainerRegistry\run_private_postprovision_container.ps1"
@@ -75,6 +79,11 @@ if ($useMySqlManagedIdentityAuth) {
     & $mySqlGraphPermissionScript `
         -envName $envName `
         -resourceGroupName $resourceGroupName
+
+    & (Join-Path $repoRoot "scripts\Database\set_mysql_entra_admin.ps1") `
+        -envName $envName -resourceGroupName $resourceGroupName `
+        -userObjectId (Get-AzdEnvValue "AZURE_PRINCIPAL_ID") `
+        -userLogin (Get-AzdEnvValue "AZURE_PRINCIPAL_NAME")
 }
 elseif ($mySqlDeployed -eq "true") {
     Write-Host "MySQL auth mode is '$mySqlAuthMode' - skipping MySQL Graph permission assignment." -ForegroundColor DarkGray
@@ -87,6 +96,7 @@ elseif ($mySqlDeployed -eq "true") {
     -deploySqlServer ($sqlServerDeployed -ne "false") `
     -deployPostgreSQL ($pgDeployed -eq "true") `
     -deployMySQL ($mySqlDeployed -eq "true") `
+    -deployRelayProxy ((Get-AzdEnvValue "DEPLOY_RELAY_PROXY") -eq "true") `
     -mySqlUseManagedIdentityAuth $useMySqlManagedIdentityAuth
 
 $relayProxyDeployed = Get-AzdEnvValue "DEPLOY_RELAY_PROXY"
@@ -116,13 +126,29 @@ if ($aksDeployed -eq "true") {
     $serviceAccountName = Get-AzdEnvValue "AKS_SERVICE_ACCOUNT_NAME"
 
     Write-Host "Retrieving credentials for: $aksClusterName to be able to run kubectl commands" -ForegroundColor DarkGreen
-    az aks get-credentials --name $aksClusterName --resource-group $resourceGroupName --overwrite-existing --admin -o table
+    az aks get-credentials --name $aksClusterName --resource-group $resourceGroupName --overwrite-existing -o table
+    if ($LASTEXITCODE -ne 0) { throw "Unable to retrieve deployer credentials for '$aksClusterName'." }
+    kubelogin convert-kubeconfig -l azurecli
+    if ($LASTEXITCODE -ne 0) { throw "Unable to configure deployer Azure CLI authentication for AKS." }
 
     Write-Host "Create 'sqlbuildmanager' Kubernetes namespace" -ForegroundColor DarkGreen
-    kubectl create namespace sqlbuildmanager
+    $namespaceYaml = @"
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sqlbuildmanager
+"@
+    $namespaceCreated = $false
+    for ($attempt = 1; $attempt -le 20 -and -not $namespaceCreated; $attempt++) {
+        $namespaceYaml | kubectl apply -f -
+        if ($LASTEXITCODE -eq 0) { $namespaceCreated = $true }
+        elseif ($attempt -lt 20) {
+            Write-Host 'Waiting for the deploying operator AKS RBAC assignment to propagate...' -ForegroundColor Yellow
+            Start-Sleep -Seconds 15
+        }
+    }
+    if (-not $namespaceCreated) { throw "Unable to provision the sqlbuildmanager namespace as the deployer." }
 
-
-    $userAssignedClientId = az identity show --resource-group $resourceGroupName --name $userAssignedIdentity --query "clientId"
 
     #create Kubernetes service principal
     Write-Host "Creating Kubernetes Service Principal $serviceAccountName associated with $userAssignedIdentity having Client ID $userAssignedClientId" -ForegroundColor DarkGreen
@@ -139,6 +165,7 @@ metadata:
 "@
 
     $svcAcctYml | kubectl apply -f -
+    if ($LASTEXITCODE -ne 0) { throw "Unable to provision the worker service account." }
 
 }
 
@@ -160,13 +187,25 @@ metadata:
     }
     
     if (Test-Path $settingsScriptPath) {
-        & $settingsScriptPath -envName $envName -resourceGroupName $resourceGroupName -path $outputPath -sbmExe $sbmExe
+        & $settingsScriptPath -envName $envName -resourceGroupName $resourceGroupName -path $outputPath -sbmExe $sbmExe `
+            -batch:((Get-AzdEnvValue "DEPLOY_BATCH") -eq "true") `
+            -aks:((Get-AzdEnvValue "DEPLOY_AKS") -eq "true") `
+            -aci:((Get-AzdEnvValue "DEPLOY_ACI") -eq "true") `
+            -containerApp:((Get-AzdEnvValue "DEPLOY_CONTAINERAPP") -eq "true")
     } else {
         Write-Host "Settings script not found at: $settingsScriptPath" -ForegroundColor Yellow
         Write-Host "Run manually: .\scripts\create_all_settingsfiles_mi_only.ps1 -envName $envName" -ForegroundColor Yellow
     }
 
-    if ($mySqlDeployed -eq "true" -and -not $useMySqlManagedIdentityAuth) {
+    if ($useMySqlManagedIdentityAuth) {
+        & $settingsScriptPath -envName $envName -resourceGroupName $resourceGroupName -path $outputPath -sbmExe $sbmExe `
+            -databasePlatform MySQL -settingsFileSuffix "mysql-mi-only" `
+            -batch:((Get-AzdEnvValue "DEPLOY_BATCH") -eq "true") `
+            -aks:((Get-AzdEnvValue "DEPLOY_AKS") -eq "true") `
+            -aci:((Get-AzdEnvValue "DEPLOY_ACI") -eq "true") `
+            -containerApp:((Get-AzdEnvValue "DEPLOY_CONTAINERAPP") -eq "true")
+    }
+    elseif ($mySqlDeployed -eq "true") {
         $mySqlPasswordSettingsScriptPath = Join-Path $repoRoot "scripts\create_all_settingsfiles_mysql_password.ps1"
         if (Test-Path $mySqlPasswordSettingsScriptPath) {
             & $mySqlPasswordSettingsScriptPath -envName $envName -resourceGroupName $resourceGroupName -path $outputPath -sbmExe $sbmExe
@@ -232,7 +271,7 @@ if ($mySqlDeployedForConfig -eq "true") {
 
     $mySqlDbConfigScriptPath = Join-Path $repoRoot "scripts\Database\create_mysql_database_override_files.ps1"
     if (Test-Path $mySqlDbConfigScriptPath) {
-        & $mySqlDbConfigScriptPath -envName $envName -path $outputPath
+        & $mySqlDbConfigScriptPath -envName $envName -path $outputPath -resourceGroupName $resourceGroupName -authenticationMode $mySqlAuthMode
     } else {
         Write-Host "MySQL config script not found at: $mySqlDbConfigScriptPath" -ForegroundColor Yellow
     }

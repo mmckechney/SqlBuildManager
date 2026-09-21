@@ -7,7 +7,7 @@ param
     [string] $path,
     [string] $resourceGroupName,
     [string] $imageTag = "latest-vNext",
-    [ValidateSet("AzureADDefault", "Password")]
+    [ValidateSet("AzureADDefault", "ManagedIdentity", "Password")]
     [string] $databaseAuthType = "AzureADDefault",
     [string] $databaseUserName = "",
     [string] $databasePassword = "",
@@ -171,6 +171,9 @@ if (Test-Path $settingsAci) { Remove-Item $settingsAci }
 Write-Host "Saving MI-only settings file to $settingsAci" -ForegroundColor DarkGreen
 Write-Host $params -ForegroundColor DarkYellow
 & $sbmExe $params
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to generate ACI settings '$settingsAci'."
+}
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Green

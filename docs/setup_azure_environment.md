@@ -51,7 +51,9 @@ The simplest way to provision all Azure resources is using the [Azure Developer 
 Creates the following Azure resources using the prefixes defined in `infra/resourcetypes.json`:
 - **Resource Group** (`rg-{env}`)
 - **Virtual Network** with subnets for AKS, Container Apps, ACI, Batch, and Private Endpoints
-- **Managed Identity** (`id-{env}`) - Used for all service-to-service authentication
+- **Worker identity** (`id-{env}-worker`) - Database migrations, image pulls and scoped data-plane access; no Azure compute-management or AKS administrator permissions
+- **Orchestrator identity** (`id-{env}-orchestrator`) - Azure test-runner compute lifecycle, messaging setup, monitoring and cleanup
+- **Infrastructure identities** - Separate bootstrap, Relay, AKS control-plane/kubelet and MySQL directory-lookup responsibilities (see [identity boundaries](azd-up-deployment.md#identity-summary))
 - **Storage Account** (`st{env}`; hyphens removed) - For runtime logs and Kubernetes package staging
 - **Service Bus Namespace** (`sbns-{env}`) - Topic-based message queue for database targets
 - **Event Hub** (`evhns-{env}` / `evh-{env}`) - Progress event tracking
@@ -88,7 +90,7 @@ azd env set DEPLOY_MYSQL true               # Deploy MySQL databases
 
 # Database settings
 azd env set TEST_DB_COUNT_PER_SERVER 10     # Test databases per server (default: 10)
-azd env set MYSQL_AUTH_MODE Password        # MySQL test auth mode: Password or ManagedIdentity
+azd env set MYSQL_AUTH_MODE ManagedIdentity # Default for Azure MySQL tests; local tests retain native credentials
 
 # Post-provision options
 azd env set BUILD_CONTAINER_IMAGES true     # Build and push Docker images
@@ -105,7 +107,7 @@ After successful deployment, the following files are generated in `src/TestConfi
 - `settingsfile-aci-*.json` - ACI settings 
 - `settingsfile-containerapp-*.json` - Container App settings
 - `settingsfile-k8s-*.json` - Kubernetes settings
-- `settingsfile-*-mysql-password.json` - MySQL password-auth settings for external tests
+- `settingsfile-*-mysql-mi-only.json` - MySQL managed-identity settings for Azure tests (see [MySQL prerequisites and migration](mysql.md#managed-identity-azure-mysql))
 - `settingsfilekey.txt` - Encryption key for settings files
 - `databasetargets.cfg` - Database listing for SBM file integration tests
 - `clientdbtargets.cfg` - Database listing for DACPAC integration tests
