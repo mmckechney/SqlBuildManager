@@ -3,11 +3,13 @@ using SqlBuildManager.Console.CommandLine;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace SqlBuildManager.Console.AzureTest.TestBase
 {
     public sealed class AciTestResourceTracker
     {
+        private static readonly ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger<AciTestResourceTracker>();
         private readonly string settingsFileKeyPath;
         private string aciName = string.Empty;
         private string settingsFile = string.Empty;
@@ -48,7 +50,7 @@ namespace SqlBuildManager.Console.AzureTest.TestBase
                 aciName);
             if (!cleanupSuccess)
             {
-                throw new InvalidOperationException($"Unable to clean up ACI resources for '{aciName}'.");
+                log.LogWarning("Unable to clean up ACI resources for '{AciName}'. Cleanup failure will not fail the test.", aciName);
             }
         }
     }
