@@ -252,6 +252,7 @@ namespace SqlBuildManager.SqlBuild
 
         internal async Task<string[]> LoadBatchScriptsAsync(string scriptId, string fileName, bool stripTransaction, ScriptBatchCollection scriptBatchColl, CancellationToken cancellationToken)
         {
+            var scriptPath = SqlBuildManager.SqlBuild.Utilities.PackagePath.Resolve(_ctx.ProjectFilePath, fileName);
             string[] batchScripts = null!;
             if (scriptBatchColl != null)
             {
@@ -261,7 +262,7 @@ namespace SqlBuildManager.SqlBuild
             }
             if (batchScripts == null || batchScripts.Length == 0)
             {
-                batchScripts = await _ctx.ReadBatchFromScriptFileAsync(System.IO.Path.Combine(_ctx.ProjectFilePath, fileName), stripTransaction, false, cancellationToken).ConfigureAwait(false);
+                batchScripts = await _ctx.ReadBatchFromScriptFileAsync(scriptPath, stripTransaction, false, cancellationToken).ConfigureAwait(false);
             }
             return batchScripts;
         }
@@ -273,6 +274,8 @@ namespace SqlBuildManager.SqlBuild
                 _ctx.Log.LogError("No scripts selected for execution.");
                 throw new ApplicationException("No scripts selected for execution.");
             }
+            foreach (var script in scripts)
+                Utilities.PackagePath.Resolve(_ctx.ProjectFilePath, script.FileName ?? string.Empty);
         }
 
         private static BuildModels.ScriptRun BuildScriptRunFailure(string fileName, int runOrder, string targetDatabase, Guid scriptRunRowId, string buildId, string message)

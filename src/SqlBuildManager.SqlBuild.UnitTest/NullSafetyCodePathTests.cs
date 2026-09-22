@@ -144,7 +144,7 @@ INSERT INTO dbo.Config VALUES ('key1', 'val1');");
         }
 
         [TestMethod]
-        public void CopyIndividualScriptsToFolder_NullFileName_SkipsWithoutThrowing()
+        public void CopyIndividualScriptsToFolder_NullFileName_ReturnsFailure()
         {
             // Arrange
             string destFolder = Path.Combine(_testDir, "output");
@@ -154,15 +154,14 @@ INSERT INTO dbo.Config VALUES ('key1', 'val1');");
                     new Script { FileName = "exists.sql", BuildOrder = 2 }
                 });
 
-            // Act — should skip null FileName via guard clause
+            // Invalid metadata must fail rather than produce an incomplete export.
             var result = SqlBuildFileHelper.CopyIndividualScriptsToFolder(model, destFolder, _testDir, false, false);
 
-            // Assert — returns true (processed without error, though no files exist on disk)
-            Assert.IsTrue(result);
+            Assert.IsFalse(result);
         }
 
         [TestMethod]
-        public async Task CopyIndividualScriptsToFolderAsync_NullFileName_SkipsWithoutThrowing()
+        public async Task CopyIndividualScriptsToFolderAsync_NullFileName_ReturnsFailure()
         {
             // Arrange
             string destFolder = Path.Combine(_testDir, "output_async");
@@ -176,11 +175,11 @@ INSERT INTO dbo.Config VALUES ('key1', 'val1');");
                 model, destFolder, _testDir, false, false, CancellationToken.None);
 
             // Assert
-            Assert.IsTrue(result);
+            Assert.IsFalse(result);
         }
 
         [TestMethod]
-        public void CopyScriptsToSingleFile_NullFileName_SkipsWithoutThrowing()
+        public void CopyScriptsToSingleFile_NullFileName_ReturnsFailure()
         {
             // Arrange
             string destFile = Path.Combine(_testDir, "combined.sql");
@@ -192,12 +191,12 @@ INSERT INTO dbo.Config VALUES ('key1', 'val1');");
             // Act
             var result = SqlBuildFileHelper.CopyScriptsToSingleFile(model, destFile, _testDir, "test.sbm", false);
 
-            // Assert — returns true, skipped both (null and non-existent)
-            Assert.IsTrue(result);
+            Assert.IsFalse(result);
+            Assert.IsFalse(File.Exists(destFile));
         }
 
         [TestMethod]
-        public async Task CopyScriptsToSingleFileAsync_NullFileName_SkipsWithoutThrowing()
+        public async Task CopyScriptsToSingleFileAsync_NullFileName_ReturnsFailure()
         {
             // Arrange
             string destFile = Path.Combine(_testDir, "combined_async.sql");
@@ -210,7 +209,8 @@ INSERT INTO dbo.Config VALUES ('key1', 'val1');");
                 model, destFile, _testDir, "test.sbm", false, CancellationToken.None);
 
             // Assert
-            Assert.IsTrue(result);
+            Assert.IsFalse(result);
+            Assert.IsFalse(File.Exists(destFile));
         }
         private static SqlSyncBuildDataModel CreateModelWithScripts(List<Script> scripts)
         {

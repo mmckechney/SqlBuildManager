@@ -11,6 +11,19 @@ namespace SqlBuildManager.Console.UnitTest
     public class ThreadedPackageValidationTest
     {
         [TestMethod]
+        [DataRow("../outside.sql")]
+        [DataRow(@"..\outside.sql")]
+        [DataRow(@"C:\outside.sql")]
+        [DataRow("")]
+        public void GetMissingReferencedScripts_RejectsUnsafeMetadata(string name)
+        {
+            var model = SqlBuildManager.SqlBuild.SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();
+            model.Script.Add(new Script { FileName = name });
+            Assert.ThrowsExactly<InvalidDataException>(() =>
+                ThreadedManager.GetMissingReferencedScripts(model, Path.GetTempPath()));
+        }
+
+        [TestMethod]
         public void GetMissingReferencedScripts_ReturnsOnlyMissingFiles()
         {
             var directory = Path.Combine(Path.GetTempPath(), $"sbm-package-validation-{Guid.NewGuid():N}");

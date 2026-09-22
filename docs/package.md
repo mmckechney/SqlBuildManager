@@ -4,6 +4,7 @@ Contents:
 
 - [Package (aka Build Package)](#package-aka-build-package)
   - [Package and meta-data](#package-and-meta-data)
+  - [Package file boundaries](#package-file-boundaries)
   - [Creating a Package](#creating-a-package)
 
 ---
@@ -44,6 +45,58 @@ Example `SqlSyncBuildProject.xml` file. You can build this by hand to create you
 ```
 
 ----
+
+## Package file boundaries
+
+Package metadata is not permission to access arbitrary files on a worker. Before extracting an
+SBM, SQL Build Manager checks the archive's filenames and requires every script reference to
+identify a file in that archive. A leftover script or XML file in the destination cannot supply
+a missing archive member or manifest.
+
+Archive directories are still flattened during extraction. For example, `scripts/select.sql`
+is extracted as `select.sql`, and its metadata must reference `select.sql`. Duplicate extracted
+names, including case-only differences, are rejected on all platforms. References must match
+the archive filename's case so packages behave consistently on Windows and Linux.
+
+Package-controlled paths cannot be absolute, drive-relative, UNC, or contain parent traversal.
+Windows alternate data streams, device names, trailing dots/spaces and other nonportable filename
+forms are also rejected. Symbolic links/reparse points in package paths (including the working
+directory's ancestors), and archive link/special-file entries, are not supported. Use ordinary
+directories/files for package workspaces.
+
+Containment checks also cover script execution and batch loading, hashes, packaging,
+import/export and script deletion. Explicit source and output paths chosen by the operator remain
+separate from package-relative filenames. With overwrite disabled, existing extracted files must
+match the archive contents; use a fresh directory or explicitly enable overwrite to replace them.
+Invalid metadata fails rather than silently skipping empty filenames. Failed extraction does not
+recursively delete a caller-supplied directory; automatic cleanup is limited to a temporary directory
+allocated by that extraction operation. An I/O failure can leave partial files in a caller-supplied
+directory; retry in a fresh workspace or with overwrite enabled.
+
+**No resource budgets are imposed by this hardening.** There are no new package-size, entry-count,
+per-file size, expanded-byte, compression-ratio or parsing-work limits. Package publishers are trusted
+for resource consumption as well as SQL contents; ordinary runtime/filesystem limits still apply.
+These controls are not publisher authentication or a SQL sandbox. Protect working directories from
+concurrent modification by untrusted local processes; path checks do not provide an OS-level
+sandbox against filesystem races or hard-link attacks.
+
+### Local containment verification
+
+Run the unit regressions and the database-free CLI integration harness from the repository root:
+
+```powershell
+dotnet test .\src\SqlBuildManager.SqlBuild.UnitTest\SqlBuildManager.SqlBuild.UnitTest.csproj --filter FullyQualifiedName~PackageContainmentTests
+dotnet test .\src\SqlBuildManager.Console.UnitTest\SqlBuildManager.Console.UnitTest.csproj --filter "FullyQualifiedName~ThreadedPackageValidationTest|FullyQualifiedName~UnpackPackageTest"
+dotnet build .\src\SqlBuildManager.Console\sbm.csproj --configuration Release -f net10.0
+pwsh .\scripts\tests\Test-PackageContainment.ps1 -SbmPath .\src\SqlBuildManager.Console\bin\Release\net10.0\sbm.dll
+```
+
+The integration harness starts real CLI processes and checks successful creation, listing,
+hashing, unpacking and repackaging, plus rejection of traversal, missing members, duplicate names,
+archive links and linked destinations. It verifies nonzero failure exit codes, absence of
+outside-file disclosure and preservation of caller-owned files. Fixtures are isolated in a
+temporary workspace and removed afterward. No database, Azure credentials or Docker are needed.
+The harness's process timeout prevents hung tests; it does not impose a product/package limit.
 
 ## Creating a Package
 

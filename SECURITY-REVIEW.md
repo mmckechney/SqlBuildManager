@@ -11,6 +11,9 @@ Assessed source revision: `f955d1082d1920d400c0a6c88816cde5bd8784fb`.
 - R3 applies to **fresh disposable deployments only**. No migration tooling, automatic revocation of legacy roles, or live Azure changes are authorized by this source task. Incremental Bicep deployment does not remove legacy assignments.
 - Preserve native local/local-container authentication. Their PostgreSQL servers have no provisioned TLS certificates; existing local TLS compatibility remains intentional.
 - Earlier Azure MySQL work adds managed-identity test authentication, explicit test-database grants, verified token-mode TLS, and secure bootstrap-token transport. It does not close every work package below.
+- SEC-07 resource budgets are explicitly declined: trusted package publishers are also trusted
+  for package size/resource consumption. Do not introduce package-size, entry-count, expanded-byte,
+  compression-ratio or parsing-work caps. Containment and package membership remain authorized.
 
 ### Implemented source changes
 
@@ -31,6 +34,15 @@ This is source remediation, not a deployed security attestation. Existing enviro
 inherited Azure roles, live certificate handshakes and service-side authorization remain outside
 the completed offline scope. Abrupt host/process termination can prevent `finally` cleanup;
 automatic recovery or reconciliation of legacy/crash state is not claimed.
+
+SEC-07 source remediation adds shared cross-platform path validation, archive membership checks,
+duplicate flattened-name rejection and symbolic-link/reparse-point checks. Extraction validates
+metadata before writes and no longer uses leftover XML/scripts as missing archive members.
+Execution, batch loading, hashing, packaging, import/export and script removal enforce file
+boundaries. Caller-owned extraction directories are not recursively deleted on validation failure.
+Resource budgets remain deliberately excluded. See [package file boundaries](docs/package.md#package-file-boundaries)
+for compatibility changes and the trusted-workspace requirement; this is not a filesystem-race,
+hard-link or arbitrary-SQL sandbox.
 
 ## Scope and threat model
 
@@ -147,7 +159,7 @@ The attack requires an authorized Azure Relay Sender, not an anonymous caller. A
 | Artifact integrity | The release workflow scans one image and rebuilds for publication, so scanned and published digests are not guaranteed identical. Build once, scan/promote the same digest and verify provenance/SBOM/signatures. Cover Relay, bootstrap, test images and azd/ACR builds; include the standalone Relay project in CodeQL coverage. |
 | Logs and local secrets | Redact complete secret values rather than retaining password characters. Restrict SQL diagnostic text, log destinations and retention; protect local azd/settings files and exclude them from support bundles. |
 | Detection and recovery | Add service-specific audit settings, security alerts, controlled retention, incident/rotation procedures and authorized backup/restore drills. Existing Log Analytics/AKS monitoring is not a complete security evidence trail. |
-| Package budgets and provenance | Bound expanded bytes, entries, individual files and parsing work. Package hashes are not publisher authorization. SQL packages remain privileged deployment instructions even after path validation. |
+| Package size and provenance | Owner accepts trusted-publisher resource consumption; resource budgets are intentionally excluded. Package hashes are not publisher authorization. SQL packages remain privileged deployment instructions even after path validation. |
 
 ## Prioritized remediation plan
 
@@ -161,7 +173,7 @@ This is the original prioritized backlog, subject to the owner decisions above. 
 | SEC-04: Verified database TLS | P1; independent | Password/token modes reject wrong-host, untrusted and plaintext endpoints; approved private-DNS connections work on every target |
 | SEC-05: Separate identities and migration privileges | P1; design independently | Workers cannot administer infrastructure/AKS, access unrelated databases or assume bootstrap duties; supported jobs still work |
 | SEC-06: Temporary bootstrap privilege | P1; follows SEC-02/05 | Success/failure/cancellation/repeat deployment restores exact prior state and removes temporary privileges |
-| SEC-07: Package containment and budgets | P1; independent | Windows/Linux malicious paths cannot read, transmit, log, overwrite or delete outside-root sentinels; valid packages still work |
+| SEC-07: Package containment and membership | P1; source remediation implemented; resource budgets explicitly excluded | Malicious paths cannot read, transmit, log, overwrite or delete outside-root sentinels through package operations; archive membership, collisions and link policy enforced; valid packages still work in trusted workspaces |
 | SEC-08: Private production/development profiles | P2 production baseline; follows SEC-01/04/05/06 | Invalid SKUs/configurations fail early; production public data paths are blocked; private clients work; hooks preserve explicit profile selection |
 | SEC-09: Relay quotas and authorization boundaries | P2; integrate with SEC-05 | Concurrent synthetic load stays within configured session/byte/reader limits and recovers predictably |
 | SEC-10: Container and network hardening | P2; follows SEC-01/05, integrates SEC-08 | Workloads function without root; forbidden capabilities/filesystem/network actions fail with platform-specific controls |

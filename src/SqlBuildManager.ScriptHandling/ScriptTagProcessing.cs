@@ -22,6 +22,8 @@ namespace SqlBuildManager.ScriptHandling
         /// <returns>Boolean as to whether the inference worked</returns>
         public static bool InferScriptTags(SqlSyncBuildDataModel buildDataModel, string projectPath, List<string> regexFormats, TagInferenceSource source)
         {
+            foreach (var script in buildDataModel.Script)
+                SqlBuildManager.SqlBuild.Utilities.PackagePath.Resolve(projectPath, script.FileName ?? string.Empty);
             bool atLeastOneUpdated = false;
             string tmpTag = string.Empty;
             foreach (Script script in buildDataModel.Script)
@@ -177,13 +179,13 @@ namespace SqlBuildManager.ScriptHandling
 
 
                 //If we get here, we will need to get the file contents...
-                if (!File.Exists(Path.Combine(scriptPath, scriptName)))
+                if (!File.Exists(SqlBuildManager.SqlBuild.Utilities.PackagePath.Resolve(scriptPath, scriptName)))
                 {
                     log.LogWarning($"Unable to find file for Script Tag Inference for file {scriptName} in path {scriptPath}");
                     return string.Empty;
                 }
 
-                string contents = File.ReadAllText(Path.Combine(scriptPath, scriptName));
+                string contents = File.ReadAllText(SqlBuildManager.SqlBuild.Utilities.PackagePath.Resolve(scriptPath, scriptName));
                 tmpTag = InferScriptTag(scriptName, contents, regexFormats, source);
                 if (tmpTag.Length > 0)
                 {

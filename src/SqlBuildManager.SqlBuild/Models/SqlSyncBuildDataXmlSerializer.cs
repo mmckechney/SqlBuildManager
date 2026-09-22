@@ -29,12 +29,7 @@ namespace SqlBuildManager.SqlBuild.Models
             {
                 stream.Position = 0;
                 using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
-                var entry = archive.GetEntry(XmlFileNames.MainProjectFile)
-                           ?? archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
-                if (entry == null)
-                    throw new InvalidOperationException($"Zip package '{path}' does not contain a project XML file.");
-                using var entryStream = entry.Open();
-                return Load(XDocument.Load(entryStream));
+                return Utilities.PackagePath.ReadArchiveProject(Utilities.PackagePath.GetArchiveFiles(archive)).Model;
             }
 
             stream.Position = 0;
@@ -52,12 +47,7 @@ namespace SqlBuildManager.SqlBuild.Models
             {
                 memStream.Position = 0;
                 using var archive = new ZipArchive(memStream, ZipArchiveMode.Read, leaveOpen: true);
-                var entry = archive.GetEntry(XmlFileNames.MainProjectFile)
-                           ?? archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
-                if (entry == null)
-                    throw new InvalidOperationException($"Zip package '{path}' does not contain a project XML file.");
-                using var entryStream = entry.Open();
-                return Load(XDocument.Load(entryStream));
+                return Utilities.PackagePath.ReadArchiveProject(Utilities.PackagePath.GetArchiveFiles(archive)).Model;
             }
 
             memStream.Position = 0;
