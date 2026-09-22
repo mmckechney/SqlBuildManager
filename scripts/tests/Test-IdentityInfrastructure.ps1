@@ -120,7 +120,7 @@ try {
     Assert-IdentityContract ($identityName -eq 'id-r3test-worker' -and $userAssignedIdentity -eq $identityName -and $userAssignedIdentityName -eq $identityName) 'Worker naming aliases must agree.'
     Assert-IdentityContract ($orchestratorIdentityName -eq 'id-r3test-orchestrator' -and $mysqlDirectoryIdentityName -eq 'id-r3test-mysql-directory') 'Separated identity names must agree.'
     $global:IdentityTestSqlCalls = [System.Collections.Generic.List[object]]::new()
-    function Get-Module { return @{ Name = 'SqlServer' } }
+    function Get-Module { return @{ Name = 'SqlServer'; Version = [version]'22.0' } }
     function Import-Module {}
     function Install-Module { throw 'Offline test must never install modules.' }
     function Start-Sleep {}
@@ -139,7 +139,8 @@ try {
         throw "Unexpected Azure command in offline test: $command"
     }
     function Invoke-Sqlcmd {
-        param($ServerInstance, $Database, $AccessToken, $Query, $ErrorAction)
+        param($ServerInstance, $Database, $AccessToken, $Query, $Encrypt, [switch] $TrustServerCertificate, $ErrorAction)
+        Assert-IdentityContract ($Encrypt -eq 'Mandatory' -and $PSBoundParameters.ContainsKey('TrustServerCertificate') -and -not $TrustServerCertificate) 'SQL bootstrap must explicitly encrypt and verify the server certificate.'
         $global:IdentityTestSqlCalls.Add(@{ Server = $ServerInstance; Database = $Database; Query = $Query })
     }
     foreach ($purpose in @('Worker', 'Relay')) {

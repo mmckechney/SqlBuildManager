@@ -63,7 +63,8 @@ namespace SqlBuildManager.Connection
         {
             string host = serverName;
             uint port = 3306;
-            if (serverName.Contains(':'))
+            if (!serverName.Contains(',') && serverName.IndexOf(':') > 0 &&
+                serverName.IndexOf(':') == serverName.LastIndexOf(':'))
             {
                 var parts = serverName.Split(':');
                 host = parts[0];
@@ -111,6 +112,10 @@ namespace SqlBuildManager.Connection
                     builder.SslMode = MySqlSslMode.Required;
                     break;
             }
+
+            // Mixed-host configurations must not downgrade an Azure endpoint.
+            if (AzureDatabaseTls.IsMySql(serverName))
+                builder.SslMode = MySqlSslMode.VerifyFull;
 
             log.LogDebug($"MySQL Connection string: {ConnectionStringRedactor.Redact(builder.ConnectionString)}");
             return builder.ConnectionString;

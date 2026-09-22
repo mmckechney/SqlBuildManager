@@ -27,7 +27,7 @@ param
     - The active Azure identity must be an Entra ID admin on the SQL Server
     - The host running this script must have connectivity to the SQL private endpoints
     - Az CLI must be installed and logged in
-    - SqlServer PowerShell module must be installed (Install-Module -Name SqlServer)
+    - SqlServer PowerShell module v22+ is required for explicit verified TLS
 
 .PARAMETER envName
     The Azure Developer CLI environment name used when deploying resources.
@@ -72,11 +72,11 @@ Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
 Write-Host "Permission purpose: $identityPurpose" -ForegroundColor DarkGreen
 
 # Check if SqlServer module is installed
-if (-not (Get-Module -ListAvailable -Name SqlServer)) {
-    Write-Host "SqlServer PowerShell module not found. Installing..." -ForegroundColor Yellow
-    Install-Module -Name SqlServer -Force -AllowClobber -Scope CurrentUser
+if (-not (Get-Module -ListAvailable -Name SqlServer | Where-Object { $_.Version -ge [version]'22.0' })) {
+    Write-Host "SqlServer PowerShell module v22+ not found. Installing..." -ForegroundColor Yellow
+    Install-Module -Name SqlServer -MinimumVersion 22.0 -Force -AllowClobber -Scope CurrentUser
 }
-Import-Module SqlServer
+Import-Module SqlServer -MinimumVersion 22.0
 
 # Get the managed identity details
 Write-Host "Retrieving managed identity details..." -ForegroundColor DarkGreen
@@ -179,7 +179,7 @@ END
         $success = $false
         for ($attempt = 1; $attempt -le 5 -and -not $success; $attempt++) {
             try {
-                Invoke-Sqlcmd -ServerInstance $serverFqdn -Database $dbName -AccessToken $accessToken -Query $sql -ErrorAction Stop
+                Invoke-Sqlcmd -ServerInstance $serverFqdn -Database $dbName -AccessToken $accessToken -Query $sql -Encrypt Mandatory -TrustServerCertificate:$false -ErrorAction Stop
                 Write-Host "    ✓ Granted $identityPurpose permissions to $identityName" -ForegroundColor Green
                 $success = $true
             }

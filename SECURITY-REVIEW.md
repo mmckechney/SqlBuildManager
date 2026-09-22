@@ -10,6 +10,8 @@ Assessed source revision: `f955d1082d1920d400c0a6c88816cde5bd8784fb`.
 - Implement general ACI secure environment transport, verified Azure PostgreSQL TLS, and R3 identity separation while retaining migration-capable database permissions.
 - R3 applies to **fresh disposable deployments only**. No migration tooling, automatic revocation of legacy roles, or live Azure changes are authorized by this source task. Incremental Bicep deployment does not remove legacy assignments.
 - Preserve native local/local-container authentication. Their PostgreSQL servers have no provisioned TLS certificates; existing local TLS compatibility remains intentional.
+- Complete SEC-04 source-side Azure verification without imposing new local TLS/certificate
+  requirements. The owner approved ignoring SQL certificate-bypass flags for Azure endpoints.
 - Earlier Azure MySQL work adds managed-identity test authentication, explicit test-database grants, verified token-mode TLS, and secure bootstrap-token transport. It does not close every work package below.
 - SEC-07 resource budgets are explicitly declined: trusted package publishers are also trusted
   for package size/resource consumption. Do not introduce package-size, entry-count, expanded-byte,
@@ -21,6 +23,17 @@ ACI now uses secure environment properties for runtime credentials, connection s
 keys and SAS URLs. PostgreSQL uses certificate/hostname verification for Entra modes and canonical
 Azure endpoints, including the Azure-test helper and bootstrap client. Native local TLS behavior
 is retained because those servers have no provisioned certificates.
+
+SEC-04 additionally enforces MySQL `VerifyFull` for Azure password connections and
+direct Azure-test helpers. Azure SQL factory and legacy/DACPAC connection paths explicitly
+require encryption and certificate verification, overriding local trust-bypass settings.
+SQL bootstrap requires SqlServer PowerShell v22+ and explicitly enables verified encryption.
+Existing PostgreSQL, Relay and MySQL bootstrap verification is retained. Native non-Azure
+behavior is unchanged; canonical Azure service FQDNs are required for endpoint classification.
+Policy tests and local MySQL/PostgreSQL protocol fixtures cover certificate rejection and
+plaintext compatibility. SQL driver handshakes, remote MySQL token-rejection behavior
+(the driver has a loopback credential exception), Linux CA stores and live Azure/private-DNS
+acceptance across execution targets remain outside this offline result.
 
 Fresh-deployment infrastructure separates workers, orchestration, Relay, AKS control plane/kubelet,
 Batch account storage, private bootstrap and MySQL directory lookup. Runtime settings select the

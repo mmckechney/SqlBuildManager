@@ -131,6 +131,32 @@ The launcher acquires a short-lived administrator token just before starting pri
 
 ACI, Batch and Container Apps use their assigned managed identity. AKS uses its federated workload-identity token. Token-authenticated MySQL connections verify the server certificate and hostname.
 
+### TLS verification
+
+Azure MySQL service endpoints require `SslMode=VerifyFull` for both native-password
+and supported token authentication, including direct Azure-test connections. Public,
+US Government, China and legacy Germany service suffixes are recognized, including
+private-link names and an explicit port. A multi-host connection containing an Azure
+endpoint uses the verified policy for the entire connection.
+
+Use the canonical server FQDN with private DNS and a current OS/container CA trust
+store. Custom aliases and IP addresses are not automatically classified as Azure and
+may not match the certificate. Neither a private endpoint nor encryption alone proves
+server identity. Verification failures are not retried with a weaker TLS mode.
+The private bootstrap retains `VERIFY_IDENTITY` (MySQL) or `--ssl-verify-server-cert`
+(MariaDB) with its trusted CA bundle.
+
+Native local and local-container connections retain `Preferred`: TLS is opportunistic,
+without mandatory certificate verification or local certificate provisioning. This
+exception does not change the existing `VerifyFull` policy for token authentication.
+
+Connection tests include real MySqlConnector protocol exchanges with temporary test
+certificates, covering trusted, wrong-host, untrusted, expired and plaintext cases.
+MySqlConnector 2.6.2 defers some native-auth certificate checks until the authentication
+response; these tests verify rejection before database commands. Its explicit loopback
+exception for cleartext-plugin credentials means local fixtures do not prove remote
+token-rejection behavior. Live Azure MI/private-DNS acceptance remains a separate check.
+
 ### Migrating an existing Azure test environment
 
 **Identity-separation scope:** the current R3 templates and runners target fresh disposable environments. The earlier authentication-only procedure below is not an RBAC migration: incremental Bicep does not remove old Contributor/AKS administrator assignments or stale identity attachments. Use a fresh environment and regenerate settings/images for the new worker/orchestrator identities. No automatic legacy-role revocation or migration tooling is provided.

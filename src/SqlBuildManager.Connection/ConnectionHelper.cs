@@ -34,6 +34,7 @@ namespace SqlBuildManager.Connection
         /// here so that connection-string overloads that don't carry a <see cref="ConnectionData"/>
         /// still honor the operator's run-level choice. Connection-data based overloads OR this with
         /// the per-connection <see cref="ConnectionData.TrustServerCertificate"/> value.
+        /// Recognized Azure SQL endpoints always validate the certificate, regardless of this setting.
         /// </summary>
         public static bool TrustServerCertificate { get; set; } = false;
         static ConnectionHelper()
@@ -159,6 +160,7 @@ namespace SqlBuildManager.Connection
                     builder.TrustServerCertificate = trustServerCertificate;
                     break;
             }
+            AzureDatabaseTls.Apply(builder);
             log.LogDebug($"Database Connection string: {ConnectionStringRedactor.Redact(builder.ConnectionString)}");
             return builder.ConnectionString;
         }

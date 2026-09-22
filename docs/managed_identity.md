@@ -50,6 +50,39 @@ To instruct the app to pull secrets from Azure Key Vault, you need to provide th
 
 By default, the app uses username/password database authentication. To enable Managed Identity authentication, you will first need to add the [Manged Identity as a user to the database](https://docs.microsoft.com/en-us/azure/azure-sql/database/authentication-azure-ad-user-assigned-managed-identity?view=azuresql#managing-a-managed-identity-for-a-server-or-instance). Once this has been done, you can direct the app to use the identity to authenticate with the `--authtype ManagedIdentity` flag. (As always, this can be saved in a settings file with `savesettings` for easier execution and reuse).
 
+### Azure database TLS
+
+Recognized Azure SQL endpoints always use `Encrypt=Mandatory` and
+`TrustServerCertificate=false`, for password and Entra authentication. This applies
+to the runtime factory and the legacy connection helper used for DACPAC operations.
+The `--trustservercertificate` / `--trustcert` flag, including saved or process-wide
+values, cannot bypass certificate validation for these endpoints. Public, US Government,
+China and legacy Germany suffixes, private-link names, `tcp:` and explicit SQL ports
+are recognized. Relay database paths retain their existing verified TLS settings.
+
+SQL identity bootstrap explicitly requests verified encryption using
+`Invoke-Sqlcmd -Encrypt Mandatory -TrustServerCertificate:$false`. It requires the
+SqlServer PowerShell module v22 or newer and installs it if no qualifying version exists.
+See [Invoke-Sqlcmd documentation](https://learn.microsoft.com/en-us/powershell/module/sqlserver/invoke-sqlcmd?view=sqlserver-ps).
+
+Use canonical Azure server names with private DNS, not unrelated aliases or IP
+addresses. Keep host/container CA stores current. Local and local-container SQL
+Server behavior is unchanged, including the existing opt-in certificate bypass;
+this change does not add local TLS or certificate requirements.
+[PostgreSQL](postgresql.md#tls-verification) and [MySQL](mysql.md#tls-verification)
+likewise require verified TLS for Azure while retaining native local compatibility.
+
+Offline coverage exercises connection policies, global/per-connection SQL bypass
+overrides, MySQL/PostgreSQL driver certificate exchanges and mocked bootstrap calls.
+Run the connection suite with:
+
+```powershell
+dotnet test .\src\SqlBuildManager.Connection.UnitTest\SqlBuildManager.Connection.UnitTest.csproj
+```
+
+These are not live Azure acceptance tests. SQL Server's actual certificate handshake,
+Azure-issued certificates/private DNS, remote MySQL token rejection, Linux trust stores
+and every distributed execution target still require validation in the deployed environment.
 
 ### Blob Storage
 
