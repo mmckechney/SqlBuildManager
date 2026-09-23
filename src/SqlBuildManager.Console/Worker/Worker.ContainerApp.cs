@@ -48,7 +48,7 @@ namespace SqlBuildManager.Console
             res = await ContainerAppDeploy(cmdLine, unittest, stream, true, deleteWhenDone);
             if (res != 0)
             {
-                log.LogError("Failed to deploy container app");
+                log.LogError("Container App operation failed with exit code {ExitCode}; see the deployment or worker execution error above.", res);
                 log.LogInformation("Cleaning up any remaining queue messages...");
                 await DeQueueOverrideTargets(cmdLine);
                 return res;
@@ -73,17 +73,27 @@ namespace SqlBuildManager.Console
             var utcMonitorStart = DateTime.UtcNow;
             var logLevel = Logging.ApplicationLogging.GetLogLevelString();
             var success = await ContainerApp.ContainerAppManager.DeployContainerApp(cmdLine, logLevel);
-            if (!success) retVal = -7;
+            if (!success)
+            {
+                log.LogError("Container App resource deployment failed.");
+                retVal = -7;
+            }
 
 
             if (success && monitor)
             {
                 retVal = await MonitorContainerAppRuntimeProgress(cmdLine, stream, utcMonitorStart, unittest);
+                if (retVal != 0)
+                    log.LogError("Container App deployed, but monitored worker execution failed with exit code {ExitCode}.", retVal);
             }
             if (deleteWhenDone)
             {
                 success = await ContainerAppManager.DeleteContainerApp(cmdLine);
-                if (!success) retVal = -6;
+                if (!success)
+                {
+                    log.LogError("Container App cleanup failed.");
+                    if (retVal == 0) retVal = -6;
+                }
             }
 
             return retVal;

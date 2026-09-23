@@ -43,6 +43,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SqlBuildManager.Test.Common\SqlBuildManager.Test.Common.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Console\sbm.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Console.AzureTest.TestBase\SqlBuildManager.Console.AzureTest.TestBase.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />

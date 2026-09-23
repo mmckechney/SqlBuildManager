@@ -231,7 +231,8 @@ if ($testFilter -like "*Kubernetes*") {
 # Create results directory first, then run tests, capture exit code, login and upload
 # Use PIPESTATUS to get the exit code of dotnet vstest (not tee)
 # Exit with the test exit code so the container terminates with the correct status
-$shellCmd = "set -o pipefail; mkdir -p /tests/TestResults; az login --identity --client-id `$AZURE_CLIENT_ID --output none || exit `$?; $aksPreCmd$testCmd; TEST_EXIT_CODE=`${PIPESTATUS[0]}; $uploadCmd; UPLOAD_EXIT_CODE=`$?; if test `$TEST_EXIT_CODE -eq 0; then TEST_EXIT_CODE=`$UPLOAD_EXIT_CODE; fi; echo TEST_EXIT_CODE=`$TEST_EXIT_CODE; exit `$TEST_EXIT_CODE"
+$provenanceCmd = "echo 'Test-runner source revision and actual binary hashes:' > /tests/TestResults/artifact-provenance.txt; printenv SBM_BUILD_REVISION >> /tests/TestResults/artifact-provenance.txt; sha256sum sbm.dll SqlBuildManager.SqlBuild.dll $testDll >> /tests/TestResults/artifact-provenance.txt; "
+$shellCmd = "set -o pipefail; mkdir -p /tests/TestResults; $provenanceCmd az login --identity --client-id `$AZURE_CLIENT_ID --output none || exit `$?; $aksPreCmd$testCmd; TEST_EXIT_CODE=`${PIPESTATUS[0]}; $uploadCmd; UPLOAD_EXIT_CODE=`$?; if test `$TEST_EXIT_CODE -eq 0; then TEST_EXIT_CODE=`$UPLOAD_EXIT_CODE; fi; echo TEST_EXIT_CODE=`$TEST_EXIT_CODE; exit `$TEST_EXIT_CODE"
 
 $commandYaml = @"
       - /bin/bash

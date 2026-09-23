@@ -30,6 +30,9 @@ RUN dotnet publish SqlBuildManager.Console/sbm.csproj \
     --output /app/publish
 
 FROM mcr.microsoft.com/dotnet/runtime:10.0-noble AS final
+ARG SBM_BUILD_REVISION=unknown
+LABEL org.opencontainers.image.revision=$SBM_BUILD_REVISION
+ENV SBM_BUILD_REVISION=$SBM_BUILD_REVISION
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENV DOTNET_ENVIRONMENT=Production

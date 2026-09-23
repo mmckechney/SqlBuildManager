@@ -9,6 +9,8 @@ COPY SqlBuildManager.Console.PostgreSQL.IntegrationTest/SqlBuildManager.Console.
 COPY SqlBuildManager.Console.MySQL.IntegrationTest/SqlBuildManager.Console.MySQL.IntegrationTest.csproj SqlBuildManager.Console.MySQL.IntegrationTest/packages.lock.json SqlBuildManager.Console.MySQL.IntegrationTest/
 COPY SqlBuildManager.Console.SqlServer.IntegrationTest/SqlBuildManager.Console.SqlServer.IntegrationTest.csproj SqlBuildManager.Console.SqlServer.IntegrationTest/packages.lock.json SqlBuildManager.Console.SqlServer.IntegrationTest/
 COPY SqlBuildManager.Console.UnitTest/SqlBuildManager.Console.UnitTest.csproj SqlBuildManager.Console.UnitTest/packages.lock.json SqlBuildManager.Console.UnitTest/
+# Console.UnitTest exercises these shared Azure helpers offline.
+COPY SqlBuildManager.Console.AzureTest.TestBase/SqlBuildManager.Console.AzureTest.TestBase.csproj SqlBuildManager.Console.AzureTest.TestBase/packages.lock.json SqlBuildManager.Console.AzureTest.TestBase/
 COPY SqlBuildManager.Console/sbm.csproj SqlBuildManager.Console/packages.lock.json SqlBuildManager.Console/
 COPY SqlBuildManager.Enterprise.UnitTest/SqlBuildManager.Enterprise.UnitTest.csproj SqlBuildManager.Enterprise.UnitTest/packages.lock.json SqlBuildManager.Enterprise.UnitTest/
 COPY SqlBuildManager.Enterprise/SqlBuildManager.Enterprise.csproj SqlBuildManager.Enterprise/packages.lock.json SqlBuildManager.Enterprise/

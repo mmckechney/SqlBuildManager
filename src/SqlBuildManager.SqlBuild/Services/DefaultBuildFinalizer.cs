@@ -258,7 +258,6 @@ namespace SqlBuildManager.SqlBuild.Services
             var updatedDataModel = context.BuildDataModel;
             BuildResultStatus finalBuildResult;
             DateTime end = DateTime.Now;
-            myBuild.BuildId = context.BuildPackageHash;
             myBuild.BuildEnd = end;
        
 
@@ -402,7 +401,6 @@ namespace SqlBuildManager.SqlBuild.Services
                     }
                 }
             }
-            connectionsService.Connections.Clear();
             return (myBuild, updatedDataModel, finalBuildResult);
         }
 

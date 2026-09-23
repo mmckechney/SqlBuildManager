@@ -82,7 +82,7 @@ namespace SqlBuildManager.Console.AzureTest.TestBase
             TaskExecutionLogs = new Dictionary<string, string>();
             foreach (var blobName in BlobNames)
             {
-                if (blobName.ToLower().Contains("sqlbuildmanager.console") && blobName.EndsWith(".log"))
+                if (IsTaskExecutionLog(blobName))
                 {
                     TaskExecutionLogs[blobName] = await DownloadBlobTextAsync(blobName);
                 }
@@ -134,9 +134,39 @@ namespace SqlBuildManager.Console.AzureTest.TestBase
             blobName is "commits.log" or "errors.log" or "successdatabases.cfg" or "failuredatabases.cfg" ||
             IsTaskExecutionLog(blobName);
 
-        private static bool IsTaskExecutionLog(string blobName) =>
-            blobName.Contains("sqlbuildmanager.console", StringComparison.OrdinalIgnoreCase) &&
-            blobName.EndsWith(".log", StringComparison.OrdinalIgnoreCase);
+        public static bool IsTaskExecutionLog(string blobName) =>
+            (blobName.Contains("sqlbuildmanager.console", StringComparison.OrdinalIgnoreCase) &&
+             blobName.EndsWith(".log", StringComparison.OrdinalIgnoreCase)) ||
+            IsDetailedErrorLog(blobName);
+
+        public static bool IsDetailedErrorLog(string blobName) =>
+            (blobName.StartsWith("Working/", StringComparison.OrdinalIgnoreCase) ||
+             blobName.Contains("/Working/", StringComparison.OrdinalIgnoreCase)) &&
+            blobName.EndsWith("Error.log", StringComparison.OrdinalIgnoreCase);
+
+        public static async Task AssertCommandSucceededAsync(
+            int result, string settingsFile, string settingsFileKey, string jobName, TestContext? testContext = null, string commandOutput = "")
+        {
+            if (result == 0)
+                return;
+
+            string diagnostics;
+            try
+            {
+                var (account, key) = GetStorageCredentials(settingsFile, settingsFileKey);
+                var validator = new BlobLogValidator(account, key, jobName);
+                await validator.LoadLogsAsync();
+                diagnostics = $"Job: {jobName}\nerrors.log:\n{validator.ErrorsLog}\nfailuredatabases.cfg:\n{validator.FailureDatabases}";
+                foreach (var (name, content) in validator.TaskExecutionLogs)
+                    diagnostics += $"\n--- {name} ---\n{content}";
+            }
+            catch (Exception ex)
+            {
+                diagnostics = $"Unable to collect worker diagnostics for {jobName}: {ex}";
+            }
+            testContext?.WriteLine(diagnostics);
+            Assert.AreEqual(0, result, $"Command failed with exit code {result}.\n{commandOutput}\n{diagnostics}");
+        }
 
         private static string ReadDownloadedText(string downloadDirectory, string blobName)
         {
@@ -217,6 +247,12 @@ namespace SqlBuildManager.Console.AzureTest.TestBase
 
             foreach (var (name, content) in TaskExecutionLogs)
             {
+                if (IsDetailedErrorLog(name))
+                {
+                    Assert.IsTrue(string.IsNullOrWhiteSpace(content),
+                        $"Blob: Per-target error '{name}':\n{content}");
+                    continue;
+                }
                 //Ignore errors if a custom DACPAC is required -- will have to rely on the success database count since ERR entries will be present in the logs due to the intentional failure to build the default DACPAC
                 bool neededCusstomDacpac = Regex.IsMatch(content, @"WRN TH: \d{1,3}\] SqlSync\.SqlBuild.Services\.DefaultDacPacFallbackHandler - Custom dacpac required");
                 if(neededCusstomDacpac)
@@ -249,8 +285,9 @@ namespace SqlBuildManager.Console.AzureTest.TestBase
 
             bool hasErrors = !string.IsNullOrWhiteSpace(ErrorsLog);
             bool hasFailures = !string.IsNullOrWhiteSpace(FailureDatabases);
-            bool hasErrInLogs = TaskExecutionLogs.Values.Any(c =>
-                Regex.IsMatch(c, @"\[\d{4}-\d{2}-\d{2}\s[\d:.]+\s+ERR\s+TH:\s*\d+\]"));
+            bool hasErrInLogs = TaskExecutionLogs.Any(entry =>
+                (IsDetailedErrorLog(entry.Key) && !string.IsNullOrWhiteSpace(entry.Value)) ||
+                Regex.IsMatch(entry.Value, @"\[\d{4}-\d{2}-\d{2}\s[\d:.]+\s+ERR\s+TH:\s*\d+\]"));
 
             Assert.IsTrue(hasErrors || hasFailures || hasErrInLogs,
                 "Blob: A failed build should have errors in errors.log, failuredatabases.cfg, or task execution logs");

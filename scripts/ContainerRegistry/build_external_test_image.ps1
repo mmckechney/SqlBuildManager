@@ -33,6 +33,12 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 }
 
 $testImageName = "sqlbuildmanager-tests"
+$sourceRevision = git -C $repoRoot rev-parse HEAD
+if ($LASTEXITCODE -ne 0) { throw 'Unable to determine the test image source revision.' }
+$sourceChanges = git -C $repoRoot status --porcelain --untracked-files=normal -- src
+if ($LASTEXITCODE -ne 0) { throw 'Unable to determine whether the test image source is modified.' }
+if ($sourceChanges) { $sourceRevision = "$sourceRevision-dirty" }
+Write-Host "Test image source revision: $sourceRevision"
 
 #############################################
 # Get resource name variables from the environment name
@@ -114,8 +120,10 @@ try {
         --image "${testImageName}:${imageTag}" `
         --file "$tempContext\$dockerfileName" `
         --build-arg "AZD_ENV_NAME=$envName" `
+        --build-arg "SBM_BUILD_REVISION=$sourceRevision" `
         --no-logs `
-        --output none `
+        --query '{runId:runId,images:outputImages}' `
+        --output json `
         $tempContext
     
     if ($LASTEXITCODE -ne 0) {

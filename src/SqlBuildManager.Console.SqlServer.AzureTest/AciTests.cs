@@ -93,7 +93,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-               Assert.AreEqual(0, result);
+               await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Validate blob storage logs agree with ACI test result
                 var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
@@ -149,7 +149,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 //enqueue the topic messages
                 args = new string[]{
@@ -162,7 +162,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 //monitor for completion
                 args = new string[]{
@@ -184,7 +184,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
@@ -237,7 +237,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 //enqueue the topic messages
                 args = new string[]{
@@ -250,7 +250,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 //monitor for completion
                 args = new string[]{
@@ -271,7 +271,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
@@ -325,7 +325,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 //enqueue the topic messages
                 args = new string[]{
@@ -338,7 +338,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 //monitor for completion
                 args = new string[]{
@@ -360,7 +360,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
@@ -430,7 +430,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 //enqueue the topic messages
                 args = new string[]{
@@ -443,7 +443,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 string sbmFileName = Path.Combine(Path.GetDirectoryName(dacpacName)!, Path.GetFileNameWithoutExtension(dacpacName) + ".sbm");
 
@@ -467,7 +467,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();
@@ -540,7 +540,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
 
 
@@ -555,7 +555,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 //Create another table in the first that will be applied when the custom DACPAC is created
                 DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
@@ -583,7 +583,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var tmp = ConsoleOutput.ToString();
                 Assert.IsTrue(tmp.Contains("Dacpac Databases In Sync") || tmp.Contains("Committed - With Custom Dacpac"), "A custom DACPAC should have been required for a database");
@@ -657,7 +657,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
@@ -732,7 +732,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 var val = parser.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
                 var combinedLog = logFileContents + Environment.NewLine + ConsoleOutput.ToString();

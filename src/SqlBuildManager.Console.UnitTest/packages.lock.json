@@ -705,6 +705,21 @@
           "SqlBuildManager.Logging": "[1.0.0, )"
         }
       },
+      "sqlbuildmanager.console.azuretest.testbase": {
+        "type": "Project",
+        "dependencies": {
+          "Azure.Identity": "[1.21.0, )",
+          "Azure.Storage.Blobs": "[12.29.2, )",
+          "MSTest.TestAdapter": "[4.4.0, )",
+          "MSTest.TestFramework": "[4.4.0, )",
+          "Microsoft.Extensions.Logging": "[10.0.12, )",
+          "Microsoft.NET.Test.Sdk": "[18.10.0, )",
+          "SqlBuildManager.SqlBuild": "[1.0.0, )",
+          "System.CommandLine": "[2.0.12, )",
+          "YamlDotNet": "[18.1.0, )",
+          "sbm": "[1.0.0, )"
+        }
+      },
       "sqlbuildmanager.constants": {
         "type": "Project",
         "dependencies": {

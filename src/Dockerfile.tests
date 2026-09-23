@@ -35,6 +35,9 @@ RUN test -n "$AZD_ENV_NAME" && \
       --configuration Release --framework net10.0 --no-restore --output /tests -p:AzdEnvironment="$AZD_ENV_NAME"
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:72dd743782f2ae7e5476fd64f6a460045e3998dc862218b80e6944cba79a01b0 AS testrunner
+ARG SBM_BUILD_REVISION=unknown
+LABEL org.opencontainers.image.revision=$SBM_BUILD_REVISION
+ENV SBM_BUILD_REVISION=$SBM_BUILD_REVISION
 
 # Pinned kubectl version and architecture-aware SHA-256 checksums (update both when bumping).
 # Checksums sourced from https://dl.k8s.io/release/<version>/bin/linux/<arch>/kubectl.sha256

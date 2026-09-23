@@ -152,6 +152,17 @@ There are three types of Tests included in the solution:
 **IMPORTANT**: If running the SQLEXPRESS dependent tests for the first time on your local machine, you need to run the tests in the `SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest.csproj` _first_. This project has the scripts to create the necessary SQLEXPRESS databases.
 3. Azure tests that leverage deployed resources. These are found in `SqlBuildManager.Console.SqlServer.AzureTest.csproj`, `SqlBuildManager.Console.PostgreSQL.AzureTest.csproj`, and `SqlBuildManager.Console.MySQL.AzureTest.csproj`. To run these tests, first run `azd up` from the repo root with the default test database count of 10. This creates the resources and configuration in `src\TestConfig\<envName>`. Select that environment for local test execution as described above, or pass `-envName` to the ACI test wrappers.
 
+SQL test setup, private-network probes and DACPAC extraction use the authentication mode and
+database worker client ID from the selected settings. The ACI test runner's orchestrator identity
+continues to handle Azure resource management; it does not need database-owner privileges.
+Developer runs can select `AzureADDefault`, and native/local runs retain their password or Windows
+authentication and local certificate options. Azure SQL connections always use verified TLS.
+
+Rebuild runtime and test-runner images from the same source revision before comparing Azure
+results. Image build output includes the ACR run ID and image digests; worker logs and the
+test-runner's uploaded `artifact-provenance.txt` identify the executed binaries. See
+[execution logs and provenance](threaded_and_batch_logs.md#working-folder).
+
 ## SQL Express
 
 In order to get some of the unit tests to succeed, you need to have a local install of SQLExpress. You can find the installer from here [https://www.microsoft.com/en-us/sql-server/sql-server-editions-express] (https://www.microsoft.com/en-us/sql-server/sql-server-editions-express). You should be able to leverage the basic install.

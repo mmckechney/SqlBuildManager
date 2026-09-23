@@ -18,7 +18,7 @@ $sourceRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $fixture = Join-Path ([IO.Path]::GetTempPath()) "sbm-env-config-$([guid]::NewGuid())"
 $savedProjectPath = $env:AZD_PROJECT_PATH
 $savedEnvironment = $env:AZURE_ENV_NAME
-$state = @{ Checks = 0; Builds = 0; BuildExitCode = 0; Contexts = [Collections.Generic.List[string]]::new() }
+$state = @{ Checks = 0; Builds = 0; BuildExitCode = 0; SourceDirty = $false; Contexts = [Collections.Generic.List[string]]::new() }
 
 function Assert-Config([bool] $Condition, [string] $Message) {
     if (-not $Condition) { throw $Message }
@@ -44,6 +44,16 @@ function azd {
         return ''
     }
     return "$selected-$($args[2])"
+}
+function git {
+    $global:LASTEXITCODE = 0
+    Assert-Config ((Get-Argument $args '-C') -eq $fixture) 'Source provenance must use the staged repository.'
+    if ($args[2] -eq 'rev-parse') { return ('a' * 40) }
+    if ($args[2] -eq 'status') {
+        if ($state.SourceDirty) { return ' M src/example.cs' }
+        return
+    }
+    throw "Unexpected Git command: $args"
 }
 function az {
     $global:LASTEXITCODE = 0
@@ -73,6 +83,9 @@ function az {
             $state.Contexts.Add($context)
             Assert-Config ((Get-Argument $args '--resource-group') -eq 'rg-explicit') 'Image builder lost explicit resource group.'
             Assert-Config ((Get-Argument $args '--image') -eq 'sqlbuildmanager-tests:isolated') 'Image tag was lost.'
+            $revision = ('a' * 40) + $(if ($state.SourceDirty) { '-dirty' } else { '' })
+            Assert-Config ($args -contains "SBM_BUILD_REVISION=$revision") 'Image source revision/dirty marker was lost.'
+            Assert-Config ((Get-Argument $args '--query') -eq '{runId:runId,images:outputImages}') 'Image build output must include exact digest metadata.'
             $entries = @(Get-ChildItem -LiteralPath (Join-Path $context 'TestConfig'))
             Assert-Config ($entries.Count -eq 1 -and $entries[0].Name -eq $selected) 'Image context contains another environment or root files.'
             $files = @(Get-ChildItem -LiteralPath $entries[0].FullName -Recurse -File)
@@ -155,6 +168,7 @@ try {
 
     foreach ($name in @('alpha', 'bravo')) {
         $directory = Get-TestConfigPath -envName $name -repoRoot $fixture
+        $state.SourceDirty = $name -eq 'bravo'
         New-Item -ItemType Directory -Path (Join-Path $directory 'TestResults') -Force | Out-Null
         'result' | Set-Content (Join-Path $directory 'TestResults\stale-result.txt')
         'bundle' | Set-Content (Join-Path $directory 'bundle.zip')

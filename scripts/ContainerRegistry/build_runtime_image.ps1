@@ -34,6 +34,12 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
 }
 $originalSourcePath = Join-Path $repoRoot "src"
+$sourceRevision = git -C $repoRoot rev-parse HEAD
+if ($LASTEXITCODE -ne 0) { throw 'Unable to determine the runtime image source revision.' }
+$sourceChanges = git -C $repoRoot status --porcelain --untracked-files=normal -- src
+if ($LASTEXITCODE -ne 0) { throw 'Unable to determine whether the runtime image source is modified.' }
+if ($sourceChanges) { $sourceRevision = "$sourceRevision-dirty" }
+Write-Host "Runtime image source revision: $sourceRevision"
 
 # Create a clean copy of source to avoid VS file locks
 $tempBuildContext = Join-Path $env:TEMP "acr-build-context-$(Get-Random)"
@@ -57,10 +63,10 @@ if ($success)
     Write-Host "Building with image tags: '$verTag' | '$dateTag' | '$vnextTag' (used in integration tests)" -ForegroundColor DarkGreen
     if($true -eq $wait)
     {
-        az acr build --image $dateTag --image $vnextTag --image $verTag --registry $azureContainerRegistry --resource-group $resourceGroupName --file "$dockerFile" "$sourcePath" --no-logs --output none
+        az acr build --image $dateTag --image $vnextTag --image $verTag --registry $azureContainerRegistry --resource-group $resourceGroupName --file "$dockerFile" "$sourcePath" --build-arg "SBM_BUILD_REVISION=$sourceRevision" --no-logs --query '{runId:runId,images:outputImages}' --output json
     }
     else {
-        az acr build --image $dateTag --image $vnextTag --image $verTag --registry $azureContainerRegistry --resource-group $resourceGroupName --file "$dockerFile" "$sourcePath" --no-logs --output none --no-wait
+        az acr build --image $dateTag --image $vnextTag --image $verTag --registry $azureContainerRegistry --resource-group $resourceGroupName --file "$dockerFile" "$sourcePath" --build-arg "SBM_BUILD_REVISION=$sourceRevision" --no-logs --query '{runId:runId,images:outputImages}' --output json --no-wait
     }
 }
 else 
@@ -69,10 +75,10 @@ else
     Write-Host "Building with image tags: '$dateTag' | '$vnextTag' (used in integration tests)" -ForegroundColor DarkGreen
     if($true -eq $wait)
     {
-        az acr build --image $dateTag --image $vnextTag --registry $azureContainerRegistry --resource-group $resourceGroupName  --file "$dockerFile" "$sourcePath" --no-logs --output none
+        az acr build --image $dateTag --image $vnextTag --registry $azureContainerRegistry --resource-group $resourceGroupName  --file "$dockerFile" "$sourcePath" --build-arg "SBM_BUILD_REVISION=$sourceRevision" --no-logs --query '{runId:runId,images:outputImages}' --output json
     }
     else {
-        az acr build --image $dateTag --image $vnextTag --registry $azureContainerRegistry --resource-group $resourceGroupName  --file "$dockerFile" "$sourcePath" --no-logs --output none --no-wait
+        az acr build --image $dateTag --image $vnextTag --registry $azureContainerRegistry --resource-group $resourceGroupName  --file "$dockerFile" "$sourcePath" --build-arg "SBM_BUILD_REVISION=$sourceRevision" --no-logs --query '{runId:runId,images:outputImages}' --output json --no-wait
     }
 
 }
