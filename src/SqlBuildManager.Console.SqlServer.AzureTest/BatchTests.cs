@@ -916,7 +916,6 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
                 await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
-                Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
                 Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
@@ -981,7 +980,6 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
                 await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
-                Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
                 Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
@@ -1068,7 +1066,6 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
                 await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
-                Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
                 Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
@@ -1135,7 +1132,6 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
                 await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
-                Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
                 Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;

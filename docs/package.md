@@ -99,6 +99,12 @@ cleanup. A failure after commit is reported as an output/finalization failure wi
 that committed changes were rolled back. Nontransactional statements may already be applied.
 Do not automatically replay either kind of potentially committed work.
 
+Finalization disposes and clears transaction references even when commit, rollback or disposal
+fails. Cleanup recognizes the provider's known completed-transaction exception instead of
+reporting a second rollback failure. Other cleanup errors are logged and still fail an otherwise
+successful run; when a build has already failed, its original exception or failure status remains
+primary rather than being replaced by a cleanup aggregate.
+
 ### Local containment verification
 
 Run the unit regressions and the database-free CLI integration harness from the repository root:

@@ -43,10 +43,10 @@ namespace SqlBuildManager.SqlBuild
             _fileHelper = fileHelper ?? new DefaultSqlBuildFileHelper();
             _progressReporter = progressReporter ?? new DefaultProgressReporter();
             _sqlLoggingService = sqlLoggingService ?? new DefaultSqlLoggingService(connectionsService, _progressReporter);
-            _buildFinalizer = buildFinalizer ?? new DefaultBuildFinalizer(_sqlLoggingService, _progressReporter);
+            _transactionManager = transactionManager ?? new SqlServerTransactionManager();
+            _buildFinalizer = buildFinalizer ?? new DefaultBuildFinalizer(_sqlLoggingService, _progressReporter, _transactionManager);
             _connectionsService = connectionsService ?? new DefaultConnectionsService();
             _finalizerContext = finalizerContext ?? throw new ArgumentNullException(nameof(finalizerContext));
-            _transactionManager = transactionManager ?? new SqlServerTransactionManager();
 
 
         }
@@ -63,7 +63,9 @@ namespace SqlBuildManager.SqlBuild
             bool failed = false;
             try
             {
-                return await RunCoreAsync(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, cancellationToken).ConfigureAwait(false);
+                var result = await RunCoreAsync(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, cancellationToken).ConfigureAwait(false);
+                failed = (int)result.FinalStatus < 0 || _ctx.ErrorOccured;
+                return result;
             }
             catch
             {
@@ -303,6 +305,10 @@ namespace SqlBuildManager.SqlBuild
                 if (connection.Transaction != null)
                 {
                     try { connection.Transaction.Rollback(); }
+                    catch (InvalidOperationException ex) when (_transactionManager.IsTransactionZombied(ex))
+                    {
+                        log.LogDebug("Transaction for {Database} is already completed or unusable; proceeding with disposal: {Message}", connection.DatabaseName, ex.Message);
+                    }
                     catch (Exception ex) { failures.Add(ex); log.LogError(ex, "Unable to roll back an unfinished transaction for {Database}", connection.DatabaseName); }
                     finally
                     {
