@@ -198,27 +198,45 @@ try {
         $mockSbm = Join-Path $fixture 'download-sbm.ps1'
         @'
 $state.DownloadDestination = Get-Argument $args '--outputpath'
+$state.DownloadPrefix = Get-Argument $args '--prefix'
+Write-MockDownloadedResult
 $global:LASTEXITCODE = 0
 '@ | Set-Content -LiteralPath $mockSbm
+        function Write-MockDownloadedResult {
+            $folder = $state.DownloadDestination
+            if ($state.DownloadPrefix) {
+                $folder = Join-Path $folder ($state.DownloadPrefix.TrimEnd('/').Replace('/', [IO.Path]::DirectorySeparatorChar))
+            }
+            New-Item -ItemType Directory -Path $folder -Force | Out-Null
+            'mock test result' | Set-Content -LiteralPath (Join-Path $folder 'TestResults.trx')
+        }
         function Get-Command { param($Name, $ErrorAction); return @{ Source = $mockSbm } }
         function azd { $global:LASTEXITCODE = 0; return 'https://offline.servicebus.windows.net/relay' }
         function az {
             if ($viaRelay) { $global:LASTEXITCODE = 1; return 'Forbidden by network rules' }
             $state.DownloadDestination = Get-Argument $args '--destination'
+            $state.DownloadPrefix = if ($args -contains '--pattern') {
+                (Get-Argument $args '--pattern') -replace '/\*$', ''
+            } else { '' }
+            Write-MockDownloadedResult
             $global:LASTEXITCODE = 0
         }
         Push-Location $fixture
         try {
             foreach ($viaRelay in @($false, $true)) {
-                $relative = Join-Path 'download results' $(if ($viaRelay) { 'relay' } else { 'direct' })
-                $expected = Join-Path $fixture $relative
-                $output = @(Download-TestResultsFromBlob -storageAccountName offline -localDestination $relative -envName alpha 6>&1)
-                Assert-Config ($output[-1] -eq $true) 'Mocked result download should succeed.'
-                $messages = @($output | Where-Object { $_ -is [System.Management.Automation.InformationRecord] } | ForEach-Object { $_.MessageData.ToString() })
-                $success = if ($viaRelay) { 'Test results downloaded successfully through RelayProxy.' } else { 'Test results downloaded successfully.' }
-                $index = [Array]::IndexOf($messages, $success)
-                Assert-Config ($index -ge 0 -and $messages[$index + 1] -eq "  Results folder: $expected") 'Each download success message must be followed by the absolute results folder.'
-                Assert-Config ($state.DownloadDestination -eq $expected) 'Reported results folder must match the actual download destination.'
+                foreach ($prefix in @('', '2026-09-23-150716/ci-test-runner', '2026-09-23-150717/ci-test-runner')) {
+                    $relative = Join-Path 'download results' $(if ($viaRelay) { 'relay' } else { 'direct' })
+                    $destination = Join-Path $fixture $relative
+                    $expected = if ($prefix) { Join-Path $destination ($prefix.Replace('/', [IO.Path]::DirectorySeparatorChar)) } else { $destination }
+                    $output = @(Download-TestResultsFromBlob -storageAccountName offline -localDestination $relative -blobPath $prefix -envName alpha 6>&1)
+                    Assert-Config ($output[-1] -eq $true) 'Mocked result download should succeed.'
+                    $messages = @($output | Where-Object { $_ -is [System.Management.Automation.InformationRecord] } | ForEach-Object { $_.MessageData.ToString() })
+                    $success = if ($viaRelay) { 'Test results downloaded successfully through RelayProxy.' } else { 'Test results downloaded successfully.' }
+                    $index = [Array]::IndexOf($messages, $success)
+                    Assert-Config ($index -ge 0 -and $messages[$index + 1] -eq "  Results folder: $expected") 'Each download success message must be followed by the absolute results folder including its timestamp/container prefix.'
+                    Assert-Config ($state.DownloadDestination -eq $destination) 'Download destination must remain the base folder to avoid duplicating the timestamp prefix.'
+                    Assert-Config (Test-Path -LiteralPath (Join-Path $expected 'TestResults.trx')) 'The reported folder must contain the downloaded results.'
+                }
             }
         } finally {
             Pop-Location

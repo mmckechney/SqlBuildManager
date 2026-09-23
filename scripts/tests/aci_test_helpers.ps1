@@ -495,6 +495,7 @@ function Download-TestResultsFromBlob {
         Local directory to download to (default: "./testresults").
     .PARAMETER blobPath
         Optional blob path prefix to scope the download. If not provided, downloads all blobs.
+        The prefix is preserved locally and included in the reported results folder.
     .PARAMETER envName
         Optional azd environment for resolving the RelayProxy endpoint.
     #>
@@ -521,6 +522,10 @@ function Download-TestResultsFromBlob {
         New-Item -ItemType Directory -Path $localDestination -Force | Out-Null
     }
     $localDestination = (Resolve-Path -LiteralPath $localDestination).ProviderPath
+    $resultsFolder = $localDestination
+    if (-not [string]::IsNullOrWhiteSpace($blobPath)) {
+        $resultsFolder = Join-Path $localDestination ($blobPath.TrimEnd('/').Replace('/', [IO.Path]::DirectorySeparatorChar))
+    }
 
     try {
         $downloadArgs = @(
@@ -580,7 +585,7 @@ function Download-TestResultsFromBlob {
                     --relayproxyendpoint $relayProxyEndpoint
                 if ($LASTEXITCODE -eq 0) {
                     Write-Host "Test results downloaded successfully through RelayProxy." -ForegroundColor Green
-                    Write-Host "  Results folder: $localDestination" -ForegroundColor Green
+                    Write-Host "  Results folder: $resultsFolder" -ForegroundColor Green
                     return $true
                 }
 
@@ -594,7 +599,7 @@ function Download-TestResultsFromBlob {
         }
 
         Write-Host "Test results downloaded successfully." -ForegroundColor Green
-        Write-Host "  Results folder: $localDestination" -ForegroundColor Green
+        Write-Host "  Results folder: $resultsFolder" -ForegroundColor Green
         return $true
     }
     catch {
