@@ -4,7 +4,7 @@ param
     [string] $envName,
 
     [string] $sbmExe = "sbm.exe",
-    [string] $path = "..\src\TestConfig",
+    [string] $path,
     [string] $resourceGroupName,
     [switch] $batch = $true,
     [switch] $aks = $true,
@@ -31,7 +31,7 @@ param
     Path to the sbm.exe executable.
 
 .PARAMETER path
-    Output path for the generated settings files.
+    Exact output directory override. Defaults to src\TestConfig\<envName>.
 
 .PARAMETER resourceGroupName
     The Azure resource group name (defaults to rg-{envName}).
@@ -56,6 +56,8 @@ $repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
    $repoRoot = Split-Path $PSScriptRoot -Parent
 }
+. (Join-Path $PSScriptRoot 'test_config_paths.ps1')
+$path = Get-TestConfigPath -envName $envName -path $path -repoRoot $repoRoot -Create
 
 $resourceGroupNameOverride = $resourceGroupName
 . (Join-Path $repoRoot "scripts\prefix_resource_names.ps1") -envName $envName

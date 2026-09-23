@@ -26,12 +26,7 @@
     <ProjectReference Include="..\SqlBuildManager.SqlBuild\SqlBuildManager.SqlBuild.csproj" />
 	<ProjectReference Include="..\SqlBuildManager.Console.AzureTest.TestBase\SqlBuildManager.Console.AzureTest.TestBase.csproj" />	  
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\TestConfig\**\*.*">
-      <Link>TestConfig\%(RecursiveDir)%(FileName)%(Extension)</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+  <Import Project="..\AzureTestConfig.targets" />
   <ItemGroup>
     <None Remove="Resources\SimpleSelect_DoubleClient.sbm" />
   </ItemGroup>

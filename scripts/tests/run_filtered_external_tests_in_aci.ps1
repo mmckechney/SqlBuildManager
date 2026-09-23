@@ -96,7 +96,8 @@ if ([string]::IsNullOrWhiteSpace($customName)) {
 $testImageName = "sqlbuildmanager-tests"
 
 # Create log file path
-$logDir = Join-Path $repoRoot "src\TestConfig\TestResults"
+. (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+$logDir = Join-Path (Get-TestConfigPath -envName $envName -repoRoot $repoRoot -Create) 'TestResults'
 if (-not (Test-Path $logDir)) {
     New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 }
@@ -155,10 +156,9 @@ if ($buildImage) {
     Write-Host "========================================" -ForegroundColor Cyan
     
     $testImageScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_external_test_image.ps1"
-    $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $testImageScriptPath) {
-        & $testImageScriptPath -envName $envName -resourceGroupName $resourceGroupName
+        & $testImageScriptPath -envName $envName -resourceGroupName $resourceGroupName -imageTag $imageTag
     } else {
         Write-Host "Test image build script not found at: $testImageScriptPath" -ForegroundColor Yellow
         Write-Host "Run manually: .\scripts\ContainerRegistry\build_external_test_image.ps1 -envName $envName -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
@@ -350,7 +350,7 @@ Write-Debug ""
 
 
 # Download test results from blob storage
-$tmp = Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContainerName $blobContainerName -localDestination "./testresults" -blobPath $blobPath
+$tmp = Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContainerName $blobContainerName -localDestination $logDir -blobPath $blobPath -envName $envName
 
 #############################################
 # Cleanup and report

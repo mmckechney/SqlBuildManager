@@ -36,7 +36,7 @@ param
     The Azure resource group containing the PostgreSQL server.
 
 .PARAMETER path
-    Path to TestConfig directory (for reading PG credentials).
+    Retained for caller compatibility; bootstrap uses a short-lived token, not TestConfig files.
 #>
 
 # Get the repo root
@@ -54,10 +54,6 @@ if ($isPrivateBootstrap -and
 $repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
-}
-
-if ([string]::IsNullOrWhiteSpace($path)) {
-    $path = Join-Path $repoRoot 'src' 'TestConfig'
 }
 
 # Get resource name variables from the environment name

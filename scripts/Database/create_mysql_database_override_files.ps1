@@ -27,9 +27,8 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
 }
 
-if ([string]::IsNullOrWhiteSpace($path)) {
-    $path = Join-Path $repoRoot "src\TestConfig"
-}
+. (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+$path = Get-TestConfigPath -envName $envName -path $path -repoRoot $repoRoot -Create
 
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
 $resourceGroupOverride = $resourceGroupName
@@ -40,7 +39,7 @@ if (-not [string]::IsNullOrWhiteSpace($resourceGroupOverride)) {
 if ($authenticationMode -eq 'ManagedIdentity' -and
     ((Test-Path (Join-Path $path 'mysql-pw.txt')) -or
      (Get-ChildItem -Path $path -Filter 'settingsfile-*-mysql-password.json' -ErrorAction Stop))) {
-    throw 'Stale Azure MySQL password artifacts exist in the output directory. Move them out of src/TestConfig before generating identity settings or rebuilding the Azure test image. Local/local-container credentials are not affected.'
+    throw "Stale Azure MySQL password artifacts exist in '$path'. Move them out of this environment's output directory before generating identity settings or rebuilding its Azure test image. Local/local-container credentials are not affected."
 }
 
 Write-Host "Create MySQL database override files for servers '$mySqlServerNameA' and '$mySqlServerNameB' in resource group '$resourceGroupName'" -ForegroundColor Cyan
@@ -111,7 +110,7 @@ else {
 
 if ($authenticationMode -eq 'Password') {
     $mySqlPwFile = Join-Path $path "mysql-pw.txt"
-    $mySqlAdminPassword = azd env get-value MYSQL_ADMIN_PASSWORD 2>$null
+    $mySqlAdminPassword = azd env get-value MYSQL_ADMIN_PASSWORD -e $envName 2>$null
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($mySqlAdminPassword)) {
         throw 'MYSQL_ADMIN_PASSWORD is required for explicit password-mode settings.'
     }

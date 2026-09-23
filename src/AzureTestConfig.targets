@@ -1,0 +1,40 @@
+<Project>
+  <PropertyGroup>
+    <AzdEnvironment Condition="'$(AzdEnvironment)' == ''">$(AZURE_ENV_NAME)</AzdEnvironment>
+    <_AzureTestConfigDirectory>$(MSBuildThisFileDirectory)TestConfig\$(AzdEnvironment)</_AzureTestConfigDirectory>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(AzdEnvironment)' != ''">
+    <_AzureTestConfigFile Include="$(_AzureTestConfigDirectory)\*.json;$(_AzureTestConfigDirectory)\*.cfg;$(_AzureTestConfigDirectory)\*.txt;$(_AzureTestConfigDirectory)\*.yaml;$(_AzureTestConfigDirectory)\*.yml" />
+    <Content Include="@(_AzureTestConfigFile)">
+      <Link>TestConfig\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Target Name="ValidateAzureTestConfig" BeforeTargets="PrepareForBuild;VSTest" Condition="'$(AzdEnvironment)' != ''">
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(AzdEnvironment)', '^[a-z0-9-]{3,10}$'))"
+           Text="Invalid AzdEnvironment. Use the azd environment name (3-10 lowercase letters, digits or hyphens)." />
+    <Error Condition="!Exists('$(_AzureTestConfigDirectory)\settingsfilekey.txt')"
+           Text="Generate configuration in '$(_AzureTestConfigDirectory)' first. Legacy TestConfig root files are not used as a fallback." />
+  </Target>
+  <Target Name="RequireAzureTestEnvironment" BeforeTargets="VSTest" Condition="'$(AzdEnvironment)' == ''">
+    <Error Text="Select Azure test configuration with -p:AzdEnvironment=&lt;envName&gt; or AZURE_ENV_NAME. Local/native tests do not require this setting." />
+  </Target>
+  <Target Name="ClearAzureTestConfigOutput" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <Error Condition="'$(OutDir)' == ''"
+           Text="An output directory is required to stage Azure test configuration." />
+    <PropertyGroup>
+      <_AzureTestConfigOutputDirectory>$([System.IO.Path]::GetFullPath('$(OutDir)TestConfig'))</_AzureTestConfigOutputDirectory>
+      <_AzureTestConfigRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)TestConfig'))</_AzureTestConfigRoot>
+    </PropertyGroup>
+    <Error Condition="'$(_AzureTestConfigOutputDirectory)' == '$(_AzureTestConfigRoot)'"
+           Text="The build output must not overwrite the source TestConfig directory." />
+    <!-- Only the generated build-output copy is removed; source environment files are untouched. -->
+    <RemoveDir Directories="$(OutDir)TestConfig" />
+  </Target>
+  <Target Name="StageAzureTestConfigWithoutBuild" BeforeTargets="VSTest"
+          Condition="'$(VSTestNoBuild)' == 'true'"
+          DependsOnTargets="RequireAzureTestEnvironment;ValidateAzureTestConfig;ClearAzureTestConfigOutput">
+    <Copy SourceFiles="@(_AzureTestConfigFile)"
+          DestinationFiles="@(_AzureTestConfigFile->'$(OutDir)TestConfig\%(Filename)%(Extension)')" />
+  </Target>
+</Project>

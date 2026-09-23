@@ -584,12 +584,12 @@ endpoint and identity configuration:
 
 ```powershell
 sbm storage list `
-  --settingsfile .\src\TestConfig\settingsfile-aci-mi-only.json `
+  --settingsfile .\src\TestConfig\<envName>\settingsfile-aci-mi-only.json `
   --container batch-output `
   --prefix worker-1/
 
 sbm storage download `
-  --settingsfile .\src\TestConfig\settingsfile-aci-mi-only.json `
+  --settingsfile .\src\TestConfig\<envName>\settingsfile-aci-mi-only.json `
   --container batch-output `
   --blob worker-1/commits.log worker-2/commits.log `
   --outputpath C:\temp\batch-output
@@ -609,8 +609,14 @@ scripts/create_all_settingsfiles_mi_only.ps1
 This generates settings for Batch, AKS, ACI, and Container Apps under:
 
 ```text
-src/TestConfig
+src/TestConfig/<envName>
 ```
+
+`<envName>` is the current azd environment. All generated database target files, text files and
+encryption keys share this environment directory. Standalone scripts select it with `-envName`;
+an explicit `-path` remains an exact override. Existing flat root files are not moved, changed or
+used as a fallback. Regenerate configuration or deliberately place only that environment's files
+in its folder, keeping the settings and encryption key together.
 
 Although the log message describes this as optional, the conditional guard is currently commented
 out, so settings generation runs on every `azd up`.
@@ -686,10 +692,25 @@ mysql-un.txt
 mysql-pw.txt
 ```
 
-Azure MySQL identity mode does not export these credentials and rejects stale password artifacts before image rebuilding. Local/local-container tests retain their separate native-credential configuration. `src/TestConfig` is excluded by
+Azure MySQL identity mode does not export these credentials and rejects stale password artifacts
+in the selected environment directory before image rebuilding. Local/local-container tests retain
+their separate native-credential configuration. `src/TestConfig` is excluded by
 `.gitignore`; do not copy these files into source control or logs.
 
 ### Application and test container images
+
+The external-test image wrapper excludes the entire source `TestConfig` tree before staging only
+the selected environment's top-level JSON, CFG, TXT and YAML files. It passes `AZD_ENV_NAME` to
+`Dockerfile.tests`; each Azure test project copies that environment to the flat runtime
+`TestConfig/<filename>` layout. No other environment, legacy root configuration, result folder or
+ZIP bundle is uploaded by the wrapper. Runtime and dependent/local-test image wrappers exclude
+`TestConfig` entirely. A manual Docker build context must be sanitized separately.
+
+For local Azure test execution, use `-p:AzdEnvironment=<envName>` or `AZURE_ENV_NAME`. The property
+takes precedence, and missing selections fail instead of using legacy files. Switching environments
+clears stale output configuration, including for `dotnet test --no-build`. Native tests do not
+select or copy Azure environment subdirectories.
+See [configuration selection examples](setup_azure_environment.md#output-files).
 
 When `BUILD_CONTAINER_IMAGES=true`, the hook remotely builds:
 

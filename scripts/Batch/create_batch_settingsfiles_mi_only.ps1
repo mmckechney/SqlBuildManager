@@ -48,9 +48,8 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
 }
 
-if ([string]::IsNullOrWhiteSpace($path)) {
-    $path = Join-Path $repoRoot "src\TestConfig"
-}
+. (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+$path = Get-TestConfigPath -envName $envName -path $path -repoRoot $repoRoot -Create
 
 #############################################
 # Get set resource name variables from prefix

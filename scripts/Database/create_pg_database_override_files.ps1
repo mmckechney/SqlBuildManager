@@ -26,9 +26,8 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
 }
 
-if ([string]::IsNullOrWhiteSpace($path)) {
-    $path = Join-Path $repoRoot "src\TestConfig"
-}
+. (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+$path = Get-TestConfigPath -envName $envName -path $path -repoRoot $repoRoot -Create
 
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
 . $prefixScript -envName $envName
@@ -105,7 +104,7 @@ if ($null -ne $pgServerA) {
 
 # Also save PG admin password to a file for test use
 $pgPwFile = Join-Path $path "pg-pw.txt"
-$pgAdminPassword = azd env get-value PG_ADMIN_PASSWORD 2>$null
+$pgAdminPassword = azd env get-value PG_ADMIN_PASSWORD -e $envName 2>$null
 if (-not [string]::IsNullOrWhiteSpace($pgAdminPassword) -and $pgAdminPassword -notlike "ERROR:*") {
     $pgAdminPassword | Set-Content -Path $pgPwFile
     Write-Host "Writing PostgreSQL admin password to $pgPwFile" -ForegroundColor DarkGreen

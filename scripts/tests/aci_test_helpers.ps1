@@ -495,13 +495,16 @@ function Download-TestResultsFromBlob {
         Local directory to download to (default: "./testresults").
     .PARAMETER blobPath
         Optional blob path prefix to scope the download. If not provided, downloads all blobs.
+    .PARAMETER envName
+        Optional azd environment for resolving the RelayProxy endpoint.
     #>
     param(
         [Parameter(Mandatory=$true)]
         [string]$storageAccountName,
         [string]$blobContainerName = "testresults",
         [string]$localDestination = "./testresults",
-        [string]$blobPath
+        [string]$blobPath,
+        [string]$envName
     )
 
     Write-Debug ""
@@ -538,7 +541,8 @@ function Download-TestResultsFromBlob {
                 Write-Host ""
                 Write-Host "Direct Blob download is blocked; retrying through RelayProxy..." -ForegroundColor Yellow
 
-                $relayProxyEndpoint = azd env get-value RELAY_PROXY_ENDPOINT 2>$null
+                $environmentArgs = if ([string]::IsNullOrWhiteSpace($envName)) { @() } else { @('-e', $envName) }
+                $relayProxyEndpoint = azd env get-value RELAY_PROXY_ENDPOINT @environmentArgs 2>$null
                 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($relayProxyEndpoint)) {
                     Write-Host "WARNING: RELAY_PROXY_ENDPOINT is unavailable in the selected azd environment." -ForegroundColor Yellow
                     return $false

@@ -45,6 +45,8 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Get-Location
 }
 Write-Host "Repo Root: $repoRoot" -ForegroundColor DarkGreen
+. (Join-Path $repoRoot 'scripts\test_config_paths.ps1')
+$outputPath = Get-TestConfigPath -envName $envName -repoRoot $repoRoot -Create
 
 $sbmExe = Join-Path $repoRoot "src\SqlBuildManager.Console\bin\Debug\net10.0\sbm.exe"
 write-Host "SBM Executable: $sbmExe" -ForegroundColor DarkGreen
@@ -179,7 +181,6 @@ metadata:
     Write-Host "=================================================" -ForegroundColor Cyan
     
     $settingsScriptPath = Join-Path $repoRoot "scripts\create_all_settingsfiles_mi_only.ps1"
-    $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     # Ensure output directory exists
     if (-not (Test-Path $outputPath)) {
@@ -228,7 +229,6 @@ if ($sqlServerDeployedForConfig -ne "false") {
     Write-Host "===============================================" -ForegroundColor Cyan
 
     $dbConfigScriptPath = Join-Path $repoRoot "scripts\Database\create_database_override_files.ps1"
-    $outputPath = Join-Path $repoRoot "src\TestConfig"
 
     # Ensure output directory exists
     if (-not (Test-Path $outputPath)) {
@@ -287,7 +287,6 @@ if ($buildBatch -eq "true" -and $batchDeployed -ne "false") {
     Write-Host "====================================================" -ForegroundColor Cyan
 
     $batchScriptPath = Join-Path $repoRoot "scripts\Batch\build_and_upload_batch_fromenv.ps1"
-    $outputPath = Join-Path $repoRoot "src\TestConfig"
 
     if (Test-Path $batchScriptPath) {
         & $batchScriptPath -envName $envName -resourceGroupName $resourceGroupName -path $outputPath -action "BuildAndUpload"
@@ -310,7 +309,6 @@ if ($buildContainers -eq "true" -and $crDeployed -ne "false") {
     Write-Host "=========================================" -ForegroundColor Cyan
     
     $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_runtime_image_fromenv.ps1"
-    $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $containerScriptPath) {
         & $containerScriptPath -envName $envName -resourceGroupName $resourceGroupName -path $outputPath -wait $true
@@ -334,7 +332,6 @@ if ($buildContainers -eq "true" -and $crDeployed -ne "false") {
     Write-Host "================================================" -ForegroundColor Cyan
     
     $containerScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_external_test_image.ps1"
-    $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $containerScriptPath) {
         & $containerScriptPath -envName $envName -resourceGroupName $resourceGroupName -wait $true

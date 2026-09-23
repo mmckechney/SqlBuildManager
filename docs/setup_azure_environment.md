@@ -102,7 +102,8 @@ azd env set USE_PRIVATE_ENDPOINT false      # Use private endpoints (default: fa
 
 ### Output Files
 
-After successful deployment, the following files are generated in `src/TestConfig`:
+After successful deployment, the following files are generated in `src\TestConfig\<envName>`,
+where `<envName>` is the current azd environment:
 - `settingsfile-batch-*.json` - Batch settings with MI authentication
 - `settingsfile-aci-*.json` - ACI settings 
 - `settingsfile-containerapp-*.json` - Container App settings
@@ -114,6 +115,31 @@ After successful deployment, the following files are generated in `src/TestConfi
 - `mysql-databasetargets.cfg` - MySQL database listing for SBM integration tests
 - `mysql-clientdbtargets.cfg` - MySQL client target mapping
 
+Producer scripts and environment-aware build/test wrappers use `-envName` to select this directory.
+An explicit `-path` is an exact directory override: no environment suffix is appended.
+Existing flat files in `src\TestConfig` are left untouched and are **not** an Azure fallback.
+Regenerate configuration with `azd up` for each environment, or deliberately move only files known
+to belong to that environment into its folder, keeping settings and their encryption key together.
+
+The test-image builder stages only the selected environment's top-level JSON, CFG, TXT and YAML
+files; other environments, legacy root files, ZIP bundles and test results are excluded.
+The compiled tests and container still read `TestConfig\<filename>`: only the selected environment
+is flattened into that runtime directory. Use the image-build wrapper, not an unsanitized source
+directory as a manual Docker build context:
+
+```powershell
+.\scripts\ContainerRegistry\build_external_test_image.ps1 -envName myenv
+dotnet test .\src\SqlBuildManager.Console.MySQL.AzureTest\SqlBuildManager.Console.MySQL.AzureTest.csproj -p:AzdEnvironment=myenv
+```
+
+The same `AzdEnvironment` property applies to the SQL Server and PostgreSQL Azure test projects.
+Alternatively set `$env:AZURE_ENV_NAME = 'myenv'`; an explicit property takes precedence.
+Azure test execution requires a selection, including with `--no-build`, which refreshes the selected
+runtime configuration. A plain build without a selection builds code without Azure configuration.
+Native unit/local-container tests continue using their existing flat/native fixtures and do not
+copy Azure environment subfolders. ACI Azure test downloads are stored in the selected environment's
+`TestResults` subfolder.
+
 ---
 ## Notes on Unit Testing
 
@@ -124,7 +150,7 @@ There are three types of Tests included in the solution:
 1. True unit tests with no external dependency - found in the  `~UnitTest.csproj` projects
 2. Those that are dependent on a local SQLEXPRESS database - found in the `~.Dependent.UnitTest.csproj` projects. If you want to be able to run the database dependent tests, you will need to install SQL Express as per the next section. \
 **IMPORTANT**: If running the SQLEXPRESS dependent tests for the first time on your local machine, you need to run the tests in the `SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest.csproj` _first_. This project has the scripts to create the necessary SQLEXPRESS databases.
-3. Integration tests that leverage Azure resources for Batch and Kubernetes. These are found in `SqlBuildManager.Console.SqlServer.ExternalTest.csproj`, `SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj`, and `SqlBuildManager.Console.MySQL.ExternalTest.csproj`. To run these tests, first run `azd up` from the repo root (see [Setting Up an Azure Environment](setup_azure_environment.md)) with the default test database count of 10. This will create the necessary resources and test config files (in `/src/TestConfig` folder) needed to run the tests.
+3. Azure tests that leverage deployed resources. These are found in `SqlBuildManager.Console.SqlServer.AzureTest.csproj`, `SqlBuildManager.Console.PostgreSQL.AzureTest.csproj`, and `SqlBuildManager.Console.MySQL.AzureTest.csproj`. To run these tests, first run `azd up` from the repo root with the default test database count of 10. This creates the resources and configuration in `src\TestConfig\<envName>`. Select that environment for local test execution as described above, or pass `-envName` to the ACI test wrappers.
 
 ## SQL Express
 

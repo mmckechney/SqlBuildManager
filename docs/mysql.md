@@ -97,7 +97,7 @@ sbm batch savesettings ^
     --password "mypassword"
 ```
 
-For `azd up` environments, post-provision generates MySQL managed-identity settings in `src/TestConfig` for the selected compute platforms:
+For `azd up` environments, post-provision generates MySQL managed-identity settings in `src\TestConfig\<envName>` for the selected compute platforms:
 
 - `settingsfile-aci-mysql-mi-only.json`
 - `settingsfile-batch-linux-mysql-mi-only.json`
@@ -167,7 +167,7 @@ Existing saved `Password` selections are not silently changed. Select the intend
 azd env set MYSQL_AUTH_MODE ManagedIdentity
 ```
 
-Move stale Azure MySQL password settings (`settingsfile-*-mysql-password.json`) and `mysql-pw.txt` out of `src/TestConfig` before rerunning `azd up`; the target generator refuses to continue while these artifacts would still be copied into the test image. Do not change local/local-container credential files. Sign in to Azure CLI as the deploying Entra user, rerun `azd up` to update the administrator/grants and regenerate settings, and rebuild both runtime and Azure test images. Use `scripts\tests\run_all_mysql_external_tests_in_aci.ps1 -envName <env> -buildImage` when ready to run Azure tests.
+Move stale Azure MySQL password settings (`settingsfile-*-mysql-password.json`) and `mysql-pw.txt` out of the selected `src\TestConfig\<envName>` directory (or explicit `-path`) before rerunning `azd up`; the target generator refuses to continue while these artifacts would still be copied into that environment's test image. Other environment folders and legacy flat root files are not copied or used as a fallback. Do not change local/local-container credential files. Sign in to Azure CLI as the deploying Entra user, rerun `azd up` to update the administrator/grants and regenerate settings, and rebuild both runtime and Azure test images. Use `scripts\tests\run_all_mysql_external_tests_in_aci.ps1 -envName <env> -buildImage` when ready to run Azure tests. For local Azure test execution, pass `-p:AzdEnvironment=<env>` to `dotnet test` or set `AZURE_ENV_NAME`; see [configuration selection](setup_azure_environment.md#output-files).
 
 Headless service-principal-only bootstrap is not supported by this workflow; it fails rather than falling back to a native password. After a token-expiry or directory-propagation failure, rerun postprovision as the same deploying user to obtain a fresh token.
 

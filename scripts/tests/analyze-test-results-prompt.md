@@ -1,6 +1,6 @@
 # Test Output Analysis
 
-The folder './testresults/{{timestamp}}' contains sub-folders named for different test run types. 
+The folder '{{resultsPath}}' contains sub-folders named for different test run types.
 
 These sub-folders contain `TestResults.html` test result HTML summaries and `console-output.log` console output log files.
 
@@ -17,4 +17,4 @@ These sub-folders contain `TestResults.html` test result HTML summaries and `con
 - Be sure to include the list of effected tests with each set of recommendations
 - Please create a single `observations.md` markdown file with your observations analysis. 
   
-- Save both markdown files to the './testresults/{{timestamp}}' directory.
+- Save both markdown files to the '{{resultsPath}}' directory.

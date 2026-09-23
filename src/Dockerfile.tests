@@ -4,7 +4,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:72dd743782f2ae7e5476fd64f6a460045e3998dc862218b80e6944cba79a01b0 AS restore
 WORKDIR /src
 
-COPY Directory.Build.props Directory.Packages.props ./
+COPY Directory.Build.props Directory.Packages.props AzureTestConfig.targets ./
 COPY SqlBuildManager.Console.AzureTest.TestBase/SqlBuildManager.Console.AzureTest.TestBase.csproj SqlBuildManager.Console.AzureTest.TestBase/packages.lock.json SqlBuildManager.Console.AzureTest.TestBase/
 COPY SqlBuildManager.Console.SqlServer.AzureTest/SqlBuildManager.Console.SqlServer.AzureTest.csproj SqlBuildManager.Console.SqlServer.AzureTest/packages.lock.json SqlBuildManager.Console.SqlServer.AzureTest/
 COPY SqlBuildManager.Console.PostgreSQL.AzureTest/SqlBuildManager.Console.PostgreSQL.AzureTest.csproj SqlBuildManager.Console.PostgreSQL.AzureTest/packages.lock.json SqlBuildManager.Console.PostgreSQL.AzureTest/
@@ -24,14 +24,15 @@ RUN dotnet restore SqlBuildManager.Console.SqlServer.AzureTest/SqlBuildManager.C
     dotnet restore SqlBuildManager.Console.MySQL.AzureTest/SqlBuildManager.Console.MySQL.AzureTest.csproj --locked-mode
 
 FROM restore AS build
+ARG AZD_ENV_NAME
 COPY . .
-RUN dotnet build SqlBuildManager.Console.SqlServer.AzureTest/SqlBuildManager.Console.SqlServer.AzureTest.csproj \
-      --configuration Release --framework net10.0 --no-restore --output /tests && \
+RUN test -n "$AZD_ENV_NAME" && \
+    dotnet build SqlBuildManager.Console.SqlServer.AzureTest/SqlBuildManager.Console.SqlServer.AzureTest.csproj \
+      --configuration Release --framework net10.0 --no-restore --output /tests -p:AzdEnvironment="$AZD_ENV_NAME" && \
     dotnet build SqlBuildManager.Console.PostgreSQL.AzureTest/SqlBuildManager.Console.PostgreSQL.AzureTest.csproj \
-      --configuration Release --framework net10.0 --no-restore --output /tests && \
+      --configuration Release --framework net10.0 --no-restore --output /tests -p:AzdEnvironment="$AZD_ENV_NAME" && \
     dotnet build SqlBuildManager.Console.MySQL.AzureTest/SqlBuildManager.Console.MySQL.AzureTest.csproj \
-      --configuration Release --framework net10.0 --no-restore --output /tests && \
-    cp -r TestConfig /tests/TestConfig
+      --configuration Release --framework net10.0 --no-restore --output /tests -p:AzdEnvironment="$AZD_ENV_NAME"
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:72dd743782f2ae7e5476fd64f6a460045e3998dc862218b80e6944cba79a01b0 AS testrunner
 

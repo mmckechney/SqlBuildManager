@@ -62,7 +62,7 @@ Write-Host ""
 Write-Host "Loading AZD deployment configuration..." -ForegroundColor Cyan
 
 $azdConfig = @{}
-$azdOutput = azd env get-values 2>&1
+$azdOutput = azd env get-values -e $envName 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Host "WARNING: Failed to load AZD environment values. All tests will be attempted." -ForegroundColor Yellow
     Write-Host "  Run 'azd env select' or 'azd init' to configure an environment." -ForegroundColor Yellow
@@ -168,6 +168,8 @@ if (-not $hasPostgreSQL) {
 Write-Host "Running Copilot AI analysis of test logs to look for patterns, failure reasons and areas for improvement" -ForegroundColor Yellow
 if (Get-Command copilot -ErrorAction SilentlyContinue) {
     $promptTemplate = Get-Content -Path (Join-Path $PSScriptRoot 'analyze-test-results-prompt.md') -Raw
-    $prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
+    . (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+    $resultsPath = Join-Path (Get-TestConfigPath -envName $envName -Create) 'TestResults' $timestamp
+    $prompt = $promptTemplate.Replace('{{resultsPath}}', $resultsPath)
     $output = copilot --yolo -p $prompt 2>&1
 }

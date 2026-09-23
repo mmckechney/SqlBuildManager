@@ -4,7 +4,7 @@ param
     [string] $envName,
 
     [string] $sbmExe = "sbm.exe",
-    [string] $path = "..\src\TestConfig",
+    [string] $path,
     [string] $resourceGroupName,
     [switch] $batch = $true,
     [switch] $aks = $true,
@@ -17,7 +17,7 @@ $ErrorActionPreference = 'Stop'
 
 function Get-AzdValueSafe {
     param([Parameter(Mandatory=$true)][string] $name)
-    $value = azd env get-value $name 2>$null
+    $value = azd env get-value $name -e $envName 2>$null
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($value) -or $value -like "ERROR:*") {
         return $null
     }
@@ -29,6 +29,8 @@ $repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path $PSScriptRoot -Parent
 }
+. (Join-Path $PSScriptRoot 'test_config_paths.ps1')
+$path = Get-TestConfigPath -envName $envName -path $path -repoRoot $repoRoot -Create
 
 $resourceGroupNameOverride = $resourceGroupName
 . (Join-Path $repoRoot "scripts\prefix_resource_names.ps1") -envName $envName
@@ -42,7 +44,7 @@ if ([string]::IsNullOrWhiteSpace($mySqlUser)) {
 }
 $mySqlPassword = Get-AzdValueSafe "MYSQL_ADMIN_PASSWORD"
 if ([string]::IsNullOrWhiteSpace($mySqlPassword)) {
-    throw "MYSQL_ADMIN_PASSWORD is not set in the active azd environment."
+    throw "MYSQL_ADMIN_PASSWORD is not set in azd environment '$envName'."
 }
 
 Write-Host "====================================================" -ForegroundColor Cyan

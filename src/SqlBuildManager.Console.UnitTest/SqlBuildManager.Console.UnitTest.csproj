@@ -12,8 +12,8 @@
     <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
   </ItemGroup>
 	<ItemGroup>
-		<Content Include="..\TestConfig\**\*.*">
-			<Link>TestConfig\%(RecursiveDir)%(FileName)%(Extension)</Link>
+		<Content Include="..\TestConfig\*.*">
+			<Link>TestConfig\%(FileName)%(Extension)</Link>
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

@@ -179,6 +179,8 @@ if (-not $hasMySQL) {
 Write-Host "Running Copilot AI analysis of test logs to look for patterns, failure reasons and areas for improvement" -ForegroundColor Yellow
 if (Get-Command copilot -ErrorAction SilentlyContinue) {
     $promptTemplate = Get-Content -Path (Join-Path $PSScriptRoot 'analyze-test-results-prompt.md') -Raw
-    $prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
+    . (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+    $resultsPath = Join-Path (Get-TestConfigPath -envName $envName -Create) 'TestResults' $timestamp
+    $prompt = $promptTemplate.Replace('{{resultsPath}}', $resultsPath)
     $output = copilot --yolo -p $prompt 2>&1
 }

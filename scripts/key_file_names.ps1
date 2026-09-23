@@ -7,28 +7,21 @@
     random password). These files are consumed by settings file generation scripts
     to encrypt test configuration.
 .PARAMETER envName
-    Azure Developer CLI environment name (unused directly, passed through for consistency).
+    Azure Developer CLI environment name used for the default output subdirectory.
 .PARAMETER path
-    Output directory for the key/credential files. Defaults to src\TestConfig.
+    Exact output directory override. Defaults to src\TestConfig\<envName>.
 #>
 param (
     $envName,
     $path
 )
 
-# Get the repo root if path not provided
-if ([string]::IsNullOrWhiteSpace($path)) {
-    $repoRoot = $env:AZD_PROJECT_PATH
-    if ([string]::IsNullOrWhiteSpace($repoRoot)) {
-        $repoRoot = Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent
-    }
-    $path = Join-Path $repoRoot "src\TestConfig"
+$repoRoot = $env:AZD_PROJECT_PATH
+if ([string]::IsNullOrWhiteSpace($repoRoot)) {
+    $repoRoot = Split-Path $PSScriptRoot -Parent
 }
-
-if($false -eq (Test-Path $path))
-{
-    New-Item -Path $path -ItemType Directory
-}
+. (Join-Path $PSScriptRoot 'test_config_paths.ps1')
+$path = Get-TestConfigPath -envName $envName -path $path -repoRoot $repoRoot -Create
 $resolvedPath = Resolve-Path $path
 
 $keyFile = (Join-Path $resolvedPath "settingsfilekey.txt")

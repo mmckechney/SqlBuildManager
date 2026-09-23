@@ -351,7 +351,7 @@ Download-TestResultsFromBlob `
     -storageAccountName $storageAccountName `
     -blobContainerName $blobContainerName `
     -localDestination "./testresults" `
-    -blobPath $blobPath | Out-Null
+    -blobPath $blobPath -envName $envName | Out-Null
 
 #############################################
 # Cleanup
@@ -361,7 +361,7 @@ $finalExitCode = Complete-AciTestRun -containerName $testContainerName -resource
 # Analyze test results with GitHub Copilot CLI (local developer convenience; skip in CI).
 if (Get-Command copilot -ErrorAction SilentlyContinue) {
     $promptTemplate = Get-Content -Path (Join-Path $PSScriptRoot 'analyze-test-results-prompt.md') -Raw
-    $prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
+    $prompt = $promptTemplate.Replace('{{resultsPath}}', (Join-Path './testresults' $timestamp))
     $analysis = copilot --yolo -p $prompt 2>&1
     Write-Host "Analysis complete." -ForegroundColor Cyan
 }
