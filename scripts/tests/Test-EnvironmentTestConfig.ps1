@@ -194,6 +194,37 @@ try {
     $downloaded = Download-TestResultsFromBlob -storageAccountName offline -localDestination (Join-Path $alpha 'TestResults') -envName bravo
     Assert-Config (-not $downloaded -and $state.RelayEnvironment -eq 'bravo') 'Relay fallback must use the requested environment and report missing configuration.'
 
+    & {
+        $mockSbm = Join-Path $fixture 'download-sbm.ps1'
+        @'
+$state.DownloadDestination = Get-Argument $args '--outputpath'
+$global:LASTEXITCODE = 0
+'@ | Set-Content -LiteralPath $mockSbm
+        function Get-Command { param($Name, $ErrorAction); return @{ Source = $mockSbm } }
+        function azd { $global:LASTEXITCODE = 0; return 'https://offline.servicebus.windows.net/relay' }
+        function az {
+            if ($viaRelay) { $global:LASTEXITCODE = 1; return 'Forbidden by network rules' }
+            $state.DownloadDestination = Get-Argument $args '--destination'
+            $global:LASTEXITCODE = 0
+        }
+        Push-Location $fixture
+        try {
+            foreach ($viaRelay in @($false, $true)) {
+                $relative = Join-Path 'download results' $(if ($viaRelay) { 'relay' } else { 'direct' })
+                $expected = Join-Path $fixture $relative
+                $output = @(Download-TestResultsFromBlob -storageAccountName offline -localDestination $relative -envName alpha 6>&1)
+                Assert-Config ($output[-1] -eq $true) 'Mocked result download should succeed.'
+                $messages = @($output | Where-Object { $_ -is [System.Management.Automation.InformationRecord] } | ForEach-Object { $_.MessageData.ToString() })
+                $success = if ($viaRelay) { 'Test results downloaded successfully through RelayProxy.' } else { 'Test results downloaded successfully.' }
+                $index = [Array]::IndexOf($messages, $success)
+                Assert-Config ($index -ge 0 -and $messages[$index + 1] -eq "  Results folder: $expected") 'Each download success message must be followed by the absolute results folder.'
+                Assert-Config ($state.DownloadDestination -eq $expected) 'Reported results folder must match the actual download destination.'
+            }
+        } finally {
+            Pop-Location
+        }
+    }
+
     # Exercise the production targets with real MSBuild but no package restore or databases.
     $project = Join-Path $fixture 'src\ConfigFixture.proj'
     @'

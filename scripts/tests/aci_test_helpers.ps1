@@ -520,6 +520,7 @@ function Download-TestResultsFromBlob {
     if (-not (Test-Path $localDestination)) {
         New-Item -ItemType Directory -Path $localDestination -Force | Out-Null
     }
+    $localDestination = (Resolve-Path -LiteralPath $localDestination).ProviderPath
 
     try {
         $downloadArgs = @(
@@ -579,6 +580,7 @@ function Download-TestResultsFromBlob {
                     --relayproxyendpoint $relayProxyEndpoint
                 if ($LASTEXITCODE -eq 0) {
                     Write-Host "Test results downloaded successfully through RelayProxy." -ForegroundColor Green
+                    Write-Host "  Results folder: $localDestination" -ForegroundColor Green
                     return $true
                 }
 
@@ -592,6 +594,7 @@ function Download-TestResultsFromBlob {
         }
 
         Write-Host "Test results downloaded successfully." -ForegroundColor Green
+        Write-Host "  Results folder: $localDestination" -ForegroundColor Green
         return $true
     }
     catch {
