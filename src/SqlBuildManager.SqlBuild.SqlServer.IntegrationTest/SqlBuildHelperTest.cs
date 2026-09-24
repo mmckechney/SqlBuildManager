@@ -608,8 +608,9 @@ namespace SqlBuildManager.SqlBuild.SqlServer.IntegrationTest
         }
 
         [TestMethod()]
-        
-        public async Task RunBuildScriptsTest_AlternateLoggingDb()
+        [DataRow(true)]
+        [DataRow(false)]
+        public async Task RunBuildScriptsTest_AlternateLoggingDb(bool isTransactional)
         {
             Initialization init = GetInitializationObject();
             //Create the build package...
@@ -622,7 +623,9 @@ namespace SqlBuildManager.SqlBuild.SqlServer.IntegrationTest
             ScriptBatchCollection scriptBatchColl = null!;
             BuildModels.Build actual;
 
-            SqlBuildHelper target = init.CreateSqlBuildHelperAccessor(buildData);
+            SqlBuildHelper target = isTransactional
+                ? init.CreateSqlBuildHelperAccessor(buildData)
+                : init.CreateSqlBuildHelper_NonTransactional(buildData, false);
             ((ISqlBuildRunnerProperties)target).LogToDatabaseName = init.testDatabaseNames[1];
 
             //Get BuildRow...
@@ -632,10 +635,19 @@ namespace SqlBuildManager.SqlBuild.SqlServer.IntegrationTest
 
             Assert.AreEqual(BuildItemStatus.Committed, actual.FinalStatus);
 
-            int sqlLoggingCount = init.GetSqlBuildLoggingRowCountByBuildFileName(1);
+            // A separate READ COMMITTED connection must see durable audit rows, not dirty reads.
+            using var auditConnection = new SqlConnection(string.Format(init.connectionString, init.testDatabaseNames[1]));
+            await auditConnection.OpenAsync();
+            using var auditCommand = auditConnection.CreateCommand();
+            auditCommand.CommandText = "SELECT COUNT(*) FROM SqlBuild_Logging WHERE BuildFileName = @BuildFileName AND TargetDatabase = @TargetDatabase";
+            auditCommand.CommandTimeout = 5;
+            auditCommand.Parameters.AddWithValue("@BuildFileName", Path.GetFileName(init.projectFileName));
+            auditCommand.Parameters.AddWithValue("@TargetDatabase", init.testDatabaseNames[0]);
+            int sqlLoggingCount = Convert.ToInt32(await auditCommand.ExecuteScalarAsync());
             int testTableCount = init.GetTestTableRowCount(0);
             Assert.IsTrue(2 == sqlLoggingCount, "Invalid SqlBuild_Logging Count: " + sqlLoggingCount.ToString());
             Assert.IsTrue(1 == testTableCount, "Invalid TransactionTest Count: " + testTableCount.ToString());
+            Assert.AreEqual(0, init.GetSqlBuildLoggingRowCountByBuildFileName(0));
             Assert.AreEqual(init.testDatabaseNames[1], ((ISqlBuildRunnerProperties)target).LogToDatabaseName);
 
         }
