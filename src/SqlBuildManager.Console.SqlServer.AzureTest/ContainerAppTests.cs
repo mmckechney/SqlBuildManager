@@ -710,7 +710,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 var (storageAcct, storageKey) = BlobLogValidator.GetStorageCredentials(settingsFile, settingsFileKeyPath);
                 var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
                 await blobValidator.LoadLogsAsync();
-                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+                blobValidator.AssertBuildSuccess(dbCount, TestContext, expectedTaskErrorCount: 4);
             }
             finally
             {
@@ -955,4 +955,3 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         }
     }
 }
-

@@ -596,7 +596,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 var dbCount = File.ReadAllLines(minusFirst).Where(l => !string.IsNullOrWhiteSpace(l)).Count();
                 var blobValidator = new BlobLogValidator(storageAcct, storageKey, jobName);
                 await blobValidator.LoadLogsAsync();
-                blobValidator.AssertBuildSuccess(dbCount, TestContext);
+                blobValidator.AssertBuildSuccess(dbCount, TestContext, expectedTaskErrorCount: 4);
             }
             finally
             {

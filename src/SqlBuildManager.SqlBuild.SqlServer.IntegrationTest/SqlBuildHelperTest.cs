@@ -522,7 +522,7 @@ namespace SqlBuildManager.SqlBuild.SqlServer.IntegrationTest
 
             bool isMultiDbRun = false;
             IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
-            ScriptBatchCollection scriptBatchColl = scriptBatcher.LoadAndBatchSqlScripts(buildData, string.Empty);
+            ScriptBatchCollection scriptBatchColl = scriptBatcher.LoadAndBatchSqlScripts(buildData, init.ProjectDirectory);
             BuildModels.Build actual;
 
             //Get initialized SqlBuildHelper object...
@@ -1699,7 +1699,7 @@ VALUES(@BuildFileName,@ScriptFileName,@ScriptId,@ScriptFileHash,@CommitDate,@Seq
 
             ScriptBatchCollection actual;
             IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
-            actual = scriptBatcher.LoadAndBatchSqlScripts(buildData, string.Empty);
+            actual = scriptBatcher.LoadAndBatchSqlScripts(buildData, init.ProjectDirectory);
             Assert.IsTrue(2 == actual.Count, "Invalid Batch Count " + actual.Count.ToString() + " vs 2");
             Assert.IsTrue(2 == actual[0].ScriptBatchContents.Length, "Invalid Batch Length " + actual.Count.ToString() + " vs 2");
         }

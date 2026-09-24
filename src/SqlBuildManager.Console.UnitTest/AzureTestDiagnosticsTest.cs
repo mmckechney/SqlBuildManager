@@ -5,6 +5,7 @@ using SqlBuildManager.Console.CommandLine;
 using SqlBuildManager.Connection;
 using System;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -76,6 +77,149 @@ namespace SqlBuildManager.Console.UnitTest
         public void DiagnosticFilter_IncludesCurrentAndHistoricalDetailedErrors(string blobName, bool expected)
         {
             Assert.AreEqual(expected, BlobLogValidator.IsTaskExecutionLog(blobName));
+        }
+
+        [TestMethod]
+        [DataRow(0, false)]
+        [DataRow(1, false)]
+        [DataRow(2, false)]
+        [DataRow(3, false)]
+        [DataRow(4, false)]
+        [DataRow(5, false)]
+        [DataRow(8, false)]
+        [DataRow(0, true)]
+        [DataRow(1, true)]
+        [DataRow(2, true)]
+        [DataRow(3, true)]
+        [DataRow(4, true)]
+        [DataRow(5, true)]
+        [DataRow(8, true)]
+        public void BuildSuccess_RequiresExactlyFourTaskErrors(int errorCount, bool customDacpac)
+        {
+            var validator = CreateSuccessfulBlobLogs();
+            validator.TaskExecutionLogs["Task0/SqlBuildManager.Console.log"] = CreateTaskLog(errorCount, customDacpac);
+
+            if (errorCount == 4)
+            {
+                validator.AssertBuildSuccess(1, expectedTaskErrorCount: 4);
+            }
+            else
+            {
+                var error = Assert.ThrowsExactly<AssertFailedException>(() =>
+                    validator.AssertBuildSuccess(1, expectedTaskErrorCount: 4));
+                StringAssert.Contains(error.Message, "exactly 4 ERR entries in total");
+                StringAssert.Contains(error.Message, $"Found {errorCount}.");
+            }
+        }
+
+        [TestMethod]
+        [DataRow(4, 0)]
+        [DataRow(0, 4)]
+        [DataRow(2, 2)]
+        [DataRow(4, 4)]
+        public void BuildSuccess_CountsErrorsAcrossAllWorkers(int firstCount, int secondCount)
+        {
+            var validator = CreateSuccessfulBlobLogs();
+            validator.TaskExecutionLogs["Task0/SqlBuildManager.Console.log"] = CreateTaskLog(firstCount);
+            validator.TaskExecutionLogs["Task1/SqlBuildManager.Console.log"] = CreateTaskLog(secondCount);
+
+            if (firstCount + secondCount == 4)
+            {
+                validator.AssertBuildSuccess(1, expectedTaskErrorCount: 4);
+            }
+            else
+            {
+                var error = Assert.ThrowsExactly<AssertFailedException>(() =>
+                    validator.AssertBuildSuccess(1, expectedTaskErrorCount: 4));
+                StringAssert.Contains(error.Message, "Found 8.");
+                StringAssert.Contains(error.Message, "Task0/SqlBuildManager.Console.log");
+            }
+        }
+
+        [TestMethod]
+        public void BuildSuccess_RequiresErrorsEvenWhenTaskLogsAreMissing()
+        {
+            var validator = CreateSuccessfulBlobLogs();
+            Assert.ThrowsExactly<AssertFailedException>(() =>
+                validator.AssertBuildSuccess(1, expectedTaskErrorCount: 4));
+        }
+
+        [TestMethod]
+        public void BuildSuccess_PreservesExistingErrorExclusionsUnlessCountIsExplicit()
+        {
+            var validator = CreateSuccessfulBlobLogs();
+            validator.AssertBuildSuccess(1);
+            validator.TaskExecutionLogs["worker/SqlBuildManager.Console.log"] = CreateTaskLog(1);
+            Assert.ThrowsExactly<AssertFailedException>(() => validator.AssertBuildSuccess(1));
+
+            validator.TaskExecutionLogs["worker/SqlBuildManager.Console.log"] = CreateTaskLog(4, customDacpac: true);
+            validator.AssertBuildSuccess(1);
+            Assert.ThrowsExactly<AssertFailedException>(() =>
+                validator.AssertBuildSuccess(1, expectedTaskErrorCount: 0));
+        }
+
+        [TestMethod]
+        public void BuildSuccess_ExactCountPreservesTransientShutdownExclusions()
+        {
+            var validator = CreateSuccessfulBlobLogs();
+            validator.TaskExecutionLogs["worker/SqlBuildManager.Console.log"] = CreateTaskLog(4) +
+                "\n[2026-09-24 11:00:00.000 ERR TH: 1] MessagingEntityNotFound\n" +
+                "[2026-09-24 11:00:00.000 ERR TH: 1] Problem getting messages from Service Bus\n" +
+                "Exception continuation mentions ERR but is not a separate log entry.";
+            validator.AssertBuildSuccess(1, expectedTaskErrorCount: 4);
+        }
+
+        [TestMethod]
+        [DataRow("ErrorsLog", "errors.log should be empty")]
+        [DataRow("FailureDatabases", "failuredatabases.cfg should be empty")]
+        [DataRow("DetailedError", "Per-target error")]
+        [DataRow("CommitsLog", "commits.log should contain")]
+        [DataRow("DatabaseCount", "Working/ directories should contain")]
+        public void BuildSuccess_ExpectedTaskErrorsDoNotExcuseOtherFailures(string failure, string expectedMessage)
+        {
+            var validator = CreateSuccessfulBlobLogs();
+            validator.TaskExecutionLogs["worker/SqlBuildManager.Console.log"] = CreateTaskLog(4);
+            switch (failure)
+            {
+                case "DetailedError":
+                    validator.TaskExecutionLogs["Working/server/db/Error.log"] = "Unexpected failure";
+                    break;
+                case "DatabaseCount":
+                    validator.BlobNames.Clear();
+                    break;
+                default:
+                    SetBlobLog(validator, failure, failure == "CommitsLog" ? string.Empty : "Unexpected failure");
+                    break;
+            }
+
+            var error = Assert.ThrowsExactly<AssertFailedException>(() =>
+                validator.AssertBuildSuccess(1, expectedTaskErrorCount: 4));
+            StringAssert.Contains(error.Message, expectedMessage);
+        }
+
+        private static BlobLogValidator CreateSuccessfulBlobLogs()
+        {
+            var validator = new BlobLogValidator("offlinestorage", string.Empty, "offline-job");
+            SetBlobLog(validator, nameof(BlobLogValidator.CommitsLog), "server/db: Committed");
+            SetBlobLog(validator, nameof(BlobLogValidator.SuccessDatabases), "server:db");
+            validator.BlobNames.Add("Working/server/db/SqlSyncBuildHistory.xml");
+            return validator;
+        }
+
+        private static void SetBlobLog(BlobLogValidator validator, string name, string content)
+        {
+            var property = typeof(BlobLogValidator).GetProperty(name);
+            Assert.IsNotNull(property);
+            property.SetValue(validator, content);
+        }
+
+        private static string CreateTaskLog(int errorCount, bool customDacpac = false)
+        {
+            var prefix = customDacpac
+                ? "[2026-09-24 11:00:00.000 WRN TH: 1] SqlSync.SqlBuild.Services.DefaultDacPacFallbackHandler - Custom dacpac required\n"
+                : string.Empty;
+            return prefix + string.Join("\n", Enumerable.Range(0, errorCount)
+                .Select(index => $"[2026-09-24 11:00:00.000 ERR TH: 1] Expected recovery entry {index}"));
         }
 
         [TestMethod]

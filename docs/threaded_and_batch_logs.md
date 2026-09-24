@@ -113,6 +113,15 @@ Azure test diagnostics recognize both layouts and try to retrieve the detailed e
 asserting a failed command exit code, using Relay when direct storage access is network-blocked.
 A diagnostic-download failure is reported without replacing the original command failure.
 
+The SQL Server AlreadyInSync Azure tests and the ACI force-custom recovery test intentionally
+exercise a base-script failure followed by successful DACPAC recovery. These tests require
+exactly four non-transient `ERR` entries across all worker task logs, not four per worker.
+Zero, one to three, or more than four entries fail the assertion. An explicit expected count
+also checks logs containing `Custom dacpac required` rather than skipping them. Existing
+Service Bus shutdown exclusions remain in effect, and commits, database counts, empty
+`errors.log`/per-target error logs, and no failed databases are still required.
+Other tests retain their existing log-validation behavior.
+
 Worker startup logs include assembly version, console/core module IDs and the image's source
 revision when available. Image build scripts pass the Git revision (with `-dirty` for modified
 source) into OCI metadata and print the ACR run ID/output image digests. For asynchronous builds,

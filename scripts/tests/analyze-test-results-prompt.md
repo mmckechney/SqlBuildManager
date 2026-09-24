@@ -6,6 +6,15 @@ These sub-folders contain `TestResults.html` test result HTML summaries and `con
 
 **IMPORTANT:** In the `console-output.log` file, the log entries are organized first with the `Passed` or `Failed` message on the same line as the test name, followed by the `Standard Output Messages:` and `TestContext Messages:` lines and content.   
 
+**Expected recovery scenarios:** SQL Server AlreadyInSync tests, including the ACI
+force-custom recovery scenario, explicitly require four worker `ERR` entries across
+the job's task logs. Those entries exercise the intentional base-script failure and
+DACPAC recovery path; they are not by themselves a defect. Check the test's declared
+`expectedTaskErrorCount` and final result assertions. Zero, fewer than four, or more
+than four counted entries must fail an exact-four scenario. Existing transient
+Service Bus shutdown exclusions still apply. Nonempty `errors.log`, per-target
+error logs, failed-database records, or incorrect database counts remain failures.
+
 ## For Failed Tests:
 - Please review these files and for all failures, create an analysis of the failures and how they can be fixed. 
 - Save your analysis to a single `failures.md ` file.  

@@ -651,7 +651,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 cmdLine.ConnectionArgs.StorageAccountKey,
                 jobName);
             await blobValidator.LoadLogsAsync();
-            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext, expectedTaskErrorCount: 4);
 
         }
         
@@ -704,7 +704,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 cmdLine.ConnectionArgs.StorageAccountKey,
                 jobName);
             await blobValidator.LoadLogsAsync();
-            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext, expectedTaskErrorCount: 4);
         }
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
@@ -874,7 +874,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 cmdLine.ConnectionArgs.StorageAccountKey,
                 jobName);
             await blobValidator.LoadLogsAsync();
-            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext, expectedTaskErrorCount: 4);
 
         }
 

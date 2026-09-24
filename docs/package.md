@@ -82,6 +82,13 @@ sandbox against filesystem races or hard-link attacks.
 
 ### Shared scripts in threaded execution
 
+Integration-test fixtures follow the same package contract: each fixture owns a temporary
+project directory, script metadata stores relative member names, and batching/hashing uses
+that directory even for pre-batched runs. Fixture cleanup is scoped to its own directory.
+Embedded test packages use relative archive entries; `EmbeddedPackageAssetTests` validates
+the integration and Azure resource packages for safe names and complete script membership.
+These test-fixture rules do not change runtime extraction or Azure worker processing.
+
 Threaded execution (including the workers used by Batch, ACI, Container Apps and Kubernetes)
 validates and extracts the input package once per worker execution, then shares the batched
 scripts across database targets. Each target has independent project/history metadata and logs.
