@@ -89,8 +89,10 @@ DEPLOY_POSTGRESQL
 DEPLOY_MYSQL
 ```
 
-Later runs reuse the saved selections. Change them with `azd env set` or by editing the environment
-through azd rather than expecting the selection prompt to appear again.
+Later runs reuse the saved selections only when all seven values are present. A saved `false`
+counts as present. If any value is missing, blank, or cannot be read, the hook prompts again for
+both compute and database selections and saves the complete set. Otherwise, change selections
+with `azd env set` or by editing the environment through azd.
 
 ### Force shared build infrastructure
 

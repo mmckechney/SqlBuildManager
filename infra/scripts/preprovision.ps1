@@ -28,8 +28,8 @@ azd env set MYSQL_ADMIN_USER "root"
     # -------------------------------------------------------------------
 # Deployment service selection
 # Check if selections have already been saved to the environment.
-# If not, prompt the user interactively. Saved selections are honored
-# on subsequent runs; edit the .env file to change them.
+# If any selection is missing, prompt the user interactively.
+# Complete saved selections are honored on subsequent runs.
 # -------------------------------------------------------------------
 
 function Get-AzdEnvValueSafe {
@@ -40,7 +40,18 @@ function Get-AzdEnvValueSafe {
     }
     return $val
 }
-$needsPrompt = $null -eq (Get-AzdEnvValueSafe "DEPLOY_BATCH")
+$deploymentVariables = @(
+    "DEPLOY_BATCH"
+    "DEPLOY_ACI"
+    "DEPLOY_CONTAINERAPP"
+    "DEPLOY_AKS"
+    "DEPLOY_SQLSERVER"
+    "DEPLOY_POSTGRESQL"
+    "DEPLOY_MYSQL"
+)
+$needsPrompt = @($deploymentVariables | Where-Object {
+    $null -eq (Get-AzdEnvValueSafe $_)
+}).Count -gt 0
 
 if ($needsPrompt) {
     Write-Host ""
