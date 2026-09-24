@@ -40,6 +40,32 @@ The simplest way to provision all Azure resources is using the [Azure Developer 
    azd up
    ```
 
+### Container build and test terminals
+
+On Windows, `container_prompts.bat` opens build and test tabs using the existing
+`Caldova` Windows Terminal profile by default. Pass another profile name as the first
+argument (quote names containing spaces):
+
+```bat
+container_prompts.bat
+container_prompts.bat "My Profile"
+```
+
+The selected name is passed to `scripts\utility\Initialize-CaldovaCommandTab.ps1`
+as `-TerminalProfile`. The wrapper selects `%USERPROFILE%\.azure-<profile>-isolated`
+and `%USERPROFILE%\.azd-<profile>-isolated`, using the lowercase profile name
+(for example, `.azure-caldova-isolated` or `.azure-my profile-isolated`).
+Names must be nonblank and contain no invalid filename characters.
+It displays authentication status before initializing each tab's F12 shortcut.
+F12 inserts the suggested command; it does not execute it. Tab titles and working
+directories remain specific to each build or test.
+
+The launcher does not modify Windows Terminal settings or automatically execute the
+profile's `commandline`; the wrapper supplies the same isolated-configuration startup
+sequence for every selected profile. Authentication failures
+are reported without preventing prompt setup, so you can run `az login` / `azd auth login`
+in the isolated tab before running build or test commands.
+
 ### What happens during `azd up`
 
 #### Pre-provision Hook (`infra/scripts/preprovision.ps1`)
