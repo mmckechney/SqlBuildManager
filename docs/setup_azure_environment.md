@@ -159,6 +159,16 @@ dotnet test .\src\SqlBuildManager.Console.MySQL.AzureTest\SqlBuildManager.Consol
 ```
 
 The same `AzdEnvironment` property applies to the SQL Server and PostgreSQL Azure test projects.
+
+The `scripts\tests\run_all_mysql_external_tests_in_aci.ps1` and
+`scripts\tests\run_all_postgres_external_tests_in_aci.ps1` wrappers check both database
+servers before launching any selected, deployed test groups. Using the current Azure CLI
+subscription, they start stopped Flexible Servers and wait up to 20 minutes per server
+for `Ready`, including servers already starting or stopping. The signed-in Azure CLI
+identity needs permission to read and start the servers. Progress messages distinguish
+database startup/readiness from the start of the ACI test run. A failed check/start,
+unexpected state, or timeout stops the run before tests launch. If no requested test
+groups are available, servers are not started.
 Alternatively set `$env:AZURE_ENV_NAME = 'myenv'`; an explicit property takes precedence.
 Azure test execution requires a selection, including with `--no-build`, which refreshes the selected
 runtime configuration. A plain build without a selection builds code without Azure configuration.

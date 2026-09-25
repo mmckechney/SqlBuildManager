@@ -4,8 +4,8 @@
 
 .DESCRIPTION
     Provides common functionality for running tests in Azure Container Instances,
-    including test summary display with in-place refresh, container lifecycle
-    management, test monitoring, and cleanup/exit reporting.
+    including database readiness checks, test summary display with in-place refresh,
+    container lifecycle management, test monitoring, and cleanup/exit reporting.
     
     Dot-source this file from calling scripts:
         . (Join-Path $PSScriptRoot "aci_test_helpers.ps1")
@@ -13,6 +13,68 @@
 
 Set-StrictMode -Version Latest
 # Do not override ErrorActionPreference here — callers set their own preference.
+
+function Start-AzureDatabaseServersForTests {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateSet('mysql', 'postgres')]
+        [string] $platform,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $resourceGroupName,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string[]] $serverNames,
+
+        [ValidateRange(1, 3600)]
+        [int] $timeoutSeconds = 1200,
+
+        [ValidateRange(1, 60)]
+        [int] $pollIntervalSeconds = 15
+    )
+
+    $PSNativeCommandUseErrorActionPreference = $false
+    foreach ($serverName in $serverNames) {
+        Write-Host "Checking $platform server '$serverName' in '$resourceGroupName'..." -ForegroundColor Cyan
+        $deadline = (Get-Date).AddSeconds($timeoutSeconds)
+        $startRequested = $false
+        $serverState = ''
+        while ($true) {
+            if ((Get-Date) -ge $deadline) {
+                throw "Timed out waiting for $platform server '$serverName' to become Ready (last state: '$serverState'). Tests were not started."
+            }
+
+            $result = az $platform flexible-server show --resource-group $resourceGroupName --name $serverName --query state --output tsv --only-show-errors 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                throw "Unable to check $platform server '$serverName'. Tests were not started. Azure CLI: $($result -join [Environment]::NewLine)"
+            }
+            $serverState = ($result -join [Environment]::NewLine).Trim()
+            if ($serverState -eq 'Ready') {
+                Write-Host "$platform server '$serverName' is Ready." -ForegroundColor Green
+                break
+            }
+
+            if ($serverState -eq 'Stopped') {
+                if (-not $startRequested) {
+                    Write-Host "Starting stopped $platform server '$serverName'; tests will wait until it is Ready..." -ForegroundColor Yellow
+                    $result = az $platform flexible-server start --resource-group $resourceGroupName --name $serverName --no-wait --output none --only-show-errors 2>&1
+                    if ($LASTEXITCODE -ne 0) {
+                        throw "Unable to start $platform server '$serverName'. Tests were not started. Azure CLI: $($result -join [Environment]::NewLine)"
+                    }
+                    $startRequested = $true
+                }
+            } elseif ($serverState -notin @('Starting', 'Stopping', 'Updating')) {
+                throw "Unexpected state '$serverState' for $platform server '$serverName'. Tests were not started."
+            }
+
+            Write-Host "Waiting for $platform server '$serverName' (state: $serverState). Checking again in $pollIntervalSeconds seconds..." -ForegroundColor Yellow
+            Start-Sleep -Seconds $pollIntervalSeconds
+        }
+    }
+}
 
 #############################################
 # Test Summary State & Display

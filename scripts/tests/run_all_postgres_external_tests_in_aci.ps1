@@ -4,7 +4,8 @@
 .DESCRIPTION
     Reads AZD environment configuration to determine which compute platforms (ACI,
     Batch, Container Apps, AKS) and PostgreSQL database platform are deployed. For
-    all available compute platforms, launches the filtered PostgreSQL external test
+    available test groups, checks both PostgreSQL servers with Azure CLI, starts stopped
+    servers and waits for Ready before launching the filtered PostgreSQL external test
     runner in ACI. After all tests complete, downloads results from Azure Storage
     and invokes GitHub Copilot CLI to analyze the test output.
 .PARAMETER envName
@@ -157,6 +158,9 @@ if (-not $hasPostgreSQL) {
 
     if ($pgFilters.Count -gt 0) {
         $pgTestFilter = $pgFilters -join '|'
+        . (Join-Path $PSScriptRoot 'aci_test_helpers.ps1')
+        Start-AzureDatabaseServersForTests -platform postgres -resourceGroupName $resourceGroupName -serverNames @($pgServerNameA, $pgServerNameB)
+        Write-Host "PostgreSQL servers are Ready. Starting the PostgreSQL external test run in ACI..." -ForegroundColor Green
         & (Join-Path $PSScriptRoot 'run_filtered_external_tests_in_aci.ps1') -envName $envName -customName pg -testFilter $pgTestFilter -timeoutMinutes 300 -timestamp $timestamp
         $exitCode += $LASTEXITCODE
     } else {

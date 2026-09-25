@@ -4,7 +4,8 @@
 .DESCRIPTION
     Reads AZD environment configuration to determine which compute platforms (ACI,
     Batch, Container Apps, AKS) and MySQL database platform are deployed. For
-    all available compute platforms, launches the filtered MySQL external test
+    available test groups, checks both MySQL servers with Azure CLI, starts stopped
+    servers and waits for Ready before launching the filtered MySQL external test
     runner in ACI. After all tests complete, downloads results from Azure Storage
     and invokes GitHub Copilot CLI to analyze the test output.
 .PARAMETER envName
@@ -168,6 +169,9 @@ if (-not $hasMySQL) {
 
     if ($mySqlFilters.Count -gt 0) {
         $mySqlTestFilter = $mySqlFilters -join '|'
+        . (Join-Path $PSScriptRoot 'aci_test_helpers.ps1')
+        Start-AzureDatabaseServersForTests -platform mysql -resourceGroupName $resourceGroupName -serverNames @($mySqlServerNameA, $mySqlServerNameB)
+        Write-Host "MySQL servers are Ready. Starting the MySQL external test run in ACI..." -ForegroundColor Green
         & (Join-Path $PSScriptRoot 'run_filtered_external_tests_in_aci.ps1') -envName $envName -customName mysql -testFilter $mySqlTestFilter -timeoutMinutes 300 -timestamp $timestamp -buildImage:$buildImage
         $exitCode += $LASTEXITCODE
     } else {
