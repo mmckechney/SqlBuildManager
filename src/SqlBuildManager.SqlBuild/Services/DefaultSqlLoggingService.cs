@@ -200,6 +200,8 @@ namespace SqlBuildManager.SqlBuild.Services
         public async Task<bool> LogCommittedScriptsToDatabase(List<sqlLog.CommittedScript> committedScripts, ISqlBuildRunnerProperties runnerProperties, MultiDbData multiDbRunData)
         {
             bool returnValue = true;
+            // Audit writes run after build commit (or nontransactional execution).
+            // A new transaction here would never be committed by the build finalizer.
             //If using an alternate database to log the commits to, we need to initiate the connection objects 
             //so that the EnsureLogTablePresence method catches them and creates the tables as needed.
             if (runnerProperties.LogToDatabaseName.Length > 0 && committedScripts.Count > 0)
@@ -211,7 +213,7 @@ namespace SqlBuildManager.SqlBuild.Services
 
                 for (int i = 0; i < servers.Count; i++)
                 {
-                    BuildConnectData tmp = connectionsService.GetOrAddBuildConnectionDataClass(runnerProperties.ConnectionData, servers[i], runnerProperties.LogToDatabaseName, runnerProperties.IsTransactional);
+                    BuildConnectData tmp = connectionsService.GetOrAddBuildConnectionDataClass(runnerProperties.ConnectionData, servers[i], runnerProperties.LogToDatabaseName, isTransactional: false);
                 }
             }
 
@@ -269,7 +271,7 @@ namespace SqlBuildManager.SqlBuild.Services
                     : firstScript.DatabaseTarget;
 
                 BuildConnectData tmpConnDat = connectionsService.GetOrAddBuildConnectionDataClass(
-                    runnerProperties.ConnectionData, firstScript.ServerName, targetDb, runnerProperties.IsTransactional);
+                    runnerProperties.ConnectionData, firstScript.ServerName, targetDb, isTransactional: false);
 
                 log.LogInformation($"Batch logging {scriptsForConnection.Count} script(s) to {tmpConnDat.ServerName}:{tmpConnDat.DatabaseName}");
 

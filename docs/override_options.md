@@ -90,6 +90,25 @@ In addition, it will allow for more even distribution of targets by allowing nod
 
 ### Queue Runtime
 
+New subscriptions are created with the job-specific `Subject` filter already installed, including
+session-enabled subscriptions. They never temporarily accept all traffic from the shared topic.
+`Count` uses the job name as the subscription name; session-based concurrency uses the job name
+followed by `session`.
+
+Before enqueueing, SQL Build Manager requires exactly the matching job rule, without additional
+filter conditions or a rule action, and an empty subscription (including dead-lettered messages).
+Existing subscriptions with `$Default`, unexpected rules, or leftover messages are rejected
+without modifying rules or deleting messages. Use a fresh unique job name, or inspect and
+explicitly recreate an unused subscription before retrying. Do not purge a subscription that
+may contain another active run's work. Administration failures stop enqueueing.
+
+Use a unique job name for each independent run and only one enqueue operation at a time for that
+job. Rule isolation prevents different jobs from mixing; it does not serialize concurrent
+producers using the same job name. Enqueueing must finish before workers begin consuming.
+After sending, the active count must exactly match the target count; visibility is polled for
+at most four one-second retries. A count mismatch reports the actual subscription and whether
+it was newly created, and does not automatically delete or resend messages.
+
 When executing a run that leverages Service Bus Topics, there are two key considerations.
 
 1. `--concurrencytype` - this must match the value used with enqueueing the messages. If it does not, the runtime will not be able to locate the messages (see background above regarding the targeted subscriptions)

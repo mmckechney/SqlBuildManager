@@ -377,8 +377,7 @@ namespace SqlBuildManager.SqlBuild
                 log.LogInformation($"Creating Script Log File: {scriptLogFileName}");
 
                 
-                //TODO: this always seems to be output as an empty guid?
-                var nextBuildId = new Guid().ToString();
+                var nextBuildId = Guid.NewGuid().ToString();
                 log.LogInformation($"Generating Build Record ID: {nextBuildId}");
 
                 var myBuild = new BuildModels.Build(
@@ -388,7 +387,7 @@ namespace SqlBuildManager.SqlBuild
                     buildEnd: null,
                     serverName: serverName,
                     finalStatus: BuildItemStatus.Unknown,
-                    buildId: Guid.NewGuid().ToString(),
+                    buildId: nextBuildId,
                     userId: Environment.UserName);
 
                 // add the build to model

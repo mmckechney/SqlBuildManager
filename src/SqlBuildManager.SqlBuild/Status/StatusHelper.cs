@@ -56,7 +56,7 @@ namespace SqlBuildManager.SqlBuild.Status
             bool hashChanged = false;
             string fileName = script.FileName ?? string.Empty;
 
-            if (!File.Exists(Path.Combine(projectFilePath, fileName)))
+            if (!File.Exists(Utilities.PackagePath.Resolve(projectFilePath, fileName)))
             {
                 return ScriptStatusType.FileMissing;
             }
@@ -70,7 +70,7 @@ namespace SqlBuildManager.SqlBuild.Status
                 {
                     string fileTextHash;
                     string fileHash;
-                    SqlBuildFileHelper.GetSHA1Hash(Path.Combine(projectFilePath, fileName), out fileHash, out fileTextHash, script.StripTransactionText ?? false);
+                    SqlBuildFileHelper.GetSHA1Hash(Utilities.PackagePath.Resolve(projectFilePath, fileName), out fileHash, out fileTextHash, script.StripTransactionText ?? false);
                     if (fileHash != scriptHash && fileTextHash != scriptHash && fileHash != scriptTextHash && fileTextHash != scriptTextHash)
                     {
                         if (fileHash == SqlBuildFileHelper.FileMissing)

@@ -3,12 +3,79 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Connection;
 
 namespace SqlBuildManager.Console.MySQL.AzureTest
 {
     [TestClass]
     public class MySqlTestHelperTests
     {
+        [TestMethod]
+        [DataRow(AuthenticationType.ManagedIdentity, "", true)]
+        [DataRow(AuthenticationType.AzureADDefault, "", true)]
+        [DataRow(AuthenticationType.Password, "local-only", false)]
+        [DataRow(AuthenticationType.ManagedIdentity, "stale-password", false)]
+        public void AzureSettingsRequireIdentityWithoutPassword(AuthenticationType authType, string password, bool valid)
+        {
+            var settings = new CommandLineArgs();
+            settings.AuthenticationArgs.DatabasePlatform = DatabasePlatform.MySQL;
+            settings.AuthenticationArgs.AuthenticationType = authType;
+            settings.AuthenticationArgs.Password = password;
+            settings.IdentityArgs.ClientId = "11111111-1111-1111-1111-111111111111";
+            settings.IdentityArgs.IdentityName = "id-test";
+            var path = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllText(path, JsonSerializer.Serialize(settings));
+                if (valid)
+                {
+                    Assert.AreEqual(Path.GetFullPath(path), MySqlTestHelper.RequireManagedIdentitySettings(path));
+                }
+                else
+                {
+                    Assert.ThrowsExactly<InvalidDataException>(() => MySqlTestHelper.RequireManagedIdentitySettings(path));
+                }
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
+
+        [TestMethod]
+        [DataRow(DatabasePlatform.SqlServer, "id-test", "client-id", "", false)]
+        [DataRow(DatabasePlatform.MySQL, "", "client-id", "", false)]
+        [DataRow(DatabasePlatform.MySQL, "id-test", "", "", false)]
+        [DataRow(DatabasePlatform.MySQL, "id-test", "", "sa-test", true)]
+        public void AzureSettingsValidatePlatformAndIdentity(DatabasePlatform platform, string identityName, string clientId, string serviceAccount, bool valid)
+        {
+            var settings = new CommandLineArgs();
+            settings.AuthenticationArgs.DatabasePlatform = platform;
+            settings.AuthenticationArgs.AuthenticationType = AuthenticationType.ManagedIdentity;
+            settings.IdentityArgs.IdentityName = identityName;
+            settings.IdentityArgs.ClientId = clientId;
+            settings.IdentityArgs.ServiceAccountName = serviceAccount;
+            var path = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllText(path, JsonSerializer.Serialize(settings));
+                if (valid)
+                {
+                    Assert.AreEqual(Path.GetFullPath(path), MySqlTestHelper.RequireManagedIdentitySettings(path));
+                }
+                else
+                {
+                    Assert.ThrowsExactly<InvalidDataException>(() => MySqlTestHelper.RequireManagedIdentitySettings(path));
+                }
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
+
         [TestMethod]
         public void GeneratedPackagesUseMySqlDatabaseMetadata()
         {

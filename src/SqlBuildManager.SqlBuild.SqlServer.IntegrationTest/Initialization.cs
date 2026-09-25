@@ -305,7 +305,7 @@ namespace SqlBuildManager.SqlBuild.SqlServer.IntegrationTest
             row.DateAdded = testTimeStamp;
             string fileName = GetTrulyUniqueFile();
 
-            row.FileName = fileName;
+            row.FileName = Path.GetFileName(fileName);
             row.RollBackOnError = true;
             row.StripTransactionText = true;
             row.Description = "Test Script to be skipped";
@@ -348,6 +348,7 @@ namespace SqlBuildManager.SqlBuild.SqlServer.IntegrationTest
             projectFileName = GetTrulyUniqueFile();
             tempFiles.Add(projectFileName);
             target.projectFileName = projectFileName;
+            target.State.ProjectFilePath = ProjectDirectory;
 
             buildHistoryXmlFile = GetTrulyUniqueFile();
             tempFiles.Add(buildHistoryXmlFile);
@@ -386,7 +387,7 @@ namespace SqlBuildManager.SqlBuild.SqlServer.IntegrationTest
             row.ScriptTimeOut = scriptTimeout;
             string fileName = GetTrulyUniqueFile();
 
-            row.FileName = fileName;
+            row.FileName = Path.GetFileName(fileName);
             row.RollBackOnError = true;
             row.StripTransactionText = true;
             row.Description = "Test Script to successfully insert into TransactionTest table";
@@ -431,9 +432,9 @@ namespace SqlBuildManager.SqlBuild.SqlServer.IntegrationTest
             {
                 BuildDataModel = buildData,
                 BuildDescription = "UnitTestRun",
-                BuildFileName = Path.Combine(Path.GetTempPath(), $"UnitTestBuildFile_{uniqueId}.sbm"),
+                BuildFileName = Path.Combine(ProjectDirectory, $"UnitTestBuildFile_{uniqueId}.sbm"),
                 BuildType = "Development",
-                ProjectFileName = Path.Combine(Path.GetTempPath(), $"ProjectFile_{uniqueId}.xml"),
+                ProjectFileName = Path.Combine(ProjectDirectory, $"ProjectFile_{uniqueId}.xml"),
                 Server = serverName,
                 StartIndex = 0
             };
@@ -454,11 +455,11 @@ namespace SqlBuildManager.SqlBuild.SqlServer.IntegrationTest
                 server: serverName,
                 buildDescription: "UnitTestRun",
                 startIndex: 0,
-                projectFileName: Path.Combine(Path.Combine(Path.GetTempPath(),$"ProjectFile_{uniqueId}.xml")),
+                projectFileName: Path.Combine(ProjectDirectory, $"ProjectFile_{uniqueId}.xml"),
                 isTrial: false,
                 runItemIndexes: Array.Empty<double>(),
                 runScriptOnly: false,
-                buildFileName: Path.Combine(Path.GetTempPath(), $"UnitTestBuildFile_{uniqueId}.sbm"),
+                buildFileName: Path.Combine(ProjectDirectory, $"UnitTestBuildFile_{uniqueId}.sbm"),
                 logToDatabaseName: string.Empty,
                 isTransactional: true,
                 platinumDacPacFileName: string.Empty,
@@ -527,7 +528,7 @@ namespace SqlBuildManager.SqlBuild.SqlServer.IntegrationTest
                 return -1;
             }
         }
-        // GetTrulyUniqueFile is now inherited from InitializationBase (delegates to TestFileHelper)
+        // GetTrulyUniqueFile is inherited from InitializationBase and uses the test's package directory.
 
 
         public string GetTableLockingScript()

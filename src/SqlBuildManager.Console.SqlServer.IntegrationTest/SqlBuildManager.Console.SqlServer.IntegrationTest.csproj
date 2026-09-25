@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <Compile Include="..\SharedThreadedPackageTest.cs" Link="SharedThreadedPackageTest.cs" />
+  </ItemGroup>
   <PropertyGroup>
     <TargetFrameworks>net10.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
@@ -18,8 +21,8 @@
     </Content>
   </ItemGroup>-->
   <ItemGroup>
-    <Content Include="..\TestConfig\**\*.*">
-      <Link>TestConfig\%(RecursiveDir)%(FileName)%(Extension)</Link>
+    <Content Include="..\TestConfig\*.*">
+      <Link>TestConfig\%(FileName)%(Extension)</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -1,3 +1,4 @@
+#nullable enable
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,7 @@ namespace SqlBuildManager.Console.Aad
 {
     public class AadHelper
     {
+        internal const string OrchestratorClientIdEnvironmentVariable = "SBM_ORCHESTRATOR_CLIENT_ID";
         private static readonly TimeSpan CredentialProcessTimeout = ExecutionOptions.CredentialProcessTimeout;
         private static CancellationTokenSource src = new CancellationTokenSource();
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
@@ -67,8 +69,15 @@ namespace SqlBuildManager.Console.Aad
 
                 if (_tokenCred == null)
                 {
-
-                    if (string.IsNullOrWhiteSpace(AadHelper.ManagedIdentityClientId))
+                    var orchestratorCredential = CreateOrchestratorCredential(
+                        Environment.GetEnvironmentVariable(OrchestratorClientIdEnvironmentVariable),
+                        clientId => new ManagedIdentityCredential(ManagedIdentityId.FromUserAssignedClientId(clientId)));
+                    if (orchestratorCredential != null)
+                    {
+                        _tokenCred = new RetryingTokenCredential(orchestratorCredential);
+                        log.LogInformation("Using the explicitly configured orchestrator managed identity for Azure service access");
+                    }
+                    else if (string.IsNullOrWhiteSpace(AadHelper.ManagedIdentityClientId))
                     {
                         var defaultCredentialOptions = new DefaultAzureCredentialOptions
                         {
@@ -116,6 +125,24 @@ namespace SqlBuildManager.Console.Aad
                 }
                 return _tokenCred;
             }
+        }
+
+        internal static TokenCredential? CreateOrchestratorCredential(
+            string? clientId,
+            Func<string, TokenCredential> createManagedIdentityCredential)
+        {
+            if (string.IsNullOrWhiteSpace(clientId))
+            {
+                return null;
+            }
+
+            if (!Guid.TryParse(clientId, out var id) || id == Guid.Empty)
+            {
+                throw new InvalidOperationException(
+                    $"{OrchestratorClientIdEnvironmentVariable} must be a nonempty managed identity client ID GUID.");
+            }
+
+            return createManagedIdentityCredential(id.ToString());
         }
 
         public static async Task<string> GetBatchTokenString()

@@ -35,8 +35,9 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
         [TestInitialize]
         public void ConfigureProcessInfo()
         {
+            originalConsoleOut = System.Console.Out;
             SqlBuildManager.Logging.ApplicationLogging.CreateLogger<BatchTests>("SqlBuildManager.Console.log", Path.GetTempPath());
-            settingsFilePath = Path.GetFullPath("TestConfig/settingsfile-batch-linux-mysql-password.json");
+            settingsFilePath = MySqlTestHelper.RequireManagedIdentitySettings("TestConfig/settingsfile-batch-linux-mysql-mi-only.json");
             settingsFileKeyPath = Path.GetFullPath("TestConfig/settingsfilekey.txt");
             overrideFilePath = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
 
@@ -132,14 +133,14 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.Count, 10)]
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.Server, 2)]
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.MaxPerServer, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-mi-only.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-mi-only.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-mi-only.json", ConcurrencyType.MaxPerServer, 2)]
         [TestMethod]
         public async Task Batch_MySQL_Override_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
-            settingsFile = Path.GetFullPath(settingsFile);
+            settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
             string jobName = GetUniqueBatchJobName("batch-mysql");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
@@ -166,7 +167,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "Batch MySQL run should have completed successfully");
             Assert.IsTrue(logFileContents.Contains("Batch complete"), "Should indicate a batch job");
 
@@ -180,12 +181,12 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-mi-only.json", ConcurrencyType.Count, 10)]
         [TestMethod]
         public async Task Batch_MySQL_Override_SBMSource_ManagedIdentity_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
-            settingsFile = Path.GetFullPath(settingsFile);
+            settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
             string jobName = GetUniqueBatchJobName("batch-mysql-mi");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
@@ -212,7 +213,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "Batch MySQL MI run should have completed successfully");
 
             // Validate blob storage logs
@@ -225,12 +226,12 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-password.json", ConcurrencyType.Count, 10)]
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-password.json", ConcurrencyType.Server, 2)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-mi-only.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-mi-only.json", ConcurrencyType.Server, 2)]
         [TestMethod]
         public async Task Batch_MySQL_Queue_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
-            settingsFile = Path.GetFullPath(settingsFile);
+            settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
             string jobName = GetUniqueBatchJobName("batch-mysql-q");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
@@ -251,7 +252,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             // Run
             args = new string[]{
@@ -275,7 +276,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             result = val.Result;
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             // Validate blob storage logs
             BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
@@ -287,14 +288,14 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             blobValidator.AssertBuildSuccess(overrideFileContents.Count, TestContext);
         }
 
-        [DataRow("query", "TestConfig/settingsfile-batch-linux-mysql-password.json")]
+        [DataRow("query", "TestConfig/settingsfile-batch-linux-mysql-mi-only.json")]
         [TestMethod]
         public async Task Batch_MySQL_Query_Override_SelectSuccess(string batchMethod, string settingsFile)
         {
             string outputFile = Path.GetFullPath($"{Guid.NewGuid()}.csv");
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var queryFile = MySqlTestHelper.GetMySqlSelectQueryFile();
                 string jobName = GetUniqueBatchJobName("batch-mysql-qry");
                 int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
@@ -322,7 +323,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 var result = val.Result;
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-                Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
@@ -346,11 +347,11 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-password.json")]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-mysql-mi-only.json")]
         [TestMethod]
         public void Batch_MySQL_Override_SBMSource_RunWithError_MissingPackage(string batchMethod, string settingsFile)
         {
-            settingsFile = Path.GetFullPath(settingsFile);
+            settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
             string jobName = GetUniqueBatchJobName("batch-mysql-err");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
 
@@ -375,11 +376,11 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             Assert.IsTrue(result != 0);
         }
 
-        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-password.json", ConcurrencyType.Count, 10)]
+        [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mysql-mi-only.json", ConcurrencyType.Count, 10)]
         [TestMethod]
         public async Task Batch_MySQL_Queue_SBMSource_ManagedIdentity_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
-            settingsFile = Path.GetFullPath(settingsFile);
+            settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
             string sbmFileName = MySqlTestHelper.GetMySqlSimpleSelectSbm();
             string jobName = GetUniqueBatchJobName("batch-mysql-mi-q");
             int startingLine = MySqlTestHelper.LogFileCurrentLineCount();
@@ -400,7 +401,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             // Run
             args = new string[]{
@@ -425,7 +426,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             result = val.Result;
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             // Validate blob storage logs
             BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);

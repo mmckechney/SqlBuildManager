@@ -4,12 +4,15 @@ param
     [string] $envName,
 
     [string] $sbmExe = "sbm.exe",
-    [string] $path = "..\src\TestConfig",
+    [string] $path,
     [string] $resourceGroupName,
     [switch] $batch = $true,
     [switch] $aks = $true,
     [switch] $aci = $true,
-    [switch] $containerApp = $true
+    [switch] $containerApp = $true,
+    [ValidateSet("SqlServer", "PostgreSQL", "MySQL")]
+    [string] $databasePlatform = "SqlServer",
+    [string] $settingsFileSuffix = "mi-only"
 )
 
 <#
@@ -28,7 +31,7 @@ param
     Path to the sbm.exe executable.
 
 .PARAMETER path
-    Output path for the generated settings files.
+    Exact output directory override. Defaults to src\TestConfig\<envName>.
 
 .PARAMETER resourceGroupName
     The Azure resource group name (defaults to rg-{envName}).
@@ -47,10 +50,14 @@ param
 #>
 
 # Get the repo root
+$ErrorActionPreference = 'Stop'
+$databaseAuthType = if ($databasePlatform -eq 'MySQL') { 'ManagedIdentity' } else { 'AzureADDefault' }
 $repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
    $repoRoot = Split-Path $PSScriptRoot -Parent
 }
+. (Join-Path $PSScriptRoot 'test_config_paths.ps1')
+$path = Get-TestConfigPath -envName $envName -path $path -repoRoot $repoRoot -Create
 
 $resourceGroupNameOverride = $resourceGroupName
 . (Join-Path $repoRoot "scripts\prefix_resource_names.ps1") -envName $envName
@@ -71,9 +78,9 @@ if ($batch) {
     Write-Host "Generating Batch MI-only settings files..." -ForegroundColor Yellow
     $batchScript = Join-Path $repoRoot "scripts\Batch\create_batch_settingsfiles_mi_only.ps1"
     if (Test-Path $batchScript) {
-        & $batchScript -envName $envName -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName
+        & $batchScript -envName $envName -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -databasePlatform $databasePlatform -settingsFileSuffix $settingsFileSuffix -databaseAuthType $databaseAuthType
     } else {
-        Write-Host "  Script not found: $batchScript" -ForegroundColor Red
+        throw "Script not found: $batchScript"
     }
     Write-Host ""
 }
@@ -82,9 +89,9 @@ if ($aks) {
     Write-Host "Generating AKS MI-only settings file..." -ForegroundColor Yellow
     $aksScript = Join-Path $repoRoot "scripts\kubernetes\create_aks_settingsfile_mi_only.ps1"
     if (Test-Path $aksScript) {
-        & $aksScript -envName $envName -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName
+        & $aksScript -envName $envName -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -databasePlatform $databasePlatform -settingsFileSuffix $settingsFileSuffix -databaseAuthType $databaseAuthType
     } else {
-        Write-Host "  Script not found: $aksScript" -ForegroundColor Red
+        throw "Script not found: $aksScript"
     }
     Write-Host ""
 }
@@ -93,9 +100,9 @@ if ($aci) {
     Write-Host "Generating ACI MI-only settings file..." -ForegroundColor Yellow
     $aciScript = Join-Path $repoRoot "scripts\aci\create_aci_settingsfile_mi_only.ps1"
     if (Test-Path $aciScript) {
-        & $aciScript -envName $envName -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName
+        & $aciScript -envName $envName -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -databasePlatform $databasePlatform -settingsFileSuffix $settingsFileSuffix -databaseAuthType $databaseAuthType
     } else {
-        Write-Host "  Script not found: $aciScript" -ForegroundColor Red
+        throw "Script not found: $aciScript"
     }
     Write-Host ""
 }
@@ -104,9 +111,9 @@ if ($containerApp) {
     Write-Host "Generating Container App MI-only settings file..." -ForegroundColor Yellow
     $containerAppScript = Join-Path $repoRoot "scripts\ContainerApp\create_containerapp_settingsfile_mi_only.ps1"
     if (Test-Path $containerAppScript) {
-        & $containerAppScript -envName $envName -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName
+        & $containerAppScript -envName $envName -sbmExe $sbmExe -path $path -resourceGroupName $resourceGroupName -databasePlatform $databasePlatform -settingsFileSuffix $settingsFileSuffix -databaseAuthType $databaseAuthType
     } else {
-        Write-Host "  Script not found: $containerAppScript" -ForegroundColor Red
+        throw "Script not found: $containerAppScript"
     }
     Write-Host ""
 }

@@ -96,7 +96,8 @@ if ([string]::IsNullOrWhiteSpace($customName)) {
 $testImageName = "sqlbuildmanager-tests"
 
 # Create log file path
-$logDir = Join-Path $repoRoot "src\TestConfig\TestResults"
+. (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+$logDir = Join-Path (Get-TestConfigPath -envName $envName -repoRoot $repoRoot -Create) 'TestResults'
 if (-not (Test-Path $logDir)) {
     New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 }
@@ -120,10 +121,17 @@ Write-Debug "Subnet: $aciSubnet"
 
 # Get resource information
 $subscriptionId = az account show --query id --output tsv
-$identity = az identity show --resource-group $resourceGroupName --name $identityName | ConvertFrom-Json
+$workerIdentity = az identity show --resource-group $resourceGroupName --name $identityName --output json | ConvertFrom-Json
+if ($LASTEXITCODE -ne 0 -or $null -eq $workerIdentity) {
+    throw "Unable to read worker identity '$identityName'. Provision a fresh environment and regenerate its settings/image; legacy shared-identity environments are not supported by this runner."
+}
+$identity = az identity show --resource-group $resourceGroupName --name $orchestratorIdentityName --output json | ConvertFrom-Json
+if ($LASTEXITCODE -ne 0 -or $null -eq $identity) {
+    throw "Unable to read orchestrator identity '$orchestratorIdentityName'. Provision a fresh environment; do not substitute the worker or legacy shared identity."
+}
 $acrLoginServer = az acr show -g $resourceGroupName --name $containerRegistryName -o tsv --query loginServer
 
-Write-Debug "Using Managed Identity: $identityName (ClientId: $($identity.clientId))" 
+Write-Debug "Using orchestrator identity: $orchestratorIdentityName (ClientId: $($identity.clientId)); database worker identity: $identityName"
 Write-Debug "Using Container Registry: $acrLoginServer" 
 # if ($testFilter) {
 #     Write-Host "Test Filter: $testFilter" -ForegroundColor DarkGreen
@@ -135,13 +143,12 @@ Write-Debug "Using Container Registry: $acrLoginServer"
 #############################################
 # Build and push test image if requested
 #############################################
-# if (-not $buildImage -and $testFilter -like "*MySQL.AzureTest*") {
-#     $mySqlAuthMode = azd env get-value MYSQL_AUTH_MODE 2>$null
-#     if ($LASTEXITCODE -eq 0 -and $mySqlAuthMode -eq "Password") {
-#         Write-Host "MYSQL_AUTH_MODE=Password detected for MySQL external tests; enabling -buildImage to avoid stale ManagedIdentity test image reuse." -ForegroundColor Yellow
-#         $buildImage = $true
-#     }
-# }
+if ($testFilter -like "*MySQL.AzureTest*") {
+    $mySqlAuthMode = azd env get-value MYSQL_AUTH_MODE -e $envName 2>$null
+    if ($LASTEXITCODE -ne 0 -or $mySqlAuthMode -ne 'ManagedIdentity') {
+        throw 'Azure MySQL tests require MYSQL_AUTH_MODE=ManagedIdentity. Reprovision identity permissions/settings and rebuild the Azure test image before running these tests.'
+    }
+}
 
 if ($buildImage) {
     Write-Host "========================================" -ForegroundColor Cyan
@@ -149,10 +156,9 @@ if ($buildImage) {
     Write-Host "========================================" -ForegroundColor Cyan
     
     $testImageScriptPath = Join-Path $repoRoot "scripts\ContainerRegistry\build_external_test_image.ps1"
-    $outputPath = Join-Path $repoRoot "src\TestConfig"
     
     if (Test-Path $testImageScriptPath) {
-        & $testImageScriptPath -envName $envName -resourceGroupName $resourceGroupName
+        & $testImageScriptPath -envName $envName -resourceGroupName $resourceGroupName -imageTag $imageTag
     } else {
         Write-Host "Test image build script not found at: $testImageScriptPath" -ForegroundColor Yellow
         Write-Host "Run manually: .\scripts\ContainerRegistry\build_external_test_image.ps1 -envName $envName -resourceGroupName $resourceGroupName" -ForegroundColor Yellow
@@ -218,14 +224,15 @@ $uploadCmd = "az storage blob upload-batch --account-name $storageAccountName --
 # Build Kubernetes pre-requisite commands if test filter contains "Kubernetes"
 $aksPreCmd = ""
 if ($testFilter -like "*Kubernetes*") {
-    $aksPreCmd = "az aks install-cli; az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName --overwrite-existing; "
+    $aksPreCmd = "az aks install-cli || exit `$?; az aks get-credentials --resource-group $resourceGroupName --name $aksClusterName --overwrite-existing || exit `$?; kubelogin convert-kubeconfig -l azurecli || exit `$?; "
     Write-Debug "Kubernetes tests detected - will install kubectl and get AKS credentials"
 }
 
 # Create results directory first, then run tests, capture exit code, login and upload
 # Use PIPESTATUS to get the exit code of dotnet vstest (not tee)
 # Exit with the test exit code so the container terminates with the correct status
-$shellCmd = "mkdir -p /tests/TestResults; az login --identity --client-id `$AZURE_CLIENT_ID; $aksPreCmd$testCmd; TEST_EXIT_CODE=`${PIPESTATUS[0]}; echo TEST_EXIT_CODE=`$TEST_EXIT_CODE;  $uploadCmd; exit `$TEST_EXIT_CODE"
+$provenanceCmd = "echo 'Test-runner source revision and actual binary hashes:' > /tests/TestResults/artifact-provenance.txt; printenv SBM_BUILD_REVISION >> /tests/TestResults/artifact-provenance.txt; sha256sum sbm.dll SqlBuildManager.SqlBuild.dll $testDll >> /tests/TestResults/artifact-provenance.txt; "
+$shellCmd = "set -o pipefail; mkdir -p /tests/TestResults; $provenanceCmd az login --identity --client-id `$AZURE_CLIENT_ID --output none || exit `$?; $aksPreCmd$testCmd; TEST_EXIT_CODE=`${PIPESTATUS[0]}; $uploadCmd; UPLOAD_EXIT_CODE=`$?; if test `$TEST_EXIT_CODE -eq 0; then TEST_EXIT_CODE=`$UPLOAD_EXIT_CODE; fi; echo TEST_EXIT_CODE=`$TEST_EXIT_CODE; exit `$TEST_EXIT_CODE"
 
 $commandYaml = @"
       - /bin/bash
@@ -236,6 +243,8 @@ $commandYaml = @"
 # Build environment variables for YAML
 $envVarsYaml = @"
       - name: AZURE_CLIENT_ID
+        value: $($identity.clientId)
+      - name: SBM_ORCHESTRATOR_CLIENT_ID
         value: $($identity.clientId)
 "@
 
@@ -257,6 +266,7 @@ identity:
   type: UserAssigned
   userAssignedIdentities:
     $($identity.id): {}
+    $($workerIdentity.id): {}
 properties:
   imageRegistryCredentials:
   - server: $acrLoginServer
@@ -341,7 +351,7 @@ Write-Debug ""
 
 
 # Download test results from blob storage
-$tmp = Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContainerName $blobContainerName -localDestination "./testresults" -blobPath $blobPath
+$tmp = Download-TestResultsFromBlob -storageAccountName $storageAccountName -blobContainerName $blobContainerName -localDestination $logDir -blobPath $blobPath -envName $envName
 
 #############################################
 # Cleanup and report

@@ -15,6 +15,7 @@ azd env set CURRENT_IP_ADDRESS $currentIpAddress
 
 # Get current user info
 $userIdGuid = az ad signed-in-user show --query id -o tsv
+$hasSignedInUser = $LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($userIdGuid)
 $userLoginName = az account show --query user.name -o tsv
 Write-Host "Current User: $userLoginName" -ForegroundColor DarkGreen
 Write-Host "User Object ID: $userIdGuid" -ForegroundColor DarkGreen
@@ -27,8 +28,8 @@ azd env set MYSQL_ADMIN_USER "root"
     # -------------------------------------------------------------------
 # Deployment service selection
 # Check if selections have already been saved to the environment.
-# If not, prompt the user interactively. Saved selections are honored
-# on subsequent runs; edit the .env file to change them.
+# If any selection is missing, prompt the user interactively.
+# Complete saved selections are honored on subsequent runs.
 # -------------------------------------------------------------------
 
 function Get-AzdEnvValueSafe {
@@ -39,7 +40,18 @@ function Get-AzdEnvValueSafe {
     }
     return $val
 }
-$needsPrompt = $null -eq (Get-AzdEnvValueSafe "DEPLOY_BATCH")
+$deploymentVariables = @(
+    "DEPLOY_BATCH"
+    "DEPLOY_ACI"
+    "DEPLOY_CONTAINERAPP"
+    "DEPLOY_AKS"
+    "DEPLOY_SQLSERVER"
+    "DEPLOY_POSTGRESQL"
+    "DEPLOY_MYSQL"
+)
+$needsPrompt = @($deploymentVariables | Where-Object {
+    $null -eq (Get-AzdEnvValueSafe $_)
+}).Count -gt 0
 
 if ($needsPrompt) {
     Write-Host ""
@@ -127,18 +139,19 @@ Write-Host "  Compute: $($computeList -join ', ')" -ForegroundColor Cyan
 Write-Host "  Database: $($dbList -join ', ')" -ForegroundColor Cyan
 
 # MySQL database auth mode for external execution paths.
-# Default to Password to avoid requiring tenant-level Graph role assignment.
+# Azure tests use managed identity; native passwords remain available for explicit legacy deployments.
 $mySqlAuthMode = azd env get-value MYSQL_AUTH_MODE 2>$null
 if ([string]::IsNullOrWhiteSpace($mySqlAuthMode) -or $mySqlAuthMode -like "ERROR:*") {
-    $mySqlAuthMode = "Password"
+    $mySqlAuthMode = "ManagedIdentity"
     azd env set MYSQL_AUTH_MODE $mySqlAuthMode
 }
 elseif ($mySqlAuthMode -ne "Password" -and $mySqlAuthMode -ne "ManagedIdentity") {
-    Write-Host "Invalid MYSQL_AUTH_MODE='$mySqlAuthMode'. Resetting to Password." -ForegroundColor Yellow
-    $mySqlAuthMode = "Password"
-    azd env set MYSQL_AUTH_MODE $mySqlAuthMode
+    throw "Invalid MYSQL_AUTH_MODE='$mySqlAuthMode'. Use ManagedIdentity for Azure tests or Password for an explicit legacy deployment."
 }
 Write-Host "  MySQL auth mode: $mySqlAuthMode" -ForegroundColor Cyan
+if ($deployMySQL -and $mySqlAuthMode -eq 'ManagedIdentity' -and (-not $hasSignedInUser -or [string]::IsNullOrWhiteSpace($userLoginName))) {
+    throw "Azure MySQL managed-identity setup requires an interactive Entra user. Sign in with 'az login'; a service principal cannot bootstrap the MySQL Entra administrator."
+}
 
 # Always deploy container registry — used by compute platforms and ad-hoc ACI test containers
 azd env set DEPLOY_CONTAINER_REGISTRY "true"

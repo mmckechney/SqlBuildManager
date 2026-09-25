@@ -55,7 +55,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                     Database = database,
                     UserID = mySqlUser,
                     Password = mySqlPassword,
-                    SslMode = MySqlSslMode.Required
+                    SslMode = MySqlSslMode.VerifyFull
                 };
 
                 try

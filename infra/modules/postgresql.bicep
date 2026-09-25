@@ -21,12 +21,6 @@ param pgAdminLogin string
 @description('Administrator password for PostgreSQL (used for local/password-based auth)')
 param pgAdminPassword string
 
-@description('Object ID of the managed identity used for private post-provision initialization')
-param postProvisionAdminObjectId string
-
-@description('Name of the managed identity used for private post-provision initialization')
-param postProvisionAdminName string
-
 @description('VNet ID for the private DNS zone link')
 param vnetId string
 
@@ -77,19 +71,6 @@ resource pgAadAdminA 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2
   properties: {
     principalType: 'User'
     principalName: pgAdminLogin
-    tenantId: subscription().tenantId
-  }
-}
-
-resource pgPostProvisionAdminA 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2024-08-01' = {
-  parent: pgFlexServerA
-  name: postProvisionAdminObjectId
-  dependsOn: [
-    pgAadAdminA
-  ]
-  properties: {
-    principalType: 'ServicePrincipal'
-    principalName: postProvisionAdminName
     tenantId: subscription().tenantId
   }
 }
@@ -149,19 +130,6 @@ resource pgAadAdminB 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2
   properties: {
     principalType: 'User'
     principalName: pgAdminLogin
-    tenantId: subscription().tenantId
-  }
-}
-
-resource pgPostProvisionAdminB 'Microsoft.DBforPostgreSQL/flexibleServers/administrators@2024-08-01' = {
-  parent: pgFlexServerB
-  name: postProvisionAdminObjectId
-  dependsOn: [
-    pgAadAdminB
-  ]
-  properties: {
-    principalType: 'ServicePrincipal'
-    principalName: postProvisionAdminName
     tenantId: subscription().tenantId
   }
 }

@@ -29,12 +29,7 @@ namespace SqlBuildManager.SqlBuild.Models
             {
                 stream.Position = 0;
                 using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
-                var entry = archive.GetEntry(XmlFileNames.MainProjectFile)
-                           ?? archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
-                if (entry == null)
-                    throw new InvalidOperationException($"Zip package '{path}' does not contain a project XML file.");
-                using var entryStream = entry.Open();
-                return Load(XDocument.Load(entryStream));
+                return Utilities.PackagePath.ReadArchiveProject(Utilities.PackagePath.GetArchiveFiles(archive)).Model;
             }
 
             stream.Position = 0;
@@ -52,12 +47,7 @@ namespace SqlBuildManager.SqlBuild.Models
             {
                 memStream.Position = 0;
                 using var archive = new ZipArchive(memStream, ZipArchiveMode.Read, leaveOpen: true);
-                var entry = archive.GetEntry(XmlFileNames.MainProjectFile)
-                           ?? archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
-                if (entry == null)
-                    throw new InvalidOperationException($"Zip package '{path}' does not contain a project XML file.");
-                using var entryStream = entry.Open();
-                return Load(XDocument.Load(entryStream));
+                return Utilities.PackagePath.ReadArchiveProject(Utilities.PackagePath.GetArchiveFiles(archive)).Model;
             }
 
             memStream.Position = 0;
@@ -88,7 +78,7 @@ namespace SqlBuildManager.SqlBuild.Models
                 throw new InvalidOperationException("SqlSyncBuildData XML has no root element.");
 
 
-            var ns = doc.Root.GetDefaultNamespace();
+            var ns = doc.Root.Name.Namespace;
             var projects = new List<SqlSyncBuildProject>();
             var scriptsTable = new List<Scripts>();
             var scriptRows = new List<Script>();
@@ -149,10 +139,11 @@ namespace SqlBuildManager.SqlBuild.Models
                         foreach (var b in buildsContainer.Elements(ns + "Build"))
                         {
                             var buildId = nextBuildId++;
-                            buildRows.Add(ParseBuild(b, buildsId, buildId));
+                            var build = ParseBuild(b, buildsId, buildId);
+                            buildRows.Add(build);
                             foreach (var sr in b.Elements(ns + "ScriptRun"))
                             {
-                                scriptRuns.Add(ParseScriptRun(sr, buildId.ToString()));
+                                scriptRuns.Add(ParseScriptRun(sr, build.BuildId));
                             }
                         }
                     }
@@ -198,11 +189,11 @@ namespace SqlBuildManager.SqlBuild.Models
                 buildEnd: ParseDateTimeOrNull((string?)el.Attribute("BuildEnd")),
                 serverName: (string?)el.Attribute("ServerName"),
                 finalStatus: finalStatus,
-                buildId: (string?)el.Attribute("BuildId"),
+                buildId: (string?)el.Attribute("BuildId") ?? buildId.ToString(CultureInfo.InvariantCulture),
                 userId: (string?)el.Attribute("UserId"));
         }
 
-        private static ScriptRun ParseScriptRun(XElement el, string buildId)
+        private static ScriptRun ParseScriptRun(XElement el, string? buildId)
         {
             return new ScriptRun(
                 fileHash: (string?)el.Element(Ns + "FileHash"),

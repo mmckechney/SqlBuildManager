@@ -150,7 +150,7 @@ namespace SqlBuildManager.Connection
 
         /// <summary>
         /// When true, the SQL Server TLS certificate is trusted without validation (TrustServerCertificate=true).
-        /// Defaults to false (secure): the server certificate is validated. SQL Server only; ignored for PostgreSQL.
+        /// Defaults to false (secure): the server certificate is validated. Ignored for recognized Azure SQL endpoints and other platforms.
         /// </summary>
         public virtual bool TrustServerCertificate
         {

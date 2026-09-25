@@ -24,6 +24,23 @@ namespace SqlBuildManager.Connection
         private static readonly ConcurrentDictionary<string, TokenCredential> Credentials = new();
         private static readonly ConcurrentDictionary<string, AccessToken> Tokens = new();
         private static readonly ConcurrentDictionary<string, object> TokenLocks = new();
+        private static readonly string[] AzurePostgresSuffixes =
+        {
+            ".postgres.database.azure.com",
+            ".postgres.database.usgovcloudapi.net",
+            ".postgres.database.chinacloudapi.cn",
+            ".postgres.database.microsoftazure.de"
+        };
+        private readonly Func<string, string> tokenProvider;
+
+        public PostgresConnectionFactory() : this(GetAzureAdAccessToken)
+        {
+        }
+
+        internal PostgresConnectionFactory(Func<string, string> tokenProvider)
+        {
+            this.tokenProvider = tokenProvider ?? throw new ArgumentNullException(nameof(tokenProvider));
+        }
 
         public DbConnection CreateConnection(ConnectionData connData)
         {
@@ -51,12 +68,12 @@ namespace SqlBuildManager.Connection
 
         public string BuildConnectionString(string dbName, string serverName, string uid, string pw, AuthenticationType authType, int scriptTimeOut, string managedIdentityClientId)
         {
-            // Parse host:port if port is included in server name
-            string host = serverName;
+            // Keep multi-host/per-host ports intact for Npgsql; retain single-host port parsing.
+            string host = string.Join(",", serverName.Split(',', StringSplitOptions.TrimEntries));
             int port = 5432;
-            if (serverName.Contains(':'))
+            if (!host.Contains(',') && host.IndexOf(':') > 0 && host.IndexOf(':') == host.LastIndexOf(':'))
             {
-                var parts = serverName.Split(':');
+                var parts = host.Split(':');
                 host = parts[0];
                 if (parts.Length > 1 && int.TryParse(parts[1], out int parsedPort))
                     port = parsedPort;
@@ -71,6 +88,8 @@ namespace SqlBuildManager.Connection
             builder.MinPoolSize = ConnectionHelper.MinimumPoolSize;
             builder.MaxPoolSize = ConnectionHelper.MaximumPoolSize;
             builder.ApplicationName = ConnectionHelper.appName;
+            // Npgsql VerifyFull validates both hostname and chain using OS certificate trust.
+            builder.SslMode = ContainsAzurePostgresHost(serverName) ? SslMode.VerifyFull : SslMode.Prefer;
 
             switch (authType)
             {
@@ -78,7 +97,6 @@ namespace SqlBuildManager.Connection
                 default:
                     builder.Username = uid;
                     builder.Password = pw;
-                    builder.SslMode = SslMode.Prefer;
                     break;
                 case AuthenticationType.Windows:
                     // PostgreSQL GSSAPI/SSPI auth — no username/password needed
@@ -86,22 +104,38 @@ namespace SqlBuildManager.Connection
                 case AuthenticationType.AzureADDefault:
                 case AuthenticationType.ManagedIdentity:
                     // Acquire an Azure AD token and use it as the password
-                    builder.SslMode = SslMode.Require;
+                    builder.SslMode = SslMode.VerifyFull;
                     // PG Entra ID requires the identity name (role name) as the username.
                     // Use uid (identity name) if available; fall back to client ID only if no name provided.
                     builder.Username = !string.IsNullOrEmpty(uid) ? uid : managedIdentityClientId;
-                    builder.Password = GetAzureAdAccessToken(managedIdentityClientId);
+                    builder.Password = tokenProvider(managedIdentityClientId);
                     break;
                 case AuthenticationType.AzureADIntegrated:
                 case AuthenticationType.AzureADInteractive:
                     builder.Username = uid;
                     builder.Password = pw;
-                    builder.SslMode = SslMode.Require;
+                    builder.SslMode = SslMode.VerifyFull;
                     break;
             }
 
             log.LogDebug($"PostgreSQL Connection string: {ConnectionStringRedactor.Redact(builder.ConnectionString)}");
             return builder.ConnectionString;
+        }
+
+        private static bool ContainsAzurePostgresHost(string serverName)
+        {
+            foreach (string endpoint in serverName.Split(',', StringSplitOptions.TrimEntries))
+            {
+                // Azure DNS names cannot contain colons; remove an optional port before matching.
+                string hostname = endpoint.Split(':')[0].Trim().TrimEnd('.');
+                foreach (string suffix in AzurePostgresSuffixes)
+                {
+                    if (hostname.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         // PostgreSQL uses SslMode (not TrustServerCertificate); the flag is accepted for interface parity and ignored.

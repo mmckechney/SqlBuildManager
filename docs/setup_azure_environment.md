@@ -40,6 +40,32 @@ The simplest way to provision all Azure resources is using the [Azure Developer 
    azd up
    ```
 
+### Container build and test terminals
+
+On Windows, `container_prompts.bat` opens build and test tabs using the existing
+`Caldova` Windows Terminal profile by default. Pass another profile name as the first
+argument (quote names containing spaces):
+
+```bat
+container_prompts.bat
+container_prompts.bat "My Profile"
+```
+
+The selected name is passed to `scripts\utility\Initialize-CaldovaCommandTab.ps1`
+as `-TerminalProfile`. The wrapper selects `%USERPROFILE%\.azure-<profile>-isolated`
+and `%USERPROFILE%\.azd-<profile>-isolated`, using the lowercase profile name
+(for example, `.azure-caldova-isolated` or `.azure-my profile-isolated`).
+Names must be nonblank and contain no invalid filename characters.
+It displays authentication status before initializing each tab's F12 shortcut.
+F12 inserts the suggested command; it does not execute it. Tab titles and working
+directories remain specific to each build or test.
+
+The launcher does not modify Windows Terminal settings or automatically execute the
+profile's `commandline`; the wrapper supplies the same isolated-configuration startup
+sequence for every selected profile. Authentication failures
+are reported without preventing prompt setup, so you can run `az login` / `azd auth login`
+in the isolated tab before running build or test commands.
+
 ### What happens during `azd up`
 
 #### Pre-provision Hook (`infra/scripts/preprovision.ps1`)
@@ -51,7 +77,9 @@ The simplest way to provision all Azure resources is using the [Azure Developer 
 Creates the following Azure resources using the prefixes defined in `infra/resourcetypes.json`:
 - **Resource Group** (`rg-{env}`)
 - **Virtual Network** with subnets for AKS, Container Apps, ACI, Batch, and Private Endpoints
-- **Managed Identity** (`id-{env}`) - Used for all service-to-service authentication
+- **Worker identity** (`id-{env}-worker`) - Database migrations, image pulls and scoped data-plane access; no Azure compute-management or AKS administrator permissions
+- **Orchestrator identity** (`id-{env}-orchestrator`) - Azure test-runner compute lifecycle, messaging setup, monitoring and cleanup
+- **Infrastructure identities** - Separate bootstrap, Relay, AKS control-plane/kubelet and MySQL directory-lookup responsibilities (see [identity boundaries](azd-up-deployment.md#identity-summary))
 - **Storage Account** (`st{env}`; hyphens removed) - For runtime logs and Kubernetes package staging
 - **Service Bus Namespace** (`sbns-{env}`) - Topic-based message queue for database targets
 - **Event Hub** (`evhns-{env}` / `evh-{env}`) - Progress event tracking
@@ -88,7 +116,7 @@ azd env set DEPLOY_MYSQL true               # Deploy MySQL databases
 
 # Database settings
 azd env set TEST_DB_COUNT_PER_SERVER 10     # Test databases per server (default: 10)
-azd env set MYSQL_AUTH_MODE Password        # MySQL test auth mode: Password or ManagedIdentity
+azd env set MYSQL_AUTH_MODE ManagedIdentity # Default for Azure MySQL tests; local tests retain native credentials
 
 # Post-provision options
 azd env set BUILD_CONTAINER_IMAGES true     # Build and push Docker images
@@ -100,17 +128,53 @@ azd env set USE_PRIVATE_ENDPOINT false      # Use private endpoints (default: fa
 
 ### Output Files
 
-After successful deployment, the following files are generated in `src/TestConfig`:
+After successful deployment, the following files are generated in `src\TestConfig\<envName>`,
+where `<envName>` is the current azd environment:
 - `settingsfile-batch-*.json` - Batch settings with MI authentication
 - `settingsfile-aci-*.json` - ACI settings 
 - `settingsfile-containerapp-*.json` - Container App settings
 - `settingsfile-k8s-*.json` - Kubernetes settings
-- `settingsfile-*-mysql-password.json` - MySQL password-auth settings for external tests
+- `settingsfile-*-mysql-mi-only.json` - MySQL managed-identity settings for Azure tests (see [MySQL prerequisites and migration](mysql.md#managed-identity-azure-mysql))
 - `settingsfilekey.txt` - Encryption key for settings files
 - `databasetargets.cfg` - Database listing for SBM file integration tests
 - `clientdbtargets.cfg` - Database listing for DACPAC integration tests
 - `mysql-databasetargets.cfg` - MySQL database listing for SBM integration tests
 - `mysql-clientdbtargets.cfg` - MySQL client target mapping
+
+Producer scripts and environment-aware build/test wrappers use `-envName` to select this directory.
+An explicit `-path` is an exact directory override: no environment suffix is appended.
+Existing flat files in `src\TestConfig` are left untouched and are **not** an Azure fallback.
+Regenerate configuration with `azd up` for each environment, or deliberately move only files known
+to belong to that environment into its folder, keeping settings and their encryption key together.
+
+The test-image builder stages only the selected environment's top-level JSON, CFG, TXT and YAML
+files; other environments, legacy root files, ZIP bundles and test results are excluded.
+The compiled tests and container still read `TestConfig\<filename>`: only the selected environment
+is flattened into that runtime directory. Use the image-build wrapper, not an unsanitized source
+directory as a manual Docker build context:
+
+```powershell
+.\scripts\ContainerRegistry\build_external_test_image.ps1 -envName myenv
+dotnet test .\src\SqlBuildManager.Console.MySQL.AzureTest\SqlBuildManager.Console.MySQL.AzureTest.csproj -p:AzdEnvironment=myenv
+```
+
+The same `AzdEnvironment` property applies to the SQL Server and PostgreSQL Azure test projects.
+
+The `scripts\tests\run_all_mysql_external_tests_in_aci.ps1` and
+`scripts\tests\run_all_postgres_external_tests_in_aci.ps1` wrappers check both database
+servers before launching any selected, deployed test groups. Using the current Azure CLI
+subscription, they start stopped Flexible Servers and wait up to 20 minutes per server
+for `Ready`, including servers already starting or stopping. The signed-in Azure CLI
+identity needs permission to read and start the servers. Progress messages distinguish
+database startup/readiness from the start of the ACI test run. A failed check/start,
+unexpected state, or timeout stops the run before tests launch. If no requested test
+groups are available, servers are not started.
+Alternatively set `$env:AZURE_ENV_NAME = 'myenv'`; an explicit property takes precedence.
+Azure test execution requires a selection, including with `--no-build`, which refreshes the selected
+runtime configuration. A plain build without a selection builds code without Azure configuration.
+Native unit/local-container tests continue using their existing flat/native fixtures and do not
+copy Azure environment subfolders. ACI Azure test downloads are stored in the selected environment's
+`TestResults` subfolder.
 
 ---
 ## Notes on Unit Testing
@@ -122,7 +186,18 @@ There are three types of Tests included in the solution:
 1. True unit tests with no external dependency - found in the  `~UnitTest.csproj` projects
 2. Those that are dependent on a local SQLEXPRESS database - found in the `~.Dependent.UnitTest.csproj` projects. If you want to be able to run the database dependent tests, you will need to install SQL Express as per the next section. \
 **IMPORTANT**: If running the SQLEXPRESS dependent tests for the first time on your local machine, you need to run the tests in the `SqlBuildManager.SqlBuild.Dependent.SqlServer.UnitTest.csproj` _first_. This project has the scripts to create the necessary SQLEXPRESS databases.
-3. Integration tests that leverage Azure resources for Batch and Kubernetes. These are found in `SqlBuildManager.Console.SqlServer.ExternalTest.csproj`, `SqlBuildManager.Console.PostgreSQL.ExternalTest.csproj`, and `SqlBuildManager.Console.MySQL.ExternalTest.csproj`. To run these tests, first run `azd up` from the repo root (see [Setting Up an Azure Environment](setup_azure_environment.md)) with the default test database count of 10. This will create the necessary resources and test config files (in `/src/TestConfig` folder) needed to run the tests.
+3. Azure tests that leverage deployed resources. These are found in `SqlBuildManager.Console.SqlServer.AzureTest.csproj`, `SqlBuildManager.Console.PostgreSQL.AzureTest.csproj`, and `SqlBuildManager.Console.MySQL.AzureTest.csproj`. To run these tests, first run `azd up` from the repo root with the default test database count of 10. This creates the resources and configuration in `src\TestConfig\<envName>`. Select that environment for local test execution as described above, or pass `-envName` to the ACI test wrappers.
+
+SQL test setup, private-network probes and DACPAC extraction use the authentication mode and
+database worker client ID from the selected settings. The ACI test runner's orchestrator identity
+continues to handle Azure resource management; it does not need database-owner privileges.
+Developer runs can select `AzureADDefault`, and native/local runs retain their password or Windows
+authentication and local certificate options. Azure SQL connections always use verified TLS.
+
+Rebuild runtime and test-runner images from the same source revision before comparing Azure
+results. Image build output includes the ACR run ID and image digests; worker logs and the
+test-runner's uploaded `artifact-provenance.txt` identify the executed binaries. See
+[execution logs and provenance](threaded_and_batch_logs.md#working-folder).
 
 ## SQL Express
 

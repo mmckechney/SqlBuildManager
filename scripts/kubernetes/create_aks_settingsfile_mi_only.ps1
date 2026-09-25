@@ -7,7 +7,7 @@ param
     [string] $path,
     [string] $resourceGroupName,
     [int] $podCount = 2,
-    [ValidateSet("AzureADDefault", "Password")]
+    [ValidateSet("AzureADDefault", "ManagedIdentity", "Password")]
     [string] $databaseAuthType = "AzureADDefault",
     [string] $databaseUserName = "",
     [string] $databasePassword = "",
@@ -51,9 +51,8 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
 }
 
-if ([string]::IsNullOrWhiteSpace($path)) {
-    $path = Join-Path $repoRoot "src\TestConfig"
-}
+. (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+$path = Get-TestConfigPath -envName $envName -path $path -repoRoot $repoRoot -Create
 
 #############################################
 # Get set resource name variables from prefix
@@ -155,6 +154,9 @@ if (Test-Path $settingsFileName) { Remove-Item $settingsFileName }
 Write-Host "Saving MI-only settings file to $settingsFileName" -ForegroundColor DarkGreen
 Write-Host $params -ForegroundColor DarkYellow
 & $sbmExe $params
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to generate Kubernetes settings '$settingsFileName'."
+}
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Green

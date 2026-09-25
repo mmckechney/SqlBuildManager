@@ -85,6 +85,7 @@ namespace SqlBuildManager.Connection
                     builder.TrustServerCertificate = trustServerCertificate;
                     break;
             }
+            AzureDatabaseTls.Apply(builder);
             log.LogDebug($"Database Connection string: {ConnectionStringRedactor.Redact(builder.ConnectionString)}");
             return builder.ConnectionString;
         }

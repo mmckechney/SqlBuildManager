@@ -11,18 +11,11 @@ param
 
 <#
 .SYNOPSIS
-    Grants the managed identity access to all MySQL databases by creating an Entra user.
-
+    Creates the runtime managed-identity principal and grants access to Azure MySQL test databases.
 .DESCRIPTION
-    Connects to each Azure MySQL Flexible Server as the configured Entra administrator and
-    creates an Entra-backed database principal for the managed identity name. The principal
-    is then granted privileges on each test database.
-
-.PARAMETER envName
-    The Azure Developer CLI environment name used when deploying resources.
-
-.PARAMETER resourceGroupName
-    The Azure resource group containing the MySQL servers.
+    Runs inside the private bootstrap container. Azure resource discovery uses the container's
+    managed identity; database administration uses the deploying Entra user's short-lived token
+    supplied through MYSQL_BOOTSTRAP_ACCESS_TOKEN, never a native administrator password.
 #>
 
 Set-StrictMode -Version Latest
@@ -30,140 +23,77 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = $env:AZD_PROJECT_PATH
 if ([string]::IsNullOrWhiteSpace($repoRoot)) {
-    $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
+    $repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 }
-
-if ([string]::IsNullOrWhiteSpace($path)) {
-    $path = Join-Path $repoRoot 'src' 'TestConfig'
-}
-
-$prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
-. $prefixScript -envName $envName
+$resourceGroupOverride = $resourceGroupName
+. (Join-Path $repoRoot 'scripts/prefix_resource_names.ps1') -envName $envName
+$resourceGroupName = $resourceGroupOverride
+. (Join-Path $PSScriptRoot 'mysql_entra_helpers.ps1')
 
 if (-not (Get-Command mysql -ErrorAction SilentlyContinue)) {
-    Write-Error "The mysql CLI is required but was not found on PATH."
-    exit 1
+    throw 'The mysql CLI is required for Azure MySQL initialization.'
+}
+$entraAdminLogin = $env:MYSQL_ENTRA_ADMIN_LOGIN
+$bootstrapToken = $env:MYSQL_BOOTSTRAP_ACCESS_TOKEN
+if ([string]::IsNullOrWhiteSpace($entraAdminLogin) -or [string]::IsNullOrWhiteSpace($bootstrapToken)) {
+    throw 'MYSQL_ENTRA_ADMIN_LOGIN and MYSQL_BOOTSTRAP_ACCESS_TOKEN are required. Run the private postprovision launcher as the deploying Entra user.'
 }
 
-$entraAdminLogin = $env:POSTPROVISION_IDENTITY_NAME
-if ([string]::IsNullOrWhiteSpace($entraAdminLogin)) {
-    $entraAdminLogin = az account show --query user.name -o tsv
+$identityJson = az identity show --name $identityName --resource-group $resourceGroupName
+if ($LASTEXITCODE -ne 0) {
+    throw "Unable to resolve runtime managed identity '$identityName'."
 }
-if ([string]::IsNullOrWhiteSpace($entraAdminLogin)) {
-    Write-Error "Unable to determine the MySQL Entra administrator login."
-    exit 1
+$identity = $identityJson | ConvertFrom-Json
+$clientId = [guid]$identity.clientId
+$principalId = [guid]$identity.principalId
+if ($clientId -eq [guid]::Empty -or $principalId -eq [guid]::Empty) {
+    throw 'The runtime managed identity has an invalid client or principal ID.'
 }
-
-Write-Host "Granting Managed Identity '$identityName' access to MySQL databases" -ForegroundColor Cyan
-Write-Host "Resource Group: $resourceGroupName" -ForegroundColor DarkGreen
-Write-Host "Entra Admin Login: $entraAdminLogin" -ForegroundColor DarkGreen
-
-$identity = az identity show --name $identityName --resource-group $resourceGroupName | ConvertFrom-Json
-if ($null -eq $identity) {
-    Write-Host "ERROR: Could not find managed identity '$identityName' in resource group '$resourceGroupName'" -ForegroundColor Red
-    exit 1
+$identityLogin = $identityName.Replace("'", "''")
+$clientVersion = & mysql --version
+if ($LASTEXITCODE -ne 0) {
+    throw 'Unable to determine the installed mysql client version.'
 }
 
-$identityLogin = $identityName
-$escapedIdentityLogin = $identityLogin.Replace("'", "''")
-$mySqlServers = @($mySqlServerNameA, $mySqlServerNameB)
-$systemDatabases = @('mysql', 'information_schema', 'performance_schema', 'sys')
-$failureCount = 0
-$aadEndpointAccessFailure = $false
-
-foreach ($serverName in $mySqlServers) {
-    $server = az mysql flexible-server show --resource-group $resourceGroupName --name $serverName | ConvertFrom-Json
-    if ($null -eq $server) {
-        Write-Host "ERROR: Could not find MySQL server '$serverName'" -ForegroundColor Red
-        $failureCount++
-        continue
-    }
-
-    $fqdn = $server.fullyQualifiedDomainName
-    Write-Host ""
-    Write-Host "Processing MySQL Server: $fqdn" -ForegroundColor Cyan
-
-    $aadToken = az account get-access-token --resource-type oss-rdbms --query accessToken -o tsv
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($aadToken)) {
-        $aadToken = az account get-access-token --resource https://ossrdbms-aad.database.windows.net --query accessToken -o tsv
-    }
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($aadToken)) {
-        Write-Host "  ✗ Unable to acquire Entra access token for MySQL on '$fqdn'" -ForegroundColor Red
-        $failureCount++
-        continue
-    }
-
-    $baseArgs = @(
-        "--host=$fqdn",
-        "--port=3306",
-        "--user=$entraAdminLogin",
-        "--password=$aadToken",
-        "--enable-cleartext-plugin",
-        "--ssl-mode=REQUIRED",
-        "--skip-column-names"
-    )
-
-    $createUserSql = "CREATE AADUSER '$escapedIdentityLogin';"
-    $createOutput = & mysql @baseArgs --execute=$createUserSql 2>&1
-    if ($LASTEXITCODE -ne 0 -and "$createOutput" -match "ERROR 1396|Operation CREATE USER failed") {
-        Write-Host "  Existing MySQL-native user detected for '$identityName'; recreating as Entra user..." -ForegroundColor Yellow
-        $recreateUserSql = @(
-            "DROP USER IF EXISTS '$escapedIdentityLogin'@'%'",
-            "DROP USER IF EXISTS '$escapedIdentityLogin'@'localhost'",
-            "CREATE AADUSER '$escapedIdentityLogin'"
-        ) -join '; '
-
-        $createOutput = & mysql @baseArgs --execute=$recreateUserSql 2>&1
-    }
-
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "  ✓ Entra user '$identityName' created on '$fqdn'" -ForegroundColor Green
-    } elseif ("$createOutput" -match "already exists") {
-        Write-Host "  Entra user '$identityName' already exists on '$fqdn' — OK" -ForegroundColor DarkGreen
-    } elseif ("$createOutput" -match 'ERROR 9127') {
-        Write-Host "  ✗ Unable to create MySQL Entra user '$identityName' on '$fqdn': $createOutput" -ForegroundColor Red
-        Write-Host "    MySQL couldn't query Microsoft Entra for principal resolution. The server identity '$postProvisionIdentityName' needs Graph permissions (User.Read.All, GroupMember.Read.All, Application.Read.All) or Directory Readers role." -ForegroundColor Yellow
-        $aadEndpointAccessFailure = $true
-        $failureCount++
-        continue
-    } else {
-        Write-Host "  ✗ Unable to create MySQL Entra user '$identityName' on '$fqdn': $createOutput" -ForegroundColor Red
-        $failureCount++
-        continue
-    }
-
-    $dbs = @(az mysql flexible-server db list --resource-group $resourceGroupName --server-name $serverName --query "[].name" -o tsv)
-    foreach ($db in $dbs) {
-        if ($db -in $systemDatabases) {
-            continue
-        }
-
-        Write-Host "  Granting permissions on database: $db" -ForegroundColor DarkGreen
-
-        $grantSql = @(
-            "GRANT ALL PRIVILEGES ON ``$db``.* TO '$escapedIdentityLogin'",
-            "FLUSH PRIVILEGES"
-        ) -join '; '
-
-        $grantOutput = & mysql @baseArgs --database=$db --execute=$grantSql 2>&1
+$previousPassword = [Environment]::GetEnvironmentVariable('MYSQL_PWD')
+try {
+    # Keep the token out of command arguments and query/error output.
+    $env:MYSQL_PWD = $bootstrapToken
+    foreach ($serverName in @($mySqlServerNameA, $mySqlServerNameB)) {
+        $serverJson = az mysql flexible-server show --resource-group $resourceGroupName --name $serverName
         if ($LASTEXITCODE -ne 0) {
-            Write-Host "    ✗ Failed to grant permissions on '$db': $grantOutput" -ForegroundColor Red
-            $failureCount++
-        } else {
-            Write-Host "    ✓ Granted permissions on '$db'" -ForegroundColor Green
+            throw "Unable to read MySQL server '$serverName'."
         }
+        $server = $serverJson | ConvertFrom-Json
+        $arguments = Get-MySqlEntraClientArguments -Server $server.fullyQualifiedDomainName -User $entraAdminLogin -ClientVersion "$clientVersion"
+        $mappingQuery = "SELECT plugin, authentication_string FROM mysql.user WHERE User='$identityLogin' AND Host='%';"
+        $mapping = Invoke-MySqlEntraQuery -Arguments $arguments -Query $mappingQuery -Operation "Read identity mapping on $serverName"
+        if ([string]::IsNullOrWhiteSpace($mapping)) {
+            $null = Invoke-MySqlEntraQuery -Arguments $arguments `
+                -Query "CREATE AADUSER '$identityLogin' IDENTIFIED BY '$clientId';" `
+                -Operation "Create managed-identity user on $serverName"
+            $mapping = Invoke-MySqlEntraQuery -Arguments $arguments -Query $mappingQuery -Operation "Verify identity mapping on $serverName"
+        }
+        Assert-MySqlEntraPrincipal -Mapping $mapping -ClientId $clientId -PrincipalId $principalId
+
+        $databases = @(az mysql flexible-server db list --resource-group $resourceGroupName --server-name $serverName --query '[].name' -o tsv)
+        if ($LASTEXITCODE -ne 0) {
+            throw "Unable to enumerate MySQL test databases on '$serverName'."
+        }
+        $testDatabases = @($databases | Where-Object { $_ -match '^sbm_mysql_test\d+$' })
+        if ($testDatabases.Count -eq 0) {
+            throw "No sbm_mysql_test databases were found on '$serverName'."
+        }
+        foreach ($database in $testDatabases) {
+            $null = Invoke-MySqlEntraQuery -Arguments $arguments `
+                -Query "GRANT ALL PRIVILEGES ON ``$database``.* TO '$identityLogin'@'%';" `
+                -Operation "Grant migration privileges on $serverName/$database"
+        }
+        Write-Host "Managed identity '$identityName' is mapped and authorized for $($testDatabases.Count) test databases on '$serverName'." -ForegroundColor Green
     }
 }
-
-if ($failureCount -gt 0) {
-    if ($aadEndpointAccessFailure) {
-        Write-Host "Hint: run scripts\\Database\\grant_mysql_graph_permissions.ps1 with an account that has Privileged Role Administrator or Global Administrator permissions." -ForegroundColor Yellow
-    }
-    Write-Error "MySQL permission initialization failed for $failureCount operation(s)."
-    exit 1
+finally {
+    [Environment]::SetEnvironmentVariable('MYSQL_PWD', $previousPassword)
+    $bootstrapToken = $null
+    [Environment]::SetEnvironmentVariable('MYSQL_BOOTSTRAP_ACCESS_TOKEN', $null)
 }
-
-Write-Host ""
-Write-Host "======================================" -ForegroundColor Cyan
-Write-Host "MySQL Identity Permissions Complete" -ForegroundColor Cyan
-Write-Host "======================================" -ForegroundColor Cyan

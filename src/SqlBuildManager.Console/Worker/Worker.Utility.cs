@@ -388,7 +388,7 @@ namespace SqlBuildManager.Console
                     var scriptId = s.ScriptId ?? string.Empty;
                     if (withHash)
                     {
-                        sqlB.SqlBuildFileHelper.GetSHA1Hash(Path.Combine(projFilePath, fileName), out string fileHash, out string textHash, s.StripTransactionText ?? false);
+                        sqlB.SqlBuildFileHelper.GetSHA1Hash(sqlB.Utilities.PackagePath.Resolve(projFilePath, fileName), out string fileHash, out string textHash, s.StripTransactionText ?? false);
                         contents.Add(new string[] { buildOrder, fileName, lastDate.ToString(dateformat), user, scriptId, textHash });
                     }
                     else
@@ -642,7 +642,7 @@ namespace SqlBuildManager.Console
         }
 
 
-        internal static async Task UnpackSbmFile(DirectoryInfo directory, FileInfo package)
+        internal static async Task<int> UnpackSbmFile(DirectoryInfo directory, FileInfo package)
         {
             var projectFileName = "";
             var projectFilePath = "";
@@ -654,15 +654,18 @@ namespace SqlBuildManager.Console
             }
             bool success;
             (success, dir, projectFilePath, projectFileName, result) = await SqlBuildManager.SqlBuild.SqlBuildFileHelper.ExtractSqlBuildZipFileAsync(package.FullName, dir, false, true).ConfigureAwait(false);
+            if (!success)
+            {
+                log.LogError("Unable to unpack SBM file '{Package}': {Reason}", package.FullName, result);
+                return (int)ExecutionReturn.BuildFileExtractionError;
+            }
             if (File.Exists(Path.Combine(dir, projectFileName)))
             {
                 var sbmName = Path.GetFileNameWithoutExtension(package.FullName) + ".sbx";
                 File.Move(Path.Combine(dir, projectFileName), Path.Combine(dir, sbmName));
             }
-            if (success)
-            {
-                log.LogInformation($"SBM file extracted to: {Path.GetFullPath(directory.FullName)}");
-            }
+            log.LogInformation($"SBM file extracted to: {Path.GetFullPath(directory.FullName)}");
+            return (int)ExecutionReturn.Successful;
         }
 
 

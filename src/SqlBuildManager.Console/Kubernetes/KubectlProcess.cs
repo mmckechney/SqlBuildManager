@@ -12,6 +12,16 @@ namespace SqlBuildManager.Console.Kubernetes
          return resp;
       }
 
+      internal static bool HasNamespaceAccess(string k8namespace)
+      {
+         var (response, _, error) = RunKubectl($"get configmaps -n {k8namespace} -o name", false);
+         if (response != 0)
+         {
+            log.LogError($"Unable to access Kubernetes namespace '{k8namespace}': {error}");
+         }
+         return response == 0;
+      }
+
       public static int DeleteKubernetesResource(string resourceKind, string resourceName, string k8namespace = "")
       {
          if (!string.IsNullOrWhiteSpace(k8namespace))

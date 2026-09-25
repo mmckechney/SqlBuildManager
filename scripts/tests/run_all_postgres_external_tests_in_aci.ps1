@@ -4,7 +4,8 @@
 .DESCRIPTION
     Reads AZD environment configuration to determine which compute platforms (ACI,
     Batch, Container Apps, AKS) and PostgreSQL database platform are deployed. For
-    all available compute platforms, launches the filtered PostgreSQL external test
+    available test groups, checks both PostgreSQL servers with Azure CLI, starts stopped
+    servers and waits for Ready before launching the filtered PostgreSQL external test
     runner in ACI. After all tests complete, downloads results from Azure Storage
     and invokes GitHub Copilot CLI to analyze the test output.
 .PARAMETER envName
@@ -62,7 +63,7 @@ Write-Host ""
 Write-Host "Loading AZD deployment configuration..." -ForegroundColor Cyan
 
 $azdConfig = @{}
-$azdOutput = azd env get-values 2>&1
+$azdOutput = azd env get-values -e $envName 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Host "WARNING: Failed to load AZD environment values. All tests will be attempted." -ForegroundColor Yellow
     Write-Host "  Run 'azd env select' or 'azd init' to configure an environment." -ForegroundColor Yellow
@@ -157,6 +158,9 @@ if (-not $hasPostgreSQL) {
 
     if ($pgFilters.Count -gt 0) {
         $pgTestFilter = $pgFilters -join '|'
+        . (Join-Path $PSScriptRoot 'aci_test_helpers.ps1')
+        Start-AzureDatabaseServersForTests -platform postgres -resourceGroupName $resourceGroupName -serverNames @($pgServerNameA, $pgServerNameB)
+        Write-Host "PostgreSQL servers are Ready. Starting the PostgreSQL external test run in ACI..." -ForegroundColor Green
         & (Join-Path $PSScriptRoot 'run_filtered_external_tests_in_aci.ps1') -envName $envName -customName pg -testFilter $pgTestFilter -timeoutMinutes 300 -timestamp $timestamp
         $exitCode += $LASTEXITCODE
     } else {
@@ -168,6 +172,8 @@ if (-not $hasPostgreSQL) {
 Write-Host "Running Copilot AI analysis of test logs to look for patterns, failure reasons and areas for improvement" -ForegroundColor Yellow
 if (Get-Command copilot -ErrorAction SilentlyContinue) {
     $promptTemplate = Get-Content -Path (Join-Path $PSScriptRoot 'analyze-test-results-prompt.md') -Raw
-    $prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
+    . (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+    $resultsPath = Join-Path (Get-TestConfigPath -envName $envName -Create) 'TestResults' $timestamp
+    $prompt = $promptTemplate.Replace('{{resultsPath}}', $resultsPath)
     $output = copilot --yolo -p $prompt 2>&1
 }

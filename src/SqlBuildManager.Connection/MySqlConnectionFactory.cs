@@ -24,6 +24,16 @@ namespace SqlBuildManager.Connection
         private static readonly ConcurrentDictionary<string, TokenCredential> Credentials = new();
         private static readonly ConcurrentDictionary<string, AccessToken> Tokens = new();
         private static readonly ConcurrentDictionary<string, object> TokenLocks = new();
+        private readonly Func<string, string> tokenProvider;
+
+        public MySqlConnectionFactory() : this(GetAzureAdAccessToken)
+        {
+        }
+
+        internal MySqlConnectionFactory(Func<string, string> tokenProvider)
+        {
+            this.tokenProvider = tokenProvider ?? throw new ArgumentNullException(nameof(tokenProvider));
+        }
 
         public DbConnection CreateConnection(ConnectionData connData)
         {
@@ -53,7 +63,8 @@ namespace SqlBuildManager.Connection
         {
             string host = serverName;
             uint port = 3306;
-            if (serverName.Contains(':'))
+            if (!serverName.Contains(',') && serverName.IndexOf(':') > 0 &&
+                serverName.IndexOf(':') == serverName.LastIndexOf(':'))
             {
                 var parts = serverName.Split(':');
                 host = parts[0];
@@ -88,11 +99,11 @@ namespace SqlBuildManager.Connection
                     break;
                 case AuthenticationType.AzureADDefault:
                 case AuthenticationType.ManagedIdentity:
-                    builder.SslMode = MySqlSslMode.Required;
+                    builder.SslMode = MySqlSslMode.VerifyFull;
                     // MySQL Entra ID requires the identity name as the username.
                     // Use uid (identity name) if available; fall back to client ID.
                     builder.UserID = !string.IsNullOrEmpty(uid) ? uid : managedIdentityClientId;
-                    builder.Password = GetAzureAdAccessToken(managedIdentityClientId);
+                    builder.Password = tokenProvider(managedIdentityClientId);
                     break;
                 case AuthenticationType.AzureADIntegrated:
                 case AuthenticationType.AzureADInteractive:
@@ -101,6 +112,10 @@ namespace SqlBuildManager.Connection
                     builder.SslMode = MySqlSslMode.Required;
                     break;
             }
+
+            // Mixed-host configurations must not downgrade an Azure endpoint.
+            if (AzureDatabaseTls.IsMySql(serverName))
+                builder.SslMode = MySqlSslMode.VerifyFull;
 
             log.LogDebug($"MySQL Connection string: {ConnectionStringRedactor.Redact(builder.ConnectionString)}");
             return builder.ConnectionString;
@@ -116,9 +131,12 @@ namespace SqlBuildManager.Connection
         {
             try
             {
-                string cacheKey = string.IsNullOrWhiteSpace(managedIdentityClientId)
-                    ? "<default>"
-                    : managedIdentityClientId;
+                string tenantId = Environment.GetEnvironmentVariable("AZURE_TENANT_ID") ?? string.Empty;
+                string tokenFile = Environment.GetEnvironmentVariable("AZURE_FEDERATED_TOKEN_FILE") ?? string.Empty;
+                string clientId = string.IsNullOrWhiteSpace(managedIdentityClientId) && !string.IsNullOrWhiteSpace(tokenFile)
+                    ? Environment.GetEnvironmentVariable("AZURE_CLIENT_ID") ?? string.Empty
+                    : managedIdentityClientId ?? string.Empty;
+                string cacheKey = $"{clientId}|{tenantId}|{tokenFile}";
                 if (Tokens.TryGetValue(cacheKey, out AccessToken cachedToken) &&
                     cachedToken.ExpiresOn > DateTimeOffset.UtcNow.Add(TokenRefreshBuffer))
                 {
@@ -134,10 +152,7 @@ namespace SqlBuildManager.Connection
                     }
 
                     TokenCredential credential = Credentials.GetOrAdd(cacheKey, _ =>
-                        string.IsNullOrWhiteSpace(managedIdentityClientId)
-                            ? new DefaultAzureCredential()
-                            : new ManagedIdentityCredential(
-                                ManagedIdentityId.FromUserAssignedClientId(managedIdentityClientId)));
+                        CreateTokenCredential(clientId, tenantId, tokenFile));
 
                     var tokenRequestContext = new TokenRequestContext(MySqlAadScopes);
                     AccessToken token = credential.GetToken(tokenRequestContext, default);
@@ -151,6 +166,26 @@ namespace SqlBuildManager.Connection
                 log.LogError(ex, "Failed to acquire Azure AD token for MySQL");
                 throw;
             }
+        }
+
+        internal static TokenCredential CreateTokenCredential(string clientId, string tenantId, string tokenFile)
+        {
+            if (!string.IsNullOrWhiteSpace(tokenFile))
+            {
+                if (string.IsNullOrWhiteSpace(clientId) || string.IsNullOrWhiteSpace(tenantId))
+                {
+                    throw new InvalidOperationException("MySQL workload identity requires a client ID and AZURE_TENANT_ID when AZURE_FEDERATED_TOKEN_FILE is set.");
+                }
+                return new WorkloadIdentityCredential(new WorkloadIdentityCredentialOptions
+                {
+                    ClientId = clientId,
+                    TenantId = tenantId,
+                    TokenFilePath = tokenFile
+                });
+            }
+            return string.IsNullOrWhiteSpace(clientId)
+                ? new DefaultAzureCredential()
+                : new ManagedIdentityCredential(ManagedIdentityId.FromUserAssignedClientId(clientId));
         }
 
         public DbCommand CreateCommand(string sql, DbConnection connection, DbTransaction transaction = null!)

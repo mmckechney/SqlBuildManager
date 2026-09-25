@@ -161,12 +161,13 @@ namespace SqlBuildManager.SqlBuild.Services
         public ScriptBatchCollection LoadAndBatchSqlScripts(SqlBuildManager.SqlBuild.Models.SqlSyncBuildDataModel model, string projectFilePath)
         {
             ScriptBatchCollection coll = new ScriptBatchCollection();
+            SqlBuildManager.SqlBuild.Utilities.PackagePath.ValidateScripts(model, projectFilePath, requireFiles: false);
             var scripts = model.Script.OrderBy(s => s.BuildOrder ?? double.MaxValue).ToList();
             foreach (var s in scripts)
             {
                 var fileName = s.FileName ?? string.Empty;
                 var strip = s.StripTransactionText ?? false;
-                var batchScripts = ReadBatchFromScriptFile(Path.Combine(projectFilePath, fileName), strip, false);
+                var batchScripts = ReadBatchFromScriptFile(SqlBuildManager.SqlBuild.Utilities.PackagePath.Resolve(projectFilePath, fileName), strip, false);
                 var batch = new ScriptBatch(fileName, batchScripts, s.ScriptId ?? string.Empty);
                 coll.Add(batch);
             }

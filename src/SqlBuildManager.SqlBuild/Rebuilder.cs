@@ -112,7 +112,7 @@ namespace SqlBuildManager.SqlBuild
 
                 for (int i = 0; i < rebuildData.Count; i++)
                 {
-                    await File.WriteAllTextAsync(Path.Combine(tempPath, rebuildData[i].ScriptFileName), rebuildData[i].ScriptText, cancellationToken).ConfigureAwait(false);
+                    await File.WriteAllTextAsync(Utilities.PackagePath.Resolve(tempPath, rebuildData[i].ScriptFileName), rebuildData[i].ScriptText, cancellationToken).ConfigureAwait(false);
                 }
 
                 var buildModel = SqlBuildFileHelper.CreateShellSqlSyncBuildDataModel();

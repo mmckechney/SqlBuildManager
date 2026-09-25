@@ -7,7 +7,7 @@
     client targets, double-client targets) and a server.txt file. These files are
     used by ExternalTest projects to target the correct databases during integration tests.
 .PARAMETER path
-    Output directory for config files. Defaults to src\TestConfig.
+    Exact output directory override. Defaults to src\TestConfig\<envName>.
 .PARAMETER envName
     Azure Developer CLI environment name used to derive resource names.
 #>
@@ -23,9 +23,8 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
 }
 
-if ([string]::IsNullOrWhiteSpace($path)) {
-    $path = Join-Path $repoRoot "src\TestConfig"
-}
+. (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+$path = Get-TestConfigPath -envName $envName -path $path -repoRoot $repoRoot -Create
 
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
 . $prefixScript -envName $envName

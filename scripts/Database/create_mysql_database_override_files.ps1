@@ -1,7 +1,10 @@
 param
 (
     [string] $path,
-    [string] $envName
+    [string] $envName,
+    [string] $resourceGroupName,
+    [ValidateSet('ManagedIdentity', 'Password')]
+    [string] $authenticationMode = 'ManagedIdentity'
 )
 
 <#
@@ -24,15 +27,20 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
 }
 
-if ([string]::IsNullOrWhiteSpace($path)) {
-    $path = Join-Path $repoRoot "src\TestConfig"
-}
+. (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+$path = Get-TestConfigPath -envName $envName -path $path -repoRoot $repoRoot -Create
 
 $prefixScript = Join-Path $repoRoot "scripts\prefix_resource_names.ps1"
+$resourceGroupOverride = $resourceGroupName
 . $prefixScript -envName $envName
-
-$keyFileScript = Join-Path $repoRoot "scripts\key_file_names.ps1"
-. $keyFileScript -envName $envName -path $path
+if (-not [string]::IsNullOrWhiteSpace($resourceGroupOverride)) {
+    $resourceGroupName = $resourceGroupOverride
+}
+if ($authenticationMode -eq 'ManagedIdentity' -and
+    ((Test-Path (Join-Path $path 'mysql-pw.txt')) -or
+     (Get-ChildItem -Path $path -Filter 'settingsfile-*-mysql-password.json' -ErrorAction Stop))) {
+    throw "Stale Azure MySQL password artifacts exist in '$path'. Move them out of this environment's output directory before generating identity settings or rebuilding its Azure test image. Local/local-container credentials are not affected."
+}
 
 Write-Host "Create MySQL database override files for servers '$mySqlServerNameA' and '$mySqlServerNameB' in resource group '$resourceGroupName'" -ForegroundColor Cyan
 $path = Resolve-Path $path
@@ -48,29 +56,33 @@ $clientDbConfig = @()
 $doubleClientDbConfig = @()
 
 $mySqlServerNames = @($mySqlServerNameA, $mySqlServerNameB)
-$systemDatabases = @('mysql', 'information_schema', 'performance_schema', 'sys')
 
 foreach ($mySqlServerName in $mySqlServerNames) {
     $mySqlServer = az mysql flexible-server show --resource-group $resourceGroupName --name $mySqlServerName | ConvertFrom-Json
-    if ($null -eq $mySqlServer) {
-        Write-Host "ERROR: Could not find MySQL server '$mySqlServerName' in resource group '$resourceGroupName'" -ForegroundColor Red
-        continue
+    if ($LASTEXITCODE -ne 0 -or $null -eq $mySqlServer) {
+        throw "Could not find MySQL server '$mySqlServerName' in resource group '$resourceGroupName'."
     }
 
     $mySqlFqdn = $mySqlServer.fullyQualifiedDomainName
     Write-Host "MySQL Server FQDN: $mySqlFqdn" -ForegroundColor DarkGreen
 
     $dbs = az mysql flexible-server db list --resource-group $resourceGroupName --server-name $mySqlServerName --query "[].name" -o tsv
+    if ($LASTEXITCODE -ne 0) {
+        throw "Unable to enumerate databases on '$mySqlServerName'."
+    }
     Write-Host "Databases found on ${mySqlServerName}: $dbs" -ForegroundColor Cyan
 
     foreach ($db in $dbs) {
-        if ($db -notin $systemDatabases) {
+        if ($db -match '^sbm_mysql_test\d+$') {
             $outputDbConfig += "$($mySqlFqdn):sbm_mysql_test,$db"
             $clientDbConfig += "$($mySqlFqdn):client,$db"
         }
     }
 
-    $testDbs = $dbs | Where-Object { $_ -match '^sbm_mysql_test\d+$' } | Sort-Object
+    $testDbs = @($dbs | Where-Object { $_ -match '^sbm_mysql_test\d+$' } | Sort-Object)
+    if ($testDbs.Count -eq 0) {
+        throw "No sbm_mysql_test databases were found on '$mySqlServerName'."
+    }
     for ($i = 0; $i -lt $testDbs.Count; $i += 2) {
         if ($i + 1 -lt $testDbs.Count) {
             $doubleClientDbConfig += "$($mySqlFqdn):client,$($testDbs[$i]);client2,$($testDbs[$i+1])"
@@ -89,20 +101,23 @@ $doubleClientDbConfig | Set-Content -Path $doubleClientDbConfigFile
 
 Write-Host "Writing MySQL server.txt to $mySqlServerTextFile" -ForegroundColor DarkGreen
 $mySqlServerA = az mysql flexible-server show --resource-group $resourceGroupName --name $mySqlServerNameA | ConvertFrom-Json
-if ($null -ne $mySqlServerA) {
+if ($LASTEXITCODE -ne 0 -or $null -eq $mySqlServerA) {
+    throw "Unable to read MySQL server '$mySqlServerNameA'."
+}
+else {
     $mySqlServerA.fullyQualifiedDomainName.Trim() | Set-Content -Path $mySqlServerTextFile
 }
 
-$mySqlPwFile = Join-Path $path "mysql-pw.txt"
-$mySqlAdminPassword = azd env get-value MYSQL_ADMIN_PASSWORD 2>$null
-if (-not [string]::IsNullOrWhiteSpace($mySqlAdminPassword) -and $mySqlAdminPassword -notlike "ERROR:*") {
+if ($authenticationMode -eq 'Password') {
+    $mySqlPwFile = Join-Path $path "mysql-pw.txt"
+    $mySqlAdminPassword = azd env get-value MYSQL_ADMIN_PASSWORD -e $envName 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($mySqlAdminPassword)) {
+        throw 'MYSQL_ADMIN_PASSWORD is required for explicit password-mode settings.'
+    }
     $mySqlAdminPassword | Set-Content -Path $mySqlPwFile
-    Write-Host "Writing MySQL admin password to $mySqlPwFile" -ForegroundColor DarkGreen
+    $mySqlUnFile = Join-Path $path "mysql-un.txt"
+    $mySqlAdminUser | Set-Content -Path $mySqlUnFile
 }
-
-$mySqlUnFile = Join-Path $path "mysql-un.txt"
-$mySqlAdminUser | Set-Content -Path $mySqlUnFile
-Write-Host "Writing MySQL admin username to $mySqlUnFile" -ForegroundColor DarkGreen
 
 Write-Host ""
 Write-Host "MySQL database override files created successfully!" -ForegroundColor Green

@@ -34,6 +34,37 @@ namespace SqlBuildManager.SqlBuild.UnitTest.Models
         #region Load Tests
 
         [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void LoadAndSave_PreserveScriptHistoryRelationships(bool hasBuildIds)
+        {
+            var doc = XDocument.Parse(SampleBuildProjectXml);
+            var ns = doc.Root!.Name.Namespace;
+            var original = doc.Descendants(ns + "Build").Single();
+            var second = new XElement(original);
+            second.SetAttributeValue("BuildId", "EFGH5678");
+            second.Element(ns + "ScriptRun")!.SetAttributeValue("ScriptRunId", "SR-002");
+            original.AddAfterSelf(second);
+            if (!hasBuildIds)
+            {
+                original.Attribute("BuildId")!.Remove();
+                second.Attribute("BuildId")!.Remove();
+            }
+
+            for (var i = 0; i < 3; i++)
+            {
+                var model = SqlSyncBuildDataXmlSerializer.Load(doc);
+                Assert.HasCount(2, model.Build);
+                Assert.HasCount(2, model.ScriptRun);
+                Assert.AreNotEqual(model.Build[0].BuildId, model.Build[1].BuildId);
+                Assert.AreEqual(model.Build[0].BuildId, model.ScriptRun.Single(r => r.ScriptRunId == "SR-001").BuildId);
+                Assert.AreEqual(model.Build[1].BuildId, model.ScriptRun.Single(r => r.ScriptRunId == "SR-002").BuildId);
+                Assert.AreEqual(hasBuildIds ? "ABCD1234" : "0", model.Build[0].BuildId);
+                doc = SqlSyncBuildDataXmlSerializer.BuildDocument(model);
+            }
+        }
+
+        [TestMethod]
         public void Load_FromXDocument_ParsesAllProjects()
         {
             // Arrange
