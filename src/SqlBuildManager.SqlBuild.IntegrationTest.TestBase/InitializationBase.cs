@@ -28,6 +28,7 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
         public string projectFileName = null!;
         public string buildHistoryXmlFile = null!;
         public string serverName = string.Empty;
+        public string ProjectDirectory { get; }
 
         /// <summary>
         /// The table name used for test INSERT/SELECT scripts. 
@@ -40,6 +41,7 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
             tempFiles = new List<string>();
             testGuid = Guid.NewGuid();
             testTimeStamp = DateTime.Now;
+            ProjectDirectory = Directory.CreateTempSubdirectory("SqlBuildManagerTest-").FullName;
         }
 
         /// <summary>
@@ -124,6 +126,7 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
 
             projectFileName = GetTrulyUniqueFile();
             sbh.projectFileName = projectFileName;
+            sbh.State.ProjectFilePath = ProjectDirectory;
 
             buildHistoryXmlFile = GetTrulyUniqueFile();
             sbh.buildHistoryXmlFile = buildHistoryXmlFile;
@@ -152,7 +155,7 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
                 CausesBuildFailure = true,
                 Database = testDatabaseNames[0],
                 DateAdded = testTimeStamp,
-                FileName = GetTrulyUniqueFile(),
+                FileName = Path.GetFileName(GetTrulyUniqueFile()),
                 RollBackOnError = true,
                 StripTransactionText = true,
                 Description = "Test Script to successfully insert into test table",
@@ -162,7 +165,7 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
 
             data.Script.Add(row);
             string script = GetInsertScript();
-            File.WriteAllText(row.FileName, script);
+            File.WriteAllText(Path.Combine(ProjectDirectory, row.FileName), script);
         }
 
         public void AddSelectScript(ref SqlSyncBuildDataModel data)
@@ -174,7 +177,7 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
                 CausesBuildFailure = true,
                 Database = testDatabaseNames[0],
                 DateAdded = testTimeStamp,
-                FileName = GetTrulyUniqueFile(),
+                FileName = Path.GetFileName(GetTrulyUniqueFile()),
                 RollBackOnError = true,
                 StripTransactionText = true,
                 Description = "Test Script to successfully select from test table",
@@ -183,7 +186,7 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
             };
 
             data.Script.Add(row);
-            File.WriteAllText(row.FileName, $"SELECT * FROM {TestTableName}");
+            File.WriteAllText(Path.Combine(ProjectDirectory, row.FileName), $"SELECT * FROM {TestTableName}");
         }
 
         public void AddFailureScript(ref SqlSyncBuildDataModel data, bool rollBackOnError, bool causeBuildFailure)
@@ -195,7 +198,7 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
                 CausesBuildFailure = causeBuildFailure,
                 Database = testDatabaseNames[0],
                 DateAdded = testTimeStamp,
-                FileName = GetTrulyUniqueFile(),
+                FileName = Path.GetFileName(GetTrulyUniqueFile()),
                 RollBackOnError = rollBackOnError,
                 StripTransactionText = true,
                 Description = "Test Script to cause a failure",
@@ -205,7 +208,7 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
 
             data.Script.Add(row);
             string script = GetFailureScript();
-            File.WriteAllText(row.FileName, script);
+            File.WriteAllText(Path.Combine(ProjectDirectory, row.FileName), script);
         }
 
         /// <summary>
@@ -233,7 +236,7 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
                 CausesBuildFailure = true,
                 Database = "REALLY_BAD_DATABASE",
                 DateAdded = testTimeStamp,
-                FileName = GetTrulyUniqueFile(),
+                FileName = Path.GetFileName(GetTrulyUniqueFile()),
                 RollBackOnError = true,
                 StripTransactionText = true,
                 Description = "Test Script that has an invalid database name",
@@ -242,7 +245,7 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
             };
 
             data.Script.Add(row);
-            File.WriteAllText(row.FileName, GetInsertScript());
+            File.WriteAllText(Path.Combine(ProjectDirectory, row.FileName), GetInsertScript());
         }
 
         public void AddBatchInsertScripts(ref SqlSyncBuildDataModel data, bool multipleRun)
@@ -254,7 +257,7 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
                 CausesBuildFailure = true,
                 Database = testDatabaseNames[0],
                 DateAdded = testTimeStamp,
-                FileName = GetTrulyUniqueFile(),
+                FileName = Path.GetFileName(GetTrulyUniqueFile()),
                 RollBackOnError = true,
                 StripTransactionText = true,
                 Description = "Test Script to successfully insert into test table (batched)",
@@ -265,12 +268,15 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
             data.Script.Add(row);
             string script = GetInsertScript();
             script = script + "\r\nGO\r\n" + script;
-            File.WriteAllText(row.FileName, script);
+            File.WriteAllText(Path.Combine(ProjectDirectory, row.FileName), script);
         }
 
         public string GetTrulyUniqueFile(string extension = "tmp")
         {
             string newName = TestFileHelper.GetTrulyUniqueFile(extension);
+            string projectPath = Path.Combine(ProjectDirectory, Path.GetFileName(newName));
+            File.Move(newName, projectPath);
+            newName = projectPath;
             tempFiles.Add(newName);
             return newName;
         }
@@ -292,6 +298,8 @@ namespace SqlBuildManager.SqlBuild.IntegrationTest.TestBase
                 try { File.Delete(projectFileName); } catch { }
             if (File.Exists(buildHistoryXmlFile))
                 try { File.Delete(buildHistoryXmlFile); } catch { }
+            if (Directory.Exists(ProjectDirectory))
+                Directory.Delete(ProjectDirectory, recursive: true);
         }
 
         /// <summary>

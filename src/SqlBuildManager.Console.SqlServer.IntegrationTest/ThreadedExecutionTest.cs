@@ -73,6 +73,19 @@ namespace SqlBuildManager.Console.SqlServer.IntegrationTest
             }
         }
 
+        private static string[] ReadSuccessfulExecutionLog(int result, string loggingPath, int minimumLines)
+        {
+            SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
+            string logPath = Path.Combine(loggingPath, "SqlBuildManager.ThreadedExecution.log");
+            string[] lines = File.Exists(logPath) ? ReadLines(logPath).ToArray() : Array.Empty<string>();
+            string diagnostics = $"Execution returned {result} ({(ExecutionReturn)result}).\n" +
+                $"Threaded log '{logPath}':\n{string.Join(Environment.NewLine, lines)}";
+            Assert.AreEqual((int)ExecutionReturn.Successful, result, diagnostics);
+            Assert.IsTrue(lines.Length >= minimumLines,
+                $"Expected at least {minimumLines} threaded log records, found {lines.Length}.\n{diagnostics}");
+            return lines;
+        }
+
         #region ExecuteTest - Not Trial - Transactional
         [TestMethod()]
         public async Task ExecuteTest_ConcurrencyByNumber_1()
@@ -107,11 +120,7 @@ namespace SqlBuildManager.Console.SqlServer.IntegrationTest
             try
             {
 
-                if (actual == -600)
-                    Assert.Fail("Unable to completed test.");
-
-                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string[] executionLogFile = ReadLines(Path.Combine(loggingPath, "SqlBuildManager.ThreadedExecution.log")).ToArray();
+                string[] executionLogFile = ReadSuccessfulExecutionLog(actual, loggingPath, 14);
 
                 //Should be all sequential!
                 Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
@@ -177,11 +186,7 @@ namespace SqlBuildManager.Console.SqlServer.IntegrationTest
             try
             {
 
-                if (actual == -600)
-                    Assert.Fail("Unable to completed test.");
-
-                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string[] executionLogFile = ReadLines(Path.Combine(loggingPath, "SqlBuildManager.ThreadedExecution.log")).ToArray();
+                string[] executionLogFile = ReadSuccessfulExecutionLog(actual, loggingPath, 6);
                 //Should not all sequential!
                 Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
                 Assert.IsTrue(executionLogFile[3].IndexOf("SqlBuildTest: Starting up thread") > -1);
@@ -237,11 +242,7 @@ namespace SqlBuildManager.Console.SqlServer.IntegrationTest
             try
             {
 
-                if (actual == -600)
-                    Assert.Fail("Unable to completed test.");
-
-                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string[] executionLogFile = ReadLines(Path.Combine(loggingPath, "SqlBuildManager.ThreadedExecution.log")).ToArray();
+                string[] executionLogFile = ReadSuccessfulExecutionLog(actual, loggingPath, 10);
                 //Should not all sequential!
                 Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);
                 Assert.IsTrue(executionLogFile[3].IndexOf("SqlBuildTest: Starting up thread") > -1);
@@ -305,12 +306,7 @@ namespace SqlBuildManager.Console.SqlServer.IntegrationTest
             try
             {
 
-                if (actual == -600)
-                    Assert.Fail("Unable to completed test.");
-
-
-                SqlBuildManager.Logging.Configure.CloseAndFlushAllLoggers();
-                string[] executionLogFile = ReadLines(Path.Combine(loggingPath, "SqlBuildManager.ThreadedExecution.log")).ToArray();
+                string[] executionLogFile = ReadSuccessfulExecutionLog(actual, loggingPath, 14);
 
                 //Should be all sequential!
                 Assert.IsTrue(executionLogFile[2].IndexOf("SqlBuildTest: Queuing up thread") > -1);

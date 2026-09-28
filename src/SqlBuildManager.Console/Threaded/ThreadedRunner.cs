@@ -225,15 +225,7 @@ namespace SqlBuildManager.Console.Threaded
                 else
                 {
                     runDataModel.ForceCustomDacpac = false;
-                    //Get a full copy of the build data to work with (avoid threading sync issues)
-                    SqlSyncBuildDataModel cloned = _context.BuildDataModel;
-                    //Clear out any existing CommittedScript data.. just log what is relevant to this run.
-                    cloned.CommittedScript = new List<SqlBuildManager.SqlBuild.Models.CommittedScript>();
-
-                    runDataModel.BuildDataModel = cloned;
-                    runDataModel.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(_context.ProjectFileName));
-                    await SqlSyncBuildDataXmlSerializer.SaveAsync(runDataModel.ProjectFileName, cloned);
-                    runDataModel.BuildFileName = _context.BuildZipFileName;
+                    await PrepareSharedPackageRunAsync(runDataModel, loggingDirectory);
                 }
 
 
@@ -301,7 +293,7 @@ namespace SqlBuildManager.Console.Threaded
             }
             catch (Exception exe)
             {
-                log.LogError("Error Processing run for " + TargetTag, exe);
+                log.LogError(exe, "Error Processing run for {TargetTag}", TargetTag);
                 WriteErrorLog(loggingDirectory, exe.ToString());
                 returnValue = ExecutionReturn.ProcessBuildError.ToRunnerReturn();
                 return ExecutionReturn.ProcessBuildError.ToRunnerReturn();
@@ -425,9 +417,28 @@ namespace SqlBuildManager.Console.Threaded
             this.returnValue = returnValue;
         }
 
+        internal async Task PrepareSharedPackageRunAsync(SqlBuildRunDataModel runDataModel, string loggingDirectory)
+        {
+            var source = _context.BuildDataModel;
+            // Scripts are validated and cached once by ThreadedManager. Only mutable run
+            // metadata is persisted per target; never rewrite the shared input archive.
+            runDataModel.BuildDataModel = SqlSyncBuildDataXmlSerializer.Load(SqlSyncBuildDataXmlSerializer.BuildDocument(source));
+            runDataModel.BuildDataModel.CommittedScript.Clear();
+            runDataModel.ProjectFileName = Path.Combine(loggingDirectory, Path.GetFileName(_context.ProjectFileName));
+            runDataModel.BuildFileName = string.Empty;
+            await SqlSyncBuildDataXmlSerializer.SaveAsync(runDataModel.ProjectFileName, runDataModel.BuildDataModel);
+        }
+
         private void WriteErrorLog(string loggingDirectory, string message)
         {
-            File.WriteAllText(loggingDirectory + "Error.log", message);
+            try
+            {
+                File.WriteAllText(Path.Combine(loggingDirectory, "Error.log"), message);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                log.LogError(ex, "Unable to persist error details for {TargetTag} in {Directory}", TargetTag, loggingDirectory);
+            }
         }
 
     }

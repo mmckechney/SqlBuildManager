@@ -235,8 +235,8 @@ namespace SqlBuildManager.Console.UnitTest
             var envVars = AciManager.GetContainerEnvironmentVariables(cmdLine);
 
             Assert.IsTrue(envVars.Any(v => v.Name == ContainerEnvVariables.AuthType && v.Value == AuthenticationType.Password.ToString()));
-            Assert.IsTrue(envVars.Any(v => v.Name == ContainerEnvVariables.UserName && v.Value == "mysql-user"));
-            Assert.IsTrue(envVars.Any(v => v.Name == ContainerEnvVariables.Password && v.Value == "mysql-password"));
+            Assert.IsTrue(envVars.Any(v => v.Name == ContainerEnvVariables.UserName && v.SecureValue == "mysql-user"));
+            Assert.IsTrue(envVars.Any(v => v.Name == ContainerEnvVariables.Password && v.SecureValue == "mysql-password"));
             Assert.IsTrue(envVars.Any(v => v.Name == ContainerEnvVariables.DatabasePlatform && v.Value == DatabasePlatform.MySQL.ToString()));
             Assert.IsFalse(envVars.Any(v => v.Name == ContainerEnvVariables.Override));
         }

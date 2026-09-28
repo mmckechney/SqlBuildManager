@@ -41,10 +41,10 @@ $storageAccountName = Get-AzdValue 'STORAGE_ACCOUNT_NAME'
 $eventHubNamespaceName = Get-AzdValue 'EVENTHUB_NAMESPACE_NAME'
 $eventHubName = Get-AzdValue 'EVENTHUB_NAME'
 $aciSubnetId = Get-AzdValue 'ACI_SUBNET_ID'
-$runtimeIdentityId = Get-AzdValue 'MANAGED_IDENTITY_ID'
-$runtimeIdentityClientId = Get-AzdValue 'MANAGED_IDENTITY_CLIENT_ID'
 $senderPrincipalId = Get-AzdValue 'AZURE_PRINCIPAL_ID'
+$resourceGroupOverride = $resourceGroupName
 . (Join-Path $repoRoot 'scripts/prefix_resource_names.ps1') -envName $envName
+$resourceGroupName = $resourceGroupOverride
 $hybridConnectionName = 'relayproxy'
 $identityName = $relayProxyIdentityName
 $containerName = $relayProxyContainerName
@@ -137,7 +137,7 @@ $createArguments = @(
     '--image', $image,
     '--registry-login-server', $containerRegistryLoginServer,
     '--acr-identity', $identity.id,
-    '--assign-identity', $identity.id, $runtimeIdentityId,
+    '--assign-identity', $identity.id,
     '--subnet', $aciSubnetId,
     '--os-type', 'Linux',
     '--restart-policy', 'Always',
@@ -150,7 +150,7 @@ $createArguments = @(
     "EVENTHUB_NAMESPACE_NAME=$eventHubNamespaceName",
     "EVENTHUB_NAME=$eventHubName",
     "MANAGED_IDENTITY_CLIENT_ID=$($identity.clientId)",
-    "SQL_MANAGED_IDENTITY_CLIENT_ID=$runtimeIdentityClientId",
+    "SQL_MANAGED_IDENTITY_CLIENT_ID=$($identity.clientId)",
     "SQL_SERVER_FQDNS=$allowedSqlServers",
     '--output', 'none'
 )

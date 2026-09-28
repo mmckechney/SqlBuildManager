@@ -55,7 +55,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
                     Database = database,
                     Username = pgUser,
                     Password = pgPassword,
-                    SslMode = SslMode.Require
+                    SslMode = SslMode.VerifyFull
                 };
 
                 try

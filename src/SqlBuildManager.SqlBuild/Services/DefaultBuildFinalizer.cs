@@ -17,11 +17,14 @@ namespace SqlBuildManager.SqlBuild.Services
         private static ILogger log = SqlBuildManager.Logging.ApplicationLogging.CreateLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType!);
         private readonly IProgressReporter progressReporter;
         private readonly ISqlLoggingService sqlLoggingService;
+        private readonly ITransactionManager transactionManager;
 
-        public DefaultBuildFinalizer(ISqlLoggingService sqlLoggingService, IProgressReporter progressReporter)
+        public DefaultBuildFinalizer(ISqlLoggingService sqlLoggingService, IProgressReporter progressReporter,
+            ITransactionManager? transactionManager = null)
         {
             this.sqlLoggingService = sqlLoggingService;
             this.progressReporter = progressReporter;
+            this.transactionManager = transactionManager ?? new SqlServerTransactionManager();
         }
 
         public bool CommitBuild(IConnectionsService connectionsService, bool isTransactional)
@@ -42,8 +45,6 @@ namespace SqlBuildManager.SqlBuild.Services
                     {
                         log.LogInformation($"Committing transaction for {key}");
                         connData.Transaction?.Commit();
-                        connData.Transaction?.Dispose();
-                        connData.Transaction = null!;
                         log.LogInformation($"Commit Successful for {key}");
                     }
                     catch (Exception e)
@@ -53,6 +54,14 @@ namespace SqlBuildManager.SqlBuild.Services
                         success = false;
                         continueCommitting = false;
                         TryRollbackTransaction(connData, key);
+                    }
+                    finally
+                    {
+                        if (!TryDisposeTransaction(connData, key))
+                        {
+                            success = false;
+                            continueCommitting = false;
+                        }
                     }
                 }
                 else
@@ -103,18 +112,44 @@ namespace SqlBuildManager.SqlBuild.Services
                 return true;
             }
 
+            bool success = true;
             try
             {
                 log.LogInformation($"Rolling back transaction for {key}");
                 connData.Transaction.Rollback();
-                connData.Transaction.Dispose();
-                connData.Transaction = null!;
-                return true;
+            }
+            catch (InvalidOperationException e) when (transactionManager.IsTransactionZombied(e))
+            {
+                log.LogDebug("Transaction for {Database} is already completed or unusable; proceeding with disposal: {Message}", key, e.Message);
             }
             catch (Exception e)
             {
                 log.LogError(e, $"Error rolling back transaction for database '{key}'");
+                success = false;
+            }
+            finally
+            {
+                if (!TryDisposeTransaction(connData, key))
+                    success = false;
+            }
+            return success;
+        }
+
+        private static bool TryDisposeTransaction(BuildConnectData connData, string key)
+        {
+            try
+            {
+                connData.Transaction?.Dispose();
+                return true;
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, "Error disposing transaction for database '{Database}'", key);
                 return false;
+            }
+            finally
+            {
+                connData.Transaction = null!;
             }
         }
 
@@ -258,7 +293,6 @@ namespace SqlBuildManager.SqlBuild.Services
             var updatedDataModel = context.BuildDataModel;
             BuildResultStatus finalBuildResult;
             DateTime end = DateTime.Now;
-            myBuild.BuildId = context.BuildPackageHash;
             myBuild.BuildEnd = end;
        
 
@@ -402,7 +436,6 @@ namespace SqlBuildManager.SqlBuild.Services
                     }
                 }
             }
-            connectionsService.Connections.Clear();
             return (myBuild, updatedDataModel, finalBuildResult);
         }
 

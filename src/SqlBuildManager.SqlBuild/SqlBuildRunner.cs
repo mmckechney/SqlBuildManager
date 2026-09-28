@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
+using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.Logging;
 using static SqlBuildManager.SqlBuild.SqlBuildHelper;
 using BuildModels = SqlBuildManager.SqlBuild.Models;
@@ -42,10 +43,10 @@ namespace SqlBuildManager.SqlBuild
             _fileHelper = fileHelper ?? new DefaultSqlBuildFileHelper();
             _progressReporter = progressReporter ?? new DefaultProgressReporter();
             _sqlLoggingService = sqlLoggingService ?? new DefaultSqlLoggingService(connectionsService, _progressReporter);
-            _buildFinalizer = buildFinalizer ?? new DefaultBuildFinalizer(_sqlLoggingService, _progressReporter);
+            _transactionManager = transactionManager ?? new SqlServerTransactionManager();
+            _buildFinalizer = buildFinalizer ?? new DefaultBuildFinalizer(_sqlLoggingService, _progressReporter, _transactionManager);
             _connectionsService = connectionsService ?? new DefaultConnectionsService();
             _finalizerContext = finalizerContext ?? throw new ArgumentNullException(nameof(finalizerContext));
-            _transactionManager = transactionManager ?? new SqlServerTransactionManager();
 
 
         }
@@ -59,6 +60,35 @@ namespace SqlBuildManager.SqlBuild
             BuildModels.SqlSyncBuildDataModel buildDataModel,
             CancellationToken cancellationToken = default)
         {
+            bool failed = false;
+            try
+            {
+                var result = await RunCoreAsync(scripts, myBuild, serverName, isMultiDbRun, scriptBatchColl, buildDataModel, cancellationToken).ConfigureAwait(false);
+                failed = (int)result.FinalStatus < 0 || _ctx.ErrorOccured;
+                return result;
+            }
+            catch
+            {
+                failed = true;
+                throw;
+            }
+            finally
+            {
+                var cleanupFailure = DisposeConnections(_ctx.Log);
+                if (!failed && cleanupFailure != null)
+                    ExceptionDispatchInfo.Capture(cleanupFailure).Throw();
+            }
+        }
+
+        private async Task<BuildModels.Build> RunCoreAsync(
+            IList<BuildModels.Script> scripts,
+            BuildModels.Build myBuild,
+            string serverName,
+            bool isMultiDbRun,
+            ScriptBatchCollection scriptBatchColl,
+            BuildModels.SqlSyncBuildDataModel buildDataModel,
+            CancellationToken cancellationToken)
+        {
             var progress = _ctx.ProgressReporter ?? new DefaultProgressReporter();
             var log = _ctx.Log;
             var committedScripts = _ctx.CommittedScripts;
@@ -70,6 +100,7 @@ namespace SqlBuildManager.SqlBuild
             int runSequence = 0;
             bool buildFailure = false;
             bool failureDueToScriptTimeout = false;
+            Exception? persistenceFailure = null;
             var dbTargets = new List<string>();
 
             try
@@ -154,29 +185,29 @@ namespace SqlBuildManager.SqlBuild
                             break;
                         }
 
-                        batchScripts[x] = _ctx.PerformScriptTokenReplacement(batchScripts[x]);
+                        var batchScript = _ctx.PerformScriptTokenReplacement(batchScripts[x]);
                         overallIndex++;
 
                         try
                         {
                             if (_ctx.RunScriptOnly)
                             {
-                                _ctx.PublishScriptLog(false, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, fileName, "Scripted"));
+                                _ctx.PublishScriptLog(false, new ScriptLogEventArgs(overallIndex, batchScript, targetDatabase, fileName, "Scripted"));
                                 continue;
                             }
 
-                            var execResult = await _executor.ExecuteAsync(batchScripts[x], scriptTimeout, cData, _ctx.IsTransactional, cancellationToken).ConfigureAwait(false);
+                            var execResult = await _executor.ExecuteAsync(batchScript, scriptTimeout, cData, _ctx.IsTransactional, cancellationToken).ConfigureAwait(false);
                             failureDueToScriptTimeout = failureDueToScriptTimeout || execResult.TimeoutDetected;
                             currentRun.Success = true;
                             resultBuilder.Append(execResult.Results);
                             // Publish only the delta from this batch (not the entire accumulated string).
-                            _ctx.PublishScriptLog(false, new ScriptLogEventArgs(overallIndex, batchScripts[x], targetDatabase, fileName, execResult.Results + _ctx.SqlInfoMessage));
+                            _ctx.PublishScriptLog(false, new ScriptLogEventArgs(overallIndex, batchScript, targetDatabase, fileName, execResult.Results + _ctx.SqlInfoMessage));
                         }
                         catch (DbException e)
                         {
                             // Sync accumulated results into currentRun before HandleDbException appends to it.
                             currentRun.Results = resultBuilder.ToString();
-                            var (handledBuildFailure, timeoutDetected) = HandleDbException(e, fileName, batchScripts[x], targetDatabase, savePointName, start, rollBackOnError, causesBuildFailure, cData, ref currentRun);
+                            var (handledBuildFailure, timeoutDetected) = HandleDbException(e, fileName, batchScript, targetDatabase, savePointName, start, rollBackOnError, causesBuildFailure, cData, ref currentRun);
                             // Re-seed builder with whatever HandleDbException may have appended.
                             resultBuilder.Clear();
                             resultBuilder.Append(currentRun.Results ?? string.Empty);
@@ -224,8 +255,18 @@ namespace SqlBuildManager.SqlBuild
             }
             finally
             {
-                await _buildFinalizer.SaveBuildDataModelAsync(_ctx, false).ConfigureAwait(false);
-                WriteFinalScriptLog(dbTargets, buildFailure, isTransactional: _ctx.IsTransactional, isTrialBuild: _ctx.IsTrialBuild);
+                try
+                {
+                    await _buildFinalizer.SaveBuildDataModelAsync(_ctx, false).ConfigureAwait(false);
+                    WriteFinalScriptLog(dbTargets, buildFailure, isTransactional: _ctx.IsTransactional, isTrialBuild: _ctx.IsTrialBuild);
+                }
+                catch (Exception ex)
+                {
+                    persistenceFailure = ex;
+                    buildFailure = true;
+                    _ctx.ErrorOccured = true;
+                    log.LogError(ex, "Unable to persist build metadata before finalization; the build will not be committed. Nontransactional changes may already be applied.");
+                }
                 if (buildFailure)
                 {
                     progress.ReportProgress(100, new ScriptRunStatusEventArgs("Build Failed", TimeSpan.Zero));
@@ -233,7 +274,19 @@ namespace SqlBuildManager.SqlBuild
                 }
             }
 
-            (myBuild, buildDataModel, _) = await _buildFinalizer.PerformRunScriptFinalizationAsync(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild).ConfigureAwait(false);
+            Exception? finalizationFailure = null;
+            try
+            {
+                (myBuild, buildDataModel, _) = await _buildFinalizer.PerformRunScriptFinalizationAsync(_ctx, _connectionsService, _finalizerContext, buildFailure, myBuild).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                finalizationFailure = ex;
+                log.LogError(ex, "Build finalization failed. Database outcome: {Status}. Committed or nontransactional work must not be automatically replayed.", myBuild.FinalStatus);
+            }
+            var failure = persistenceFailure ?? finalizationFailure;
+            if (failure != null)
+                ExceptionDispatchInfo.Capture(failure).Throw();
             
             // If build failed due to a timeout, set the status to allow retry mechanism to work
             if (buildFailure && failureDueToScriptTimeout)
@@ -244,6 +297,33 @@ namespace SqlBuildManager.SqlBuild
             return myBuild;
         }
 
+        private Exception? DisposeConnections(ILogger log)
+        {
+            var failures = new List<Exception>();
+            foreach (var connection in _connectionsService.Connections.Values)
+            {
+                if (connection.Transaction != null)
+                {
+                    try { connection.Transaction.Rollback(); }
+                    catch (InvalidOperationException ex) when (_transactionManager.IsTransactionZombied(ex))
+                    {
+                        log.LogDebug("Transaction for {Database} is already completed or unusable; proceeding with disposal: {Message}", connection.DatabaseName, ex.Message);
+                    }
+                    catch (Exception ex) { failures.Add(ex); log.LogError(ex, "Unable to roll back an unfinished transaction for {Database}", connection.DatabaseName); }
+                    finally
+                    {
+                        try { connection.Transaction.Dispose(); }
+                        catch (Exception ex) { failures.Add(ex); log.LogError(ex, "Unable to dispose transaction for {Database}", connection.DatabaseName); }
+                        connection.Transaction = null!;
+                    }
+                }
+                try { connection.Connection?.Dispose(); }
+                catch (Exception ex) { failures.Add(ex); log.LogError(ex, "Unable to dispose connection for {Database}", connection.DatabaseName); }
+            }
+            _connectionsService.Connections.Clear();
+            return failures.Count == 0 ? null : new AggregateException("Build connection cleanup failed.", failures);
+        }
+
         internal bool ShouldSkipDueToCommittedScripts(string scriptId, BuildModels.SqlSyncBuildDataModel buildDataModel)
         {
             var csList = buildDataModel?.CommittedScript ?? new List<BuildModels.CommittedScript>();
@@ -252,6 +332,7 @@ namespace SqlBuildManager.SqlBuild
 
         internal async Task<string[]> LoadBatchScriptsAsync(string scriptId, string fileName, bool stripTransaction, ScriptBatchCollection scriptBatchColl, CancellationToken cancellationToken)
         {
+            var scriptPath = SqlBuildManager.SqlBuild.Utilities.PackagePath.Resolve(_ctx.ProjectFilePath, fileName);
             string[] batchScripts = null!;
             if (scriptBatchColl != null)
             {
@@ -261,7 +342,7 @@ namespace SqlBuildManager.SqlBuild
             }
             if (batchScripts == null || batchScripts.Length == 0)
             {
-                batchScripts = await _ctx.ReadBatchFromScriptFileAsync(System.IO.Path.Combine(_ctx.ProjectFilePath, fileName), stripTransaction, false, cancellationToken).ConfigureAwait(false);
+                batchScripts = await _ctx.ReadBatchFromScriptFileAsync(scriptPath, stripTransaction, false, cancellationToken).ConfigureAwait(false);
             }
             return batchScripts;
         }
@@ -273,6 +354,8 @@ namespace SqlBuildManager.SqlBuild
                 _ctx.Log.LogError("No scripts selected for execution.");
                 throw new ApplicationException("No scripts selected for execution.");
             }
+            foreach (var script in scripts)
+                Utilities.PackagePath.Resolve(_ctx.ProjectFilePath, script.FileName ?? string.Empty);
         }
 
         private static BuildModels.ScriptRun BuildScriptRunFailure(string fileName, int runOrder, string targetDatabase, Guid scriptRunRowId, string buildId, string message)

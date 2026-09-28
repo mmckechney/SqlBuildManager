@@ -32,7 +32,7 @@ namespace SqlBuildManager.SqlBuild.Utilities
 
         public static bool CreateZipPackage(List<string> fullPathFilesToZip, string zipFileName, bool keepPathInfo, int retryCount)
         {
-
+            ValidateSourceFiles(fullPathFilesToZip);
             try
             {
                 string tempName = Path.Combine(Path.GetDirectoryName(zipFileName)!, @"~" + Guid.NewGuid().ToString("N") + "~" + Path.GetFileName(zipFileName));
@@ -89,7 +89,7 @@ namespace SqlBuildManager.SqlBuild.Utilities
             List<string> fullPathFiles = new List<string>();
             foreach (string file in filesToZip)
             {
-                fullPathFiles.Add(Path.Combine(basePath, file));
+                fullPathFiles.Add(PackagePath.Resolve(basePath, file));
             }
             return CreateZipPackage(fullPathFiles, zipFileName, keepPathInfo, retryCount);
         }
@@ -100,17 +100,22 @@ namespace SqlBuildManager.SqlBuild.Utilities
             {
                 string fileUnzipFullName;
                 log.LogDebug($"Unzipping {zipFileName} to folder: {destinationDir}");
+                PackagePath.EnsureNoLinks(destinationDir);
                 if (!Directory.Exists(destinationDir))
                 {
                     Directory.CreateDirectory(destinationDir);
                 }
                 using (ZipArchive archive = ZipFile.Open(zipFileName, ZipArchiveMode.Read))
                 {
+                    var files = PackagePath.GetArchiveFiles(archive);
+                    foreach (var name in files.Keys)
+                        PackagePath.Resolve(destinationDir, name);
                     //Loops through each file in the zip file
-                    foreach (ZipArchiveEntry file in archive.Entries)
+                    foreach (var item in files)
                     {
+                        var file = item.Value;
                         //Identifies the destination file name and path
-                        fileUnzipFullName = Path.Combine(destinationDir, file.Name);
+                        fileUnzipFullName = PackagePath.Resolve(destinationDir, item.Key);
 
                         if (!System.IO.File.Exists(fileUnzipFullName) || overwriteExistingProjectFiles)
                         {
@@ -131,56 +136,15 @@ namespace SqlBuildManager.SqlBuild.Utilities
         {
             try
             {
-                string fileUnzipFullName;
                 log.LogDebug($"Unzipping {zipFileName} to folder: {destinationDir}");
-                if (!Directory.Exists(destinationDir))
-                {
-                    Directory.CreateDirectory(destinationDir);
-                }
                 using (ZipArchive archive = ZipFile.Open(zipFileName, ZipArchiveMode.Read))
                 {
-                    log.LogDebug($"Archive contains {archive.Entries.Count} entries: {string.Join(", ", archive.Entries.Select(e => e.FullName))}");
-                    var extractedEntries = new List<(string ArchiveName, string ExtractedPath, long ExpectedLength)>();
-                    foreach (ZipArchiveEntry file in archive.Entries)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        if (string.IsNullOrEmpty(file.Name))
-                        {
-                            continue;
-                        }
-
-                        fileUnzipFullName = Path.Combine(destinationDir, file.Name);
-                        if (!File.Exists(fileUnzipFullName) || overwriteExistingProjectFiles)
-                        {
-                            await using (var entryStream = file.Open())
-                            await using (var outStream = new FileStream(fileUnzipFullName, FileMode.Create, FileAccess.Write, FileShare.None, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan))
-                            {
-                                await entryStream.CopyToAsync(outStream, 81920, cancellationToken).ConfigureAwait(false);
-                                await outStream.FlushAsync(cancellationToken).ConfigureAwait(false);
-                            }
-                        }
-
-                        extractedEntries.Add((file.FullName, fileUnzipFullName, file.Length));
-                    }
-
-                    foreach (var entry in extractedEntries)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        if (!File.Exists(entry.ExtractedPath))
-                        {
-                            throw new InvalidDataException($"Archive entry '{entry.ArchiveName}' was not extracted to '{entry.ExtractedPath}'.");
-                        }
-
-                        var actualLength = new FileInfo(entry.ExtractedPath).Length;
-                        if (actualLength != entry.ExpectedLength)
-                        {
-                            throw new InvalidDataException(
-                                $"Archive entry '{entry.ArchiveName}' extracted to '{entry.ExtractedPath}' with length {actualLength}, expected {entry.ExpectedLength}.");
-                        }
-                    }
+                    await UnpackArchiveAsync(destinationDir, PackagePath.GetArchiveFiles(archive),
+                        overwriteExistingProjectFiles, cancellationToken).ConfigureAwait(false);
                 }
                 return true;
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception exe)
             {
                 log.LogError(exe, "Unable to unzip package file async");
@@ -188,13 +152,53 @@ namespace SqlBuildManager.SqlBuild.Utilities
             }
         }
 
+        internal static async Task UnpackArchiveAsync(string destinationDir, Dictionary<string, ZipArchiveEntry> files,
+            bool overwrite, CancellationToken cancellationToken, bool verifyExistingContents = false)
+        {
+            PackagePath.EnsureNoLinks(destinationDir);
+            foreach (var item in files)
+            {
+                var path = PackagePath.Resolve(destinationDir, item.Key);
+                if (!overwrite && File.Exists(path) && verifyExistingContents)
+                {
+                    using var existing = File.OpenRead(path);
+                    using var source = item.Value.Open();
+                    var existingHash = await System.Security.Cryptography.SHA256.HashDataAsync(existing, cancellationToken).ConfigureAwait(false);
+                    var sourceHash = await System.Security.Cryptography.SHA256.HashDataAsync(source, cancellationToken).ConfigureAwait(false);
+                    if (!existingHash.SequenceEqual(sourceHash))
+                        throw new InvalidDataException($"Existing file '{item.Key}' does not match this package; use a fresh directory or explicitly overwrite.");
+                }
+            }
+            Directory.CreateDirectory(destinationDir);
+            foreach (var item in files)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var path = PackagePath.Resolve(destinationDir, item.Key);
+                if (!File.Exists(path) || overwrite)
+                {
+                    await using var source = item.Value.Open();
+                    await using var target = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 81920, FileOptions.Asynchronous);
+                    await source.CopyToAsync(target, cancellationToken).ConfigureAwait(false);
+                }
+                if (new FileInfo(path).Length != item.Value.Length)
+                    throw new InvalidDataException($"Extracted file '{item.Key}' does not match the archive length.");
+            }
+        }
+
         public static bool AppendZipPackage(string[] filesToZip, string basePath, string zipFileName, bool keepPathInfo)
         {
             try
             {
+                var sources = filesToZip.Select(file => PackagePath.Resolve(basePath,
+                    Path.IsPathRooted(file) ? Path.GetRelativePath(Path.GetFullPath(basePath), file) : file)).ToList();
+                ValidateSourceFiles(sources);
                 using (ZipArchive modFile = ZipFile.Open(zipFileName, ZipArchiveMode.Update))
                 {
-                    foreach (var file in filesToZip)
+                    var names = PackagePath.GetArchiveFiles(modFile).Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    foreach (var file in sources)
+                        if (!names.Add(Path.GetFileName(file)))
+                            throw new InvalidDataException($"Duplicate package file '{Path.GetFileName(file)}'.");
+                    foreach (var file in sources)
                     {
                         log.LogDebug($"Adding files '{file}' to package zip file '{filesToZip}'");
                         modFile.CreateEntryFromFile(file, Path.GetFileName(file), CompressionLevel.Fastest);
@@ -216,12 +220,18 @@ namespace SqlBuildManager.SqlBuild.Utilities
         {
             try
             {
+                var sources = filesToZip.Select(file => PackagePath.Resolve(basePath, file)).ToList();
+                ValidateSourceFiles(sources);
                 using (ZipArchive modFile = ZipFile.Open(zipFileName, ZipArchiveMode.Update))
                 {
+                    var names = PackagePath.GetArchiveFiles(modFile).Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    foreach (var source in sources)
+                        if (!names.Add(Path.GetFileName(source)))
+                            throw new InvalidDataException($"Duplicate package file '{Path.GetFileName(source)}'.");
                     foreach (var file in filesToZip)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        var fullPath = Path.Combine(basePath, file);
+                        var fullPath = PackagePath.Resolve(basePath, file);
                         if (!File.Exists(fullPath)) continue;
                         log.LogDebug($"Adding file '{file}' to package zip file '{zipFileName}'");
                         var entry = modFile.CreateEntry(Path.GetFileName(file), CompressionLevel.Fastest);
@@ -241,6 +251,7 @@ namespace SqlBuildManager.SqlBuild.Utilities
 
         public static async Task<bool> CreateZipPackageAsync(List<string> fullPathFilesToZip, string zipFileName, bool keepPathInfo, int retryCount = 0, CancellationToken cancellationToken = default)
         {
+            ValidateSourceFiles(fullPathFilesToZip);
             try
             {
                 string tempName = Path.Combine(Path.GetDirectoryName(zipFileName)!, @"~" + Guid.NewGuid().ToString("N") + "~" + Path.GetFileName(zipFileName));
@@ -291,11 +302,23 @@ namespace SqlBuildManager.SqlBuild.Utilities
             List<string> fullPathFiles = new List<string>();
             foreach (string file in filesToZip)
             {
-                fullPathFiles.Add(Path.Combine(basePath, file));
+                fullPathFiles.Add(PackagePath.Resolve(basePath, file));
             }
             return CreateZipPackageAsync(fullPathFiles, zipFileName, keepPathInfo, 0, cancellationToken);
         }
 
+        private static void ValidateSourceFiles(IEnumerable<string> files)
+        {
+            var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var file in files)
+            {
+                PackagePath.EnsureNoLinks(file);
+                var name = Path.GetFileName(file);
+                PackagePath.NormalizeRelativePath(name);
+                if (!names.Add(name))
+                    throw new InvalidDataException($"Duplicate package file '{name}'.");
+            }
+        }
 
 
     }

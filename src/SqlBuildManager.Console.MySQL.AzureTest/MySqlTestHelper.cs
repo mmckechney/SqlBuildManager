@@ -3,11 +3,34 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using SqlBuildManager.Console.CommandLine;
+using SqlBuildManager.Connection;
 
 namespace SqlBuildManager.Console.MySQL.AzureTest
 {
     public class MySqlTestHelper
     {
+        public static string RequireManagedIdentitySettings(string path)
+        {
+            string fullPath = Path.GetFullPath(path);
+            var settings = JsonSerializer.Deserialize<CommandLineArgs>(File.ReadAllText(fullPath))
+                ?? throw new InvalidDataException($"Invalid Azure MySQL settings: {fullPath}");
+            var auth = settings.AuthenticationArgs;
+            bool usesWorkloadIdentity = settings.KubernetesArgs != null &&
+                !string.IsNullOrWhiteSpace(settings.IdentityArgs?.ServiceAccountName);
+            if (auth == null || settings.IdentityArgs == null ||
+                auth.DatabasePlatform != DatabasePlatform.MySQL ||
+                (auth.AuthenticationType != AuthenticationType.ManagedIdentity && auth.AuthenticationType != AuthenticationType.AzureADDefault) ||
+                !string.IsNullOrWhiteSpace(auth.Password) ||
+                !string.IsNullOrWhiteSpace(auth.UserName) ||
+                string.IsNullOrWhiteSpace(settings.IdentityArgs.IdentityName) ||
+                (!usesWorkloadIdentity && string.IsNullOrWhiteSpace(settings.IdentityArgs.ClientId)))
+            {
+                throw new InvalidDataException("Azure MySQL tests require MySQL managed-identity settings with an identity name and client ID (or a Kubernetes workload-identity service account), and no native credentials. Regenerate mysql-mi-only settings with MYSQL_AUTH_MODE=ManagedIdentity.");
+            }
+            return fullPath;
+        }
 
         public static string GetUniqueJobName(string prefix)
         {

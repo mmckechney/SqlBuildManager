@@ -84,7 +84,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val.Wait();
                 result = val.Result;
 
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
@@ -154,7 +154,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val.Wait();
                 result = val.Result;
 
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
@@ -228,7 +228,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val.Wait();
                 result = val.Result;
 
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
@@ -371,7 +371,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val.Wait();
                 result = val.Result;
 
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
@@ -446,7 +446,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val.Wait();
                 result = val.Result;
 
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
 
@@ -538,7 +538,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 val.Wait();
                 var result = val.Result;
 
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
 
                 var logFileContents = TestHelper.RelevantLogFileContents(startingLine);
@@ -630,7 +630,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         //        var val = rootCommand.Parse(args).InvokeAsync();
         //        val.Wait();
         //        result = val.Result;
-        //        Assert.AreEqual(0, result);
+        //        await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
         //        //enqueue the topic messages
         //        args = new string[]{
@@ -648,7 +648,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         //        val = rootCommand.Parse(args).InvokeAsync();
         //        val.Wait();
         //        result = val.Result;
-        //        Assert.AreEqual(0, result);
+        //        await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
         //        if (!string.IsNullOrWhiteSpace(yamlFiles.SecretsFile))
         //        {
@@ -663,7 +663,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         //        Assert.AreEqual(0, result, "Failed to apply deploy  file");
 
         //        result = prc.ExecuteProcess("kubectl", $"get pods");
-        //        Assert.AreEqual(0, result);
+        //        await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
         //        //monitor for completion
         //        args = new string[]{
@@ -686,7 +686,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         //        val = rootCommand.Parse(args).InvokeAsync();
         //        val.Wait();
         //        result = val.Result;
-        //        Assert.AreEqual(0, result);
+        //        await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
         //        var logFileContents = TestHelper.ReleventLogFileContents(startingLine);
         //        Assert.IsTrue(logFileContents.Contains("DACPAC created") || logFileContents.Contains("Dacpac Databases In Sync"), "A DACPAC should have been used for the build");
@@ -771,7 +771,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         //        var val = rootCommand.Parse(args).InvokeAsync();
         //        val.Wait();
         //        result = val.Result;
-        //        Assert.AreEqual(0, result);
+        //        await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
         //        //Create another table in the first that will be applied when the custom DACPAC is created
         //        DatabaseHelper.CreateRandomTable(cmdLine, firstOverride);
@@ -793,7 +793,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         //        val = rootCommand.Parse(args).InvokeAsync();
         //        val.Wait();
         //        result = val.Result;
-        //        Assert.AreEqual(0, result);
+        //        await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
         //        if (!string.IsNullOrWhiteSpace(yamlFiles.SecretsFile))
         //        {
@@ -808,7 +808,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         //        Assert.AreEqual(0, result, "Failed to apply deploy  file");
 
         //        result = prc.ExecuteProcess("kubectl", $"get pods");
-        //        Assert.AreEqual(0, result);
+        //        await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
         //        //monitor for completion
         //        args = new string[]{
@@ -831,7 +831,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         //        val = rootCommand.Parse(args).InvokeAsync();
         //        val.Wait();
         //        result = val.Result;
-        //        Assert.AreEqual(0, result);
+        //        await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
         //        var dbCount = File.ReadAllText(minusFirst).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
         //        Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"), "Should have committed to {db");

@@ -2,6 +2,8 @@
 
 
 setlocal
+set "TERMINAL_PROFILE=%~1"
+if not defined TERMINAL_PROFILE set "TERMINAL_PROFILE=Caldova"
 
 rem Resolve pwsh.exe portably: prefer the user's PATH, fall back to the default install location.
 where pwsh.exe >nul 2>&1
@@ -14,7 +16,7 @@ set "PWSH=%ProgramFiles%\PowerShell\7\pwsh.exe"
 rem Derive the repo root from this script's location (%~dp0 is the directory of the .bat file).
 set "REPO_ROOT=%~dp0"
 if "%REPO_ROOT:~-1%"=="\" set "REPO_ROOT=%REPO_ROOT:~0,-1%"
-set "TAB_INIT=%REPO_ROOT%\scripts\utility\Initialize-CommandTab.ps1"
+set "TAB_INIT=%REPO_ROOT%\scripts\utility\Initialize-CaldovaCommandTab.ps1"
 
 if not exist "%PWSH%" (
     echo PowerShell 7 was not found at "%PWSH%".
@@ -29,16 +31,16 @@ set "WD=%REPO_ROOT%\scripts\ContainerRegistry"
 
 
 wt.exe -w new ^
-  new-tab --title "External_Img" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -CommandText ".\build_external_test_image.ps1 -envName " ^
-  ; new-tab --title "Dependent_Img" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -CommandText ".\build_dependent_test_image.ps1 -envName " ^
-  ; new-tab --title "Runtime_Img" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -CommandText ".\build_runtime_image_fromenv.ps1 -envName "
+  new-tab --profile "%TERMINAL_PROFILE%" --title "External_Img" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -TerminalProfile "%TERMINAL_PROFILE%" -CommandText ".\build_external_test_image.ps1 -envName " ^
+  ; new-tab --profile "%TERMINAL_PROFILE%" --title "Dependent_Img" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -TerminalProfile "%TERMINAL_PROFILE%" -CommandText ".\build_dependent_test_image.ps1 -envName " ^
+  ; new-tab --profile "%TERMINAL_PROFILE%" --title "Runtime_Img" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -TerminalProfile "%TERMINAL_PROFILE%" -CommandText ".\build_runtime_image_fromenv.ps1 -envName "
 
 
 set "WD=%REPO_ROOT%\scripts\tests"
 wt.exe -w new ^
-  new-tab --title "SqlServer_External_Tests" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -CommandText ".\run_all_sqlserver_external_tests_in_aci.ps1 -envName " ^
-  ; new-tab --title "Postgres_External_Tests" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -CommandText ".\run_all_postgres_external_tests_in_aci.ps1 -envName " ^
-  ; new-tab --title "MySQL_External_Tests" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -CommandText ".\run_all_mysql_external_tests_in_aci.ps1 -envName " ^
-  ; new-tab --title "Dependent_Tests" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -CommandText ".\run_dependent_tests_in_aci.ps1 -envName "
+  new-tab --profile "%TERMINAL_PROFILE%" --title "SqlServer_External_Tests" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -TerminalProfile "%TERMINAL_PROFILE%" -CommandText ".\run_all_sqlserver_external_tests_in_aci.ps1 -envName " ^
+  ; new-tab --profile "%TERMINAL_PROFILE%" --title "Postgres_External_Tests" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -TerminalProfile "%TERMINAL_PROFILE%" -CommandText ".\run_all_postgres_external_tests_in_aci.ps1 -envName " ^
+  ; new-tab --profile "%TERMINAL_PROFILE%" --title "MySQL_External_Tests" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -TerminalProfile "%TERMINAL_PROFILE%" -CommandText ".\run_all_mysql_external_tests_in_aci.ps1 -envName " ^
+  ; new-tab --profile "%TERMINAL_PROFILE%" --title "Dependent_Tests" -d "%WD%" -- "%PWSH%" -NoExit -File "%TAB_INIT%" -TerminalProfile "%TERMINAL_PROFILE%" -CommandText ".\run_dependent_tests_in_aci.ps1 -envName "
 
 endlocal

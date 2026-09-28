@@ -299,7 +299,7 @@ namespace SqlBuildManager.SqlBuild.MySQL.IntegrationTest
                 CausesBuildFailure = true,
                 Database = testDatabaseNames[0],
                 DateAdded = testTimeStamp,
-                FileName = GetTrulyUniqueFile(),
+                FileName = Path.GetFileName(GetTrulyUniqueFile()),
                 RollBackOnError = true,
                 StripTransactionText = true,
                 Description = "Test Script to be skipped",
@@ -309,7 +309,7 @@ namespace SqlBuildManager.SqlBuild.MySQL.IntegrationTest
 
             data.Script.Add(row);
             string script = $"INSERT INTO transactiontest (message, guid, datetimestamp) VALUES ('INSERT TEST', '{testGuid}', '{testTimeStamp:yyyy-MM-dd HH:mm:ss}')";
-            File.WriteAllText(row.FileName, script);
+            File.WriteAllText(Path.Combine(ProjectDirectory, row.FileName), script);
 
             InsertPreRunScriptEntry();
         }
@@ -330,6 +330,7 @@ namespace SqlBuildManager.SqlBuild.MySQL.IntegrationTest
             projectFileName = GetTrulyUniqueFile();
             tempFiles.Add(projectFileName);
             target.projectFileName = projectFileName;
+            target.State.ProjectFilePath = ProjectDirectory;
 
             buildHistoryXmlFile = GetTrulyUniqueFile();
             tempFiles.Add(buildHistoryXmlFile);

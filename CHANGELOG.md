@@ -1,5 +1,20 @@
 # SQL Build Manager Change Log
 
+### [Version 16.1.2](https://github.com/mmckechney/SqlBuildManager/releases/tag/v16.1.2)
+- **SECURITY:** Separated Azure worker, orchestrator, and infrastructure managed identities with scoped permissions. Protected ACI runtime/bootstrap credentials with secure environment variables and updated Azure MySQL tests to use managed identity rather than native-password settings.
+- **SECURITY:** Enforced package containment and archive membership checks across extraction, execution, batching, hashing, and packaging. Invalid or ambiguous package paths, traversal, and missing script members are rejected without weakening shared-package execution.
+- **SECURITY:** Enforced certificate and hostname verification for Azure PostgreSQL and MySQL connections, including test/bootstrap tooling, without falling back to weaker TLS after verification failures. Native local and local-container database compatibility is preserved.
+- *UPDATED:* Isolated generated Azure settings, credentials, test-image inputs, and results under `src\TestConfig\<envName>`. Azure tests require an explicit environment selection and no longer fall back to legacy flat configuration files.
+- *FIXED:* Preserved extract-once, shared-script execution across threaded and Azure workers while keeping per-target histories and metadata independent. Corrected queued job filtering, completed-transaction cleanup, and persistence failure handling.
+- *FIXED:* Alternate-database audit logging now uses autocommit after build completion, preventing audit rows from being lost in a new, uncommitted transaction.
+- *FIXED:* Repaired SQL Server, PostgreSQL, and MySQL integration fixtures to use isolated project directories and relative script names; rebuilt unsafe legacy test archives and improved threaded failure diagnostics. Selected Azure AlreadyInSync/custom-DACPAC recovery tests now require exactly four expected error entries rather than treating them as unexpected failures.
+- *UPDATED:* MySQL and PostgreSQL ACI test wrappers automatically start stopped database servers and wait for both servers to be ready before launching tests, with progress messages and bounded readiness waits. Test-result downloads now report their full timestamped destination paths.
+- *FIXED:* The `azd up` pre-provision hook now prompts for deployment selections when any of the seven compute/database deployment flags is missing, while preserving explicitly disabled selections.
+- *NEW:* `container_prompts.bat` accepts a Windows Terminal profile parameter, and initializes profile-specific isolated Azure CLI/azd configuration before preparing build/test commands.
+- *UPDATED:* Refreshed NuGet dependencies and lockfiles, including Microsoft.Data.SqlClient 7.1.0, DacFx 170.5.96, Azure Service Bus 7.21.0, Azure Container Apps SDK 1.6.0, and updated test tooling.
+
+**Azure upgrade note:** The identity-separation templates target fresh disposable environments; incremental deployment does not remove legacy role assignments or identity attachments. Use a fresh environment and regenerate settings/runtime and test images as described in the [Azure deployment guide](docs/azd-up-deployment.md#identity-summary).
+
 ### [Version 16.1.0](https://github.com/mmckechney/SqlBuildManager/releases/tag/v16.1.0)
 - *NEW:* Added MySQL as a first-class database platform alongside SQL Server and PostgreSQL, including MySQL connection, transaction, resource, and script syntax providers.
 - *NEW:* Added MySQL support to command-line platform selection, settings files, local integration tests, Azure-targeted tests, and test configuration.

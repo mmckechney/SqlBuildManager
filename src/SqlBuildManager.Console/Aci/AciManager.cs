@@ -223,9 +223,19 @@ namespace SqlBuildManager.Console.Aci
                 values[ContainerEnvVariables.OutputFile] = cmdLine.OutputFile.Name;
             }
             return values
-                .Select(value => new ContainerEnvironmentVariable(value.Key) { Value = value.Value })
+                .Select(value => IsSensitiveEnvironmentVariable(value.Key)
+                    ? new ContainerEnvironmentVariable(value.Key) { SecureValue = value.Value }
+                    : new ContainerEnvironmentVariable(value.Key) { Value = value.Value })
                 .ToList();
         }
+
+        private static bool IsSensitiveEnvironmentVariable(string name) =>
+            name == ContainerEnvVariables.UserName ||
+            name == ContainerEnvVariables.Password ||
+            name == ContainerEnvVariables.StorageAccountKey ||
+            name == ContainerEnvVariables.EventHubConnectionString ||
+            name == ContainerEnvVariables.ServiceBusTopicConnectionString ||
+            name == ContainerEnvVariables.OutputContainerSasUrl;
 
         private static async Task<bool> AciInstanceExists(CommandLineArgs cmdLine)
         {

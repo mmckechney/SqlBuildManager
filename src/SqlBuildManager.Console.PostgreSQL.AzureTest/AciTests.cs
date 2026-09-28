@@ -82,7 +82,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Validate blob storage logs agree with ACI PG test result
                 var logFileContents = PgTestHelper.RelevantLogFileContents(startingLine);
@@ -135,7 +135,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Enqueue
                 args = new string[]{
@@ -148,7 +148,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Deploy + Monitor
                 args = new string[]{
@@ -171,7 +171,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Validate blob storage logs
                 var logFileContents = PgTestHelper.RelevantLogFileContents(startingLine);
@@ -222,7 +222,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Enqueue
                 args = new string[]{
@@ -235,7 +235,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Deploy + Monitor
                 args = new string[]{
@@ -257,7 +257,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -320,7 +320,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;

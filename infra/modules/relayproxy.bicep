@@ -12,6 +12,7 @@ param storageAccountName string
 
 @description('Event Hub namespace the proxy may monitor')
 param eventHubNamespaceName string
+param eventHubName string
 
 @description('Container Registry name containing the proxy image')
 param containerRegistryName string
@@ -43,8 +44,8 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' e
   name: containerRegistryName
 }
 
-resource eventHubNamespace 'Microsoft.EventHub/namespaces@2022-10-01-preview' existing = {
-  name: eventHubNamespaceName
+resource eventHub 'Microsoft.EventHub/namespaces/eventhubs@2022-10-01-preview' existing = {
+  name: '${eventHubNamespaceName}/${eventHubName}'
 }
 
 resource relayNamespace 'Microsoft.Relay/namespaces@2024-01-01' = {
@@ -82,8 +83,8 @@ resource storageBlobDataContributor 'Microsoft.Authorization/roleAssignments@202
 }
 
 resource eventHubsDataReceiver 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: eventHubNamespace
-  name: guid(eventHubNamespace.id, proxyIdentity.id, 'Azure Event Hubs Data Receiver')
+  scope: eventHub
+  name: guid(eventHub.id, proxyIdentity.id, 'Azure Event Hubs Data Receiver')
   properties: {
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',

@@ -1,10 +1,19 @@
 # Test Output Analysis
 
-The folder './testresults/{{timestamp}}' contains sub-folders named for different test run types. 
+The folder '{{resultsPath}}' contains sub-folders named for different test run types.
 
 These sub-folders contain `TestResults.html` test result HTML summaries and `console-output.log` console output log files.
 
 **IMPORTANT:** In the `console-output.log` file, the log entries are organized first with the `Passed` or `Failed` message on the same line as the test name, followed by the `Standard Output Messages:` and `TestContext Messages:` lines and content.   
+
+**Expected recovery scenarios:** SQL Server AlreadyInSync tests, including the ACI
+force-custom recovery scenario, explicitly require four worker `ERR` entries across
+the job's task logs. Those entries exercise the intentional base-script failure and
+DACPAC recovery path; they are not by themselves a defect. Check the test's declared
+`expectedTaskErrorCount` and final result assertions. Zero, fewer than four, or more
+than four counted entries must fail an exact-four scenario. Existing transient
+Service Bus shutdown exclusions still apply. Nonempty `errors.log`, per-target
+error logs, failed-database records, or incorrect database counts remain failures.
 
 ## For Failed Tests:
 - Please review these files and for all failures, create an analysis of the failures and how they can be fixed. 
@@ -17,4 +26,4 @@ These sub-folders contain `TestResults.html` test result HTML summaries and `con
 - Be sure to include the list of effected tests with each set of recommendations
 - Please create a single `observations.md` markdown file with your observations analysis. 
   
-- Save both markdown files to the './testresults/{{timestamp}}' directory.
+- Save both markdown files to the '{{resultsPath}}' directory.

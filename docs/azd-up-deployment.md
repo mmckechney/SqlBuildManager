@@ -59,7 +59,7 @@ The hook reads the signed-in Azure identity and saves:
 
 | azd value | Purpose |
 |---|---|
-| `AZURE_PRINCIPAL_ID` | Object ID used for RBAC and database administrator restoration |
+| `AZURE_PRINCIPAL_ID` | Object ID used for RBAC and initial database administrator configuration |
 | `AZURE_PRINCIPAL_NAME` | Login/display name used for database administrator configuration |
 
 These values identify the person running `azd up`. They are not the application's runtime managed
@@ -89,8 +89,10 @@ DEPLOY_POSTGRESQL
 DEPLOY_MYSQL
 ```
 
-Later runs reuse the saved selections. Change them with `azd env set` or by editing the environment
-through azd rather than expecting the selection prompt to appear again.
+Later runs reuse the saved selections only when all seven values are present. A saved `false`
+counts as present. If any value is missing, blank, or cannot be read, the hook prompts again for
+both compute and database selections and saves the complete set. Otherwise, change selections
+with `azd env set` or by editing the environment through azd.
 
 ### Force shared build infrastructure
 
@@ -114,8 +116,10 @@ When PostgreSQL is selected, the hook generates `PG_ADMIN_PASSWORD` if it does n
 When MySQL is selected, the hook generates `MYSQL_ADMIN_PASSWORD` if it does not already exist.
 The values are saved in the azd environment and passed to Bicep as secure parameters.
 
-The private bootstrap container does not receive these passwords. It connects with managed-identity
-tokens for SQL/PostgreSQL operations, and for MySQL when `MYSQL_AUTH_MODE=ManagedIdentity`.
+The private bootstrap container does not receive these passwords. SQL initialization uses a
+temporarily authorized bootstrap managed identity. PostgreSQL and MySQL initialization use
+short-lived deploying-user Entra tokens passed as secure ACI environment values; runtime workers
+continue to use their own managed identity.
 
 MySQL deployment also stores:
 
@@ -124,7 +128,7 @@ MYSQL_ADMIN_USER
 MYSQL_AUTH_MODE
 ```
 
-`MYSQL_AUTH_MODE` defaults to `Password` and can be set to `ManagedIdentity` for Entra-based MySQL runtime authentication paths.
+`MYSQL_AUTH_MODE` defaults to `ManagedIdentity` for Azure MySQL tests. Existing explicit `Password` selections are preserved for legacy deployments, but Azure MySQL tests require migration to identity settings. Local/local-container tests remain native-authenticated.
 
 ## Phase 2: Bicep deployment
 
@@ -138,7 +142,7 @@ pre-provision hook.
 The deployment includes:
 
 - A virtual network and dedicated subnets for AKS, Container Apps, ACI, Batch, and private endpoints.
-- The SQL Build Manager runtime user-assigned managed identity.
+- Separate SQL Build Manager worker and orchestrator user-assigned managed identities.
 - A separate post-provision user-assigned managed identity.
 - A dedicated Relay proxy identity, Azure Relay Hybrid Connection, and persistent ACI.
 - Azure Container Registry.
@@ -151,15 +155,38 @@ The deployment includes:
 The runtime identity is named:
 
 ```text
-<prefix>identity
+id-{env}-worker
 ```
 
-It is used by SQL Build Manager workloads running in Batch, AKS, ACI, and Container Apps. Its Azure
-RBAC assignments include access to services such as Storage, Service Bus, Event Hubs, ACR, and the
-selected compute resources.
+It is used by SQL Build Manager workloads running in Batch, AKS, ACI, and Container Apps. It has
+resource-scoped Blob access, Service Bus receive access, Event Hub send access and ACR image-pull
+access. It does not receive resource-group Contributor, AKS administrator, Microsoft Graph or
+managed-identity assignment permissions.
 
 Azure RBAC cannot create a contained database user. Database-specific permissions are added later by
 the private bootstrap container.
+
+### Orchestrator managed identity
+
+`id-{env}-orchestrator` manages worker compute, Batch pools/jobs/tasks, Service Bus subscriptions
+and rules, Event Hub consumer groups, result monitoring and cleanup. Its permissions are scoped
+to the relevant deployment resources; dynamically created compute requires compute-specific
+permissions at resource-group scope, not generic Contributor.
+
+The trusted Azure test-runner container attaches both orchestrator and worker identities. Azure CLI
+and the SBM Azure-service credential helper select the orchestrator explicitly using
+`AZURE_CLIENT_ID` and `SBM_ORCHESTRATOR_CLIENT_ID`. Direct database tests can still request the
+worker identity's token. Worker containers receive only the worker identity and never receive
+`SBM_ORCHESTRATOR_CLIENT_ID` in generated runtime configuration.
+
+Outside the Azure test runner, leave `SBM_ORCHESTRATOR_CLIENT_ID` unset for existing developer
+CLI/PowerShell authentication. On a managed-identity orchestration host, set it to the separately
+attached orchestrator client ID. A specified invalid or unavailable identity is an error, not a reason
+to fall back to a different principal.
+
+AKS orchestration uses a normal user kubeconfig and namespace-scoped workload permissions.
+The deployment operator creates the `sqlbuildmanager` namespace and service account first.
+Runtime job submission no longer creates namespaces or requires cluster administrator access.
 
 ### Post-provision managed identity
 
@@ -174,8 +201,8 @@ database-administrator privileges.
 
 It receives:
 
-- `Reader` at resource-group scope so it can enumerate the target identities and databases.
-- `AcrPull` so ACI can pull the private bootstrap image without registry credentials.
+- Read access needed to discover the deployment's identities and databases.
+- Registry-scoped `AcrPull` so ACI can pull the private bootstrap image without registry credentials.
 
 The ACR administrator account is disabled. Image pull uses this managed identity.
 
@@ -198,7 +225,7 @@ directly.
 
 The proxy does not use Storage account keys or create SAS tokens. Azure Relay authenticates the
 caller with Microsoft Entra ID. The proxy uses its dedicated identity for Blob and Event Hub
-operations and the attached runtime identity for restricted SQL test operations. This avoids an
+operations and its own explicitly granted SQL test-database identity for restricted SQL operations. It does not attach the worker or orchestrator identity. This avoids an
 on-behalf-of flow, which would require an application registration, delegated service scopes, and
 a second end-to-end token validation layer inside the proxy.
 
@@ -226,20 +253,17 @@ For SQL Server, Bicep initially configures the deploying user as the Microsoft E
 SQL Server supports one Microsoft Entra administrator, so the post-provision hook temporarily swaps
 this administrator while the bootstrap container runs.
 
-PostgreSQL supports multiple Microsoft Entra administrators. Bicep adds both:
+PostgreSQL Bicep configures the deploying user as its Entra administrator. Private initialization
+uses that user's short-lived token, securely handed to the bootstrap container. No PostgreSQL
+administrator assignment or database login is created for the bootstrap managed identity. This
+avoids residual administrator-role cleanup altogether for fresh deployments.
 
-- The deploying user.
-- The post-provision managed identity.
-
-This allows PostgreSQL initialization without removing the deploying user's access.
-
-MySQL servers are created with:
+MySQL Bicep resources are created with:
 
 - A local administrator (`MYSQL_ADMIN_USER` / `MYSQL_ADMIN_PASSWORD`).
-- The post-provision managed identity as the Microsoft Entra administrator.
+- A dedicated `id-{env}-mysql-directory` user-assigned identity for server-side directory lookups.
 
-When `MYSQL_AUTH_MODE=ManagedIdentity`, post-provision also performs MySQL Entra user provisioning for
-the runtime identity.
+When `MYSQL_AUTH_MODE=ManagedIdentity`, postprovision grants the server identity's Graph permissions **first**, then configures the deploying Entra user as MySQL administrator using `scripts/Database/set_mysql_entra_admin.ps1`. Administrator creation is deliberately outside the initial Bicep deployment so it cannot race missing Graph permissions on a fresh environment. Private bootstrap then creates and authorizes the runtime database identity.
 
 ### Outputs returned to azd
 
@@ -344,15 +368,16 @@ The image contains:
 
 Before starting ACI, the local orchestrator:
 
-1. Enumerates the SQL logical servers.
-2. Replaces the deploying user with `<prefix>postprovision` as Microsoft Entra administrator.
-3. Records each server successfully changed.
+1. Enumerates the generated SQL logical servers and captures each existing Entra administrator.
+2. Temporarily replaces that administrator with the post-provision identity.
+3. Records each attempted swap so cleanup can restore the captured state even if initialization fails.
 4. Waits briefly for the administrator change to propagate.
 
 The swap is a control-plane operation and does not require database network connectivity.
 
 The administrator is changed only long enough for the bootstrap identity to connect and create the
-runtime identity's contained database users.
+worker and Relay contained database users. Cleanup restores each server's captured administrator,
+not an assumed deploying-user value.
 
 ### ACI creation
 
@@ -392,12 +417,16 @@ Script:
 scripts/Database/grant_identity_permissions.ps1
 ```
 
-For every non-`master` database on both logical servers, the script:
+For generated `SqlBuildTestN` databases on both logical servers, the script:
 
 1. Gets an Azure SQL access token for the post-provision identity.
 2. Connects through the SQL private endpoint.
-3. Creates a contained external user for `<prefix>identity` if it does not exist.
+3. Creates a contained external user for `id-{env}-worker` if it does not exist.
 4. Adds the user to `db_owner`.
+
+When Relay is enabled, it receives a separate contained user with `CREATE TABLE`, `VIEW DEFINITION`
+and the required `dbo` schema ALTER/DML privileges for test-table creation and DACPAC extraction,
+not worker `db_owner` or a server administrator role.
 
 The user is created from the runtime identity's client ID with an explicit SQL SID and `TYPE = E`.
 This avoids a Microsoft Graph directory lookup and therefore avoids granting Directory Readers to
@@ -415,13 +444,20 @@ scripts/Database/grant_pg_identity_permissions.ps1
 
 For both PostgreSQL servers, the script:
 
-1. Gets an `oss-rdbms` access token for the post-provision identity.
+1. Receives the deploying Entra user's short-lived `oss-rdbms` token through `PG_BOOTSTRAP_ACCESS_TOKEN`, with the administrator login in `PG_ENTRA_ADMIN_LOGIN`.
 2. Connects with `psql` through the PostgreSQL private endpoint.
-3. Maps `<prefix>identity` with `pgaadauth_create_principal_with_oid`.
-4. Grants database connection, schema, table, sequence, and default privileges.
+3. Maps `id-{env}-worker` with `pgaadauth_create_principal_with_oid`.
+4. Grants database connection, schema creation/use, existing table/sequence privileges and the persistent deploying user's table/sequence default privileges only on generated `sbm_pg_testN` databases.
 
 The PostgreSQL role uses the runtime identity's object/principal ID and type `service`. Explicit OID
 mapping avoids a Microsoft Graph lookup.
+
+The worker owns objects it creates. Table/sequence `GRANT ALL` does not confer ownership of
+objects created by another role or permit arbitrary ALTER/DROP of those objects. Default privileges
+apply to objects subsequently created by the persistent deploying user, not every database role.
+No bootstrap identity role, administrator membership or default-privilege ownership is created. Private
+bootstrap fails if its user-token handoff is missing, instead of falling back to bootstrap-identity
+database administration.
 
 ### MySQL initialization
 
@@ -440,10 +476,10 @@ MYSQL_AUTH_MODE=ManagedIdentity
 
 For both MySQL servers, the script:
 
-1. Gets an `oss-rdbms` access token for the post-provision identity.
-2. Connects with `mysql` through the MySQL private endpoint.
-3. Creates an Entra-backed MySQL user for `<prefix>identity`.
-4. Grants privileges on each test database.
+1. Uses the deploying Entra user's `oss-rdbms` token, acquired by the launcher just before ACI creation and supplied through a secure environment variable.
+2. Connects with `mysql` through the MySQL private endpoint, verifying TLS; the token is supplied through temporary `MYSQL_PWD`.
+3. Creates an Entra-backed MySQL user for `id-{env}-worker`, or verifies an existing mapping without dropping/replacing users.
+4. Grants database-scoped privileges only on `sbm_mysql_testN` databases, not global privileges.
 
 Managed-identity MySQL initialization requires Graph directory-read permissions for MySQL's Entra user resolution path. The local post-provision step can grant those permissions with:
 
@@ -461,8 +497,9 @@ On completion it:
 2. Verifies the container terminated.
 3. Requires exit code `0`.
 
-The container group remains deployed in its terminated state for inspection. The next `azd up`
-deletes and replaces it.
+The launcher deletes the bootstrap container group in `finally`; it is not left deployed with a
+reusable bootstrap identity after initialization. Use the streamed provisioning output for
+post-run diagnostics, or inspect the container while provisioning is still running.
 
 The SQL administrator restoration runs in a `finally` block whether image deployment, ACI execution,
 SQL initialization, PostgreSQL initialization, or MySQL initialization succeeds or fails. Restoration is retried five
@@ -470,7 +507,10 @@ times for every SQL server that was successfully switched.
 
 If restoration cannot be completed, the hook fails and reports the affected server. The bootstrap
 identity might remain the SQL administrator and should be corrected with Azure CLI or the portal
-before continuing.
+before continuing. PostgreSQL creates no temporary bootstrap administrator. Bootstrap-container
+deletion is also checked; cleanup failure is not reported as a successful deployment. The parent
+clears each database token after its corresponding initialization and does not pass it to unrelated
+database subprocesses.
 
 ## Remaining local post-provision operations
 
@@ -481,8 +521,8 @@ They do not require direct database connectivity.
 
 When AKS is selected, the hook:
 
-1. Downloads administrator kubeconfig credentials.
-2. Creates the `sqlbuildmanager` namespace.
+1. Downloads a normal user kubeconfig for the deploying operator, which has AKS RBAC Cluster Admin on this cluster for setup.
+2. Creates the `sqlbuildmanager` namespace without distributing cluster-admin credentials to workloads.
 3. Applies a Kubernetes service account associated with the runtime managed identity through
    workload identity.
 
@@ -546,12 +586,12 @@ endpoint and identity configuration:
 
 ```powershell
 sbm storage list `
-  --settingsfile .\src\TestConfig\settingsfile-aci-mi-only.json `
+  --settingsfile .\src\TestConfig\<envName>\settingsfile-aci-mi-only.json `
   --container batch-output `
   --prefix worker-1/
 
 sbm storage download `
-  --settingsfile .\src\TestConfig\settingsfile-aci-mi-only.json `
+  --settingsfile .\src\TestConfig\<envName>\settingsfile-aci-mi-only.json `
   --container batch-output `
   --blob worker-1/commits.log worker-2/commits.log `
   --outputpath C:\temp\batch-output
@@ -560,7 +600,7 @@ sbm storage download `
 Blob names use `/` separators even on Windows. The download command prints each local file path
 after it is saved.
 
-### Managed-identity and MySQL password settings files
+### Managed-identity settings files
 
 The hook runs:
 
@@ -571,19 +611,27 @@ scripts/create_all_settingsfiles_mi_only.ps1
 This generates settings for Batch, AKS, ACI, and Container Apps under:
 
 ```text
-src/TestConfig
+src/TestConfig/<envName>
 ```
+
+`<envName>` is the current azd environment. All generated database target files, text files and
+encryption keys share this environment directory. Standalone scripts select it with `-envName`;
+an explicit `-path` remains an exact override. Existing flat root files are not moved, changed or
+used as a fallback. Regenerate configuration or deliberately place only that environment's files
+in its folder, keeping the settings and encryption key together.
 
 Although the log message describes this as optional, the conditional guard is currently commented
 out, so settings generation runs on every `azd up`.
 
-When MySQL is deployed with `MYSQL_AUTH_MODE=Password`, the hook also runs:
+For MySQL, the same generator is invoked with `-databasePlatform MySQL -settingsFileSuffix mysql-mi-only`, using explicit `ManagedIdentity` authentication and the runtime identity's name/client ID. Kubernetes retains its existing service-account configuration and receives its client ID through injected workload-identity environment variables instead. Azure tests require these files and reject native passwords. Only deployed compute platforms are generated.
+
+Explicit legacy deployments with `MYSQL_AUTH_MODE=Password` still run:
 
 ```text
 scripts/create_all_settingsfiles_mysql_password.ps1
 ```
 
-This generates MySQL password-auth settings files (for example `settingsfile-aci-mysql-password.json`).
+This generates MySQL password-auth settings files (for example `settingsfile-aci-mysql-password.json`), which are not accepted by Azure MySQL tests. See [migration instructions](mysql.md#migrating-an-existing-azure-test-environment).
 
 ### SQL Server target files
 
@@ -639,17 +687,32 @@ pg-un.txt
 pg-pw.txt
 ```
 
-The MySQL target generator can also write:
+Only in explicit Azure `Password` mode, the MySQL target generator can also write:
 
 ```text
 mysql-un.txt
 mysql-pw.txt
 ```
 
-These files support local and integration-test configuration. `src/TestConfig` is excluded by
+Azure MySQL identity mode does not export these credentials and rejects stale password artifacts
+in the selected environment directory before image rebuilding. Local/local-container tests retain
+their separate native-credential configuration. `src/TestConfig` is excluded by
 `.gitignore`; do not copy these files into source control or logs.
 
 ### Application and test container images
+
+The external-test image wrapper excludes the entire source `TestConfig` tree before staging only
+the selected environment's top-level JSON, CFG, TXT and YAML files. It passes `AZD_ENV_NAME` to
+`Dockerfile.tests`; each Azure test project copies that environment to the flat runtime
+`TestConfig/<filename>` layout. No other environment, legacy root configuration, result folder or
+ZIP bundle is uploaded by the wrapper. Runtime and dependent/local-test image wrappers exclude
+`TestConfig` entirely. A manual Docker build context must be sanitized separately.
+
+For local Azure test execution, use `-p:AzdEnvironment=<envName>` or `AZURE_ENV_NAME`. The property
+takes precedence, and missing selections fail instead of using legacy files. Switching environments
+clears stale output configuration, including for `dotnet test --no-build`. Native tests do not
+select or copy Azure environment subdirectories.
+See [configuration selection examples](setup_azure_environment.md#output-files).
 
 When `BUILD_CONTAINER_IMAGES=true`, the hook remotely builds:
 
@@ -675,7 +738,7 @@ At execution time SQL Build Manager:
 
 1. Creates a Linux AlmaLinux 8 Gen1 container-enabled Batch pool compatible with the default
    `Standard_D2s_v3` VM size.
-2. Assigns `<prefix>identity` to the pool.
+2. Assigns `id-{env}-worker` to the pool.
 3. Uses that identity's `AcrPull` role to prefetch the runtime image.
 4. Uses the same identity to download input `ResourceFile` blobs and upload task output files; all
    Batch file descriptors use ordinary Blob URLs with an identity reference rather than SAS.
@@ -690,10 +753,45 @@ immutable.
 
 | Identity | Purpose | Database privilege |
 |---|---|---|
-| Deploying user | Runs `azd up`, receives RBAC, remains final SQL/PG administrator | SQL/PG administrator (MySQL local admin remains `MYSQL_ADMIN_USER` unless explicitly changed) |
-| `<prefix>identity` | Runtime identity used by SQL Build Manager workloads | `db_owner` in SQL test databases, explicit PostgreSQL grants, and optional MySQL grants when `MYSQL_AUTH_MODE=ManagedIdentity` |
-| `<prefix>postprovision` | Runs the private bootstrap ACI | Temporary SQL administrator; additional PostgreSQL administrator; MySQL Entra administrator |
-| `<prefix>relayproxy` | Runs the Relay listener for private Blob, Event Hub, and test SQL operations | None; restricted SQL uses the runtime identity |
+| Deploying user | Runs `azd up`, receives RBAC, bootstraps MySQL through a short-lived Entra token | SQL/PG/MySQL Entra administrator; native MySQL admin is retained separately |
+| `id-{env}-worker` | Worker-only database and resource-scoped data access | Migration-capable permissions restricted to generated test databases; no cloud/AKS administration |
+| `id-{env}-orchestrator` | Trusted test-runner control-plane lifecycle, queue setup, monitoring and cleanup | No independent database administrator grant; trusted runner can also request the attached worker identity |
+| Post-provision identity | Private bootstrap ACI, not directory lookup | Temporary SQL administrator access with restoration; no PostgreSQL/MySQL database administrator role |
+| Relay identity | Relay listener, Blob/Event Hub proxy and restricted SQL test operations | Its own explicit SQL test-database grants; no shared worker/orchestrator attachment |
+| MySQL directory identity | Persistent MySQL server Entra lookup | Required Graph application permissions only, not database/runtime administration |
+| AKS control-plane / kubelet identities | Cluster networking / registry pulls respectively | No database grants or worker federation; federation belongs to the worker identity |
+| `id-{env}-batch-storage` | Batch account automatic-storage access | No database grants; pool nodes retain the worker identity for their tasks |
+
+### Fresh environments and permission verification
+
+These identity boundaries apply to **fresh disposable deployments**. No legacy-environment
+migration tooling is included. Bicep incremental deployment does not revoke old role assignments:
+rerunning it over the earlier shared-identity environment is not evidence that R3 is remediated.
+Keep existing test runs separate, provision a fresh environment, regenerate settings and rebuild
+runtime/test images. The new runner fails if the worker/orchestrator identities are missing rather
+than substituting the old shared identity.
+
+Offline tests verify generated role scopes, identity wiring, environment rendering and application
+behavior. After provisioning, run the enabled backend suites (ACI, Container Apps, Batch and AKS)
+for each deployed database platform. Cover package upload, native/token database connection,
+query output, Service Bus count/session modes, Event Hub monitoring, job cleanup and result upload.
+Also confirm workers have no effective inherited Contributor or AKS administrator assignments;
+externally assigned subscription/management-group roles are not removed by these templates.
+
+General ACI runtime credentials, connection strings, storage keys and SAS URLs use `secureValue`,
+not ordinary environment `value`. This prevents ARM readback but not access by code executing inside
+the container. Mixed encrypted/plaintext settings-file persistence is intentionally unchanged.
+
+The new orchestrator and MySQL-directory identity output quartets fit within ARM's 64-output
+limit by removing unused output echoes: `ENVIRONMENT_NAME`, `DEPLOY_CONTAINER_REGISTRY`,
+`EVENTHUB_SKU`, `SERVICEBUS_SKU`, `EVENTHUB_SKU_CAPACITY`, `NSG_NAME`,
+`PG_DATABASE_COUNT_PER_SERVER` and `MYSQL_DATABASE_COUNT_PER_SERVER`. Deployment selections
+remain azd inputs/configuration; `MANAGED_IDENTITY_*` continues to identify the worker.
+
+Compilation retains five secret-output warnings for PostgreSQL server names/FQDNs and the native
+administrator username. They arise from conditions checking whether the secure password parameter
+is empty; these outputs contain identifiers, not the password, but their presence reveals whether
+it was supplied. The warnings are not suppressed.
 
 ## Rerunning `azd up`
 
@@ -702,11 +800,12 @@ The deployment is designed to be rerunnable:
 - Bicep resource deployment is incremental.
 - Database users and role memberships are checked before creation.
 - PostgreSQL principal mapping tolerates an existing role.
-- MySQL principal mapping tolerates existing local users and recreates as Entra users when needed.
+- MySQL principal mapping verifies existing Entra users; conflicting native users or other identity mappings stop initialization without replacing users.
 - The bootstrap image is rebuilt.
-- The previous bootstrap ACI is deleted and recreated.
+- Bootstrap ACI is recreated for initialization and deleted in cleanup.
 - Generated local configuration files are refreshed.
-- The deploying user is restored as SQL administrator after every bootstrap run.
+- Each SQL server's captured pre-bootstrap Entra administrator is restored after every run.
+- PostgreSQL initialization uses a secure deploying-user token rather than creating a bootstrap administrator.
 
 Because the image build flag is reset to `true` by the pre-provision hook, reruns can take
 significantly longer than a Bicep-only update.
@@ -775,7 +874,7 @@ SQL administrator.
 | `infra/modules/network.bicep` | VNET, delegated compute subnets, and private endpoint subnet |
 | `infra/modules/database.bicep` | Private SQL Server resources, databases, DNS, and private endpoints |
 | `infra/modules/postgresql.bicep` | Private PostgreSQL resources, administrators, DNS, and private endpoints |
-| `infra/modules/mysql.bicep` | Private MySQL resources, administrators, DNS, and private endpoints |
+| `infra/modules/mysql.bicep` | Private MySQL resources, native administrator, server identity, DNS, and private endpoints |
 | `infra/modules/postprovisionidentity.bicep` | Bootstrap managed identity and RBAC |
 | `infra/modules/relayproxy.bicep` | Relay, proxy identity, private endpoint, and scoped RBAC |
 | `infra/postprovision/Dockerfile` | Bootstrap container image |
@@ -788,6 +887,7 @@ SQL administrator.
 | `scripts/Database/grant_pg_identity_permissions.ps1` | PostgreSQL principal mapping and grants |
 | `scripts/Database/grant_mysql_identity_permissions.ps1` | MySQL Entra user creation and grants (ManagedIdentity mode) |
 | `scripts/Database/grant_mysql_graph_permissions.ps1` | Graph app-role assignment for MySQL Entra resolution prerequisites |
+| `scripts/Database/set_mysql_entra_admin.ps1` | Sets the deploying Entra user as MySQL administrator after Graph permissions |
 | `scripts/Database/create_database_override_files.ps1` | Local SQL test target generation |
 | `scripts/Database/create_pg_database_override_files.ps1` | Local PostgreSQL test target generation |
 | `scripts/Database/create_mysql_database_override_files.ps1` | Local MySQL test target generation |

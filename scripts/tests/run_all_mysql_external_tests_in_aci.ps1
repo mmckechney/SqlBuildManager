@@ -4,7 +4,8 @@
 .DESCRIPTION
     Reads AZD environment configuration to determine which compute platforms (ACI,
     Batch, Container Apps, AKS) and MySQL database platform are deployed. For
-    all available compute platforms, launches the filtered MySQL external test
+    available test groups, checks both MySQL servers with Azure CLI, starts stopped
+    servers and waits for Ready before launching the filtered MySQL external test
     runner in ACI. After all tests complete, downloads results from Azure Storage
     and invokes GitHub Copilot CLI to analyze the test output.
 .PARAMETER envName
@@ -67,11 +68,9 @@ Write-Host ""
 Write-Host "Loading AZD deployment configuration..." -ForegroundColor Cyan
 
 $azdConfig = @{}
-$azdOutput = azd env get-values 2>&1
+$azdOutput = azd env get-values -e $envName 2>&1
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "WARNING: Failed to load AZD environment values. All tests will be attempted." -ForegroundColor Yellow
-    Write-Host "  Run 'azd env select' or 'azd init' to configure an environment." -ForegroundColor Yellow
-    Write-Host ""
+    throw "Cannot verify Azure MySQL authentication mode for '$envName'. Select a configured azd environment before running Azure tests."
 } else {
     $azdOutput | ForEach-Object {
         if ($_ -match '^([^=]+)="?([^"]*)"?$') {
@@ -114,10 +113,9 @@ if (-not [string]::IsNullOrWhiteSpace($mySqlAuthMode)) {
 Write-Host "  Test groups:    $($requestedTestGroups -join ', ')" -ForegroundColor DarkGreen
 Write-Host ""
 
-# if (-not $buildImage -and $mySqlAuthMode -eq 'Password') {
-#     Write-Host "MYSQL_AUTH_MODE=Password detected; enabling -buildImage to avoid stale ManagedIdentity test image reuse." -ForegroundColor Yellow
-#     $buildImage = $true
-# }
+if ($hasMySQL -and $mySqlAuthMode -ne 'ManagedIdentity') {
+    throw "Azure MySQL tests require MYSQL_AUTH_MODE=ManagedIdentity. Set that value in the selected azd environment, rerun azd up to provision Entra permissions and mysql-mi-only settings, then rebuild the Azure test image with -buildImage. Local tests continue using native credentials."
+}
 
 #############################################
 # MySQL tests (requires MySQL + dynamically filters by available compute)
@@ -171,6 +169,9 @@ if (-not $hasMySQL) {
 
     if ($mySqlFilters.Count -gt 0) {
         $mySqlTestFilter = $mySqlFilters -join '|'
+        . (Join-Path $PSScriptRoot 'aci_test_helpers.ps1')
+        Start-AzureDatabaseServersForTests -platform mysql -resourceGroupName $resourceGroupName -serverNames @($mySqlServerNameA, $mySqlServerNameB)
+        Write-Host "MySQL servers are Ready. Starting the MySQL external test run in ACI..." -ForegroundColor Green
         & (Join-Path $PSScriptRoot 'run_filtered_external_tests_in_aci.ps1') -envName $envName -customName mysql -testFilter $mySqlTestFilter -timeoutMinutes 300 -timestamp $timestamp -buildImage:$buildImage
         $exitCode += $LASTEXITCODE
     } else {
@@ -182,6 +183,8 @@ if (-not $hasMySQL) {
 Write-Host "Running Copilot AI analysis of test logs to look for patterns, failure reasons and areas for improvement" -ForegroundColor Yellow
 if (Get-Command copilot -ErrorAction SilentlyContinue) {
     $promptTemplate = Get-Content -Path (Join-Path $PSScriptRoot 'analyze-test-results-prompt.md') -Raw
-    $prompt = $promptTemplate -replace '\{\{timestamp\}\}', $timestamp
+    . (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+    $resultsPath = Join-Path (Get-TestConfigPath -envName $envName -Create) 'TestResults' $timestamp
+    $prompt = $promptTemplate.Replace('{{resultsPath}}', $resultsPath)
     $output = copilot --yolo -p $prompt 2>&1
 }

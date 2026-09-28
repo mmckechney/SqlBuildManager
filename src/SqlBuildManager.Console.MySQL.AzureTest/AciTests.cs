@@ -41,13 +41,13 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             await aciResources.CleanupAsync();
         }
 
-        [DataRow("TestConfig/settingsfile-aci-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
         public async Task ACI_Queue_Run_MySQL_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -83,7 +83,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Validate blob storage logs agree with ACI MySQL test result
                 var logFileContents = MySqlTestHelper.RelevantLogFileContents(startingLine);
@@ -103,13 +103,13 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-aci-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
         public async Task ACI_Queue_MySQL_SBMSource_ManagedIdentity_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -137,7 +137,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Enqueue
                 args = new string[]{
@@ -151,7 +151,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Deploy + Monitor
                 args = new string[]{
@@ -175,7 +175,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Validate blob storage logs
                 var logFileContents = MySqlTestHelper.RelevantLogFileContents(startingLine);
@@ -195,13 +195,13 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-aci-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
         public async Task ACI_Queue_MySQL_DoubleDbConfig_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-clientdbtargets-doubledb.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -227,7 +227,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Enqueue
                 args = new string[]{
@@ -241,7 +241,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Deploy + Monitor
                 args = new string[]{
@@ -264,7 +264,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -286,14 +286,14 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-aci-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-aci-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
         public async Task ACI_Queue_MySQL_Query_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             string outputFile = Path.GetFullPath($"{Guid.NewGuid().ToString()}.csv");
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -328,7 +328,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;

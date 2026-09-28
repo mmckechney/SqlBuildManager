@@ -38,7 +38,12 @@ $logAnalyticsWorkspace = "$($resourceTypePrefixes.logAnalyticsWorkspace)$resourc
 $containerRegistryName = "$(($resourceTypePrefixes.containerRegistry -replace '[^a-zA-Z0-9]', ''))$normalizedEnvName"
 $keyVaultName = "$($resourceTypePrefixes.keyVault)$resourceEnvName"
 
-$identityName = "$($resourceTypePrefixes.managedIdentity)$resourceEnvName"
+$identityName = "$($resourceTypePrefixes.managedIdentity)$resourceEnvName-worker"
+$orchestratorIdentityName = "$($resourceTypePrefixes.managedIdentity)$resourceEnvName-orchestrator"
+$mysqlDirectoryIdentityName = "$($resourceTypePrefixes.managedIdentity)$resourceEnvName-mysql-directory"
+$aksControlPlaneIdentityName = "$($resourceTypePrefixes.managedIdentity)$resourceEnvName-aks-control"
+$aksKubeletIdentityName = "$($resourceTypePrefixes.managedIdentity)$resourceEnvName-aks-kubelet"
+$batchStorageIdentityName = "$($resourceTypePrefixes.managedIdentity)$resourceEnvName-batch-storage"
 $userAssignedIdentity = $identityName
 $userAssignedIdentityName = $identityName
 $postProvisionIdentityName = "$($resourceTypePrefixes.managedIdentity)$resourceEnvName-postprovision"

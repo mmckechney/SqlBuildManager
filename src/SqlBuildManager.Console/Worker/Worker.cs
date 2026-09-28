@@ -47,6 +47,13 @@ namespace SqlBuildManager.Console
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            var assembly = typeof(Worker).Assembly;
+            log.LogInformation(
+                "Runtime provenance: version {Version}; console module {ConsoleModule}; core module {CoreModule}; source revision {Revision}",
+                assembly.GetName().Version,
+                assembly.ManifestModule.ModuleVersionId,
+                typeof(SqlBuildManager.SqlBuild.SqlBuildHelper).Assembly.ManifestModule.ModuleVersionId,
+                Environment.GetEnvironmentVariable("SBM_BUILD_REVISION") ?? "not recorded");
 
             var fn = System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName;
             var currentPath = Path.GetDirectoryName(fn);

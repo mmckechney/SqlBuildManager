@@ -39,14 +39,14 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
         {
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json")]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-mi-only.json")]
         [TestMethod]
         public async Task Kubernetes_MySQL_Run_Queue_SBMSource_Success(string settingsFile)
         {
             try
             {
                 var prc = new ProcessHelper();
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -82,7 +82,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 val.Wait();
                 result = val.Result;
 
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -103,14 +103,14 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json")]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-mi-only.json")]
         [TestMethod]
         public async Task Kubernetes_MySQL_Run_Queue_DoubleDbConfig_SBMSource_Success(string settingsFile)
         {
             try
             {
                 var prc = new ProcessHelper();
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-clientdbtargets-doubledb.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -144,7 +144,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 val.Wait();
                 result = val.Result;
 
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -165,16 +165,16 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json", ConcurrencyType.Count, 5)]
-        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json", ConcurrencyType.Server, 5)]
-        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json", ConcurrencyType.MaxPerServer, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-mi-only.json", ConcurrencyType.Count, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-mi-only.json", ConcurrencyType.Server, 5)]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-mi-only.json", ConcurrencyType.MaxPerServer, 5)]
         [TestMethod]
         public async Task Kubernetes_MySQL_Run_Queue_Concurrency_SBMSource_Success(string settingsFile, ConcurrencyType concurType, int concurrencyCount)
         {
             try
             {
                 var prc = new ProcessHelper();
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -211,7 +211,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 val.Wait();
                 result = val.Result;
 
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -232,7 +232,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json")]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-mi-only.json")]
         [TestMethod]
         public async Task Kubernetes_MySQL_Query_Queue_SBMSource_Success(string settingsFile)
         {
@@ -240,7 +240,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             try
             {
                 var prc = new ProcessHelper();
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -277,7 +277,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 val.Wait();
                 result = val.Result;
 
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
@@ -304,11 +304,11 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-k8s-mysql-password.json")]
+        [DataRow("TestConfig/settingsfile-k8s-mysql-mi-only.json")]
         [TestMethod]
         public async Task Kubernetes_MySQL_Run_LongRunning_Queue_SBMSource_Success(string settingsFile)
         {
-            settingsFile = Path.GetFullPath(settingsFile);
+            settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
             var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
             if (!File.Exists(overrideFile))
             {
@@ -349,7 +349,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 val.Wait();
                 result = val.Result;
 
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var dbCount = File.ReadAllText(tmpOverride).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));

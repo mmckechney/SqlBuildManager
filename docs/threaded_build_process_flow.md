@@ -383,6 +383,11 @@ Stored in SqlSyncBuildDataModel for project history:
 
 If `--logtodatabasename` is specified, all logging writes go to that database instead of each target database:
 
+Audit rows are written after the build transaction commits, using autocommit rather than
+starting another build transaction. This also applies when an alternate logging connection
+is created for the first time during finalization. For nontransactional builds, audit writes
+likewise use autocommit. Audit persistence is separate from the already-applied build changes.
+
 ```mermaid
 graph TD
     AL1["<b>ThreadedRunner<br/>.RunDatabaseBuildAsync()</b>"]:::header

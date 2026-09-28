@@ -10,7 +10,7 @@
 .PARAMETER resourceGroupName
     Azure resource group containing the container registry.
 .PARAMETER path
-    Output directory for key files. Defaults to src\TestConfig.
+    Exact output directory override. Defaults to src\TestConfig\<envName>.
 .PARAMETER wait
     Whether to wait for the ACR build to complete. Default: true.
 #>
@@ -28,9 +28,8 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
     $repoRoot = Split-Path (Split-Path (Split-Path $script:MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
 }
 
-if ([string]::IsNullOrWhiteSpace($path)) {
-    $path = Join-Path $repoRoot "src\TestConfig"
-}
+. (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+$path = Get-TestConfigPath -envName $envName -path $path -repoRoot $repoRoot -Create
 
 #############################################
 # Get resource name variables from the environment name

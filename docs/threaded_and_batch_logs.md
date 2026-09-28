@@ -20,7 +20,7 @@ _Note:_ For a `batch run` these files are consolidated logs from across all of y
 
 ## Output Config Files
 
-There will be one (or two, depending on the run success) .cfg files created - `successdatabases.cfg` and/or `failuredatabases.cfg`. These files contain lists of all databases that were either successfully updated or had a failure and were rolled back, respectively. The format is the same use in  an `--override` argument so it is easy to use this file a an override target source for any follow-up runs that may be necessary.
+There will be one (or two, depending on the run success) .cfg files created - `successdatabases.cfg` and/or `failuredatabases.cfg`. These list successful targets and targets that reported a failure, respectively. Failure does not guarantee rollback: nontransactional work or changes committed before an output-persistence error may already be applied. Inspect the detailed logs before retrying. The format matches the `--override` argument for follow-up runs once replay is known to be safe.
 
 Example contents for `successdatabases.cfg` and `failuredatabases.cfg`
 
@@ -101,10 +101,34 @@ This file contains the detailed console output. It is a capture of all of the lo
 
 This is the folder that contains the runtime files such as the DACPAC, SBM and distributed database configuration files. It will also contain a sub-folder for each database server target. The folder structure is:
  - `<server name>` folders - There is one folder per target SQL Server. Within each of these is a folder for each target database. 
-    - `<database name>` folders - within these folders are three files
+    - `<database name>` folders - within these folders are the following files, when applicable
       - `LogFile-\<date,time\>.log` -  a detailed script by script run result
       - `SqlSyncBuildHistory.xml` - detailed log along with script meta-data (such as start/end times, file hash, status, user id)
       - `SqlSyncBuildProject.xml` - meta-data file for the script package run against the database
+      - `Error.log` - full exception details when target processing fails unexpectedly
+
+The shared SQL files remain directly under `Working`; they are not copied or repackaged for each
+database. Older runs can have `<database name>Error.log` directly under the server folder.
+Azure test diagnostics recognize both layouts and try to retrieve the detailed errors before
+asserting a failed command exit code, using Relay when direct storage access is network-blocked.
+A diagnostic-download failure is reported without replacing the original command failure.
+
+The SQL Server AlreadyInSync Azure tests and the ACI force-custom recovery test intentionally
+exercise a base-script failure followed by successful DACPAC recovery. These tests require
+exactly four non-transient `ERR` entries across all worker task logs, not four per worker.
+Zero, one to three, or more than four entries fail the assertion. An explicit expected count
+also checks logs containing `Custom dacpac required` rather than skipping them. Existing
+Service Bus shutdown exclusions remain in effect, and commits, database counts, empty
+`errors.log`/per-target error logs, and no failed databases are still required.
+Other tests retain their existing log-validation behavior.
+
+Worker startup logs include assembly version, console/core module IDs and the image's source
+revision when available. Image build scripts pass the Git revision (with `-dirty` for modified
+source) into OCI metadata and print the ACR run ID/output image digests. For asynchronous builds,
+retrieve the completed run's output images using its run ID. The ACI test runner uploads
+`artifact-provenance.txt` with its source revision and the SHA-256 hashes of the actual test/CLI/core
+binaries. Preserve the build receipts with test results; matching mutable tags alone do not prove
+that Batch, ACI and Container Apps executed the same artifact.
 
 ----
 
@@ -115,4 +139,6 @@ If you have SQL errors in your execution, you will probably want to figure out w
 1. Open up the `failuredatabases.cfg` file to see what databases had problems
 2. Taking note of the server and database name, open the server folder then the database folder
 3. Open the `logfile` in the database folder. This file should contain an error message that will guide your troubleshooting should you need to correct some scripts
-4. Once you have determined the problem, use the `failuredatabases.cfg` file as your `--override` argument to run your updates again - hopefully successfully this time!
+4. Inspect `Error.log` (or the historical `<database>Error.log`) for finalization/persistence failures.
+   Verify whether changes committed before retrying: nontransactional or post-commit output
+   failures are not evidence of rollback. Only replay failed targets after establishing it is safe.

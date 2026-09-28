@@ -32,7 +32,7 @@ az acr build --image $nameAndTag --registry $azureContainerRegistryName --file D
 
 While the ACI execution process will create the ACI for you, it also leverages [Azure Service Bus](https://azure.microsoft.com/en-us/services/service-bus/), [Azure Event Hub](https://azure.microsoft.com/en-us/services/event-hubs), [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault) and [Azure Blob Storage](https://azure.microsoft.com/en-us/services/storage/blobs/). You can create your own resources either through the [Azure portal](https://portal.azure.com), [az cli](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) or [Azure PowerShell](https://docs.microsoft.com/en-us/powershell/azure/). The only special configuration is with Azure Service Bus which requires a Topic named `sqlbuildmanager`.
 
-It is recommended that you create the resources via the Azure Developer CLI (`azd up`). See [Setting up an Azure Environment](setup_azure_environment.md) for full details. This will create all of the resources you need, including an option for SQL servers and databases. It will also create pre-configured settings files in `./src/TestConfig`. The settings files are needed for running integration tests but also serve as excellent references for you to create your own settings files.
+It is recommended that you create the resources via the Azure Developer CLI (`azd up`). See [Setting up an Azure Environment](setup_azure_environment.md) for full details. This will create all of the resources you need, including an option for SQL servers and databases. It will also create pre-configured settings files in `src\TestConfig\<envName>` for the current azd environment. The settings files are needed for running integration tests but also serve as excellent references for you to create your own settings files.
 
 ----
 
@@ -83,4 +83,3 @@ sbm aci monitor --settingsfile "<settings file name>" --jobname "<job name>" --c
  All of the run logs will be transferred from the pods to the storage container specified in the `jobname` argument. When monitoring is complete, it will output a Blob container SAS token that you can use in [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/) to easily view the logs.
 
  **IMPORTANT:** After the `sbm aci deploy` (with monitoring) or `sbm aci monitor` completes, as part of the clean-up, it will remove the Service Bus Topic associated with the build. This will deactivate the running containers.
-

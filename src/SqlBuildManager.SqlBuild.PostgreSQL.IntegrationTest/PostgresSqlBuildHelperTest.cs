@@ -403,7 +403,7 @@ namespace SqlBuildManager.SqlBuild.PostgreSQL.IntegrationTest
             init.AddBatchInsertScripts(ref buildData, true);
 
             IScriptBatcher scriptBatcher = new DefaultScriptBatcher();
-            ScriptBatchCollection scriptBatchColl = scriptBatcher.LoadAndBatchSqlScripts(buildData, string.Empty);
+            ScriptBatchCollection scriptBatchColl = scriptBatcher.LoadAndBatchSqlScripts(buildData, init.ProjectDirectory);
 
             SqlBuildHelper sbh = init.CreateSqlBuildHelper(buildData);
             Build myBuild = init.GetRunBuildRow(sbh);

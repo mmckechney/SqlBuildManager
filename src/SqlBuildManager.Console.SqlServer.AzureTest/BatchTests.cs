@@ -175,7 +175,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
 
             Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
@@ -254,7 +254,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
              "--loglevel", "debug",
@@ -276,7 +276,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             result = val.Result;
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
             var blobValidator = new BlobLogValidator(
@@ -349,7 +349,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
 
             Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
@@ -437,7 +437,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             val.Wait();
             var result = val.Result;
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             
             var tmpOverrideFileContents = File.ReadAllLines(tmpOverride).ToList();
 
@@ -459,7 +459,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
 
                 Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
@@ -511,7 +511,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
    
                 Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
@@ -589,7 +589,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
 
             BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
@@ -641,7 +641,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
 
@@ -651,7 +651,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 cmdLine.ConnectionArgs.StorageAccountKey,
                 jobName);
             await blobValidator.LoadLogsAsync();
-            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext, expectedTaskErrorCount: 4);
 
         }
         
@@ -695,7 +695,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             ;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
 
             BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
@@ -704,7 +704,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 cmdLine.ConnectionArgs.StorageAccountKey,
                 jobName);
             await blobValidator.LoadLogsAsync();
-            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext, expectedTaskErrorCount: 4);
         }
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
@@ -745,7 +745,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             ;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains("Successfully created SBM from two dacpacs"), "Indication that the script creation was good");
 
@@ -807,7 +807,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             ;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains("Successfully created SBM from two dacpacs"), "Indication that the script creation was good");
 
@@ -864,7 +864,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             ;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
             Assert.IsTrue(logFileContents.Contains($"{database2}.dacpac are already in  sync. Looping to next database"), "First comparison DB already in sync. Should go to the next one to create a diff DACPAC");
 
@@ -874,7 +874,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 cmdLine.ConnectionArgs.StorageAccountKey,
                 jobName);
             await blobValidator.LoadLogsAsync();
-            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext);
+            blobValidator.AssertBuildSuccess(overrideFileContents.Count - removeCount, TestContext, expectedTaskErrorCount: 4);
 
         }
 
@@ -915,8 +915,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 var result = val.Result;
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-                Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-                Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
                 Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
@@ -980,8 +979,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 var result = val.Result;
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-                Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-                Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
                 Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
@@ -1011,7 +1009,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         // [DataRow("query", "TestConfig/settingsfile-batch-linux-queue-keyvault-mi.json", ConcurrencyType.MaxPerServer, 5)]
         // [DataRow("query", "TestConfig/settingsfile-batch-linux-queue-keyvault.json", ConcurrencyType.Server, 5)]
         [TestMethod]
-        public void Batch_Query_Queue_SelectSuccess(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_Query_Queue_SelectSuccess(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
 
             string jobName = GetUniqueBatchJobName("batch-query");
@@ -1067,8 +1065,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 result = val.Result;
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-                Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-                Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
                 Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
@@ -1091,7 +1088,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         // [DataRow("query", "TestConfig/settingsfile-batch-linux-queue-keyvault-mi.json", ConcurrencyType.MaxPerServer, 5)]
         // [DataRow("query", "TestConfig/settingsfile-batch-linux-queue-keyvault.json", ConcurrencyType.Server, 5)]
         [TestMethod]
-        public void Batch_Query_Direct_Queue_SelectSuccess(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_Query_Direct_Queue_SelectSuccess(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
 
             string jobName = GetUniqueBatchJobName("batch-query");
@@ -1134,8 +1131,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
                 var result = val.Result;
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-                Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
-                Assert.IsTrue(logFileContents.Contains("Query complete. The results are in the output file"), "Should have created an output file");
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
                 Assert.IsTrue(logFileContents.Contains("Output file copied locally to"), "Should have copied output file locally");
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
@@ -1316,7 +1312,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.Count, 5)]
         // [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json", ConcurrencyType.Count, 5)]
         [TestMethod]
-        public void Batch_Queue_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_Queue_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             string sbmFileName = TestHelper.GetSimpleSelectSbm();
@@ -1337,7 +1333,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
              "--loglevel", "debug",
@@ -1360,13 +1356,13 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             result = val.Result;
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
         }
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.Count, 10)]
         // [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault-mi.json", ConcurrencyType.Count, 10)]
         [TestMethod]
-        public void Batch_Queue_SBMSource_ManagedIdentity_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_Queue_SBMSource_ManagedIdentity_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             string sbmFileName = TestHelper.GetSimpleSelectSbm();
 
@@ -1391,7 +1387,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
                 "--loglevel", "debug",
@@ -1415,7 +1411,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
    
                 Assert.IsTrue(logFileContents.Contains($"Batch complete"), $"Should indicate that this was run as a batch job");
@@ -1424,7 +1420,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.MaxPerServer, 5)]
         [TestMethod]
-        public void Batch_Queue_SBMSource_MissingEventHubConnection_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_Queue_SBMSource_MissingEventHubConnection_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             string sbmFileName = TestHelper.GetSimpleSelectSbm();
@@ -1457,7 +1453,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
             "batch",  batchMethod,
@@ -1478,13 +1474,13 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             result = val.Result;
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
         }
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json")]
         // [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json")]
         [TestMethod]
-        public void Batch_Queue_PlatinumDbSource_Success(string batchMethod, string settingsFile)
+        public async Task Batch_Queue_PlatinumDbSource_Success(string batchMethod, string settingsFile)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             int removeCount = 1;
@@ -1514,7 +1510,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
                 "batch",  batchMethod,
@@ -1536,13 +1532,13 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             result = val.Result;
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
         }
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json")]
         // [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json")]
         [TestMethod]
-        public void Batch_Queue_DacpacSource_Success(string batchMethod, string settingsFile)
+        public async Task Batch_Queue_DacpacSource_Success(string batchMethod, string settingsFile)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             int removeCount = 1;
@@ -1576,7 +1572,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
                 "--loglevel", "Debug",
@@ -1599,13 +1595,13 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             result = val.Result;
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
         }
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json")]
         // [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault.json")]
         [TestMethod]
-        public void Batch_Queue_Run_DacpacSource_Success(string batchMethod, string settingsFile)
+        public async Task Batch_Queue_Run_DacpacSource_Success(string batchMethod, string settingsFile)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             int removeCount = 1;
@@ -1646,12 +1642,12 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
         }
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-mi-only.json")]
         [TestMethod]
-        public void Batch_Override_DacpacSource_ForceApplyCustom_Success(string batchMethod, string settingsFile)
+        public async Task Batch_Override_DacpacSource_ForceApplyCustom_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -1695,14 +1691,14 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             ;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
 
         }
 
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json")]
         [TestMethod]
-        public void Batch_Queue_DacpacSource_ForceApplyCustom_Success(string batchMethod, string settingsFile)
+        public async Task Batch_Queue_DacpacSource_ForceApplyCustom_Success(string batchMethod, string settingsFile)
         {
             int removeCount = 1;
             string server, database;
@@ -1764,7 +1760,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "This test was should have worked");
 
         }
@@ -1775,7 +1771,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.Server, 2)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.Count, 5)]
         [TestMethod]
-        public void Batch_Queue_LongRunning_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_Queue_LongRunning_SBMSource_ByConcurrencyType_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             string sbmFileName = TestHelper.GetLongRunningSbm();
@@ -1798,7 +1794,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
 
 
@@ -1823,7 +1819,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             result = val.Result;
             
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
         }
 
         [DataRow("TestConfig/settingsfile-batch-linux-queue-mi-only.json", "TestConfig/settingsfilekey.txt")]
@@ -1870,7 +1866,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
         // [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-keyvault-mi.json", ConcurrencyType.Tag, 2)]
         [DataRow("run", "TestConfig/settingsfile-batch-linux-queue-mi-only.json", ConcurrencyType.MaxPerTag, 5)]
         [TestMethod]
-        public void Batch_Queue_SBMSource_KeyVault_NoSettingsFileKey_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
+        public async Task Batch_Queue_SBMSource_KeyVault_NoSettingsFileKey_Success(string batchMethod, string settingsFile, ConcurrencyType concurType, int concurrency)
         {
             settingsFile = Path.GetFullPath(settingsFile);
             string sbmFileName = TestHelper.GetSimpleSelectSbm();
@@ -1890,7 +1886,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             args = new string[]{
              "--loglevel", "debug",
@@ -1911,7 +1907,7 @@ namespace SqlBuildManager.Console.SqlServer.AzureTest
             result = val.Result;
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
         }
     }
 }

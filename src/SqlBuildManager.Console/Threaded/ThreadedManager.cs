@@ -545,11 +545,6 @@ namespace SqlBuildManager.Console.Threaded
                     overwriteExistingProjectFiles: true).ConfigureAwait(false);
                 if (!extractResult.success)
                 {
-                    if (attempt == 1 && archiveEntries.Count > 0)
-                    {
-                        continue;
-                    }
-
                     WritePackageValidationError(
                         $"Zip extraction error: {extractResult.result}",
                         sqlBuildProjectFileName,
@@ -606,9 +601,8 @@ namespace SqlBuildManager.Console.Threaded
         {
             return model.Script
                 .Select(script => script.FileName)
-                .Where(fileName => !string.IsNullOrWhiteSpace(fileName))
-                .Select(fileName => fileName!)
-                .Where(fileName => !File.Exists(Path.Combine(projectDirectory, fileName)))
+                .Select(fileName => fileName ?? string.Empty)
+                .Where(fileName => !File.Exists(SqlBuildManager.SqlBuild.Utilities.PackagePath.Resolve(projectDirectory, fileName)))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
         }

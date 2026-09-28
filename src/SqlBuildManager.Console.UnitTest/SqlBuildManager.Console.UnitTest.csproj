@@ -12,8 +12,8 @@
     <Compile Include="..\AssemblyVersioning.cs" Link="Properties\AssemblyVersioning.cs" />
   </ItemGroup>
 	<ItemGroup>
-		<Content Include="..\TestConfig\**\*.*">
-			<Link>TestConfig\%(RecursiveDir)%(FileName)%(Extension)</Link>
+		<Content Include="..\TestConfig\*.*">
+			<Link>TestConfig\%(FileName)%(Extension)</Link>
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
@@ -31,6 +31,11 @@
     <EmbeddedResource Include="Resources\TableLockingScript.sql" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\*.IntegrationTest\Resources\*.sbm;..\*.AzureTest\Resources\*.sbm;..\SqlBuildManager.Console.AzureTest.TestBase\Resources\*.sbm">
+      <LogicalName>PackageFixtures.%(Identity)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="MSTest.TestAdapter" />
@@ -43,6 +48,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SqlBuildManager.Test.Common\SqlBuildManager.Test.Common.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Console\sbm.csproj" />
+    <ProjectReference Include="..\SqlBuildManager.Console.AzureTest.TestBase\SqlBuildManager.Console.AzureTest.TestBase.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Enterprise\SqlBuildManager.Enterprise.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Interfaces\SqlBuildManager.Interfaces.csproj" />
     <ProjectReference Include="..\SqlBuildManager.Logging\SqlBuildManager.Logging.csproj" />

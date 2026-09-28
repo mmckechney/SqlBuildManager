@@ -121,7 +121,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "Batch PG run should have completed successfully");
             Assert.IsTrue(logFileContents.Contains("Batch complete"), "Should indicate a batch job");
 
@@ -167,7 +167,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
             Assert.IsTrue(logFileContents.Contains("Completed Successfully"), "Batch PG MI run should have completed successfully");
 
             // Validate blob storage logs
@@ -206,7 +206,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             // Run
             args = new string[]{
@@ -230,7 +230,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
             result = val.Result;
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             // Validate blob storage logs
             BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);
@@ -277,7 +277,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
                 var result = val.Result;
 
                 var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-                Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
                 Assert.IsTrue(File.Exists(outputFile), "The output file should exist");
                 var outputLength = File.ReadAllLines(outputFile).Length;
@@ -355,7 +355,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
             var result = val.Result;
 
             var logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             // Run
             args = new string[]{
@@ -380,7 +380,7 @@ namespace SqlBuildManager.Console.PostgreSQL.AzureTest
             result = val.Result;
 
             logFileContents = CombinedLogAndConsoleOutput(startingLine);
-            Assert.AreEqual(0, result, StandardExecutionErrorMessage(logFileContents));
+            await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext, StandardExecutionErrorMessage(logFileContents));
 
             // Validate blob storage logs
             BlobLogValidator.AssertBlobContainerNameInLog(logFileContents, jobName, TestContext);

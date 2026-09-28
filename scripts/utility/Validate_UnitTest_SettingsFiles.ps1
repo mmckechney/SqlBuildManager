@@ -6,17 +6,22 @@
     is referenced somewhere in the ExternalTest project source. Reports any unreferenced
     settings files as errors.
 .PARAMETER path
-    Path to the TestConfig directory. Default: ../../src/TestConfig.
+    Exact configuration directory override. Defaults to src\TestConfig\<envName>.
+.PARAMETER envName
+    Azure Developer CLI environment whose settings should be checked.
 .PARAMETER testPath
     Path to the ExternalTest project directory. Default: ../../src/SqlBuildManager.Console.SqlServer.AzureTest.
 #>
 param
 (
-    [string] $path = "..\..\src\TestConfig",
-    [string] $testPath = "..\..\src\SqlBuildManager.Console.SqlServer.AzureTest\"
+    [string] $path,
+    [string] $testPath = (Join-Path $PSScriptRoot '..\..\src\SqlBuildManager.Console.SqlServer.AzureTest'),
+    [string] $envName
 )
 
-$testSettingsFiles = Get-ChildItem $path
+. (Join-Path $PSScriptRoot '..\test_config_paths.ps1')
+$path = Get-TestConfigPath -envName $envName -path $path
+$testSettingsFiles = Get-ChildItem -LiteralPath $path -File
 $haveMissing = $false
 foreach($file in $testSettingsFiles)
 {

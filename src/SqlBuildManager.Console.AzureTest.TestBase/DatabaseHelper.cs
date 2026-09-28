@@ -48,34 +48,21 @@ namespace SqlBuildManager.Console.AzureTest.TestBase
         /// <returns></returns>
         public static string CreateRandomTable(CommandLineArgs cmdLine, List<string> overrideLines)
         {
-            SqlServerAuthenticationProvider.Register();
-
             string server, database;
             string randomTableName = "R" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10);
             string randomColumnName = "R" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10);
             string createTable = $"CREATE TABLE {randomTableName} ( {randomColumnName} VARCHAR(10) ) ";
 
-            //var connStr = new SqlConnectionStringBuilder()
-            //{
-            //    UserID = cmdLine.AuthenticationArgs.UserName,
-            //    Password = cmdLine.AuthenticationArgs.Password,
-            //};
-            var connStr = new SqlConnectionStringBuilder()
-            {
-                Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault,
-            };
-
             foreach (var line in overrideLines)
             {
                 (server, database) = ExtractServerAndDbFromLine(line);
-                connStr.DataSource = server;
-                connStr.InitialCatalog = database;
 
                 try
                 {
-                    using (SqlConnection conn = new SqlConnection(connStr.ConnectionString))
+                    using (var conn = CreateSqlConnection(cmdLine, server, database))
                     {
-                        SqlCommand cmd = new SqlCommand(createTable, conn);
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = createTable;
                         conn.Open();
                         cmd.ExecuteNonQuery();
                         conn.Close();
@@ -98,7 +85,7 @@ namespace SqlBuildManager.Console.AzureTest.TestBase
                 }
                 catch (Exception exe)
                 {
-                    throw new Exception($"Unable to create random table in {server}: {database}\r\n{exe.ToString()}");
+                    throw new Exception($"Unable to create random table in {server}: {database}. Authentication: {cmdLine.AuthenticationArgs.AuthenticationType}; database client ID: {cmdLine.IdentityArgs.ClientId}.", exe);
                 }
             }
 
@@ -120,31 +107,36 @@ namespace SqlBuildManager.Console.AzureTest.TestBase
                 return fullname;
             }
 
-            var args = new string[]{
-                "dacpac",
-                "--authtype" , AuthenticationType.AzureADDefault.ToString(),
-                //"--username", cmdLine.AuthenticationArgs.UserName,
-                //"--password", cmdLine.AuthenticationArgs.Password,
-                "--dacpacname", fullname,
-                "--database", database,
-                "--server", server };
+            var args = CreateDacpacArguments(cmdLine, server, database, fullname);
 
             RootCommand rootCommand = CommandLineBuilder.SetUp();
             var val = rootCommand.Parse(args).InvokeAsync();
             val.Wait();
             var result = val.Result;
 
-            if (result == 0)
-            {
-                return fullname;
-            }
-            else
-            {
-                return null!;
-            }
-
+            if (result != 0)
+                throw new InvalidOperationException($"DACPAC extraction failed for {server}/{database} with exit code {result}. Authentication: {cmdLine.AuthenticationArgs.AuthenticationType}; database client ID: {cmdLine.IdentityArgs.ClientId}.");
+            return fullname;
         }
 
+        public static string[] CreateDacpacArguments(CommandLineArgs cmdLine, string server, string database, string outputFile)
+        {
+            var args = new List<string>{
+                "dacpac",
+                "--authtype" , cmdLine.AuthenticationArgs.AuthenticationType.ToString(),
+                "--dacpacname", outputFile,
+                "--database", database,
+                "--server", server };
+            if (!string.IsNullOrWhiteSpace(cmdLine.IdentityArgs.ClientId))
+                args.AddRange(new[] { "--clientid", cmdLine.IdentityArgs.ClientId });
+            if (cmdLine.AuthenticationArgs.AuthenticationType == AuthenticationType.Password)
+                args.AddRange(new[] { "--username", cmdLine.AuthenticationArgs.UserName, "--password", cmdLine.AuthenticationArgs.Password });
+            if (cmdLine.AuthenticationArgs.TrustServerCertificate)
+                args.AddRange(new[] { "--trustservercertificate", "true" });
+            return args.ToArray();
+        }
+
+        /// <summary>Loads database authentication and Relay settings without changing the orchestrator environment.</summary>
         public static void ConfigureRelayEndpoint(
             CommandLineArgs cmdLine,
             string settingsFilePath,
@@ -157,7 +149,20 @@ namespace SqlBuildManager.Console.AzureTest.TestBase
             };
             var (_, decrypted) = Cryptography.DecryptSensitiveFields(settingsArgs);
             cmdLine.RelayProxyEndpoint = decrypted.ConnectionArgs.RelayProxyEndpoint;
+            cmdLine.AuthenticationArgs = decrypted.AuthenticationArgs;
+            cmdLine.IdentityArgs = decrypted.IdentityArgs;
         }
+
+        public static System.Data.Common.DbConnection CreateSqlConnection(CommandLineArgs cmdLine, string server, string database) =>
+            new SqlServerConnectionFactory().CreateConnection(new ConnectionData(server, database)
+            {
+                AuthenticationType = cmdLine.AuthenticationArgs.AuthenticationType,
+                UserId = cmdLine.AuthenticationArgs.UserName,
+                Password = cmdLine.AuthenticationArgs.Password,
+                ManagedIdentityClientId = cmdLine.IdentityArgs.ClientId,
+                TrustServerCertificate = cmdLine.AuthenticationArgs.TrustServerCertificate,
+                ScriptTimeout = 15
+            });
 
         public static bool RequiresSqlRelay(
             CommandLineArgs cmdLine,
@@ -169,16 +174,9 @@ namespace SqlBuildManager.Console.AzureTest.TestBase
                 return false;
             }
 
-            var connStr = new SqlConnectionStringBuilder
-            {
-                Authentication = SqlAuthenticationMethod.ActiveDirectoryDefault,
-                DataSource = server,
-                InitialCatalog = database,
-                ConnectTimeout = 15
-            };
             try
             {
-                using var connection = new SqlConnection(connStr.ConnectionString);
+                using var connection = CreateSqlConnection(cmdLine, server, database);
                 connection.Open();
                 return false;
             }

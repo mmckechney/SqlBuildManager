@@ -147,8 +147,7 @@ namespace SqlBuildManager.Console.CommandLine
 				cmd.SetAction(async (parseResult, ct) => {
 					var directory = parseResult.GetValue(unpackDirectoryOption);
 					var package = parseResult.GetValue(unpackPackageOption);
-					await Worker.UnpackSbmFile(directory: directory!, package: package!);
-					return 0;
+					return await Worker.UnpackSbmFile(directory: directory!, package: package!);
 				});
 				return cmd;
 			}

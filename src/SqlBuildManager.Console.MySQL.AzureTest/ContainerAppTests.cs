@@ -39,14 +39,14 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
         {
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
-        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.MaxPerServer)]
         [TestMethod]
         public async Task ContainerApp_MySQL_Run_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -81,7 +81,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -102,13 +102,13 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
         public async Task ContainerApp_MySQL_StepWise_Queue_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -133,7 +133,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Enqueue
                 args = new string[]{
@@ -147,7 +147,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Deploy + Monitor
                 args = new string[]{
@@ -170,7 +170,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -191,13 +191,13 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
         public async Task ContainerApp_MySQL_Queue_ManagedIdentity_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-databasetargets.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -222,7 +222,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Enqueue
                 args = new string[]{
@@ -236,7 +236,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 // Deploy + Monitor
                 args = new string[]{
@@ -261,7 +261,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 val.Wait();
                 result = val.Result;
                 TestContext.WriteLine(ConsoleOutput.ToString());
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));
@@ -282,13 +282,13 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
             }
         }
 
-        [DataRow("TestConfig/settingsfile-containerapp-mysql-password.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
+        [DataRow("TestConfig/settingsfile-containerapp-mysql-mi-only.json", "latest-vNext", 3, 2, ConcurrencyType.Count)]
         [TestMethod]
         public async Task ContainerApp_MySQL_Run_DoubleDbConfig_SBMSource_Success(string settingsFile, string imageTag, int containerCount, int concurrency, ConcurrencyType concurrencyType)
         {
             try
             {
-                settingsFile = Path.GetFullPath(settingsFile);
+                settingsFile = MySqlTestHelper.RequireManagedIdentitySettings(settingsFile);
                 var overrideFile = Path.GetFullPath("TestConfig/mysql-clientdbtargets-doubledb.cfg");
                 if (!File.Exists(overrideFile))
                 {
@@ -323,7 +323,7 @@ namespace SqlBuildManager.Console.MySQL.AzureTest
                 var val = rootCommand.Parse(args).InvokeAsync();
                 val.Wait();
                 int result = val.Result;
-                Assert.AreEqual(0, result);
+                await BlobLogValidator.AssertCommandSucceededAsync(result, settingsFile, settingsFileKeyPath, jobName, TestContext);
 
                 var dbCount = File.ReadAllText(overrideFile).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length;
                 Assert.IsTrue(ConsoleOutput.ToString().Contains($"Database Commits:       {dbCount.ToString().PadLeft(5, '0')}"));

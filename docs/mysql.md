@@ -97,12 +97,13 @@ sbm batch savesettings ^
     --password "mypassword"
 ```
 
-For `azd up` environments, post-provision scripts can generate MySQL settings in `src/TestConfig`, including password-based variants such as:
+For `azd up` environments, post-provision generates MySQL managed-identity settings in `src\TestConfig\<envName>` for the selected compute platforms:
 
-- `settingsfile-aci-mysql-password.json`
-- `settingsfile-batch-linux-mysql-password.json`
-- `settingsfile-containerapp-mysql-password.json`
-- `settingsfile-k8s-mysql-password.json`
+- `settingsfile-aci-mysql-mi-only.json`
+- `settingsfile-batch-linux-mysql-mi-only.json`
+- `settingsfile-batch-linux-queue-mysql-mi-only.json`
+- `settingsfile-containerapp-mysql-mi-only.json`
+- `settingsfile-k8s-mysql-mi-only.json`
 
 ---
 
@@ -114,21 +115,61 @@ For `azd up` environments, post-provision scripts can generate MySQL settings in
 --authtype Password --username "myuser" --password "mypassword"
 ```
 
-This is the default MySQL mode for generated external-test settings (`MYSQL_AUTH_MODE=Password`).
+Local and local-container tests continue to use native username/password authentication. They do not require Entra ID, Azure tokens, or Azure connectivity. Explicit legacy Azure deployments can retain `MYSQL_AUTH_MODE=Password`, but the Azure MySQL test suites reject password settings.
 
 ### Managed Identity (Azure MySQL)
 
-Managed Identity mode is supported for Azure Database for MySQL when environment permissions are configured for Entra-based MySQL user creation.
+Managed identity is the default Azure MySQL test mode (`MYSQL_AUTH_MODE=ManagedIdentity`). Azure Database for MySQL Flexible Server supports [Entra authentication](https://learn.microsoft.com/en-us/azure/mysql/security/security-entra-authentication); database authorization must be provisioned separately.
 
 ```bash
---authtype ManagedIdentity --identityclientid "<managed-identity-client-id>"
+--platform MySQL --authtype ManagedIdentity --clientid "<managed-identity-client-id>" --identityname "<managed-identity-name>"
 ```
 
-For `azd up` deployments, enable this path with:
+The deploying Entra user is the MySQL Entra administrator. The server uses a dedicated `id-{env}-mysql-directory` identity for directory lookups, separate from both the private bootstrap identity and the `id-{env}-worker` identity used by database tests. Do not attach this directory identity to containers or grant its Graph permissions to workers. The operator needs Privileged Role Administrator (or Global Administrator) to grant the server identity `User.Read.All`, `GroupMember.Read.All`, and `Application.Read.All`, as described in [Microsoft's setup guide](https://learn.microsoft.com/en-us/azure/mysql/security/security-how-to-entra).
+
+The launcher acquires a short-lived administrator token just before starting private bootstrap ACI and passes it as a **secure environment variable**, not an image layer or ordinary ARM environment value. Inside ACI, MySQL initialization runs first; `mysql` receives the token through temporary `MYSQL_PWD`, not a password argument. The parent clears the token before running other database initialization scripts. Bootstrap creates an Entra user for the runtime identity and grants privileges only on `sbm_mysql_testN` databases. It refuses to replace an existing native user or a principal mapped to another identity. Native server-administrator provisioning credentials remain available; they are not used by Azure tests.
+
+ACI, Batch and Container Apps use their assigned managed identity. AKS uses its federated workload-identity token. Token-authenticated MySQL connections verify the server certificate and hostname.
+
+### TLS verification
+
+Azure MySQL service endpoints require `SslMode=VerifyFull` for both native-password
+and supported token authentication, including direct Azure-test connections. Public,
+US Government, China and legacy Germany service suffixes are recognized, including
+private-link names and an explicit port. A multi-host connection containing an Azure
+endpoint uses the verified policy for the entire connection.
+
+Use the canonical server FQDN with private DNS and a current OS/container CA trust
+store. Custom aliases and IP addresses are not automatically classified as Azure and
+may not match the certificate. Neither a private endpoint nor encryption alone proves
+server identity. Verification failures are not retried with a weaker TLS mode.
+The private bootstrap retains `VERIFY_IDENTITY` (MySQL) or `--ssl-verify-server-cert`
+(MariaDB) with its trusted CA bundle.
+
+Native local and local-container connections retain `Preferred`: TLS is opportunistic,
+without mandatory certificate verification or local certificate provisioning. This
+exception does not change the existing `VerifyFull` policy for token authentication.
+
+Connection tests include real MySqlConnector protocol exchanges with temporary test
+certificates, covering trusted, wrong-host, untrusted, expired and plaintext cases.
+MySqlConnector 2.6.2 defers some native-auth certificate checks until the authentication
+response; these tests verify rejection before database commands. Its explicit loopback
+exception for cleartext-plugin credentials means local fixtures do not prove remote
+token-rejection behavior. Live Azure MI/private-DNS acceptance remains a separate check.
+
+### Migrating an existing Azure test environment
+
+**Identity-separation scope:** the current R3 templates and runners target fresh disposable environments. The earlier authentication-only procedure below is not an RBAC migration: incremental Bicep does not remove old Contributor/AKS administrator assignments or stale identity attachments. Use a fresh environment and regenerate settings/images for the new worker/orchestrator identities. No automatic legacy-role revocation or migration tooling is provided.
+
+Existing saved `Password` selections are not silently changed. Select the intended environment and set:
 
 ```bash
 azd env set MYSQL_AUTH_MODE ManagedIdentity
 ```
+
+Move stale Azure MySQL password settings (`settingsfile-*-mysql-password.json`) and `mysql-pw.txt` out of the selected `src\TestConfig\<envName>` directory (or explicit `-path`) before rerunning `azd up`; the target generator refuses to continue while these artifacts would still be copied into that environment's test image. Other environment folders and legacy flat root files are not copied or used as a fallback. Do not change local/local-container credential files. Sign in to Azure CLI as the deploying Entra user, rerun `azd up` to update the administrator/grants and regenerate settings, and rebuild both runtime and Azure test images. Use `scripts\tests\run_all_mysql_external_tests_in_aci.ps1 -envName <env> -buildImage` when ready to run Azure tests. For local Azure test execution, pass `-p:AzdEnvironment=<env>` to `dotnet test` or set `AZURE_ENV_NAME`; see [configuration selection](setup_azure_environment.md#output-files).
+
+Headless service-principal-only bootstrap is not supported by this workflow; it fails rather than falling back to a native password. After a token-expiry or directory-propagation failure, rerun postprovision as the same deploying user to obtain a fresh token.
 
 ---
 
@@ -140,4 +181,3 @@ The following remain SQL Server-only:
 - **SMO-based object scripting**
 - **Windows integrated authentication** (`--authtype Windows`)
 - **SQL Server-specific script policies** (for example, `WithNoLockPolicy`, `QualifiedNamesPolicy`, T-SQL syntax checks)
-

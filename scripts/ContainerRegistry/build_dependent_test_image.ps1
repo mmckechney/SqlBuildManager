@@ -63,7 +63,7 @@ Write-Host "  Context: $contextPath" -ForegroundColor DarkGray
 $tempContext = Join-Path ([System.IO.Path]::GetTempPath()) "sbm-dependent-tests-$(Get-Date -Format 'yyyyMMddHHmmss')"
 Write-Host "Copying source to temp location (excluding .vs, bin, obj)..." -ForegroundColor DarkGray
 
-$excludeDirs = ".vs", ".vs_backup", "bin", "obj", "TestResults"
+$excludeDirs = ".vs", ".vs_backup", "bin", "obj", "TestResults", "TestConfig"
 robocopy $contextPath $tempContext /E /XD $excludeDirs /XF *.user /NFL /NDL /NJH /NJS /NC /NS /NP | Out-Null
 
 # Remove .dockerignore if it exists (it might be excluding things we need)
