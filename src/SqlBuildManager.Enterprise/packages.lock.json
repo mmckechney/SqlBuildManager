@@ -15,9 +15,9 @@
       },
       "System.DirectoryServices": {
         "type": "Direct",
-        "requested": "[10.0.12, )",
-        "resolved": "10.0.12",
-        "contentHash": "q93epwky2rb89SAsZ4CUktyaIYa8dS5JhhPxUb7ZE5G7+m0uFwLg0WQJqxA08kuUk0CxXPH0nuSSEyWk7ugXmw=="
+        "requested": "[10.0.13, )",
+        "resolved": "10.0.13",
+        "contentHash": "rLZZeebn3XyN6gqLvn6V8xg4fRlCjuvlNgpXE6elISfjYvKEbQK99ZpwDebpCKhLxxYT0JM5n1QPWFVahQLW/Q=="
       },
       "Azure.Core.Amqp": {
         "type": "Transitive",
