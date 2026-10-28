@@ -215,11 +215,6 @@
         "resolved": "10.0.14",
         "contentHash": "QtpQzuSZVyTPCuHW058yCs9Nj0394uUkNyFHS813nOmK9UgUdBdaprJ5PPsBgsQIpxADTsTkbaMMonykem6qdw=="
       },
-      "Microsoft.Extensions.DependencyModel": {
-        "type": "Transitive",
-        "resolved": "10.0.0",
-        "contentHash": "RFYJR7APio/BiqdQunRq6DB+nDB6nc2qhHr77mlvZ0q0BT8PubMXN7XicmfzCbrDE/dzhBnUKBRXLTcqUiZDGg=="
-      },
       "Microsoft.Extensions.Diagnostics": {
         "type": "Transitive",
         "resolved": "10.0.14",
@@ -256,11 +251,6 @@
           "Microsoft.Extensions.FileSystemGlobbing": "10.0.14",
           "Microsoft.Extensions.Primitives": "10.0.14"
         }
-      },
-      "Microsoft.Extensions.FileSystemGlobbing": {
-        "type": "Transitive",
-        "resolved": "10.0.14",
-        "contentHash": "xt6c/PWLL6+CiBiZA3PWRSfkwcPh+HCwiOLrgSUkhzBT7lrT/+QpIKPeuCQyDPspwOuG1q0cbJhuiGpRjr4UNQ=="
       },
       "Microsoft.Extensions.Hosting.Abstractions": {
         "type": "Transitive",
@@ -524,16 +514,8 @@
       },
       "Serilog": {
         "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
-      },
-      "Serilog.Formatting.Compact": {
-        "type": "Transitive",
-        "resolved": "1.1.0",
-        "contentHash": "pNroKVjo+rDqlxNG5PXkRLpfSCuDOBY0ri6jp9PLe505ljqwhwZz8ospy2vWhQlFu5GkIesh3FcDs4n7sWZODA==",
-        "dependencies": {
-          "Serilog": "2.8.0"
-        }
+        "resolved": "4.2.0",
+        "contentHash": "gmoWVOvKgbME8TYR+gwMf7osROiWAURterc6Rt2dQyX7wtjZYpqFiA/pY6ztjGQKKV62GGCyOcmtP1UKMHgSmA=="
       },
       "Serilog.Sinks.PeriodicBatching": {
         "type": "Transitive",
@@ -541,14 +523,6 @@
         "contentHash": "L1iZtcEzQdEIYCPvhYJYB2RofPg+i1NhHJfS+DpXLyLSMS6OXebqaI1fxWhmJRIjD9D9BuXi23FkZTQDiP7cHw==",
         "dependencies": {
           "Serilog": "2.0.0"
-        }
-      },
-      "Serilog.Sinks.RollingFile": {
-        "type": "Transitive",
-        "resolved": "3.3.0",
-        "contentHash": "2lT5X1r3GH4P0bRWJfhA7etGl8Q2Ipw9AACvtAHWRUSpYZ42NGVyHoVs2ALBZ/cAkkS+tA4jl80Zie144eLQPg==",
-        "dependencies": {
-          "Serilog.Sinks.File": "3.2.0"
         }
       },
       "Spectre.Console.Ansi": {
@@ -682,16 +656,6 @@
           "Microsoft.Extensions.Hosting": "[10.0.14, )",
           "Microsoft.Extensions.Logging": "[10.0.14, )",
           "Microsoft.Extensions.Logging.Console": "[10.0.14, )",
-          "Microsoft.SqlServer.DacFx": "[170.5.96, )",
-          "Serilog.Enrichers.Thread": "[4.0.0, )",
-          "Serilog.Expressions": "[5.0.0, )",
-          "Serilog.Extensions.Logging": "[10.0.0, )",
-          "Serilog.Extensions.Logging.File": "[3.0.0, )",
-          "Serilog.Settings.Configuration": "[10.0.1, )",
-          "Serilog.Sinks.Async": "[2.1.0, )",
-          "Serilog.Sinks.AzureEventHub": "[6.0.0, )",
-          "Serilog.Sinks.Console": "[6.1.1, )",
-          "Serilog.Sinks.File": "[7.0.0, )",
           "Spectre.Console": "[0.57.2, )",
           "SqlBuildManager.Connection": "[1.0.0, )",
           "SqlBuildManager.Constants": "[1.0.0, )",
@@ -702,7 +666,6 @@
           "SqlBuildManager.ObjectScript": "[1.0.0, )",
           "SqlBuildManager.SqlBuild": "[1.0.0, )",
           "System.CommandLine": "[2.0.14, )",
-          "System.DirectoryServices": "[10.0.14, )",
           "System.Memory.Data": "[10.0.14, )",
           "YamlDotNet": "[18.1.0, )",
           "morelinq": "[4.4.0, )"
@@ -756,16 +719,9 @@
         "dependencies": {
           "Azure.Identity": "[1.21.0, )",
           "Azure.Messaging.EventHubs": "[5.12.2, )",
-          "Microsoft.Extensions.Configuration.FileExtensions": "[10.0.14, )",
-          "Microsoft.Extensions.Configuration.Json": "[10.0.14, )",
-          "Microsoft.Extensions.DependencyInjection": "[10.0.14, )",
           "Microsoft.Extensions.Logging": "[10.0.14, )",
-          "Microsoft.Extensions.Logging.Console": "[10.0.14, )",
           "Serilog.Enrichers.Thread": "[4.0.0, )",
-          "Serilog.Expressions": "[5.0.0, )",
           "Serilog.Extensions.Logging": "[10.0.0, )",
-          "Serilog.Extensions.Logging.File": "[3.0.0, )",
-          "Serilog.Settings.Configuration": "[10.0.1, )",
           "Serilog.Sinks.Async": "[2.1.0, )",
           "Serilog.Sinks.AzureEventHub": "[6.0.0, )",
           "Serilog.Sinks.Console": "[6.1.1, )",
@@ -782,7 +738,6 @@
           "SqlBuildManager.Constants": "[1.0.0, )",
           "SqlBuildManager.DbInformation": "[1.0.0, )",
           "SqlBuildManager.SqlBuild": "[1.0.0, )",
-          "System.Configuration.ConfigurationManager": "[10.0.14, )",
           "System.Diagnostics.EventLog": "[10.0.14, )"
         }
       },
@@ -806,8 +761,7 @@
           "SqlBuildManager.Constants": "[1.0.0, )",
           "SqlBuildManager.DbInformation": "[1.0.0, )",
           "SqlBuildManager.Interfaces": "[1.0.0, )",
-          "SqlBuildManager.Logging": "[1.0.0, )",
-          "System.Configuration.ConfigurationManager": "[10.0.14, )"
+          "SqlBuildManager.Logging": "[1.0.0, )"
         }
       },
       "sqlbuildmanager.test.common": {
@@ -1051,6 +1005,12 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.14"
         }
       },
+      "Microsoft.Extensions.FileSystemGlobbing": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.14, )",
+        "resolved": "10.0.14",
+        "contentHash": "xt6c/PWLL6+CiBiZA3PWRSfkwcPh+HCwiOLrgSUkhzBT7lrT/+QpIKPeuCQyDPspwOuG1q0cbJhuiGpRjr4UNQ=="
+      },
       "Microsoft.Extensions.Hosting": {
         "type": "CentralTransitive",
         "requested": "[10.0.14, )",
@@ -1161,15 +1121,6 @@
           "Serilog": "4.0.0"
         }
       },
-      "Serilog.Expressions": {
-        "type": "CentralTransitive",
-        "requested": "[5.0.0, )",
-        "resolved": "5.0.0",
-        "contentHash": "QhZjXtUcA2QfQRA60m+DfyIfidKsQV7HBstbYEDqzJKMbJH/KnKthkkjciRuYrmFE+scWv1JibC5LlXrdtOUmw==",
-        "dependencies": {
-          "Serilog": "4.0.0"
-        }
-      },
       "Serilog.Extensions.Logging": {
         "type": "CentralTransitive",
         "requested": "[10.0.0, )",
@@ -1178,32 +1129,6 @@
         "dependencies": {
           "Microsoft.Extensions.Logging": "10.0.0",
           "Serilog": "4.2.0"
-        }
-      },
-      "Serilog.Extensions.Logging.File": {
-        "type": "CentralTransitive",
-        "requested": "[3.0.0, )",
-        "resolved": "3.0.0",
-        "contentHash": "bUYjMHn7NhpK+/8HDftG7+G5hpWzD49XTSvLoUFZGgappDa6FoseqFOsLrjLRjwe1zM+igH5mySFJv3ntb+qcg==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "6.0.0",
-          "Microsoft.Extensions.Configuration.Binder": "6.0.0",
-          "Serilog": "2.10.0",
-          "Serilog.Extensions.Logging": "3.1.0",
-          "Serilog.Formatting.Compact": "1.1.0",
-          "Serilog.Sinks.Async": "1.5.0",
-          "Serilog.Sinks.RollingFile": "3.3.0"
-        }
-      },
-      "Serilog.Settings.Configuration": {
-        "type": "CentralTransitive",
-        "requested": "[10.0.1, )",
-        "resolved": "10.0.1",
-        "contentHash": "ayFE7h66mqMqzwfPrzDCMbWU27FdNC2bkCG+jnkeHFZTBRh+yWdr4aa/2WuX7c8RmqxGPMW2UqoJ3fw9hK3QhA==",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.Binder": "10.0.0",
-          "Microsoft.Extensions.DependencyModel": "10.0.0",
-          "Serilog": "4.3.0"
         }
       },
       "Serilog.Sinks.Async": {
