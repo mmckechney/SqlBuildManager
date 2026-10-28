@@ -1,6 +1,5 @@
 using SqlBuildManager.Test.Common;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlBuildManager.Connection;
 using SqlBuildManager.SqlBuild.Models;
 using SqlBuildManager.SqlBuild.Services;
