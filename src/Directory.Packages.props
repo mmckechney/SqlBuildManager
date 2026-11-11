@@ -57,7 +57,7 @@
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="10.0.14" />
     <PackageVersion Include="System.Diagnostics.EventLog" Version="10.0.14" />
     <PackageVersion Include="System.DirectoryServices" Version="10.0.14" />
-    <PackageVersion Include="System.Memory.Data" Version="10.0.14" />
+    <PackageVersion Include="System.Memory.Data" Version="11.0.0" />
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.21" />
     <PackageVersion Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
