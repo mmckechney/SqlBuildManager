@@ -15,12 +15,12 @@
       },
       "System.Configuration.ConfigurationManager": {
         "type": "Direct",
-        "requested": "[10.0.14, )",
-        "resolved": "10.0.14",
-        "contentHash": "F/bLtwG0JuJ2OnTCsvJbnulvN7hr+BIFJLtE3PzgmW3AWkV8LYO5XF0j+zB4tHn/b4yfR7PAO0dZmoYeaINtnQ==",
+        "requested": "[11.0.0, )",
+        "resolved": "11.0.0",
+        "contentHash": "EECIyxAPpkd/qek46ZGH/EyfEJHLS5BUxi627flzzoNsO6e4dpLC68Xj8Nl+YxFcfzBMWLu9/tyRKufbTshBAQ==",
         "dependencies": {
-          "System.Diagnostics.EventLog": "10.0.14",
-          "System.Security.Cryptography.ProtectedData": "10.0.14"
+          "System.Diagnostics.EventLog": "11.0.0",
+          "System.Security.Cryptography.ProtectedData": "11.0.0"
         }
       },
       "Azure.Core.Amqp": {
@@ -238,8 +238,8 @@
       },
       "System.Security.Cryptography.ProtectedData": {
         "type": "Transitive",
-        "resolved": "10.0.14",
-        "contentHash": "UuaBUHgmtc9h6CMxaQqFDDJxkS5JVy7XEB+DbtCvD68GFcVM9/AccuNwFpARx8nwCnvjaxzoOBjG3gPz32P1Eg=="
+        "resolved": "11.0.0",
+        "contentHash": "iS9iyAMwLDPFBzTdcREDkzRBYmwy7aENYl7EXxAvnNJNCbl7+UVRgJfWaVLtVjSeDmT3JIItgGODmuAPljXFww=="
       },
       "System.Threading.RateLimiting": {
         "type": "Transitive",
