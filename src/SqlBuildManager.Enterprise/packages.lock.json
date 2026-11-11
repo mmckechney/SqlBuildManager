@@ -15,9 +15,9 @@
       },
       "System.DirectoryServices": {
         "type": "Direct",
-        "requested": "[10.0.14, )",
-        "resolved": "10.0.14",
-        "contentHash": "um46NcO5LGpygmoeElfbSA9JSKRi7qqPLO4hBK3MH5N3G67rT+LjYNEX0MRDlrLs0MkTQYkwrtzMwEApiF5cpA=="
+        "requested": "[11.0.0, )",
+        "resolved": "11.0.0",
+        "contentHash": "2ETbE7cus83JnClSff9TVRiTyo6NW0OcehK59vIxbecY7if9Dw0XYsSG8aiX2NOhMqbbIejP5ZzRhBGObvEzWQ=="
       },
       "Apache.Arrow": {
         "type": "Transitive",
